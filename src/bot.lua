@@ -50,6 +50,13 @@ function Bot.prepare(bot, state)
     bot.lastAction = "NONE"
 end
 
+local function handHasCard(player, cardId)
+    for slot = 1, 4 do
+        if player.hand[slot] == cardId then return true end
+    end
+    return false
+end
+
 local function ownedVillagerCount(state, playerId)
     local count = 0
     for _, entity in ipairs(state.entities) do
@@ -238,6 +245,7 @@ local function offensivePlacement(bot, state, card)
     local targetTower = weakestEnemyPrincess(state, playerId)
     local laneX = targetTower and targetTower.x
         or (((bot.decisionCount + bot.playerId) % 2) == 0 and 25 or 75)
+    local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
 
     if card.id == "villager" then
         local y = playerId == 1 and 142 or 18
@@ -246,11 +254,21 @@ local function offensivePlacement(bot, state, card)
     end
 
     if card.id == "iron_golem" or card.id == "witch" then
-        local y = playerId == 1 and 116 or 44
+        local y
+        if lateGame then
+            y = playerId == 1 and 96 or 64
+        else
+            y = playerId == 1 and 116 or 44
+        end
         return clampOwnPlacement(playerId, laneX, y)
     end
 
-    local y = playerId == 1 and 103 or 57
+    local y
+    if lateGame then
+        y = playerId == 1 and 94 or 66
+    else
+        y = playerId == 1 and 103 or 57
+    end
     return clampOwnPlacement(playerId, laneX, y)
 end
 
@@ -261,6 +279,21 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore)
     local score = 0
     local threat = ctx.primaryThreat
     local defending = threat and ctx.primaryThreatScore >= 3
+    local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
+
+    -- Economy cards were effectively never tested because the bot kept
+    -- spending cheap cards before reaching 7E. When safe, reserve the last
+    -- couple of Emeralds so Villager gets a real chance to enter the match.
+    local savingForVillager = not defending
+        and not lateGame
+        and ownedVillagerCount(state, bot.playerId) == 0
+        and handHasCard(player, "villager")
+        and player.emeralds >= 5
+        and player.emeralds < 7
+
+    if savingForVillager and card.id ~= "villager" then
+        return -math.huge
+    end
 
     if card.id == "arrows" then
         if arrowScore >= 2.4 then
@@ -269,11 +302,11 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore)
             return -math.huge
         end
     elseif card.id == "villager" then
-        if defending or ownedVillagerCount(state, bot.playerId) > 0 then
+        if defending or lateGame or ownedVillagerCount(state, bot.playerId) > 0 then
             return -math.huge
         end
         if player.emeralds >= 7 then
-            score = 7 + (player.emeralds - 7) * 0.5
+            score = 10 + (player.emeralds - 7) * 0.5
         end
     elseif defending then
         score = 3 + ctx.primaryThreatScore * 0.35
@@ -318,6 +351,9 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore)
             cannon = 1,
         }
         score = offense[card.id] or 2
+        if lateGame and card.id ~= "cannon" and card.id ~= "villager" then
+            score = score + 2.5
+        end
     end
 
     score = score - card.cost * 0.12
@@ -431,7 +467,8 @@ function Bot.update(bot, state, dt)
     if bot.thinkTimer > 0 then return end
 
     bot.decisionCount = bot.decisionCount + 1
-    bot.thinkTimer = 0.65 + ((bot.decisionCount * 11 + bot.playerId) % 6) * 0.08
+    local baseThink = (state.overtime or (state.timeLeft and state.timeLeft <= 60)) and 0.45 or 0.65
+    bot.thinkTimer = baseThink + ((bot.decisionCount * 11 + bot.playerId) % 6) * 0.08
 
     local choice = choosePlay(bot, state)
     if choice then play(bot, state, choice) end
