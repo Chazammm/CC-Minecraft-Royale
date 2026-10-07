@@ -465,19 +465,26 @@ Game.debugSpawnCard(
     rangedPiglin.y
 )
 
-local rangedBat
+local rangedBatHpBefore = {}
 for _, entity in ipairs(rangedPiglinState.entities) do
     if entity.name == "Bat Swarm" then
-        rangedBat = entity
+        rangedBatHpBefore[entity.id] = entity.hp
+    end
+end
+assertTrue(next(rangedBatHpBefore) ~= nil, "Ranged Piglin flying target must exist")
+
+for _ = 1, 8 do Game.update(rangedPiglinState, 0.10) end
+
+local damagedFlyingTarget = false
+for _, entity in ipairs(rangedPiglinState.entities) do
+    local before = rangedBatHpBefore[entity.id]
+    if before and entity.hp < before then
+        damagedFlyingTarget = true
         break
     end
 end
-assertTrue(rangedBat ~= nil, "Ranged Piglin flying target must exist")
-local rangedBatHpBefore = rangedBat.hp
-
-for _ = 1, 8 do Game.update(rangedPiglinState, 0.10) end
 assertTrue(
-    rangedBat.hp < rangedBatHpBefore,
+    damagedFlyingTarget,
     "Piglin must use its crossbow against flying targets"
 )
 
