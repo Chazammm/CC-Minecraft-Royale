@@ -42,6 +42,9 @@ local function getCardStats(state, playerId, cardId)
             towerDamage = 0,
             kills = 0,
             towersKilled = 0,
+            emeraldBonus = 0,
+            slowSeconds = 0,
+            targetsHit = 0,
         }
         playerStats.cards[cardId] = stat
     end
@@ -770,14 +773,29 @@ local function updateProjectiles(state, dt)
                     for _, victim in ipairs(victims) do
                         damageEntity(state, victim, projectile.damage, projectile.owner, projectile.sourceCardId)
                         if victim.alive and projectile.onHitSlow then
-                            victim.slowRemaining = math.max(
-                                victim.slowRemaining or 0,
+                            local oldRemaining = victim.slowRemaining or 0
+                            local newRemaining = math.max(
+                                oldRemaining,
                                 projectile.onHitSlow.duration or 1
                             )
+                            victim.slowRemaining = newRemaining
                             victim.slowFactor = math.min(
                                 victim.slowFactor or 1,
                                 projectile.onHitSlow.factor or 0.7
                             )
+
+                            if state.phase == "battle"
+                                and state.stats
+                                and projectile.sourceCardId
+                            then
+                                local cardStats = getCardStats(
+                                    state,
+                                    projectile.owner,
+                                    projectile.sourceCardId
+                                )
+                                cardStats.slowSeconds = cardStats.slowSeconds
+                                    + math.max(0, newRemaining - oldRemaining)
+                            end
                         end
                     end
                 elseif distance > 0 then
@@ -932,6 +950,11 @@ local function castArrows(state, playerId, card, x, y)
                 table.insert(targets, entity)
             end
         end
+    end
+
+    if state.phase == "battle" and state.stats then
+        local cardStats = getCardStats(state, playerId, card.id)
+        cardStats.targetsHit = cardStats.targetsHit + #targets
     end
 
     for _, target in ipairs(targets) do
@@ -1215,7 +1238,25 @@ function Game.update(state, dt)
 
                 local baseRealized = math.min(available, baseGain)
                 local bonusAvailable = math.max(0, available - baseRealized)
-                playerStats.villagerBonus = playerStats.villagerBonus + math.min(bonusAvailable, bonusGain)
+                local realizedBonus = math.min(bonusAvailable, bonusGain)
+                playerStats.villagerBonus = playerStats.villagerBonus + realizedBonus
+
+                -- Attribute realized economy value back to the card that
+                -- created each living boost unit. This makes Villager useful
+                -- in balance reports even though it deals no damage.
+                if realizedBonus > 0 and boost > 0 then
+                    for _, entity in ipairs(state.entities) do
+                        if entity.alive
+                            and entity.owner == playerId
+                            and entity.emeraldBoost
+                            and entity.sourceCardId
+                        then
+                            local share = realizedBonus * entity.emeraldBoost / boost
+                            local cardStats = getCardStats(state, playerId, entity.sourceCardId)
+                            cardStats.emeraldBonus = cardStats.emeraldBonus + share
+                        end
+                    end
+                end
             end
         end
     end
