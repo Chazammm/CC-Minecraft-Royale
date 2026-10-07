@@ -39,6 +39,7 @@ cards.list = {
             canAttackAir = true,
             targetMode = "any",
             projectileSpeed = 58,
+            projectileVisual = "arrow",
         },
     },
     {
@@ -94,6 +95,7 @@ cards.list = {
             attackCooldown = 0.85,
             canAttackAir = false,
             projectileSpeed = 48,
+            projectileVisual = "cannonball",
             lifetime = 35,
         },
     },
@@ -158,6 +160,172 @@ cards.list = {
             },
         },
     },
+    {
+        id = "blaze",
+        name = "Blaze",
+        icon = "F",
+        cost = 4,
+        kind = "unit",
+        color = colors.orange,
+        unit = {
+            maxHp = 330,
+            damage = 76,
+            moveSpeed = 7.1,
+            attackRange = 17,
+            attackCooldown = 1.05,
+            aggroRange = 30,
+            canAttackAir = true,
+            targetMode = "any",
+            projectileSpeed = 46,
+            projectileVisual = "fireball",
+            flying = true,
+        },
+    },
+    {
+        id = "witch",
+        name = "Witch",
+        icon = "W",
+        cost = 5,
+        kind = "unit",
+        color = colors.purple,
+        unit = {
+            maxHp = 560,
+            damage = 48,
+            moveSpeed = 5.8,
+            attackRange = 16,
+            attackCooldown = 1.45,
+            aggroRange = 29,
+            canAttackAir = false,
+            targetMode = "any",
+            projectileSpeed = 38,
+            projectileVisual = "potion",
+            projectileSplashRadius = 6,
+        },
+    },
+    {
+        id = "enderman",
+        name = "Enderman",
+        icon = "E",
+        cost = 5,
+        kind = "unit",
+        color = colors.magenta,
+        unit = {
+            maxHp = 760,
+            damage = 118,
+            moveSpeed = 7.0,
+            attackRange = 2.8,
+            attackCooldown = 1.05,
+            aggroRange = 34,
+            canAttackAir = false,
+            targetMode = "any",
+            teleport = {
+                minRange = 9,
+                maxRange = 32,
+                cooldown = 4.5,
+                stopRange = 3.2,
+            },
+        },
+    },
+    {
+        id = "spider",
+        name = "Spider",
+        icon = "P",
+        cost = 2,
+        kind = "unit",
+        color = colors.gray,
+        unit = {
+            maxHp = 350,
+            damage = 52,
+            moveSpeed = 10.5,
+            attackRange = 2.2,
+            attackCooldown = 0.75,
+            aggroRange = 28,
+            canAttackAir = false,
+            targetMode = "any",
+        },
+    },
+    {
+        id = "snow_golem",
+        name = "Snow Golem",
+        icon = "N",
+        cost = 3,
+        kind = "unit",
+        color = colors.white,
+        unit = {
+            maxHp = 300,
+            damage = 34,
+            moveSpeed = 5.8,
+            attackRange = 18,
+            preferredMinRange = 7,
+            attackCooldown = 0.95,
+            aggroRange = 30,
+            canAttackAir = true,
+            targetMode = "any",
+            projectileSpeed = 52,
+            projectileVisual = "snowball",
+            onHitSlow = {
+                factor = 0.65,
+                duration = 1.5,
+            },
+        },
+    },
+    {
+        id = "villager",
+        name = "Villager",
+        icon = "V",
+        cost = 8,
+        kind = "unit",
+        color = colors.brown,
+        unit = {
+            maxHp = 620,
+            damage = 0,
+            moveSpeed = 0,
+            attackRange = 0,
+            attackCooldown = 1,
+            aggroRange = 0,
+            canAttackAir = false,
+            targetMode = "none",
+            passive = true,
+            lifetime = 60,
+            emeraldBoost = 0.10,
+        },
+    },
+    {
+        id = "endermite",
+        name = "Endermite",
+        icon = "M",
+        cost = 1,
+        kind = "unit",
+        color = colors.purple,
+        unit = {
+            maxHp = 105,
+            damage = 18,
+            moveSpeed = 9.2,
+            attackRange = 1.8,
+            attackCooldown = 0.85,
+            aggroRange = 30,
+            canAttackAir = false,
+            targetMode = "any",
+        },
+    },
+    {
+        id = "wolf",
+        name = "Wolf",
+        icon = "D",
+        cost = 2,
+        kind = "unit",
+        color = colors.lightGray,
+        unit = {
+            maxHp = 315,
+            damage = 58,
+            moveSpeed = 10.2,
+            attackRange = 2.0,
+            attackCooldown = 0.72,
+            aggroRange = 28,
+            canAttackAir = false,
+            targetMode = "any",
+        },
+    },
 }
 
 cards.internalUnits = {
@@ -178,9 +346,20 @@ cards.internalUnits = {
 
 cards.byId = {}
 for i, card in ipairs(cards.list) do
-    card.deckIndex = i
+    card.collectionIndex = i
     cards.byId[card.id] = card
 end
+
+local DEFAULT_DECK = {
+    "zombie",
+    "skeleton",
+    "iron_golem",
+    "bat_swarm",
+    "cannon",
+    "arrows",
+    "creeper",
+    "slime",
+}
 
 function cards.get(id)
     return cards.byId[id]
@@ -193,11 +372,19 @@ function cards.getInternalUnit(id)
 end
 
 function cards.defaultDeck()
-    local deck = {}
-    for i, card in ipairs(cards.list) do
-        deck[i] = card.id
+    return util.deepcopy(DEFAULT_DECK)
+end
+
+function cards.isValidDeck(deck)
+    if type(deck) ~= "table" or #deck ~= 8 then return false end
+
+    local seen = {}
+    for _, id in ipairs(deck) do
+        if not cards.byId[id] or seen[id] then return false end
+        seen[id] = true
     end
-    return deck
+
+    return true
 end
 
 return cards
