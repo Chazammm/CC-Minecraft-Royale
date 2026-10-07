@@ -388,4 +388,31 @@ for _ = 1, 12 do
 end
 assertTrue(liveBot.actions > botActionsBefore, "Live VS BOT must play through the normal card API")
 
+for _, card in ipairs(cards.list) do
+    local info = cards.getInfo(card.id)
+    assertTrue(info ~= nil, "Every selectable card must have Unit Info metadata")
+    assertTrue(type(info.description) == "string" and #info.description > 10, "Unit Info needs a useful description")
+    assertTrue(type(info.role) == "string" and #info.role > 0, "Unit Info needs a role")
+end
+
+local infoState = Game.new()
+local infoLayout = {
+    infoButton = { x1 = 1, y1 = 1, x2 = 5, y2 = 3 },
+    modeButton = { x1 = 20, y1 = 1, x2 = 25, y2 = 3 },
+    readyButton = { x1 = 1, y1 = 20, x2 = 10, y2 = 22 },
+    collectionCards = {},
+}
+for i = 1, 16 do
+    infoLayout.collectionCards[i] = { x1 = i, y1 = 10, x2 = i, y2 = 10 }
+end
+
+Game.handleTouch(infoState, 1, 2, 2, infoLayout)
+assertTrue(infoState.players[1].infoOpen, "UNIT INFO button must open the card database")
+
+Game.handleTouch(infoState, 1, 2, 10, infoLayout)
+assertEq(infoState.players[1].infoCardId, cards.list[2].id, "Tapping a card in Unit Info must inspect that card")
+
+Game.handleTouch(infoState, 1, 2, 21, infoLayout)
+assertTrue(not infoState.players[1].infoOpen, "BACK TO DECK must close Unit Info")
+
 print("Smoke tests passed")
