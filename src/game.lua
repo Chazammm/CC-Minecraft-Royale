@@ -856,6 +856,37 @@ local function playSelectedCard(state, playerId, x, y)
     return true
 end
 
+local function deckPosition(deck, cardId)
+    for i, id in ipairs(deck) do
+        if id == cardId then return i end
+    end
+    return nil
+end
+
+function Game.toggleDeckCard(state, playerId, cardId)
+    local player = state.players[playerId]
+    local card = cards.get(cardId)
+    if not player or not card then return false end
+
+    local pos = deckPosition(player.deck, cardId)
+    player.ready = false
+
+    if pos then
+        table.remove(player.deck, pos)
+        setFeedback(player, card.name .. " REMOVED", 0.8)
+        return true
+    end
+
+    if #player.deck >= 8 then
+        setFeedback(player, "DECK FULL - REMOVE A CARD", 1.2)
+        return false
+    end
+
+    table.insert(player.deck, cardId)
+    setFeedback(player, card.name .. " ADDED", 0.8)
+    return true
+end
+
 local function hit(zone, x, y)
     return zone
         and x >= zone.x1 and x <= zone.x2
@@ -866,7 +897,27 @@ function Game.handleTouch(state, playerId, x, y, layout)
     local player = state.players[playerId]
 
     if state.phase == "lobby" then
+        if layout.collectionCards then
+            for i, zone in ipairs(layout.collectionCards) do
+                if hit(zone, x, y) then
+                    local card = cards.list[i]
+                    if card then
+                        Game.toggleDeckCard(state, playerId, card.id)
+                        emitSound(state, "minecraft:block.note_block.hat", 0.4, 1.2)
+                    end
+                    return
+                end
+            end
+        end
+
         if hit(layout.readyButton, x, y) then
+            if not cards.isValidDeck(player.deck) then
+                player.ready = false
+                setFeedback(player, "SELECT EXACTLY 8 CARDS", 1.4)
+                emitSound(state, "minecraft:block.note_block.bass", 0.5, 0.7)
+                return
+            end
+
             player.ready = not player.ready
             emitSound(state, "minecraft:block.note_block.hat", 0.5, player.ready and 1.4 or 0.8)
 
