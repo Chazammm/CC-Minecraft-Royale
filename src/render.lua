@@ -94,6 +94,7 @@ function render.layoutFor(monitor)
         cards = {},
         collectionCards = {},
         deckSlots = {},
+        presetButtons = {},
         infoButton = {
             x1 = math.floor(width * 0.25),
             x2 = math.ceil(width * 0.75),
@@ -105,6 +106,12 @@ function render.layoutFor(monitor)
             x2 = math.ceil(width * 0.75),
             y1 = height - 10,
             y2 = height - 8,
+        },
+        botDifficultyButton = {
+            x1 = math.floor(width * 0.25),
+            x2 = math.ceil(width * 0.75),
+            y1 = height - 7,
+            y2 = height - 5,
         },
         readyButton = {
             x1 = math.floor(width * 0.25),
@@ -139,6 +146,23 @@ function render.layoutFor(monitor)
             y1 = deckStartY + row * deckCellH,
             y2 = deckStartY + row * deckCellH + deckCellH - 1,
         }
+    end
+
+    local presetGap = 1
+    local presetY1 = 36
+    local presetY2 = 38
+    local topLabels = { "save1", "load1", "save2", "load2" }
+    for i, key in ipairs(topLabels) do
+        local x1 = math.floor((i - 1) * width / 4) + 1
+        local x2 = math.floor(i * width / 4)
+        layout.presetButtons[key] = { x1 = x1, x2 = x2, y1 = presetY1, y2 = presetY1 }
+    end
+
+    local bottomLabels = { "save3", "load3", "random" }
+    for i, key in ipairs(bottomLabels) do
+        local x1 = math.floor((i - 1) * width / 3) + 1
+        local x2 = math.floor(i * width / 3)
+        layout.presetButtons[key] = { x1 = x1, x2 = x2, y1 = presetY2, y2 = presetY2 }
     end
 
     local cardWidth = math.floor(width / 4)
@@ -221,9 +245,23 @@ local function drawStatus(buffer, state, playerId)
     end
     writeText(buffer, 1, 2, util.truncate(emeraldText, buffer.width), colors.lime, colors.black)
 
+    local rightText = nil
+    local rightColor = colors.lightGray
+
     if player.feedback then
-        local text = util.truncate(player.feedback, math.floor(buffer.width * 0.55))
-        writeText(buffer, math.max(1, buffer.width - #text + 1), 2, text, colors.yellow, colors.black)
+        rightText = util.truncate(player.feedback, math.floor(buffer.width * 0.50))
+        rightColor = colors.yellow
+    elseif player.queue and player.queue[1] then
+        local nextCard = cards.get(player.queue[1])
+        if nextCard then
+            rightText = "NEXT: " .. (nextCard.icon or "?") .. " " .. nextCard.name
+            rightColor = nextCard.color or colors.lightGray
+        end
+    end
+
+    if rightText then
+        rightText = util.truncate(rightText, math.floor(buffer.width * 0.52))
+        writeText(buffer, math.max(1, buffer.width - #rightText + 1), 2, rightText, rightColor, colors.black)
     end
 end
 
@@ -633,30 +671,26 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
         )
     end
 
-    centered(buffer, 26, "YOUR 8-CARD DECK", colors.yellow, colors.black)
+    centered(
+        buffer,
+        26,
+        player.feedback and util.truncate(player.feedback, buffer.width - 2) or "YOUR 8-CARD DECK",
+        player.feedback and colors.yellow or colors.yellow,
+        colors.black
+    )
 
     for slot = 1, 8 do
         local cardId = player.deck[slot]
         drawDeckSlot(buffer, layout.deckSlots[slot], slot, cardId and cards.get(cardId) or nil)
     end
 
-    if player.feedback then
-        centered(
-            buffer,
-            37,
-            util.truncate(player.feedback, buffer.width - 2),
-            colors.yellow,
-            colors.black
-        )
-    else
-        centered(
-            buffer,
-            37,
-            validDeck and "DECK READY" or "SELECT EXACTLY 8 UNIQUE CARDS",
-            validDeck and colors.lime or colors.orange,
-            colors.black
-        )
-    end
+    drawButton(buffer, layout.presetButtons.save1, "SAVE 1", false)
+    drawButton(buffer, layout.presetButtons.load1, "LOAD 1", state.deckPresets[playerId][1] ~= nil)
+    drawButton(buffer, layout.presetButtons.save2, "SAVE 2", false)
+    drawButton(buffer, layout.presetButtons.load2, "LOAD 2", state.deckPresets[playerId][2] ~= nil)
+    drawButton(buffer, layout.presetButtons.save3, "SAVE 3", false)
+    drawButton(buffer, layout.presetButtons.load3, "LOAD 3", state.deckPresets[playerId][3] ~= nil)
+    drawButton(buffer, layout.presetButtons.random, "RANDOM 8", false)
 
     drawButton(buffer, layout.infoButton, "UNIT INFO", false)
 
@@ -673,6 +707,16 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
         modeLabel,
         state.gameMode == "bot"
     )
+
+    if state.gameMode == "bot" then
+        local difficulty = string.upper(state.botDifficulty or "normal")
+        drawButton(
+            buffer,
+            layout.botDifficultyButton,
+            "BOT: " .. difficulty,
+            difficulty == "HARD"
+        )
+    end
 
     local opponentReady = state.players[otherId].ready
     local opponentText
