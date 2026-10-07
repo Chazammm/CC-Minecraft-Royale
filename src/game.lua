@@ -452,6 +452,20 @@ local function updatePeriodicSpawn(state, entity, dt)
         return
     end
 
+    if spec.maxAlive then
+        local aliveSummons = 0
+        for _, candidate in ipairs(state.entities) do
+            if candidate.alive and candidate.summonerId == entity.id then
+                aliveSummons = aliveSummons + 1
+            end
+        end
+
+        if aliveSummons >= spec.maxAlive then
+            entity.periodicSpawnTimer = spec.interval or 8
+            return
+        end
+    end
+
     local count = spec.count or 1
     local radius = spec.radius or 2
 
@@ -461,7 +475,7 @@ local function updatePeriodicSpawn(state, entity, dt)
         local sy = util.clamp(entity.y + math.sin(angle) * radius, 2, config.ARENA.height - 2)
 
         if template.flying or arena.isWalkable(template, sx, sy) then
-            spawnUnitFromStats(
+            local summoned = spawnUnitFromStats(
                 state,
                 entity.owner,
                 template,
@@ -471,6 +485,7 @@ local function updatePeriodicSpawn(state, entity, dt)
                 template.icon,
                 template.color
             )
+            summoned.summonerId = entity.id
         end
     end
 
