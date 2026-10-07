@@ -1755,6 +1755,7 @@ local function clearSimulation(state)
     state.entities = {}
     state.projectiles = {}
     state.effects = {}
+    state.pendingSpells = {}
     state.nextEntityId = 1
 end
 
@@ -1828,7 +1829,11 @@ function Game.debugSpawnCard(state, owner, cardId, x, y)
     elseif card.kind == "building" then
         spawnBuilding(state, owner, card, x, y)
     elseif card.kind == "spell" then
-        castArrows(state, owner, card, x, y)
+        if card.id == "falling_anvil" then
+            castFallingAnvil(state, owner, card, x, y)
+        else
+            castArrows(state, owner, card, x, y)
+        end
     else
         return false, "UNSUPPORTED CARD"
     end
@@ -1848,6 +1853,7 @@ function Game.debugClearUnits(state)
     state.entities = kept
     state.projectiles = {}
     state.effects = {}
+    state.pendingSpells = {}
 end
 
 function Game.debugSetPaused(state, paused)
