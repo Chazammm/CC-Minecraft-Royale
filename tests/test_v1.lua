@@ -415,4 +415,58 @@ assertEq(infoState.players[1].infoCardId, cards.list[2].id, "Tapping a card in U
 Game.handleTouch(infoState, 1, 2, 21, infoLayout)
 assertTrue(not infoState.players[1].infoOpen, "BACK TO DECK must close Unit Info")
 
+local featureState = Game.new()
+assertEq(featureState.botDifficulty, "normal", "Bot difficulty should default to normal")
+assertTrue(Game.setGameMode(featureState, "bot"), "Feature test must enter bot mode")
+assertTrue(Game.cycleBotDifficulty(featureState), "Bot difficulty button must cycle")
+assertEq(featureState.botDifficulty, "hard", "Difficulty should cycle normal -> hard")
+
+local featureBot = Bot.new(2)
+assertTrue(Bot.setDifficulty(featureBot, "easy"), "Bot must accept EASY difficulty")
+assertEq(featureBot.mode, "easy", "Bot mode must store EASY difficulty")
+assertTrue(Bot.setDifficulty(featureBot, "hard"), "Bot must accept HARD difficulty")
+assertEq(featureBot.mode, "hard", "Bot mode must store HARD difficulty")
+
+-- Deck presets work in memory even in the plain Lua smoke-test environment
+-- where ComputerCraft's fs/textutils persistence APIs are unavailable.
+local presetState = Game.new()
+local originalPresetDeck = {}
+for i, id in ipairs(presetState.players[1].deck) do originalPresetDeck[i] = id end
+assertTrue(Game.saveDeckPreset(presetState, 1, 1), "Valid deck must save into preset 1")
+Game.toggleDeckCard(presetState, 1, originalPresetDeck[1])
+Game.toggleDeckCard(presetState, 1, "blaze")
+assertTrue(Game.loadDeckPreset(presetState, 1, 1), "Saved preset must load")
+for i = 1, 8 do
+    assertEq(presetState.players[1].deck[i], originalPresetDeck[i], "Loaded preset must restore deck order")
+end
+
+assertTrue(Game.randomizeDeck(presetState, 1), "Random deck button must work")
+assertTrue(cards.isValidDeck(presetState.players[1].deck), "Random deck must contain eight unique valid cards")
+
+-- Battle starts with the reduced tower HP values and a real next-card queue.
+local featureBattle = Game.new()
+featureBattle.players[1].ready = true
+featureBattle.players[2].ready = true
+Game.startCountdown(featureBattle)
+for _ = 1, 13 do Game.update(featureBattle, 0.25) end
+assertEq(featureBattle.phase, "battle", "Feature battle must start")
+assertTrue(featureBattle.players[1].queue[1] ~= nil, "Battle must expose a next card in the cycle")
+
+local sawPrincess, sawKing = false, false
+for _, entity in ipairs(featureBattle.entities) do
+    if entity.kind == "tower" and entity.towerType == "princess" then
+        assertEq(entity.maxHp, 1663, "Princess Tower must use five-percent HP nerf")
+        sawPrincess = true
+    elseif entity.kind == "tower" and entity.towerType == "king" then
+        assertEq(entity.maxHp, 2565, "King Tower must use five-percent HP nerf")
+        sawKing = true
+    end
+end
+assertTrue(sawPrincess and sawKing, "Feature battle must contain both tower types")
+
+local effectsBefore = #featureBattle.effects
+featureBattle.players[1].emeralds = 10
+assertTrue(Game.playCardFromSlot(featureBattle, 1, 1, 25, 112), "Playing a troop must succeed")
+assertTrue(#featureBattle.effects > effectsBefore, "Deploying a troop must create combat feedback")
+
 print("Smoke tests passed")
