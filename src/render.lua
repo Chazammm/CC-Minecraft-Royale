@@ -441,16 +441,19 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
         colors.black
     )
 
-    if playerId == 1 then
-        drawButton(
-            buffer,
-            layout.modeButton,
-            state.gameMode == "bot" and "MODE: VS BOT" or "MODE: PVP",
-            state.gameMode == "bot"
-        )
-    elseif state.gameMode == "bot" then
-        drawButton(buffer, layout.modeButton, "P2: BOT CONTROLLED", true)
+    local modeLabel = state.gameMode == "bot" and "MODE: VS BOT" or "MODE: PVP"
+    if state.gameMode == "bot" and playerId == 2 then
+        modeLabel = "MODE: VS BOT (P2 AI)"
     end
+
+    -- The mode is visible on both monitors. Only P1 can change it; P2 is
+    -- deliberately read-only so both displays always describe the same match.
+    drawButton(
+        buffer,
+        layout.modeButton,
+        modeLabel,
+        state.gameMode == "bot"
+    )
 
     local opponentReady = state.players[otherId].ready
     local opponentText
