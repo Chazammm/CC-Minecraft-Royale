@@ -2,6 +2,7 @@ local config = require("config")
 local util = require("src.util")
 local arena = require("src.arena")
 local cards = require("src.cards")
+local sprites = require("src.sprites")
 
 local render = {}
 
@@ -171,87 +172,170 @@ local function hpColor(entity)
     return colors.red
 end
 
-local function entityChar(entity)
-    if entity.kind == "tower" then
-        return entity.towerType == "king" and "K" or "T"
+local function inside(rect, x, y)
+    return x >= rect.x1 and x <= rect.x2 and y >= rect.y1 and y <= rect.y2
+end
+
+local function arenaCell(buffer, rect, x, y, char, fg, bg)
+    if inside(rect, x, y) then
+        setCell(buffer, x, y, char, fg, bg)
     end
-    return entity.icon or "?"
+end
+
+local function spriteTopLeft(sprite, cx, cy)
+    local x = cx - math.floor(sprite.width / 2)
+    local y = cy - math.floor((sprite.height - 1) / 2)
+    return x, y
+end
+
+local function drawHpBar(buffer, rect, entity, playerId, cx, topY, width)
+    width = math.max(3, width or 3)
+    local barY = topY - 1
+    local x1 = cx - math.floor(width / 2)
+    local ratio = util.clamp(entity.hp / math.max(1, entity.maxHp), 0, 1)
+    local filled = math.ceil(ratio * width)
+    local teamBg = entity.owner == playerId and colors.blue or colors.red
+
+    for i = 0, width - 1 do
+        local isFilled = i < filled
+        arenaCell(
+            buffer,
+            rect,
+            x1 + i,
+            barY,
+            isFilled and "=" or "-",
+            isFilled and hpColor(entity) or colors.black,
+            teamBg
+        )
+    end
+end
+
+local function drawEntitySprite(buffer, rect, entity, playerId, cx, cy)
+    local sprite = sprites.forEntity(entity)
+    local x1, y1 = spriteTopLeft(sprite, cx, cy)
+    local isOwn = entity.owner == playerId
+    local teamBg = isOwn and colors.blue or colors.red
+    local fg = entity.color or colors.white
+    local bg = sprite.tower and teamBg or colors.black
+
+    if entity.damageFlash and entity.damageFlash > 0 then
+        fg = colors.white
+        bg = colors.orange
+    elseif entity.fuseRemaining then
+        -- Fast, readable Creeper warning without changing combat timing.
+        local blink = math.floor(entity.fuseRemaining * 8) % 2 == 0
+        fg = blink and colors.white or colors.yellow
+    end
+
+    for rowIndex, row in ipairs(sprite.rows) do
+        for col = 1, #row do
+            local ch = row:sub(col, col)
+            if ch ~= " " and ch ~= "." then
+                arenaCell(buffer, rect, x1 + col - 1, y1 + rowIndex - 1, ch, fg, bg)
+            end
+        end
+    end
+
+    drawHpBar(buffer, rect, entity, playerId, cx, y1, sprite.width)
+end
+
+local function findEntityById(state, id)
+    if not id then return nil end
+    for _, entity in ipairs(state.entities) do
+        if entity.id == id and entity.alive then return entity end
+    end
+    return nil
+end
+
+local function drawProjectile(buffer, state, playerId, rect, projectile)
+    local sx, sy = arena.worldToScreen(playerId, projectile.x, projectile.y, rect)
+    local symbol = "."
+    local fg = colors.white
+
+    if projectile.visual == "arrow" then
+        symbol = ">"
+        local target = findEntityById(state, projectile.targetId)
+        if target then
+            local tx, ty = arena.worldToScreen(playerId, target.x, target.y, rect)
+            local dx, dy = tx - sx, ty - sy
+            if math.abs(dy) > math.abs(dx) then
+                symbol = dy >= 0 and "v" or "^"
+            else
+                symbol = dx >= 0 and ">" or "<"
+            end
+        end
+        fg = colors.white
+    elseif projectile.visual == "cannonball" then
+        symbol = "o"
+        fg = colors.lightGray
+    elseif projectile.visual == "tower_shot" then
+        symbol = "*"
+        fg = colors.yellow
+    end
+
+    local bg = buffer.bg[sy] and buffer.bg[sy][sx] or colors.black
+    arenaCell(buffer, rect, sx, sy, symbol, fg, bg)
+end
+
+local function effectRadiusOnScreen(playerId, rect, effect)
+    local sx, sy = arena.worldToScreen(playerId, effect.x, effect.y, rect)
+    local rxX = arena.worldToScreen(playerId, effect.x + (effect.radius or 1), effect.y, rect)
+    local _, ryY = arena.worldToScreen(playerId, effect.x, effect.y + (effect.radius or 1), rect)
+    return sx, sy, math.max(1, math.abs(rxX - sx)), math.max(1, math.abs(ryY - sy))
+end
+
+local function drawEffect(buffer, playerId, rect, effect)
+    local sx, sy, rx, ry = effectRadiusOnScreen(playerId, rect, effect)
+
+    if effect.kind == "hit" then
+        local bg = buffer.bg[sy] and buffer.bg[sy][sx] or colors.black
+        arenaCell(buffer, rect, sx, sy, "+", colors.white, bg)
+        return
+    end
+
+    local fg = effect.kind == "arrows" and colors.yellow or colors.orange
+    local symbol = effect.kind == "arrows" and "v" or "*"
+
+    for dy = -ry, ry do
+        for dx = -rx, rx do
+            local nx = dx / math.max(1, rx)
+            local ny = dy / math.max(1, ry)
+            local d2 = nx * nx + ny * ny
+
+            if d2 <= 1 then
+                local draw = false
+                if effect.kind == "arrows" then
+                    draw = (math.abs(dx * 3 + dy * 5) % 4 == 0)
+                else
+                    draw = ((math.abs(dx) + math.abs(dy)) % 2 == 0)
+                end
+
+                if draw then
+                    local px, py = sx + dx, sy + dy
+                    local bg = buffer.bg[py] and buffer.bg[py][px] or colors.black
+                    arenaCell(buffer, rect, px, py, symbol, fg, bg)
+                end
+            end
+        end
+    end
 end
 
 local function drawEntities(buffer, state, playerId, rect)
     for _, entity in ipairs(state.entities) do
         if entity.alive then
             local sx, sy = arena.worldToScreen(playerId, entity.x, entity.y, rect)
-            local isOwn = entity.owner == playerId
-            local fg
-
-            if entity.kind == "tower" then
-                -- Tower team colors are always relative to the viewer.
-                -- This avoids Player 2 seeing both teams as red.
-                fg = isOwn and colors.lightBlue or colors.red
-
-                local towerBg = isOwn and colors.blue or colors.red
-                local label = entity.towerType == "king" and "K" or "T"
-
-                -- Make towers much easier to read on a 3x4 / 57x52 monitor.
-                for dx = -1, 1 do
-                    setCell(buffer, sx + dx, sy, " ", colors.white, towerBg)
-                end
-                setCell(buffer, sx, sy, label, colors.white, towerBg)
-
-                if sy > rect.y1 then
-                    for dx = -1, 1 do
-                        local hpBg = buffer.bg[sy - 1] and buffer.bg[sy - 1][sx + dx] or colors.black
-                        setCell(buffer, sx + dx, sy - 1, "-", hpColor(entity), hpBg)
-                    end
-                end
-            else
-                -- Units/buildings use a dark badge so green Minecraft mobs remain
-                -- visible on the green arena. Enemy ownership is still shown in red.
-                if isOwn then
-                    fg = entity.color or colors.white
-                else
-                    fg = colors.red
-                end
-
-                local badgeBg = colors.black
-
-                if entity.kind == "building" then
-                    -- Buildings get a slightly wider footprint.
-                    setCell(buffer, sx - 1, sy, " ", colors.white, badgeBg)
-                    setCell(buffer, sx, sy, entityChar(entity), fg, badgeBg)
-                    setCell(buffer, sx + 1, sy, " ", colors.white, badgeBg)
-                else
-                    setCell(buffer, sx, sy, entityChar(entity), fg, badgeBg)
-                end
-
-                if sy > rect.y1 then
-                    local barWidth = entity.kind == "building" and 3 or 1
-                    local startX = sx - math.floor(barWidth / 2)
-                    for dx = 0, barWidth - 1 do
-                        local hx = startX + dx
-                        local hpBg = buffer.bg[sy - 1] and buffer.bg[sy - 1][hx] or colors.black
-                        setCell(buffer, hx, sy - 1, "-", hpColor(entity), hpBg)
-                    end
-                end
-            end
+            drawEntitySprite(buffer, rect, entity, playerId, sx, sy)
         end
     end
 
     for _, projectile in ipairs(state.projectiles) do
         if projectile.alive then
-            local sx, sy = arena.worldToScreen(playerId, projectile.x, projectile.y, rect)
-            local bg = buffer.bg[sy] and buffer.bg[sy][sx] or colors.black
-            setCell(buffer, sx, sy, ".", colors.white, bg)
+            drawProjectile(buffer, state, playerId, rect, projectile)
         end
     end
 
     for _, effect in ipairs(state.effects) do
-        local sx, sy = arena.worldToScreen(playerId, effect.x, effect.y, rect)
-        local bg = buffer.bg[sy] and buffer.bg[sy][sx] or colors.black
-        local symbol = effect.kind == "arrows" and "*" or "!"
-        local fg = effect.kind == "arrows" and colors.yellow or colors.orange
-        setCell(buffer, sx, sy, symbol, fg, bg)
+        drawEffect(buffer, playerId, rect, effect)
     end
 end
 
@@ -291,21 +375,55 @@ local function drawCard(buffer, zone, card, selected, affordable)
     fill(buffer, zone.x1, zone.y1, zone.x2, zone.y2, bg)
 
     local width = zone.x2 - zone.x1 + 1
-    local centerX = zone.x1 + math.floor(width / 2)
-    local iconY = zone.y1 + 1
-    local nameY = math.min(zone.y2 - 2, zone.y1 + 3)
-    local costY = zone.y2 - 1
+    local centerX = zone.x1 + math.floor((width - 1) / 2)
+    local sprite = sprites.forCard(card)
+    local spriteX = centerX - math.floor(sprite.width / 2)
+    local spriteY = zone.y1 + 1
 
-    setCell(buffer, centerX, iconY, card.icon or "?", card.color or colors.white, bg)
+    if selected then
+        local label = "SELECT"
+        writeText(
+            buffer,
+            zone.x1 + math.max(0, math.floor((width - #label) / 2)),
+            zone.y1,
+            label,
+            colors.black,
+            bg
+        )
+    end
 
+    for rowIndex, row in ipairs(sprite.rows) do
+        for col = 1, #row do
+            local ch = row:sub(col, col)
+            if ch ~= " " and ch ~= "." then
+                setCell(
+                    buffer,
+                    spriteX + col - 1,
+                    spriteY + rowIndex - 1,
+                    ch,
+                    card.color or colors.white,
+                    colors.black
+                )
+            end
+        end
+    end
+
+    local nameY = math.min(zone.y2 - 2, zone.y1 + 4)
     local name = util.truncate(card.name, math.max(1, width - 2))
-    writeText(buffer, zone.x1 + math.max(0, math.floor((width - #name) / 2)), nameY, name, colors.white, bg)
+    writeText(
+        buffer,
+        zone.x1 + math.max(0, math.floor((width - #name) / 2)),
+        nameY,
+        name,
+        colors.white,
+        bg
+    )
 
-    local cost = tostring(card.cost) .. "E"
+    local cost = (selected and "TAP " or "") .. tostring(card.cost) .. "E"
     writeText(
         buffer,
         zone.x1 + math.max(0, math.floor((width - #cost) / 2)),
-        costY,
+        zone.y2 - 1,
         cost,
         affordable and colors.lime or colors.red,
         bg
