@@ -1,0 +1,130 @@
+local config = require("config")
+local hardware = require("src.hardware")
+local Game = require("src.game")
+local arena = require("src.arena")
+local cards = require("src.cards")
+local render = require("src.admin_render")
+
+local hw = hardware.init()
+local state = Game.new(function(name, volume, pitch)
+    hardware.playSound(hw, name, volume, pitch)
+end)
+
+local ui = {
+    owner = 1,
+    selectedCard = cards.list[1].id,
+}
+
+Game.debugLoadScenario(state, "full")
+
+local function nowSeconds()
+    if os.epoch then return os.epoch("utc") / 1000 end
+    return os.clock()
+end
+
+local function hit(z, x, y)
+    return z and x >= z.x1 and x <= z.x2 and y >= z.y1 and y <= z.y2
+end
+
+local function redraw()
+    for viewerId = 1, 2 do
+        render.draw(hw.monitors[viewerId], state, viewerId, ui)
+    end
+end
+
+local function handleTouch(monitorName, x, y)
+    local viewerId = hardware.playerForMonitor(hw, monitorName)
+    if not viewerId then return end
+
+    local monitor = hw.monitors[viewerId]
+    local layout = render.layoutFor(monitor)
+
+    for i, zone in ipairs(layout.scenarios) do
+        if hit(zone, x, y) then
+            Game.debugLoadScenario(state, render.scenarioIds[i])
+            redraw()
+            return
+        end
+    end
+
+    if hit(layout.controls[1], x, y) then
+        ui.owner = ui.owner == 1 and 2 or 1
+        redraw()
+        return
+    end
+
+    if hit(layout.controls[2], x, y) then
+        Game.debugTogglePaused(state)
+        redraw()
+        return
+    end
+
+    if hit(layout.controls[3], x, y) then
+        Game.debugClearUnits(state)
+        redraw()
+        return
+    end
+
+    for i, zone in ipairs(layout.cards) do
+        if hit(zone, x, y) then
+            ui.selectedCard = cards.list[i].id
+            redraw()
+            return
+        end
+    end
+
+    if hit(layout.arena, x, y) then
+        local wx, wy = arena.screenToWorld(viewerId, x, y, layout.arena)
+        Game.debugSpawnCard(state, ui.owner, ui.selectedCard, wx, wy)
+        redraw()
+    end
+end
+
+local tickTimer = os.startTimer(config.TICK_RATE)
+local lastTick = nowSeconds()
+
+redraw()
+
+while true do
+    local e = { os.pullEventRaw() }
+    local name = e[1]
+
+    if name == "terminate" then
+        hardware.clear(hw)
+        break
+
+    elseif name == "monitor_touch" then
+        handleTouch(e[2], e[3], e[4])
+
+    elseif name == "monitor_resize" then
+        redraw()
+
+    elseif name == "key" then
+        if e[2] == keys.space then
+            Game.debugTogglePaused(state)
+            redraw()
+        elseif e[2] == keys.one then
+            ui.owner = 1
+            redraw()
+        elseif e[2] == keys.two then
+            ui.owner = 2
+            redraw()
+        elseif e[2] == keys.c then
+            Game.debugClearUnits(state)
+            redraw()
+        elseif e[2] == keys.r then
+            Game.debugLoadScenario(state, state.adminScenario or "full")
+            redraw()
+        end
+
+    elseif name == "timer" and e[2] == tickTimer then
+        local current = nowSeconds()
+        local dt = current - lastTick
+        lastTick = current
+        if dt <= 0 then dt = config.TICK_RATE end
+
+        Game.update(state, dt)
+        tickTimer = os.startTimer(config.TICK_RATE)
+        redraw()
+    end
+end
