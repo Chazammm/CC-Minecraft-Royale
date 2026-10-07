@@ -76,14 +76,16 @@ local function localPackAvailable()
         and (not fs.getSize or not manifest.packSize or fs.getSize(manifest.path) == manifest.packSize)
 end
 
-local function openRemoteRange(track)
+local function openRemoteRange(track, relativeOffset)
     if not http or not http.get or not manifest.remoteUrl then
         return nil, "HTTP MUSIC UNAVAILABLE"
     end
 
+    relativeOffset = relativeOffset or 0
+    local startByte = track.offset + relativeOffset
     local lastByte = track.offset + track.bytes - 1
     local headers = {
-        ["Range"] = ("bytes=%d-%d"):format(track.offset, lastByte),
+        ["Range"] = ("bytes=%d-%d"):format(startByte, lastByte),
         ["Accept"] = "application/octet-stream",
     }
     local url = manifest.remoteUrl .. "?v=" .. tostring(manifest.packVersion or manifest.packSize or "1")
@@ -93,13 +95,9 @@ local function openRemoteRange(track)
     if response.getResponseCode then
         local code = response.getResponseCode()
 
-        if track.offset > 0 and code ~= 206 then
-            -- Most GitHub Raw responses support byte ranges. If a proxy strips
-            -- the Range header and returns 200, keep the feature functional by
-            -- streaming/discarding bytes until this song's offset. Nothing is
-            -- stored in the computer's tiny filesystem.
+        if startByte > 0 and code ~= 206 then
             if code == 200 then
-                if not seekTo(response, track.offset) then
+                if not seekTo(response, startByte) then
                     response.close()
                     return nil, "MUSIC STREAM SKIP FAILED"
                 end
@@ -113,55 +111,58 @@ local function openRemoteRange(track)
     return response
 end
 
-local function openTrack(controller, trackIndex)
+local function openSource(controller, track, relativeOffset)
     closeHandle(controller)
-
-    local track = manifest.tracks[trackIndex]
-    if not track then return false, "TRACK NOT FOUND" end
+    relativeOffset = relativeOffset or 0
 
     local handle
     if localPackAvailable() then
         handle = fs.open(manifest.path, "rb")
         if not handle then return false, "MUSIC PACK OPEN FAILED" end
-        if not seekTo(handle, track.offset) then
+        if not seekTo(handle, track.offset + relativeOffset) then
             handle.close()
             return false, "MUSIC SEEK FAILED"
         end
         controller.source = "local"
     else
         local err
-        handle, err = openRemoteRange(track)
+        handle, err = openRemoteRange(track, relativeOffset)
         if not handle then return false, err end
         controller.source = "stream"
     end
 
     controller.handle = handle
-    controller.remaining = track.bytes
+    return true
+end
+
+local function openTrack(controller, trackIndex)
+    local track = manifest.tracks[trackIndex]
+    if not track then return false, "TRACK NOT FOUND" end
+
+    controller.currentTrackIndex = trackIndex
     controller.currentTrackId = track.id
     controller.lastTrackId = track.id
+    controller.bytesRead = 0
+    controller.remaining = track.bytes
     controller.decoder = controller.dfpwm.make_decoder()
-    return true
+    controller.reconnectAttempts = 0
+
+    return openSource(controller, track, 0)
+end
+
+local function reopenCurrentTrack(controller)
+    local trackIndex = controller.currentTrackIndex
+    local track = trackIndex and manifest.tracks[trackIndex] or nil
+    if not track then return false, "TRACK NOT FOUND" end
+
+    controller.reconnectAttempts = (controller.reconnectAttempts or 0) + 1
+    return openSource(controller, track, controller.bytesRead or 0)
 end
 
 local function nextTrack(controller)
     if #controller.bag == 0 then makeShuffleBag(controller) end
     local trackIndex = table.remove(controller.bag)
     return openTrack(controller, trackIndex)
-end
-
-local function upsample(samples, repeatFactor)
-    if repeatFactor <= 1 then return samples end
-
-    local output = {}
-    local n = 0
-    for i = 1, #samples do
-        local sample = samples[i]
-        for _ = 1, repeatFactor do
-            n = n + 1
-            output[n] = sample
-        end
-    end
-    return output
 end
 
 local function tryPending(controller)
@@ -189,13 +190,17 @@ function Music.new(speaker, speakerName)
             and (localPackAvailable() or (http and http.get and manifest.remoteUrl ~= nil)),
         handle = nil,
         remaining = 0,
+        bytesRead = 0,
         decoder = nil,
         pending = nil,
+        currentTrackIndex = nil,
         currentTrackId = nil,
         lastTrackId = nil,
+        reconnectAttempts = 0,
+        retryAt = 0,
         bag = {},
         rng = seedNow(),
-        volume = manifest.volume or 0.32,
+        volume = manifest.volume or 0.28,
         error = nil,
     }
 end
@@ -242,7 +247,10 @@ end
 function Music.stop(controller, hardStop)
     controller.active = false
     controller.pending = nil
+    controller.currentTrackIndex = nil
     controller.currentTrackId = nil
+    controller.retryAt = 0
+    controller.reconnectAttempts = 0
     closeHandle(controller)
 
     if hardStop and controller.speaker and controller.speaker.stop then
@@ -250,53 +258,121 @@ function Music.stop(controller, hardStop)
     end
 end
 
-function Music.pump(controller)
-    if not controller.active or not controller.available then return false end
-    if not tryPending(controller) then return false end
+local function nowSeconds()
+    if os.epoch then return os.epoch("utc") / 1000 end
+    return os.clock()
+end
 
-    -- Queue a few short buffers. At 24 kHz DFPWM with x2 sample duplication,
-    -- each 2048-byte chunk is about 0.68 s of 48 kHz speaker audio.
-    for _ = 1, 3 do
-        if controller.remaining <= 0 then
-            local ok, err = nextTrack(controller)
-            if not ok then
-                controller.error = err
-                controller.active = false
-                closeHandle(controller)
-                return false
-            end
-        end
+local function scheduleRetry(controller, err, delay)
+    controller.error = tostring(err or "MUSIC STREAM INTERRUPTED")
+    controller.retryAt = nowSeconds() + (delay or 0.75)
+    closeHandle(controller)
+end
 
-        local amount = math.min(manifest.chunkBytes or 2048, controller.remaining)
-        local data = controller.handle and controller.handle.read(amount) or nil
+local function ensureSource(controller)
+    if controller.handle then return true end
+    if controller.retryAt and nowSeconds() < controller.retryAt then return false end
 
-        if not data or #data == 0 then
-            controller.remaining = 0
-        else
-            controller.remaining = controller.remaining - #data
-            local decoded = controller.decoder(data)
-            local samples = upsample(decoded, manifest.repeatFactor or 2)
-
-            local ok, queued = pcall(
-                controller.speaker.playAudio,
-                samples,
-                controller.volume
-            )
-
-            if not ok then
-                controller.error = tostring(queued)
-                controller.active = false
-                closeHandle(controller)
-                return false
-            end
-
-            if not queued then
-                controller.pending = samples
-                return false
-            end
-        end
+    local ok, err
+    if controller.currentTrackIndex
+        and controller.remaining > 0
+        and (controller.reconnectAttempts or 0) < 3
+    then
+        ok, err = reopenCurrentTrack(controller)
+    else
+        controller.currentTrackIndex = nil
+        controller.currentTrackId = nil
+        controller.remaining = 0
+        controller.bytesRead = 0
+        ok, err = nextTrack(controller)
     end
 
+    if not ok then
+        scheduleRetry(controller, err, 1.5)
+        return false
+    end
+
+    controller.error = nil
+    controller.retryAt = 0
+    return true
+end
+
+function Music.pump(controller)
+    if not controller.active or not controller.available then return false end
+
+    -- CC:Tweaked speakers buffer one playAudio call at a time. Keep at most
+    -- one decoded chunk pending and wait for speaker_audio_empty before adding
+    -- another. Large chunks are substantially less prone to stutter.
+    if controller.pending then
+        local ok, queued = pcall(
+            controller.speaker.playAudio,
+            controller.pending,
+            controller.volume
+        )
+        if not ok then
+            scheduleRetry(controller, queued, 0.75)
+            return false
+        end
+        if not queued then return false end
+
+        controller.pending = nil
+        return true
+    end
+
+    if controller.remaining <= 0 then
+        controller.currentTrackIndex = nil
+        controller.currentTrackId = nil
+        controller.bytesRead = 0
+        controller.reconnectAttempts = 0
+        closeHandle(controller)
+    end
+
+    if not ensureSource(controller) then return false end
+
+    local amount = math.min(manifest.chunkBytes or 16384, controller.remaining)
+    local okRead, data = pcall(controller.handle.read, amount)
+
+    if not okRead or not data or #data == 0 then
+        if controller.remaining > 0 then
+            if (controller.reconnectAttempts or 0) >= 3 then
+                -- Skip a persistently broken track instead of killing music
+                -- for the rest of the match.
+                controller.currentTrackIndex = nil
+                controller.currentTrackId = nil
+                controller.remaining = 0
+                controller.bytesRead = 0
+                controller.reconnectAttempts = 0
+                scheduleRetry(controller, "SKIPPING INTERRUPTED TRACK", 0.5)
+            else
+                scheduleRetry(controller, okRead and "MUSIC STREAM ENDED EARLY" or data, 0.5)
+            end
+        end
+        return false
+    end
+
+    controller.remaining = controller.remaining - #data
+    controller.bytesRead = (controller.bytesRead or 0) + #data
+    controller.reconnectAttempts = 0
+
+    local decoded = controller.decoder(data)
+    local okPlay, queued = pcall(
+        controller.speaker.playAudio,
+        decoded,
+        controller.volume
+    )
+
+    if not okPlay then
+        controller.error = tostring(queued)
+        controller.pending = decoded
+        return false
+    end
+
+    if not queued then
+        controller.pending = decoded
+        return false
+    end
+
+    controller.error = nil
     return true
 end
 
@@ -321,6 +397,7 @@ function Music.status(controller)
         track = controller.currentTrackId,
         tracks = #manifest.tracks,
         source = controller.source,
+        reconnects = controller.reconnectAttempts or 0,
         error = controller.error,
     }
 end
