@@ -106,6 +106,9 @@ local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color)
     entity.teleportCooldownLeft = 0
     entity.slowRemaining = 0
     entity.slowFactor = 1
+    entity.periodicSpawnTimer = entity.periodicSpawn
+        and (entity.periodicSpawn.initialDelay or entity.periodicSpawn.interval or 8)
+        or nil
 
     table.insert(state.entities, entity)
     return entity
@@ -436,6 +439,46 @@ killEntity = function(state, entity, sourceOwner)
     end
 end
 
+local function updatePeriodicSpawn(state, entity, dt)
+    local spec = entity.periodicSpawn
+    if not spec then return end
+
+    entity.periodicSpawnTimer = (entity.periodicSpawnTimer or spec.interval or 8) - dt
+    if entity.periodicSpawnTimer > 0 then return end
+
+    local template = cards.getInternalUnit(spec.template)
+    if not template then
+        entity.periodicSpawnTimer = spec.interval or 8
+        return
+    end
+
+    local count = spec.count or 1
+    local radius = spec.radius or 2
+
+    for i = 1, count do
+        local angle = ((i - 1) / math.max(1, count)) * math.pi * 2
+        local sx = util.clamp(entity.x + math.cos(angle) * radius, 2, config.ARENA.width - 2)
+        local sy = util.clamp(entity.y + math.sin(angle) * radius, 2, config.ARENA.height - 2)
+
+        if template.flying or arena.isWalkable(template, sx, sy) then
+            spawnUnitFromStats(
+                state,
+                entity.owner,
+                template,
+                sx,
+                sy,
+                template.name,
+                template.icon,
+                template.color
+            )
+        end
+    end
+
+    addEffect(state, "summon", entity.x, entity.y, 5, 0.35, entity.owner)
+    emitSound(state, "minecraft:entity.zombie_villager.cure", 0.35, 1.4)
+    entity.periodicSpawnTimer = spec.interval or 8
+end
+
 local function performAttack(state, entity, target)
     if entity.projectileSpeed then
         spawnProjectile(state, entity, target)
@@ -469,6 +512,8 @@ local function updateCombatEntity(state, entity, dt)
             entity.slowFactor = 1
         end
     end
+
+    updatePeriodicSpawn(state, entity, dt)
 
     if entity.passive or entity.targetMode == "none" then
         entity.targetId = nil
