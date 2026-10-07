@@ -80,7 +80,7 @@ function render.layoutFor(monitor)
         height = h,
         scenarios = makeColumns(w, 5, 3, 5),
         arena = { x1 = 1, y1 = 6, x2 = w, y2 = h - 22 },
-        controls = makeColumns(w, 3, h - 21, h - 18),
+        controls = makeColumns(w, 4, h - 21, h - 18),
         cards = {},
     }
 
@@ -120,11 +120,16 @@ function render.draw(monitor, state, viewerId, ui)
     local layout = render.layoutFor(monitor)
 
     centered(b, 1, "ADMIN SANDBOX", colors.orange, colors.black)
+    local botStatus = ui.bot and ui.bot.enabled
+        and string.format("BOT:P%d %.1fE", ui.bot.playerId, state.players[ui.bot.playerId].emeralds)
+        or "BOT:OFF"
+
     local status = string.format(
-        "SPAWN:P%d  %s  %s",
+        "SPAWN:P%d  %s  %s  %s",
         ui.owner,
         state.adminPaused and "PAUSED" or "RUNNING",
-        string.upper(state.adminScenario or "full")
+        string.upper(state.adminScenario or "full"),
+        botStatus
     )
     centered(b, 2, util.truncate(status, w), colors.white, colors.black)
 
@@ -134,7 +139,14 @@ function render.draw(monitor, state, viewerId, ui)
 
     drawButton(b, layout.controls[1], "OWNER P" .. tostring(ui.owner), true, ui.owner == 1 and colors.lightBlue or colors.red)
     drawButton(b, layout.controls[2], state.adminPaused and "RUN" or "PAUSE", state.adminPaused, colors.yellow)
-    drawButton(b, layout.controls[3], "CLEAR UNITS", false)
+    drawButton(b, layout.controls[3], "CLEAR", false)
+    drawButton(
+        b,
+        layout.controls[4],
+        ui.bot and ui.bot.enabled and "BOT P2 ON" or "BOT P2 OFF",
+        ui.bot and ui.bot.enabled,
+        colors.lime
+    )
 
     for i, card in ipairs(cards.list) do
         local selected = ui.selectedCard == card.id
