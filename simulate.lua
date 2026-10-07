@@ -4,17 +4,24 @@ local cards = require("src.cards")
 
 local args = { ... }
 
-local outputLines = {}
+local resultPath = "balance_results.txt"
 local nativePrint = print
+local liveHandle = fs and fs.open(resultPath, "w") or nil
 
 local function reportPrint(...)
     local parts = {}
     for i = 1, select("#", ...) do
         parts[i] = tostring(select(i, ...))
     end
+
     local line = table.concat(parts, "\t")
-    outputLines[#outputLines + 1] = line
     nativePrint(line)
+
+    if liveHandle then
+        liveHandle.write(line)
+        liveHandle.write("\n")
+        if liveHandle.flush then liveHandle.flush() end
+    end
 end
 local matchCount = math.floor(tonumber(args[1]) or 100)
 matchCount = math.max(2, math.min(2000, matchCount))
@@ -308,17 +315,13 @@ reportPrint("WATCH+/- means investigate, not automatic nerf/buff.")
 reportPrint("")
 reportPrint("Recommended benchmark: simulate 500 mixed")
 
-local resultPath = "balance_results.txt"
-local handle = fs.open(resultPath, "w")
-if handle then
-    handle.write(table.concat(outputLines, "\n"))
-    handle.write("\n")
-    handle.close()
-
+if liveHandle then
+    liveHandle.close()
     nativePrint("")
     nativePrint("Saved full report to: " .. resultPath)
-    nativePrint("Open it with: edit " .. resultPath)
+    nativePrint("View it with: type " .. resultPath)
     nativePrint("Share it with: pastebin put " .. resultPath)
 else
-    nativePrint("WARNING: Could not save " .. resultPath)
+    nativePrint("")
+    nativePrint("WARNING: Could not create " .. resultPath)
 end
