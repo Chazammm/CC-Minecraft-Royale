@@ -25,6 +25,7 @@ local cards = require("src.cards")
 local arena = require("src.arena")
 local Game = require("src.game")
 local pixelArena = require("src.pixel_arena")
+local Bot = require("src.bot")
 
 local function assertEq(actual, expected, message)
     if actual ~= expected then
@@ -314,5 +315,33 @@ for _, entity in ipairs(summonState.entities) do
     if entity.name == "Baby Zombie" then babyZombieCount = babyZombieCount + 1 end
 end
 assertTrue(babyZombieCount >= 1, "Witch must periodically summon a Baby Zombie")
+
+local botState = Game.new()
+Game.debugLoadScenario(botState, "full")
+local bot = Bot.new(2)
+Bot.setEnabled(bot, botState, true)
+assertTrue(bot.enabled, "Admin bot must enable")
+assertEq(botState.players[2].emeralds, config.MATCH.emeraldStart, "Bot must start with normal Emeralds")
+assertEq(#botState.players[2].hand, 4, "Bot must use a four-card hand")
+assertEq(#botState.players[2].queue, 4, "Bot must use an eight-card deck cycle")
+
+-- Force a dangerous ground push into P2's half so the normal bot has a
+-- deterministic defensive decision to make.
+Game.debugSpawnCard(botState, 1, "iron_golem", 50, 58)
+botState.players[2].emeralds = 10
+Game.debugSetPaused(botState, false)
+
+local actionsBefore = bot.actions
+for _ = 1, 15 do
+    Bot.update(bot, botState, 0.2)
+    Game.update(botState, 0.2)
+end
+
+assertTrue(bot.actions > actionsBefore, "Normal bot must react to a dangerous push")
+assertTrue(botState.players[2].emeralds < 10, "Bot must pay Emerald costs for cards")
+assertTrue(bot.lastAction ~= "NONE", "Bot should expose its last action for admin UI")
+
+local botStatus = Bot.status(bot, botState)
+assertTrue(botStatus.enabled and botStatus.playerId == 2, "Bot status must report P2 enabled")
 
 print("Smoke tests passed")
