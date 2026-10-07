@@ -442,9 +442,28 @@ assertTrue(not firstPiglinStillAlive, "Piglin must disappear after its ten-secon
 local rangedPiglinState = Game.new()
 Game.debugLoadScenario(rangedPiglinState, "empty")
 Game.debugSpawnCard(rangedPiglinState, 1, "nether_portal", 25, 100)
-Game.debugSpawnCard(rangedPiglinState, 2, "bat_swarm", 37, 100)
 Game.debugSetPaused(rangedPiglinState, false)
-for _ = 1, 9 do Game.update(rangedPiglinState, 0.25) end
+
+-- Let the portal create one Piglin first, then place targets relative to its
+-- actual spawn position so the weapon-mode tests are deterministic.
+for _ = 1, 10 do Game.update(rangedPiglinState, 0.25) end
+
+local rangedPiglin
+for _, entity in ipairs(rangedPiglinState.entities) do
+    if entity.name == "Piglin" and entity.alive then
+        rangedPiglin = entity
+        break
+    end
+end
+assertTrue(rangedPiglin ~= nil, "Ranged weapon test must have a living Piglin")
+
+Game.debugSpawnCard(
+    rangedPiglinState,
+    2,
+    "bat_swarm",
+    math.min(config.ARENA.width - 4, rangedPiglin.x + 8),
+    rangedPiglin.y
+)
 
 local rangedBat
 for _, entity in ipairs(rangedPiglinState.entities) do
@@ -454,38 +473,89 @@ for _, entity in ipairs(rangedPiglinState.entities) do
     end
 end
 assertTrue(rangedBat ~= nil, "Ranged Piglin flying target must exist")
-assertTrue(rangedBat.hp < rangedBat.maxHp, "Piglin must use its crossbow against flying targets")
+local rangedBatHpBefore = rangedBat.hp
+
+for _ = 1, 8 do Game.update(rangedPiglinState, 0.10) end
+assertTrue(
+    rangedBat.hp < rangedBatHpBefore,
+    "Piglin must use its crossbow against flying targets"
+)
 
 local groundNoCrossbowState = Game.new()
 Game.debugLoadScenario(groundNoCrossbowState, "empty")
 Game.debugSpawnCard(groundNoCrossbowState, 1, "nether_portal", 25, 100)
-Game.debugSpawnCard(groundNoCrossbowState, 2, "villager", 40, 100)
 Game.debugSetPaused(groundNoCrossbowState, false)
+for _ = 1, 10 do Game.update(groundNoCrossbowState, 0.25) end
 
-for _ = 1, 9 do Game.update(groundNoCrossbowState, 0.25) end
+local groundPiglin
+for _, entity in ipairs(groundNoCrossbowState.entities) do
+    if entity.name == "Piglin" and entity.alive then
+        groundPiglin = entity
+        break
+    end
+end
+assertTrue(groundPiglin ~= nil, "Ground weapon test must have a living Piglin")
+
+Game.debugSpawnCard(
+    groundNoCrossbowState,
+    2,
+    "villager",
+    math.min(config.ARENA.width - 4, groundPiglin.x + 8),
+    groundPiglin.y
+)
+
 local distantGroundTarget
 for _, entity in ipairs(groundNoCrossbowState.entities) do
     if entity.name == "Villager" then distantGroundTarget = entity end
 end
 assertTrue(distantGroundTarget ~= nil, "Distant ground target must exist")
+local distantGroundHpBefore = distantGroundTarget.hp
+
+-- At eight blocks away the Piglin must walk toward a grounded target instead
+-- of firing the crossbow.
+for _ = 1, 4 do Game.update(groundNoCrossbowState, 0.10) end
 assertEq(
     distantGroundTarget.hp,
-    distantGroundTarget.maxHp,
+    distantGroundHpBefore,
     "Piglin must not fire its crossbow at grounded targets"
 )
 
 local meleePiglinState = Game.new()
 Game.debugLoadScenario(meleePiglinState, "empty")
 Game.debugSpawnCard(meleePiglinState, 1, "nether_portal", 25, 100)
-Game.debugSpawnCard(meleePiglinState, 2, "villager", 30, 100)
 Game.debugSetPaused(meleePiglinState, false)
-for _ = 1, 8 do Game.update(meleePiglinState, 0.25) end
+for _ = 1, 10 do Game.update(meleePiglinState, 0.25) end
+
+local meleePiglin
+for _, entity in ipairs(meleePiglinState.entities) do
+    if entity.name == "Piglin" and entity.alive then
+        meleePiglin = entity
+        break
+    end
+end
+assertTrue(meleePiglin ~= nil, "Melee weapon test must have a living Piglin")
+
+Game.debugSpawnCard(
+    meleePiglinState,
+    2,
+    "villager",
+    math.min(config.ARENA.width - 4, meleePiglin.x + 2),
+    meleePiglin.y
+)
+
 local meleeTarget
 for _, entity in ipairs(meleePiglinState.entities) do
     if entity.name == "Villager" then meleeTarget = entity end
 end
 assertTrue(meleeTarget ~= nil, "Melee Piglin test target must exist")
-assertEq(meleeTarget.hp, 127, "Piglin must use its 58-damage axe at close range")
+local meleeHpBefore = meleeTarget.hp
+
+Game.update(meleePiglinState, 0.10)
+assertEq(
+    meleeTarget.hp,
+    meleeHpBefore - 58,
+    "Piglin must use its 58-damage axe against grounded targets in melee range"
+)
 
 local botState = Game.new()
 Game.debugLoadScenario(botState, "full")
