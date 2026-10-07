@@ -92,11 +92,21 @@ local function openRemoteRange(track)
 
     if response.getResponseCode then
         local code = response.getResponseCode()
-        -- For non-zero offsets we need true range support. A 200 response
-        -- would start at byte zero and therefore play the wrong song.
+
         if track.offset > 0 and code ~= 206 then
-            response.close()
-            return nil, "MUSIC HOST DOES NOT SUPPORT BYTE RANGES"
+            -- Most GitHub Raw responses support byte ranges. If a proxy strips
+            -- the Range header and returns 200, keep the feature functional by
+            -- streaming/discarding bytes until this song's offset. Nothing is
+            -- stored in the computer's tiny filesystem.
+            if code == 200 then
+                if not seekTo(response, track.offset) then
+                    response.close()
+                    return nil, "MUSIC STREAM SKIP FAILED"
+                end
+            else
+                response.close()
+                return nil, "MUSIC HTTP " .. tostring(code)
+            end
         end
     end
 
