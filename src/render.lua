@@ -92,6 +92,8 @@ function render.layoutFor(monitor)
         arena = { x1 = 1, y1 = 3, x2 = width, y2 = arenaBottom },
         hand = { x1 = 1, y1 = arenaBottom + 1, x2 = width, y2 = height },
         cards = {},
+        collectionCards = {},
+        deckSlots = {},
         readyButton = {
             x1 = math.floor(width * 0.25),
             x2 = math.ceil(width * 0.75),
@@ -100,6 +102,32 @@ function render.layoutFor(monitor)
         },
         resultButtons = {},
     }
+
+    local collectionStartY = 5
+    local collectionCellH = 5
+    for i = 1, 16 do
+        local col = (i - 1) % 4
+        local row = math.floor((i - 1) / 4)
+        layout.collectionCards[i] = {
+            x1 = math.floor(col * width / 4) + 1,
+            x2 = math.floor((col + 1) * width / 4),
+            y1 = collectionStartY + row * collectionCellH,
+            y2 = collectionStartY + row * collectionCellH + collectionCellH - 1,
+        }
+    end
+
+    local deckStartY = 28
+    local deckCellH = 4
+    for i = 1, 8 do
+        local col = (i - 1) % 4
+        local row = math.floor((i - 1) / 4)
+        layout.deckSlots[i] = {
+            x1 = math.floor(col * width / 4) + 1,
+            x2 = math.floor((col + 1) * width / 4),
+            y1 = deckStartY + row * deckCellH,
+            y2 = deckStartY + row * deckCellH + deckCellH - 1,
+        }
+    end
 
     local cardWidth = math.floor(width / 4)
     for slot = 1, 4 do
@@ -247,48 +275,167 @@ local function drawCountdownOverlay(monitor, state, layout)
     monitor.write(text)
 end
 
+local function deckContains(deck, cardId)
+    for _, id in ipairs(deck) do
+        if id == cardId then return true end
+    end
+    return false
+end
+
+local function drawCollectionCard(buffer, zone, card, selected)
+    local bg = selected and colors.blue or colors.gray
+    local fg = selected and colors.white or (card.color or colors.white)
+    fill(buffer, zone.x1, zone.y1, zone.x2, zone.y2, bg)
+
+    local width = zone.x2 - zone.x1 + 1
+    local top = string.format("%s  %dE", card.icon or "?", card.cost)
+    local name = util.truncate(card.name, math.max(1, width - 2))
+    local stateText = selected and "IN DECK" or "TAP TO ADD"
+
+    writeText(
+        buffer,
+        zone.x1 + math.max(0, math.floor((width - #top) / 2)),
+        zone.y1,
+        top,
+        fg,
+        bg
+    )
+    writeText(
+        buffer,
+        zone.x1 + math.max(0, math.floor((width - #name) / 2)),
+        zone.y1 + 2,
+        name,
+        colors.white,
+        bg
+    )
+    writeText(
+        buffer,
+        zone.x1 + math.max(0, math.floor((width - #stateText) / 2)),
+        zone.y2,
+        util.truncate(stateText, width),
+        selected and colors.lime or colors.lightGray,
+        bg
+    )
+end
+
+local function drawDeckSlot(buffer, zone, slot, card)
+    local bg = card and colors.black or colors.gray
+    fill(buffer, zone.x1, zone.y1, zone.x2, zone.y2, bg)
+
+    local width = zone.x2 - zone.x1 + 1
+    local label = "SLOT " .. tostring(slot)
+    writeText(
+        buffer,
+        zone.x1 + math.max(0, math.floor((width - #label) / 2)),
+        zone.y1,
+        label,
+        colors.lightGray,
+        bg
+    )
+
+    if card then
+        local name = util.truncate(card.name, math.max(1, width - 2))
+        local line = string.format("%s %s", card.icon or "?", name)
+        writeText(
+            buffer,
+            zone.x1 + math.max(0, math.floor((width - #line) / 2)),
+            zone.y1 + 2,
+            util.truncate(line, width),
+            card.color or colors.white,
+            bg
+        )
+    else
+        local empty = "-- EMPTY --"
+        writeText(
+            buffer,
+            zone.x1 + math.max(0, math.floor((width - #empty) / 2)),
+            zone.y1 + 2,
+            empty,
+            colors.red,
+            bg
+        )
+    end
+end
+
 local function drawLobby(buffer, state, playerId, layout, monitorName)
     fill(buffer, 1, 1, buffer.width, buffer.height, colors.black)
 
-    centered(buffer, 2, "CC-MINECRAFT ROYALE", colors.lime, colors.black)
-    centered(buffer, 4, "PLAYER " .. tostring(playerId), colors.white, colors.black)
+    local player = state.players[playerId]
+    local otherId = playerId == 1 and 2 or 1
+    local deckCount = #player.deck
+    local validDeck = cards.isValidDeck(player.deck)
 
-    local widthWarning = buffer.width < config.MIN_RECOMMENDED_WIDTH
-    local heightWarning = buffer.height < config.MIN_RECOMMENDED_HEIGHT
+    centered(buffer, 1, "CC-MINECRAFT ROYALE", colors.lime, colors.black)
+    centered(
+        buffer,
+        2,
+        string.format("PLAYER %d - DECK BUILDER  %d/8", playerId, deckCount),
+        validDeck and colors.lightBlue or colors.yellow,
+        colors.black
+    )
+    centered(buffer, 3, "TAP A CARD TO ADD / REMOVE", colors.lightGray, colors.black)
 
-    local info = string.format("%dx%d @ scale %.1f", buffer.width, buffer.height, config.TEXT_SCALE)
-    centered(buffer, 6, info, (widthWarning or heightWarning) and colors.orange or colors.lightGray, colors.black)
-    centered(buffer, 7, util.truncate(monitorName, math.max(1, buffer.width - 2)), colors.gray, colors.black)
-
-    if widthWarning or heightWarning then
-        centered(buffer, 9, "WARNING: SMALL DISPLAY", colors.orange, colors.black)
-    else
-        centered(buffer, 9, "SEMIGRAPHICS PIXEL ARENA READY", colors.lightBlue, colors.black)
+    for i, card in ipairs(cards.list) do
+        drawCollectionCard(
+            buffer,
+            layout.collectionCards[i],
+            card,
+            deckContains(player.deck, card.id)
+        )
     end
 
-    centered(buffer, 11, "V1 TEST DECK - ALL 8 CARDS", colors.yellow, colors.black)
+    centered(buffer, 26, "YOUR 8-CARD DECK", colors.yellow, colors.black)
 
-    local allCards = cards.list
-    local row = 13
-    local columnWidth = math.floor(buffer.width / 2)
-    for i, card in ipairs(allCards) do
-        local col = (i - 1) % 2
-        local listRow = row + math.floor((i - 1) / 2) * 2
-        local text = string.format("%s %s %dE", card.icon, card.name, card.cost)
-        writeText(
+    for slot = 1, 8 do
+        local cardId = player.deck[slot]
+        drawDeckSlot(buffer, layout.deckSlots[slot], slot, cardId and cards.get(cardId) or nil)
+    end
+
+    if player.feedback then
+        centered(
             buffer,
-            2 + col * columnWidth,
-            listRow,
-            util.truncate(text, columnWidth - 3),
-            card.color or colors.white,
+            38,
+            util.truncate(player.feedback, buffer.width - 2),
+            colors.yellow,
+            colors.black
+        )
+    else
+        centered(
+            buffer,
+            38,
+            validDeck and "DECK READY" or "SELECT EXACTLY 8 UNIQUE CARDS",
+            validDeck and colors.lime or colors.orange,
             colors.black
         )
     end
 
-    local otherId = playerId == 1 and 2 or 1
-    local status = state.players[otherId].ready and "OPPONENT: READY" or "OPPONENT: NOT READY"
-    centered(buffer, layout.readyButton.y1 - 2, status, state.players[otherId].ready and colors.lime or colors.red, colors.black)
-    drawButton(buffer, layout.readyButton, state.players[playerId].ready and "READY!" or "TOGGLE READY", state.players[playerId].ready)
+    centered(
+        buffer,
+        41,
+        util.truncate(string.format("%s  %dx%d", monitorName or "", buffer.width, buffer.height), buffer.width - 2),
+        colors.gray,
+        colors.black
+    )
+
+    local opponentReady = state.players[otherId].ready
+    centered(
+        buffer,
+        layout.readyButton.y1 - 2,
+        opponentReady and "OPPONENT: READY" or "OPPONENT: NOT READY",
+        opponentReady and colors.lime or colors.red,
+        colors.black
+    )
+
+    local readyLabel
+    if not validDeck then
+        readyLabel = string.format("NEED %d/8", deckCount)
+    elseif player.ready then
+        readyLabel = "READY!"
+    else
+        readyLabel = "READY"
+    end
+
+    drawButton(buffer, layout.readyButton, readyLabel, player.ready and validDeck)
 end
 
 local function drawResult(buffer, state, playerId, layout)
