@@ -13,6 +13,17 @@ local function getMonitorNames()
     return names
 end
 
+local function getSpeakerNames()
+    local names = {}
+    for _, name in ipairs(peripheral.getNames()) do
+        if peripheral.getType(name) == "speaker" then
+            table.insert(names, name)
+        end
+    end
+    table.sort(names)
+    return names
+end
+
 function hardware.init()
     local monitorNames = {}
 
@@ -52,10 +63,26 @@ function hardware.init()
         monitors[playerId] = monitor
     end
 
+    local speakerNames = getSpeakerNames()
+    local speakers = {}
+    for i, name in ipairs(speakerNames) do
+        speakers[i] = peripheral.wrap(name)
+    end
+
+    -- With two speakers, keep SFX and streamed music on separate devices so
+    -- result sounds and unit effects do not interrupt the battle soundtrack.
+    -- With only one speaker, both gracefully share the same device.
+    local sfxSpeaker = speakers[1]
+    local musicSpeaker = speakers[#speakers]
+
     return {
         monitorNames = monitorNames,
         monitors = monitors,
-        speaker = peripheral.find("speaker"),
+        speakerNames = speakerNames,
+        speakers = speakers,
+        speaker = sfxSpeaker,
+        musicSpeaker = musicSpeaker,
+        musicSpeakerName = speakerNames[#speakerNames],
     }
 end
 
