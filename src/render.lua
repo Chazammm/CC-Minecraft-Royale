@@ -206,18 +206,33 @@ local function drawEntities(buffer, state, playerId, rect)
                     end
                 end
             else
+                -- Units/buildings use a dark badge so green Minecraft mobs remain
+                -- visible on the green arena. Enemy ownership is still shown in red.
                 if isOwn then
                     fg = entity.color or colors.white
                 else
                     fg = colors.red
                 end
 
-                local bg = buffer.bg[sy] and buffer.bg[sy][sx] or colors.black
-                setCell(buffer, sx, sy, entityChar(entity), fg, bg)
+                local badgeBg = colors.black
+
+                if entity.kind == "building" then
+                    -- Buildings get a slightly wider footprint.
+                    setCell(buffer, sx - 1, sy, " ", colors.white, badgeBg)
+                    setCell(buffer, sx, sy, entityChar(entity), fg, badgeBg)
+                    setCell(buffer, sx + 1, sy, " ", colors.white, badgeBg)
+                else
+                    setCell(buffer, sx, sy, entityChar(entity), fg, badgeBg)
+                end
 
                 if sy > rect.y1 then
-                    local hpBg = buffer.bg[sy - 1] and buffer.bg[sy - 1][sx] or colors.black
-                    setCell(buffer, sx, sy - 1, "-", hpColor(entity), hpBg)
+                    local barWidth = entity.kind == "building" and 3 or 1
+                    local startX = sx - math.floor(barWidth / 2)
+                    for dx = 0, barWidth - 1 do
+                        local hx = startX + dx
+                        local hpBg = buffer.bg[sy - 1] and buffer.bg[sy - 1][hx] or colors.black
+                        setCell(buffer, hx, sy - 1, "-", hpColor(entity), hpBg)
+                    end
                 end
             end
         end
