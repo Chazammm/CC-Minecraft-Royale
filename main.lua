@@ -2,12 +2,36 @@ local config = require("config")
 local hardware = require("src.hardware")
 local Game = require("src.game")
 local render = require("src.render")
+local Bot = require("src.bot")
 
 local hw = hardware.init()
 
 local state = Game.new(function(name, volume, pitch)
     hardware.playSound(hw, name, volume, pitch)
 end)
+
+local bot = Bot.new(2)
+local previousMode = state.gameMode
+local previousPhase = state.phase
+
+local function syncBot()
+    if state.gameMode == "bot" then
+        if previousMode ~= "bot" and state.phase == "lobby" then
+            Bot.prepare(bot, state)
+        end
+
+        if state.phase == "countdown" or state.phase == "battle" then
+            bot.enabled = true
+        elseif state.phase == "lobby" or state.phase == "result" then
+            bot.enabled = false
+        end
+    else
+        bot.enabled = false
+    end
+
+    previousMode = state.gameMode
+    previousPhase = state.phase
+end
 
 local function nowSeconds()
     if os.epoch then
@@ -53,6 +77,7 @@ while true do
         if playerId then
             local layout = render.layoutFor(hw.monitors[playerId])
             Game.handleTouch(state, playerId, x, y, layout)
+            syncBot()
             redraw()
         end
 
@@ -69,6 +94,8 @@ while true do
 
         if dt <= 0 then dt = config.TICK_RATE end
         Game.update(state, dt)
+        syncBot()
+        Bot.update(bot, state, dt)
 
         tickTimer = os.startTimer(config.TICK_RATE)
         redraw()
