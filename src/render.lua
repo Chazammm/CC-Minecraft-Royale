@@ -726,13 +726,15 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
         opponentText = opponentReady and "OPPONENT: READY" or "OPPONENT: NOT READY"
     end
 
-    centered(
-        buffer,
-        layout.readyButton.y1 - 2,
-        opponentText,
-        (state.gameMode == "bot" or opponentReady) and colors.lime or colors.red,
-        colors.black
-    )
+    if state.gameMode ~= "bot" then
+        centered(
+            buffer,
+            layout.readyButton.y1 - 2,
+            opponentText,
+            opponentReady and colors.lime or colors.red,
+            colors.black
+        )
+    end
 
     local readyLabel
     if not validDeck then
