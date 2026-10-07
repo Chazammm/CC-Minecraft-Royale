@@ -74,12 +74,13 @@ assertTrue(endermiteCard.unit.damage < 25, "Endermite should have low DPS damage
 
 local anvilCard = cards.get("falling_anvil")
 assertTrue(anvilCard and anvilCard.kind == "spell", "Falling Anvil must be a selectable spell")
-assertEq(anvilCard.cost, 4, "Falling Anvil must cost four Emeralds")
+assertEq(anvilCard.cost, 3, "Falling Anvil must cost three Emeralds")
 assertEq(anvilCard.spell.delay, 3.0, "Falling Anvil must have a three-second delay")
 assertEq(anvilCard.spell.damage, 549, "Falling Anvil must leave a full-health Zombie at exactly one HP")
 
 local portalCard = cards.get("nether_portal")
 assertTrue(portalCard and portalCard.kind == "building", "Nether Portal must be a selectable building")
+assertEq(portalCard.cost, 3, "Nether Portal must cost three Emeralds")
 assertTrue(portalCard.building.periodicSpawn ~= nil, "Nether Portal must periodically spawn Piglins")
 assertEq(portalCard.building.periodicSpawn.template, "piglin", "Nether Portal must spawn the internal Piglin")
 
@@ -357,6 +358,23 @@ Game.update(anvilState, 0.25)
 assertEq(anvilZombie.hp, 1, "Falling Anvil direct hit must leave Zombie at exactly one HP")
 assertEq(#anvilState.pendingSpells, 0, "Falling Anvil must resolve after its delay")
 
+local anvilAirState = Game.new()
+Game.debugLoadScenario(anvilAirState, "empty")
+Game.debugSpawnCard(anvilAirState, 2, "bat_swarm", 50, 80)
+local batHpBefore = {}
+for _, entity in ipairs(anvilAirState.entities) do
+    if entity.name == "Bat Swarm" then batHpBefore[entity.id] = entity.hp end
+end
+assertTrue(next(batHpBefore) ~= nil, "Anvil air-immunity test must spawn bats")
+assertTrue(Game.debugSpawnCard(anvilAirState, 1, "falling_anvil", 50, 80), "Anvil must cast under flying units")
+Game.debugSetPaused(anvilAirState, false)
+for _ = 1, 12 do Game.update(anvilAirState, 0.25) end
+for _, entity in ipairs(anvilAirState.entities) do
+    if entity.name == "Bat Swarm" and batHpBefore[entity.id] then
+        assertEq(entity.hp, batHpBefore[entity.id], "Falling Anvil must not damage flying units")
+    end
+end
+
 local portalState = Game.new()
 Game.debugLoadScenario(portalState, "empty")
 assertTrue(Game.debugSpawnCard(portalState, 1, "nether_portal", 25, 100), "Admin must spawn Nether Portal")
@@ -370,6 +388,49 @@ end
 assertTrue(spawnedPiglin ~= nil, "Nether Portal must spawn a Piglin")
 assertTrue(spawnedPiglin.remainingLifetime <= 10 and spawnedPiglin.remainingLifetime > 0, "Spawned Piglin must have a ten-second lifetime")
 assertTrue(spawnedPiglin.hybridAttack ~= nil, "Spawned Piglin must retain hybrid axe/crossbow combat")
+
+local firstPiglinId = spawnedPiglin.id
+local maxAlivePiglins = 0
+for _ = 1, 120 do
+    Game.update(portalState, 0.25)
+    local alivePiglins = 0
+    for _, entity in ipairs(portalState.entities) do
+        if entity.name == "Piglin" and entity.alive then alivePiglins = alivePiglins + 1 end
+    end
+    maxAlivePiglins = math.max(maxAlivePiglins, alivePiglins)
+end
+assertTrue(maxAlivePiglins <= 2, "Nether Portal must respect its max-two living Piglin limit")
+local firstPiglinStillAlive = false
+for _, entity in ipairs(portalState.entities) do
+    if entity.id == firstPiglinId and entity.alive then firstPiglinStillAlive = true end
+end
+assertTrue(not firstPiglinStillAlive, "Piglin must disappear after its ten-second lifetime")
+
+local rangedPiglinState = Game.new()
+Game.debugLoadScenario(rangedPiglinState, "empty")
+Game.debugSpawnCard(rangedPiglinState, 1, "nether_portal", 25, 100)
+Game.debugSpawnCard(rangedPiglinState, 2, "villager", 40, 100)
+Game.debugSetPaused(rangedPiglinState, false)
+for _ = 1, 8 do Game.update(rangedPiglinState, 0.25) end
+local rangedTarget
+for _, entity in ipairs(rangedPiglinState.entities) do
+    if entity.name == "Villager" then rangedTarget = entity end
+end
+assertTrue(rangedTarget ~= nil, "Ranged Piglin test target must exist")
+assertEq(rangedTarget.hp, 157, "Piglin must use its 28-damage crossbow at range")
+
+local meleePiglinState = Game.new()
+Game.debugLoadScenario(meleePiglinState, "empty")
+Game.debugSpawnCard(meleePiglinState, 1, "nether_portal", 25, 100)
+Game.debugSpawnCard(meleePiglinState, 2, "villager", 30, 100)
+Game.debugSetPaused(meleePiglinState, false)
+for _ = 1, 8 do Game.update(meleePiglinState, 0.25) end
+local meleeTarget
+for _, entity in ipairs(meleePiglinState.entities) do
+    if entity.name == "Villager" then meleeTarget = entity end
+end
+assertTrue(meleeTarget ~= nil, "Melee Piglin test target must exist")
+assertEq(meleeTarget.hp, 127, "Piglin must use its 58-damage axe at close range")
 
 local botState = Game.new()
 Game.debugLoadScenario(botState, "full")
@@ -505,6 +566,8 @@ Game.handleTouch(infoState, 1, 36, 12, infoLayout)
 assertEq(infoState.players[1].collectionPage, 2, "Card browser NEXT must open page two")
 Game.handleTouch(infoState, 1, 1, 10, infoLayout)
 assertEq(infoState.players[1].infoCardId, "falling_anvil", "Page-two first slot must expose Falling Anvil")
+Game.handleTouch(infoState, 1, 2, 10, infoLayout)
+assertEq(infoState.players[1].infoCardId, "nether_portal", "Page-two second slot must expose Nether Portal")
 
 Game.handleTouch(infoState, 1, 2, 21, infoLayout)
 assertTrue(not infoState.players[1].infoOpen, "BACK TO DECK must close Unit Info")
