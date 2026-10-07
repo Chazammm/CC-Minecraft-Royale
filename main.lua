@@ -3,6 +3,7 @@ local hardware = require("src.hardware")
 local Game = require("src.game")
 local render = require("src.render")
 local Bot = require("src.bot")
+local Music = require("src.music")
 
 local hw = hardware.init()
 
@@ -11,8 +12,10 @@ local state = Game.new(function(name, volume, pitch)
 end)
 
 local bot = Bot.new(2)
+local music = Music.new(hw.musicSpeaker, hw.musicSpeakerName)
 local previousMode = state.gameMode
 local previousPhase = state.phase
+local previousMusicPhase = state.phase
 
 local function syncBot()
     Bot.setDifficulty(bot, state.botDifficulty or "normal")
@@ -42,6 +45,18 @@ local function syncBot()
 
     previousMode = state.gameMode
     previousPhase = state.phase
+end
+
+local function syncMusic()
+    if state.phase == "battle" and previousMusicPhase ~= "battle" then
+        Music.start(music)
+    elseif state.phase ~= "battle" and previousMusicPhase == "battle" then
+        -- Do not hard-stop the only speaker here: on one-speaker setups the
+        -- victory/defeat SFX may be playing at the same moment.
+        Music.stop(music, false)
+    end
+
+    previousMusicPhase = state.phase
 end
 
 local function nowSeconds()
@@ -75,7 +90,10 @@ while true do
     local event = { os.pullEventRaw() }
     local name = event[1]
 
+    Music.handleEvent(music, event)
+
     if name == "terminate" then
+        Music.stop(music, true)
         hardware.clear(hw)
         break
 
@@ -107,6 +125,8 @@ while true do
         Game.update(state, dt)
         syncBot()
         Bot.update(bot, state, dt)
+        syncMusic()
+        Music.pump(music)
 
         tickTimer = os.startTimer(config.TICK_RATE)
         redraw()
