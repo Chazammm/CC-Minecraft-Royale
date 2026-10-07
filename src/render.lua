@@ -148,21 +148,38 @@ function render.layoutFor(monitor)
         }
     end
 
-    local presetGap = 1
     local presetY1 = 36
     local presetY2 = 38
-    local topLabels = { "save1", "load1", "save2", "load2" }
-    for i, key in ipairs(topLabels) do
-        local x1 = math.floor((i - 1) * width / 4) + 1
-        local x2 = math.floor(i * width / 4)
-        layout.presetButtons[key] = { x1 = x1, x2 = x2, y1 = presetY1, y2 = presetY1 }
-    end
 
-    local bottomLabels = { "save3", "load3", "random" }
-    for i, key in ipairs(bottomLabels) do
+    layout.presetButtons.prev = {
+        x1 = 1,
+        x2 = math.floor(width * 0.20),
+        y1 = presetY1,
+        y2 = presetY1,
+    }
+    layout.presetButtons.slot = {
+        x1 = math.floor(width * 0.20) + 1,
+        x2 = math.floor(width * 0.80),
+        y1 = presetY1,
+        y2 = presetY1,
+    }
+    layout.presetButtons.next = {
+        x1 = math.floor(width * 0.80) + 1,
+        x2 = width,
+        y1 = presetY1,
+        y2 = presetY1,
+    }
+
+    local bottomKeys = { "save", "load", "random" }
+    for i, key in ipairs(bottomKeys) do
         local x1 = math.floor((i - 1) * width / 3) + 1
         local x2 = math.floor(i * width / 3)
-        layout.presetButtons[key] = { x1 = x1, x2 = x2, y1 = presetY2, y2 = presetY2 }
+        layout.presetButtons[key] = {
+            x1 = x1,
+            x2 = x2,
+            y1 = presetY2,
+            y2 = presetY2,
+        }
     end
 
     local cardWidth = math.floor(width / 4)
@@ -685,12 +702,20 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
     end
 
     if not (state.gameMode == "bot" and playerId == 2) then
-        drawButton(buffer, layout.presetButtons.save1, "SAVE 1", false)
-        drawButton(buffer, layout.presetButtons.load1, "LOAD 1", state.deckPresets[playerId][1] ~= nil)
-        drawButton(buffer, layout.presetButtons.save2, "SAVE 2", false)
-        drawButton(buffer, layout.presetButtons.load2, "LOAD 2", state.deckPresets[playerId][2] ~= nil)
-        drawButton(buffer, layout.presetButtons.save3, "SAVE 3", false)
-        drawButton(buffer, layout.presetButtons.load3, "LOAD 3", state.deckPresets[playerId][3] ~= nil)
+        local presetSlot = player.presetSlot or 1
+        local presetSaved = state.deckPresets[playerId][presetSlot] ~= nil
+        local slotLabel = string.format(
+            "PRESET %d/3  %s",
+            presetSlot,
+            presetSaved and "SAVED" or "EMPTY"
+        )
+
+        drawButton(buffer, layout.presetButtons.prev, "<", false)
+        drawButton(buffer, layout.presetButtons.slot, slotLabel, presetSaved)
+        drawButton(buffer, layout.presetButtons.next, ">", false)
+
+        drawButton(buffer, layout.presetButtons.save, "SAVE", false)
+        drawButton(buffer, layout.presetButtons.load, "LOAD", presetSaved)
         drawButton(buffer, layout.presetButtons.random, "RANDOM 8", false)
     else
         centered(buffer, 37, "BOT DECK LOCKED", colors.gray, colors.black)
