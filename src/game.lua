@@ -663,10 +663,32 @@ local function updateCombatEntity(state, entity, dt)
         entity.damageFlash = math.max(0, entity.damageFlash - dt)
     end
 
+    if entity.kind == "tower"
+        and entity.hp
+        and entity.maxHp
+        and entity.hp > 0
+        and entity.hp / math.max(1, entity.maxHp) <= 0.25
+    then
+        entity.criticalPulseTimer = (entity.criticalPulseTimer or 0) - dt
+        if entity.criticalPulseTimer <= 0 then
+            entity.damageFlash = math.max(entity.damageFlash or 0, 0.10)
+            entity.criticalPulseTimer = 0.55
+        end
+    end
+
     if entity.remainingLifetime then
         entity.remainingLifetime = entity.remainingLifetime - dt
         if entity.remainingLifetime <= 0 then
             entity.alive = false
+            addEffect(
+                state,
+                entity.emeraldBoost and "emerald" or "death",
+                entity.x,
+                entity.y,
+                entity.kind == "building" and 4.5 or 3.5,
+                entity.emeraldBoost and 0.55 or 0.30,
+                entity.owner
+            )
             return
         end
     end
