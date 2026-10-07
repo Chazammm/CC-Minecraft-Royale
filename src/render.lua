@@ -310,7 +310,7 @@ local function drawCard(buffer, zone, card, selected, affordable)
 
     local width = zone.x2 - zone.x1 + 1
     local label = selected and ("> " .. (card.icon or "?") .. " <") or (card.icon or "?")
-    local name = util.truncate(card.name, math.max(1, width - 2))
+    local name = util.truncate(card.name, math.max(1, width))
     local cost = tostring(card.cost) .. "E"
 
     writeText(
@@ -415,7 +415,7 @@ local function drawCollectionCard(buffer, zone, card, selected)
 
     local width = zone.x2 - zone.x1 + 1
     local top = string.format("%s  %dE", card.icon or "?", card.cost)
-    local name = util.truncate(card.name, math.max(1, width - 2))
+    local name = util.truncate(card.name, math.max(1, width))
     local stateText = selected and "IN DECK" or "TAP TO ADD"
 
     writeText(
@@ -460,13 +460,23 @@ local function drawDeckSlot(buffer, zone, slot, card)
     )
 
     if card then
-        local name = util.truncate(card.name, math.max(1, width - 2))
-        local line = string.format("%s %s", card.icon or "?", name)
+        local fullName = tostring(card.name or "")
+        local withIcon = string.format("%s %s", card.icon or "?", fullName)
+        local line
+
+        if #withIcon <= width then
+            line = withIcon
+        elseif #fullName <= width then
+            line = fullName
+        else
+            line = util.truncate(fullName, width)
+        end
+
         writeText(
             buffer,
             zone.x1 + math.max(0, math.floor((width - #line) / 2)),
             zone.y1 + 2,
-            util.truncate(line, width),
+            line,
             card.color or colors.white,
             bg
         )
@@ -654,7 +664,7 @@ local function drawInfoCollectionCard(buffer, zone, card, selected)
 
     local width = zone.x2 - zone.x1 + 1
     local top = string.format("%s %dE", card.icon or "?", card.cost)
-    local name = util.truncate(card.name, math.max(1, width - 2))
+    local name = util.truncate(card.name, math.max(1, width))
 
     writeText(
         buffer,
