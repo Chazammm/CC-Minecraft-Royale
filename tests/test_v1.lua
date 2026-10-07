@@ -344,6 +344,17 @@ assertTrue(bot.lastAction ~= "NONE", "Bot should expose its last action for admi
 local botStatus = Bot.status(bot, botState)
 assertTrue(botStatus.enabled and botStatus.playerId == 2, "Bot status must report P2 enabled")
 
+local sharedModeState = Game.new()
+local sharedModeLayout = {
+    modeButton = { x1 = 1, y1 = 1, x2 = 10, y2 = 3 },
+    readyButton = { x1 = 20, y1 = 20, x2 = 30, y2 = 22 },
+    collectionCards = {},
+}
+Game.handleTouch(sharedModeState, 2, 5, 2, sharedModeLayout)
+assertEq(sharedModeState.gameMode, "bot", "P2 monitor must be able to switch to VS BOT")
+Game.handleTouch(sharedModeState, 2, 5, 2, sharedModeLayout)
+assertEq(sharedModeState.gameMode, "pvp", "P2 monitor must be able to switch back to PVP")
+
 local modeState = Game.new()
 assertTrue(Game.setGameMode(modeState, "bot"), "Game must support VS BOT mode")
 assertEq(modeState.gameMode, "bot", "VS BOT mode must be stored on state")
