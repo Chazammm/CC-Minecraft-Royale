@@ -20,30 +20,34 @@ local function otherPlayer(playerId)
     return playerId == 1 and 2 or 1
 end
 
-local function copyDeck()
+local function copyDeck(deck)
     local out = {}
-    for i, id in ipairs(NORMAL_DECK) do out[i] = id end
+    for i, id in ipairs(deck or NORMAL_DECK) do out[i] = id end
     return out
 end
 
-local function setupPlayer(bot, state)
+function Bot.defaultDeck()
+    return copyDeck(NORMAL_DECK)
+end
+
+function Bot.prepare(bot, state)
     local player = state.players[bot.playerId]
-    player.deck = copyDeck()
+    player.deck = copyDeck(bot.deck)
+
     player.hand = {}
     player.queue = {}
-
     for i = 1, 4 do player.hand[i] = player.deck[i] end
     for i = 5, #player.deck do table.insert(player.queue, player.deck[i]) end
 
     player.selectedSlot = nil
+    player.ready = false
+    player.rematch = false
     player.emeralds = config.MATCH.emeraldStart
-end
 
-local function cycleHand(player, slot)
-    local played = player.hand[slot]
-    local nextCard = table.remove(player.queue, 1)
-    player.hand[slot] = nextCard
-    table.insert(player.queue, played)
+    bot.thinkTimer = 0.75
+    bot.decisionCount = 0
+    bot.actions = 0
+    bot.lastAction = "NONE"
 end
 
 local function ownedVillagerCount(state, playerId)
@@ -96,10 +100,9 @@ local function threatScore(state, playerId, entity)
     if entity.passive then return 0 end
     if not isApproachingHalf(playerId, entity.y) then return 0 end
 
-    local score = (entity.maxHp or 100) / 260
-        + unitDps(entity) / 35
-
+    local score = (entity.maxHp or 100) / 260 + unitDps(entity) / 35
     local towerDistance = nearestOwnTowerDistance(state, playerId, entity)
+
     if towerDistance < math.huge then
         score = score + math.max(0, (65 - towerDistance) / 10)
     end
@@ -199,17 +202,14 @@ local function defensivePlacement(bot, card, threat)
     local back = backDirection(playerId)
 
     if card.id == "cannon" or card.id == "endermite" then
-        local y = threat.y + back * 10
-        return clampOwnPlacement(playerId, 50, y)
+        return clampOwnPlacement(playerId, 50, threat.y + back * 10)
     end
 
     if card.id == "snow_golem" or card.id == "skeleton" or card.id == "witch" then
-        local y = threat.y + back * 13
-        return clampOwnPlacement(playerId, threat.x, y)
+        return clampOwnPlacement(playerId, threat.x, threat.y + back * 13)
     end
 
-    local y = threat.y + back * 7
-    return clampOwnPlacement(playerId, threat.x, y)
+    return clampOwnPlacement(playerId, threat.x, threat.y + back * 7)
 end
 
 local function weakestEnemyPrincess(state, playerId)
@@ -236,7 +236,8 @@ end
 local function offensivePlacement(bot, state, card)
     local playerId = bot.playerId
     local targetTower = weakestEnemyPrincess(state, playerId)
-    local laneX = targetTower and targetTower.x or (((bot.decisionCount % 2) == 0) and 25 or 75)
+    local laneX = targetTower and targetTower.x
+        or (((bot.decisionCount + bot.playerId) % 2) == 0 and 25 or 75)
 
     if card.id == "villager" then
         local y = playerId == 1 and 142 or 18
@@ -320,7 +321,7 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore)
     end
 
     score = score - card.cost * 0.12
-    score = score + (((bot.decisionCount * 7 + slot * 3) % 5) * 0.08)
+    score = score + (((bot.decisionCount * 7 + slot * 3 + bot.playerId) % 5) * 0.08)
     return score
 end
 
@@ -357,31 +358,30 @@ local function choosePlay(bot, state)
 end
 
 local function play(bot, state, choice)
-    local player = state.players[bot.playerId]
-    local card = choice.card
+    local ok = Game.playCardFromSlot(
+        state,
+        bot.playerId,
+        choice.slot,
+        choice.x,
+        choice.y
+    )
 
-    if player.emeralds + 0.0001 < card.cost then return false end
-    if not arena.placementAllowed(bot.playerId, choice.x, choice.y, card.placement) then return false end
-
-    local ok = Game.debugSpawnCard(state, bot.playerId, card.id, choice.x, choice.y)
     if not ok then return false end
 
-    player.emeralds = math.max(0, player.emeralds - card.cost)
-    cycleHand(player, choice.slot)
-
     bot.actions = bot.actions + 1
-    bot.lastAction = card.name
+    bot.lastAction = choice.card.name
     bot.lastX = choice.x
     bot.lastY = choice.y
-    bot.thinkTimer = 0.85 + ((bot.actions * 13) % 5) * 0.07
+    bot.thinkTimer = 0.85 + ((bot.actions * 13 + bot.playerId) % 5) * 0.07
     return true
 end
 
-function Bot.new(playerId)
+function Bot.new(playerId, deck)
     return {
         playerId = playerId or 2,
         enabled = false,
         mode = "NORMAL",
+        deck = copyDeck(deck),
         thinkTimer = 0.75,
         decisionCount = 0,
         actions = 0,
@@ -390,17 +390,13 @@ function Bot.new(playerId)
 end
 
 function Bot.reset(bot, state)
-    bot.thinkTimer = 0.75
-    bot.decisionCount = 0
-    bot.actions = 0
-    bot.lastAction = "NONE"
-    setupPlayer(bot, state)
+    Bot.prepare(bot, state)
 end
 
-function Bot.setEnabled(bot, state, enabled)
+function Bot.setEnabled(bot, state, enabled, prepare)
     bot.enabled = enabled == true
-    if bot.enabled then
-        Bot.reset(bot, state)
+    if bot.enabled and prepare ~= false then
+        Bot.prepare(bot, state)
     end
 end
 
@@ -409,18 +405,26 @@ function Bot.toggle(bot, state)
 end
 
 function Bot.update(bot, state, dt)
-    if not bot.enabled or not state.adminMode or state.adminPaused then return end
+    if not bot.enabled then return end
 
-    local player = state.players[bot.playerId]
-    local boost = ownEmeraldBoost(state, bot.playerId)
-    local rate = config.MATCH.emeraldPerSecond * (1 + boost)
-    player.emeralds = math.min(player.maxEmeralds, player.emeralds + rate * dt)
+    local playable = state.phase == "battle" or state.phase == "admin"
+    if not playable then return end
+    if state.phase == "admin" and state.adminPaused then return end
+
+    -- Normal battles already generate Emeralds inside Game.update().
+    -- Admin sandbox does not, so give the bot the same economy there.
+    if state.phase == "admin" then
+        local player = state.players[bot.playerId]
+        local boost = ownEmeraldBoost(state, bot.playerId)
+        local rate = config.MATCH.emeraldPerSecond * (1 + boost)
+        player.emeralds = math.min(player.maxEmeralds, player.emeralds + rate * dt)
+    end
 
     bot.thinkTimer = bot.thinkTimer - dt
     if bot.thinkTimer > 0 then return end
 
     bot.decisionCount = bot.decisionCount + 1
-    bot.thinkTimer = 0.65 + ((bot.decisionCount * 11) % 6) * 0.08
+    bot.thinkTimer = 0.65 + ((bot.decisionCount * 11 + bot.playerId) % 6) * 0.08
 
     local choice = choosePlay(bot, state)
     if choice then play(bot, state, choice) end
