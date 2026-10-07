@@ -14,6 +14,7 @@ local files = {
   "src/arena.lua",
   "src/hardware.lua",
   "src/game.lua",
+  "src/bot.lua",
   "src/render.lua",
   "src/admin_render.lua",
   "diagnose.lua",
