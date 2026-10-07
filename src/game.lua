@@ -27,7 +27,10 @@ local function newPlayer(playerId)
 end
 
 local function resetDeck(player)
-    player.deck = cards.defaultDeck()
+    if not cards.isValidDeck(player.deck) then
+        player.deck = cards.defaultDeck()
+    end
+
     player.hand = {}
     player.queue = {}
 
@@ -99,6 +102,10 @@ local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color)
     entity.targetMode = entity.targetMode or "any"
     entity.canAttackAir = entity.canAttackAir == true
     entity.flying = entity.flying == true
+    entity.remainingLifetime = entity.lifetime
+    entity.teleportCooldownLeft = 0
+    entity.slowRemaining = 0
+    entity.slowFactor = 1
 
     table.insert(state.entities, entity)
     return entity
@@ -214,6 +221,10 @@ local function findNearest(state, entity, filter, maxRange)
 end
 
 local function acquireTarget(state, entity)
+    if entity.passive or entity.targetMode == "none" then
+        return nil
+    end
+
     if entity.kind == "tower" or entity.kind == "building" then
         local target = findNearest(state, entity, function(candidate)
             return candidate.kind == "unit"
@@ -238,13 +249,21 @@ local function acquireTarget(state, entity)
     return findNearest(state, entity, nil, nil)
 end
 
+local function currentMoveSpeed(entity)
+    local speed = entity.moveSpeed or 0
+    if entity.slowRemaining and entity.slowRemaining > 0 then
+        speed = speed * (entity.slowFactor or 1)
+    end
+    return speed
+end
+
 local function moveToward(entity, tx, ty, dt)
     local dx = tx - entity.x
     local dy = ty - entity.y
     local length = math.sqrt(dx * dx + dy * dy)
     if length < 0.001 then return end
 
-    local step = math.min(length, (entity.moveSpeed or 0) * dt)
+    local step = math.min(length, currentMoveSpeed(entity) * dt)
     local nx = entity.x + dx / length * step
     local ny = entity.y + dy / length * step
 
@@ -292,10 +311,13 @@ local function spawnProjectile(state, attacker, target)
         owner = attacker.owner,
         damage = attacker.damage,
         speed = attacker.projectileSpeed or 50,
-        visual = attacker.name == "Skeleton" and "arrow"
+        visual = attacker.projectileVisual
+            or (attacker.name == "Skeleton" and "arrow")
             or (attacker.name == "Cannon" and "cannonball")
             or (attacker.kind == "tower" and "tower_shot")
             or "shot",
+        splashRadius = attacker.projectileSplashRadius,
+        onHitSlow = attacker.onHitSlow and util.deepcopy(attacker.onHitSlow) or nil,
         alive = true,
     })
 end
@@ -439,6 +461,19 @@ local function updateCombatEntity(state, entity, dt)
     end
 
     entity.attackCooldownLeft = math.max(0, (entity.attackCooldownLeft or 0) - dt)
+    entity.teleportCooldownLeft = math.max(0, (entity.teleportCooldownLeft or 0) - dt)
+
+    if entity.slowRemaining and entity.slowRemaining > 0 then
+        entity.slowRemaining = math.max(0, entity.slowRemaining - dt)
+        if entity.slowRemaining <= 0 then
+            entity.slowFactor = 1
+        end
+    end
+
+    if entity.passive or entity.targetMode == "none" then
+        entity.targetId = nil
+        return
+    end
 
     local target = getEntityById(state, entity.targetId)
     if target and not targetAllowed(entity, target) then
@@ -481,6 +516,33 @@ local function updateCombatEntity(state, entity, dt)
 
     local distance = util.distance(entity.x, entity.y, target.x, target.y)
     local attackRange = entity.attackRange or 0
+
+    if entity.kind == "unit" and entity.teleport and entity.teleportCooldownLeft <= 0 then
+        local spec = entity.teleport
+        local minRange = spec.minRange or 8
+        local maxRange = spec.maxRange or 30
+
+        if distance >= minRange and distance <= maxRange then
+            local dx = entity.x - target.x
+            local dy = entity.y - target.y
+            local length = math.sqrt(dx * dx + dy * dy)
+            if length < 0.001 then length = 1 end
+
+            local stopRange = spec.stopRange or math.max(2.5, attackRange)
+            local nx = target.x + dx / length * stopRange
+            local ny = target.y + dy / length * stopRange
+
+            if arena.isWalkable(entity, nx, ny) then
+                addEffect(state, "teleport", entity.x, entity.y, 4, 0.25, entity.owner)
+                entity.x = util.clamp(nx, 2, config.ARENA.width - 2)
+                entity.y = util.clamp(ny, 2, config.ARENA.height - 2)
+                entity.teleportCooldownLeft = spec.cooldown or 4
+                addEffect(state, "teleport", entity.x, entity.y, 4, 0.25, entity.owner)
+                emitSound(state, "minecraft:entity.enderman.teleport", 0.7, 1.0)
+                distance = util.distance(entity.x, entity.y, target.x, target.y)
+            end
+        end
+    end
 
     if entity.kind == "unit" and entity.proximityExplosion then
         local spec = entity.proximityExplosion
@@ -554,7 +616,35 @@ local function updateProjectiles(state, dt)
                     projectile.x = target.x
                     projectile.y = target.y
                     projectile.alive = false
-                    damageEntity(state, target, projectile.damage, projectile.owner)
+
+                    local victims = {}
+                    if projectile.splashRadius then
+                        for _, candidate in ipairs(state.entities) do
+                            if candidate.alive and candidate.owner ~= projectile.owner then
+                                local d = util.distance(target.x, target.y, candidate.x, candidate.y)
+                                if d <= projectile.splashRadius then
+                                    table.insert(victims, candidate)
+                                end
+                            end
+                        end
+                        addEffect(state, "splash", target.x, target.y, projectile.splashRadius, 0.30, projectile.owner)
+                    else
+                        table.insert(victims, target)
+                    end
+
+                    for _, victim in ipairs(victims) do
+                        damageEntity(state, victim, projectile.damage, projectile.owner)
+                        if victim.alive and projectile.onHitSlow then
+                            victim.slowRemaining = math.max(
+                                victim.slowRemaining or 0,
+                                projectile.onHitSlow.duration or 1
+                            )
+                            victim.slowFactor = math.min(
+                                victim.slowFactor or 1,
+                                projectile.onHitSlow.factor or 0.7
+                            )
+                        end
+                    end
                 elseif distance > 0 then
                     projectile.x = projectile.x + dx / distance * step
                     projectile.y = projectile.y + dy / distance * step
@@ -857,7 +947,16 @@ function Game.update(state, dt)
 
         for playerId = 1, 2 do
             local player = state.players[playerId]
-            player.emeralds = math.min(player.maxEmeralds, player.emeralds + emeraldRate * dt)
+            local boost = 0
+
+            for _, entity in ipairs(state.entities) do
+                if entity.alive and entity.owner == playerId and entity.emeraldBoost then
+                    boost = boost + entity.emeraldBoost
+                end
+            end
+
+            local playerRate = emeraldRate * (1 + boost)
+            player.emeralds = math.min(player.maxEmeralds, player.emeralds + playerRate * dt)
         end
     end
 
