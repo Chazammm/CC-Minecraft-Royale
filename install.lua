@@ -5,6 +5,7 @@ local BRANCH = "main"
 local files = {
   "config.lua",
   "main.lua",
+  "admin.lua",
   "startup.lua",
   "src/util.lua",
   "src/cards.lua",
@@ -12,6 +13,7 @@ local files = {
   "src/hardware.lua",
   "src/game.lua",
   "src/render.lua",
+  "src/admin_render.lua",
   "diagnose.lua",
 }
 
@@ -60,3 +62,4 @@ print("")
 print("Install complete.")
 print("Run: diagnose")
 print("Then: main")
+print("Admin sandbox: admin")
