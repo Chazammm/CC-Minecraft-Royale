@@ -38,7 +38,7 @@ local function assertTrue(value, message)
     if not value then error(message or "assertTrue failed") end
 end
 
-assertEq(#cards.list, 16, "V2 card pool must contain exactly sixteen cards")
+assertEq(#cards.list, 18, "Card pool must contain eighteen selectable cards")
 assertEq(#cards.defaultDeck(), 8, "Default deck must contain eight cards")
 assertTrue(cards.isValidDeck(cards.defaultDeck()), "Default deck must be valid")
 
@@ -71,6 +71,27 @@ local endermiteCard = cards.get("endermite")
 assertEq(endermiteCard.cost, 1, "Endermite must cost one Emerald")
 assertTrue(endermiteCard.unit.maxHp < 150, "Endermite should have low HP")
 assertTrue(endermiteCard.unit.damage < 25, "Endermite should have low DPS damage")
+
+local anvilCard = cards.get("falling_anvil")
+assertTrue(anvilCard and anvilCard.kind == "spell", "Falling Anvil must be a selectable spell")
+assertEq(anvilCard.cost, 4, "Falling Anvil must cost four Emeralds")
+assertEq(anvilCard.spell.delay, 3.0, "Falling Anvil must have a three-second delay")
+assertEq(anvilCard.spell.damage, 549, "Falling Anvil must leave a full-health Zombie at exactly one HP")
+
+local portalCard = cards.get("nether_portal")
+assertTrue(portalCard and portalCard.kind == "building", "Nether Portal must be a selectable building")
+assertTrue(portalCard.building.periodicSpawn ~= nil, "Nether Portal must periodically spawn Piglins")
+assertEq(portalCard.building.periodicSpawn.template, "piglin", "Nether Portal must spawn the internal Piglin")
+
+local piglinTemplate = cards.getInternalUnit("piglin")
+assertTrue(piglinTemplate ~= nil, "Piglin must exist as an internal unit")
+assertTrue(cards.get("piglin") == nil, "Piglin must not be directly selectable as a card")
+assertEq(piglinTemplate.lifetime, 10.0, "Piglin must zombify/despawn after ten seconds")
+assertTrue(piglinTemplate.hybridAttack ~= nil, "Piglin must support ranged and melee attacks")
+assertTrue(
+    piglinTemplate.hybridAttack.meleeDamage > piglinTemplate.hybridAttack.rangedDamage,
+    "Piglin axe hit should be stronger than its crossbow shot"
+)
 
 local config = require("config")
 local riverMid = (config.ARENA.riverTop + config.ARENA.riverBottom) / 2
@@ -317,6 +338,39 @@ for _, entity in ipairs(summonState.entities) do
 end
 assertTrue(babyZombieCount >= 1, "Witch must periodically summon a Baby Zombie")
 
+local anvilState = Game.new()
+Game.debugLoadScenario(anvilState, "empty")
+Game.debugSpawnCard(anvilState, 2, "zombie", 50, 80)
+local anvilZombie
+for _, entity in ipairs(anvilState.entities) do
+    if entity.name == "Zombie" then anvilZombie = entity end
+end
+assertTrue(anvilZombie ~= nil, "Anvil test Zombie must exist")
+assertTrue(Game.debugSpawnCard(anvilState, 1, "falling_anvil", 50, 80), "Admin must cast Falling Anvil")
+assertEq(anvilZombie.hp, 550, "Falling Anvil must not deal instant damage")
+assertEq(#anvilState.pendingSpells, 1, "Falling Anvil must wait as a pending spell")
+
+Game.debugSetPaused(anvilState, false)
+for _ = 1, 11 do Game.update(anvilState, 0.25) end
+assertEq(anvilZombie.hp, 550, "Falling Anvil must still be harmless before three seconds")
+Game.update(anvilState, 0.25)
+assertEq(anvilZombie.hp, 1, "Falling Anvil direct hit must leave Zombie at exactly one HP")
+assertEq(#anvilState.pendingSpells, 0, "Falling Anvil must resolve after its delay")
+
+local portalState = Game.new()
+Game.debugLoadScenario(portalState, "empty")
+assertTrue(Game.debugSpawnCard(portalState, 1, "nether_portal", 25, 100), "Admin must spawn Nether Portal")
+Game.debugSetPaused(portalState, false)
+for _ = 1, 9 do Game.update(portalState, 0.25) end
+
+local spawnedPiglin
+for _, entity in ipairs(portalState.entities) do
+    if entity.name == "Piglin" then spawnedPiglin = entity end
+end
+assertTrue(spawnedPiglin ~= nil, "Nether Portal must spawn a Piglin")
+assertTrue(spawnedPiglin.remainingLifetime <= 10 and spawnedPiglin.remainingLifetime > 0, "Spawned Piglin must have a ten-second lifetime")
+assertTrue(spawnedPiglin.hybridAttack ~= nil, "Spawned Piglin must retain hybrid axe/crossbow combat")
+
 local botState = Game.new()
 Game.debugLoadScenario(botState, "full")
 local bot = Bot.new(2)
@@ -432,6 +486,10 @@ local infoLayout = {
     modeButton = { x1 = 20, y1 = 1, x2 = 25, y2 = 3 },
     readyButton = { x1 = 1, y1 = 20, x2 = 10, y2 = 22 },
     collectionCards = {},
+    collectionPageButtons = {
+        prev = { x1 = 30, y1 = 12, x2 = 34, y2 = 12 },
+        next = { x1 = 35, y1 = 12, x2 = 39, y2 = 12 },
+    },
 }
 for i = 1, 16 do
     infoLayout.collectionCards[i] = { x1 = i, y1 = 10, x2 = i, y2 = 10 }
@@ -442,6 +500,11 @@ assertTrue(infoState.players[1].infoOpen, "UNIT INFO button must open the card d
 
 Game.handleTouch(infoState, 1, 2, 10, infoLayout)
 assertEq(infoState.players[1].infoCardId, cards.list[2].id, "Tapping a card in Unit Info must inspect that card")
+
+Game.handleTouch(infoState, 1, 36, 12, infoLayout)
+assertEq(infoState.players[1].collectionPage, 2, "Card browser NEXT must open page two")
+Game.handleTouch(infoState, 1, 1, 10, infoLayout)
+assertEq(infoState.players[1].infoCardId, "falling_anvil", "Page-two first slot must expose Falling Anvil")
 
 Game.handleTouch(infoState, 1, 2, 21, infoLayout)
 assertTrue(not infoState.players[1].infoOpen, "BACK TO DECK must close Unit Info")
