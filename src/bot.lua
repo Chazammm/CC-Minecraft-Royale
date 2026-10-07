@@ -323,6 +323,65 @@ local function bestArrowTarget(state, playerId)
     return nil, nil, bestScore
 end
 
+local function bestAnvilTarget(state, playerId)
+    local card = cards.get("falling_anvil")
+    local spell = card and card.spell or nil
+    if not spell then return nil, nil, 0 end
+
+    local radius = spell.radius or 5.5
+    local delay = spell.delay or 3
+    local damage = spell.damage or 0
+    local bestX, bestY, bestScore = nil, nil, 0
+
+    for _, center in ipairs(state.entities) do
+        if center.alive
+            and center.owner ~= playerId
+            and not center.flying
+        then
+            local cx, cy = center.x, center.y
+
+            -- Lead moving ground troops roughly toward the bot's side. This
+            -- turns the 3-second warning into an actual timing challenge.
+            if center.kind == "unit" and (center.moveSpeed or 0) > 0 then
+                local direction = playerId == 1 and 1 or -1
+                cy = cy + direction * (center.moveSpeed or 0) * delay * 0.80
+                cy = math.max(3, math.min(config.ARENA.height - 3, cy))
+            end
+
+            local score = 0
+            for _, target in ipairs(state.entities) do
+                if target.alive
+                    and target.owner ~= playerId
+                    and not target.flying
+                then
+                    local d = math.sqrt((cx - target.x)^2 + (cy - target.y)^2)
+                    if d <= radius then
+                        local hitDamage = damage
+                        if target.kind == "tower" then
+                            hitDamage = hitDamage * (spell.towerMultiplier or 1)
+                            score = score + math.min(hitDamage, target.hp) / 90
+                            if target.hp <= hitDamage + 0.001 then
+                                score = score + (target.towerType == "king" and 60 or 25)
+                            end
+                        else
+                            score = score + math.min(hitDamage, target.hp or 0) / 100
+                            if (target.hp or 0) <= hitDamage then score = score + 2.5 end
+                            if target.name == "Villager" then score = score + 4 end
+                        end
+                    end
+                end
+            end
+
+            if score > bestScore then
+                bestScore = score
+                bestX, bestY = cx, cy
+            end
+        end
+    end
+
+    return bestX, bestY, bestScore
+end
+
 local function backDirection(playerId)
     return playerId == 1 and 1 or -1
 end
@@ -531,7 +590,7 @@ local function botDefenseThreshold(bot, state)
     return base + cfg.defenseOffset
 end
 
-local function scoreCard(bot, state, ctx, card, slot, arrowScore)
+local function scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
     local player = state.players[bot.playerId]
     if player.emeralds + 0.0001 < card.cost then return -math.huge end
 
@@ -549,6 +608,13 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore)
     if card.id == "arrows" then
         if arrowScore >= cfg.arrowThreshold then
             score = 8 + arrowScore
+        else
+            return -math.huge
+        end
+    elseif card.id == "falling_anvil" then
+        local threshold = bot.mode == "hard" and 4.2 or 5.2
+        if anvilScore >= threshold then
+            score = 6.5 + anvilScore
         else
             return -math.huge
         end
@@ -611,6 +677,7 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore)
             bat_swarm = 4,
             endermite = 2,
             cannon = 1,
+            nether_portal = 5.0,
         }
         score = offense[card.id] or 2
         if lateGame and card.id ~= "cannon" and card.id ~= "villager" then
@@ -666,6 +733,7 @@ local function choosePlay(bot, state)
     local player = state.players[bot.playerId]
     local ctx = battlefield(state, bot.playerId)
     local arrowX, arrowY, arrowScore = bestArrowTarget(state, bot.playerId)
+    local anvilX, anvilY, anvilScore = bestAnvilTarget(state, bot.playerId)
 
     if shouldSaveForPowerCard(bot, state, ctx, arrowScore) then
         return nil
@@ -677,7 +745,7 @@ local function choosePlay(bot, state)
     for slot = 1, 4 do
         local card = cards.get(player.hand[slot])
         if card then
-            local score = scoreCard(bot, state, ctx, card, slot, arrowScore)
+            local score = scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
             if score > bestScore then
                 bestScore = score
                 best = { slot = slot, card = card }
@@ -689,6 +757,8 @@ local function choosePlay(bot, state)
 
     if best.card.id == "arrows" and arrowX then
         best.x, best.y = arrowX, arrowY
+    elseif best.card.id == "falling_anvil" and anvilX then
+        best.x, best.y = anvilX, anvilY
     elseif ctx.primaryThreat
         and ctx.primaryThreatScore >= botDefenseThreshold(bot, state)
     then
