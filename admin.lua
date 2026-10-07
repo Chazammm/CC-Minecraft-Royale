@@ -16,6 +16,7 @@ local bot = Bot.new(2)
 local ui = {
     owner = 1,
     selectedCard = cards.list[1].id,
+    cardPage = 1,
     bot = bot,
 }
 
@@ -76,9 +77,25 @@ local function handleTouch(monitorName, x, y)
         return
     end
 
-    for i, zone in ipairs(layout.cards) do
+    local pageSize = 16
+    local pages = math.max(1, math.ceil(#cards.list / pageSize))
+
+    if hit(layout.cardPageButtons.prev, x, y) then
+        ui.cardPage = (ui.cardPage or 1) - 1
+        if ui.cardPage < 1 then ui.cardPage = pages end
+        redraw()
+        return
+    elseif hit(layout.cardPageButtons.next, x, y) then
+        ui.cardPage = (ui.cardPage or 1) + 1
+        if ui.cardPage > pages then ui.cardPage = 1 end
+        redraw()
+        return
+    end
+
+    for slot, zone in ipairs(layout.cards) do
         if hit(zone, x, y) then
-            ui.selectedCard = cards.list[i].id
+            local card = cards.list[((ui.cardPage or 1) - 1) * pageSize + slot]
+            if card then ui.selectedCard = card.id end
             redraw()
             return
         end
