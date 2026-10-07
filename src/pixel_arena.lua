@@ -186,34 +186,41 @@ local SPRITES = {
         },
     },
     villager = {
-        -- 6x9 aligned to Pixelbox texels: big square head, unibrow/eyes,
-        -- oversized nose, then the classic long brown robe.
+        -- 6x12. Each three-row band is Pixelbox-friendly:
+        -- square tan head, dark eyes, a large brown Minecraft nose,
+        -- then a long brown robe with split feet.
         rows = {
-            "SSSSSS",
-            "SKSSKS",
-            "SSKKSS",
+            "OOOOOO",
+            "OKOOKO",
+            "OOOOOO",
+            "OONNOO",
+            "OONNOO",
+            "OOOOOO",
+            ".NNNN.",
             "NNNNNN",
             "NNNNNN",
-            "NNNNNN",
-            "NNNNNN",
-            "NN..NN",
-            "NN..NN",
+            ".NNNN.",
+            ".NNNN.",
+            ".N..N.",
         },
     },
-    endermite = {
+    en    wolf = {
+        -- 12x9 side profile. Full block head, long body, four legs.
+        -- The 2-wide red band is a real tamed-wolf collar and stays
+        -- isolated inside Pixelbox texels instead of bleeding into grass.
         rows = {
-            ".PPP.",
-            "PKPKP",
-            ".PPP.",
+            "SSSS........",
+            "SKSS........",
+            "SSSS........",
+            "SSRRSSSSSSSS",
+            "SSRRSSSSSSSS",
+            "SSRRSSSSSSSS",
+            "..SSSSSSSS..",
+            "..SS..SS....",
+            "..SS..SS....",
         },
     },
-    wolf = {
-        -- 12x6 side profile. Large square muzzle/head on the left,
-        -- long body and four legs, with a clear tamed-wolf red collar.
-        rows = {
-            "..SS........",
-            ".SSSSSSSS...",
-            "SSKSSSSSSSS.",
+SSSS.",
             ".SSRSSSSSSS.",
             "..SRSSSSSS..",
             "..SS..SS..SS",
