@@ -15,6 +15,8 @@ local previousMode = state.gameMode
 local previousPhase = state.phase
 
 local function syncBot()
+    Bot.setDifficulty(bot, state.botDifficulty or "normal")
+
     if state.gameMode == "bot" then
         if previousMode ~= "bot" and state.phase == "lobby" then
             Bot.prepare(bot, state)
