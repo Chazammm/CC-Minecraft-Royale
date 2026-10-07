@@ -60,10 +60,10 @@ assertEq(deckState.players[1].deck[8], "blaze", "Added card should occupy the op
 
 local villagerCard = cards.get("villager")
 assertTrue(villagerCard and villagerCard.kind == "unit", "Villager must be a unit, not a building")
-assertEq(villagerCard.cost, 8, "Villager must cost eight Emeralds")
+assertEq(villagerCard.cost, 7, "Villager must cost seven Emeralds")
 assertTrue(villagerCard.unit.passive, "Villager must be passive")
-assertEq(villagerCard.unit.lifetime, 60, "Villager must last sixty seconds")
-assertEq(villagerCard.unit.emeraldBoost, 0.10, "Villager must boost Emerald generation by ten percent")
+assertEq(villagerCard.unit.lifetime, 50, "Villager must last fifty seconds")
+assertEq(villagerCard.unit.emeraldBoost, 0.50, "Villager must boost Emerald generation by fifty percent")
 
 local endermiteCard = cards.get("endermite")
 assertEq(endermiteCard.cost, 1, "Endermite must cost one Emerald")
@@ -269,8 +269,8 @@ assertTrue(
     "Living Villager must increase its owner's Emerald generation"
 )
 assertTrue(
-    math.abs(villagerState.players[1].emeralds - baseGain * 1.10) < 0.001,
-    "Villager boost must be exactly ten percent"
+    math.abs(villagerState.players[1].emeralds - baseGain * 1.50) < 0.001,
+    "Villager boost must be exactly fifty percent"
 )
 
 local slowState = Game.new()
