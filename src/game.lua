@@ -648,8 +648,21 @@ local function updatePeriodicSpawn(state, entity, dt)
         end
     end
 
-    addEffect(state, "summon", entity.x, entity.y, 5, 0.35, entity.owner)
-    emitSound(state, "minecraft:entity.zombie_villager.cure", 0.35, 1.4)
+    addEffect(
+        state,
+        spec.effect or "summon",
+        entity.x,
+        entity.y,
+        5,
+        0.35,
+        entity.owner
+    )
+    emitSound(
+        state,
+        spec.sound or "minecraft:entity.zombie_villager.cure",
+        spec.soundVolume or 0.35,
+        spec.soundPitch or 1.4
+    )
     entity.periodicSpawnTimer = spec.interval or 8
 end
 
@@ -1059,6 +1072,7 @@ function Game.startCountdown(state)
     state.entities = {}
     state.projectiles = {}
     state.effects = {}
+    state.pendingSpells = {}
     state.winner = nil
     state.resultReason = nil
     state.overtime = false
@@ -1082,6 +1096,7 @@ function Game.finish(state, winner, reason)
     state.resultReason = reason or "MATCH OVER"
     state.players[1].selectedSlot = nil
     state.players[2].selectedSlot = nil
+    state.pendingSpells = {}
 
     if winner then
         emitSound(state, "minecraft:ui.toast.challenge_complete", 1.0, 1.0)
