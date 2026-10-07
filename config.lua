@@ -19,6 +19,11 @@ config.ARENA = {
     bridgeHalfWidth = 7,
 }
 
+config.MUSIC = {
+    enabled = true,
+    volume = 0.32,
+}
+
 config.MATCH = {
     normalTime = 180,
     overtimeTime = 120,
