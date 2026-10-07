@@ -3,6 +3,19 @@ local Bot = require("src.bot")
 local cards = require("src.cards")
 
 local args = { ... }
+
+local outputLines = {}
+local nativePrint = print
+
+local function reportPrint(...)
+    local parts = {}
+    for i = 1, select("#", ...) do
+        parts[i] = tostring(select(i, ...))
+    end
+    local line = table.concat(parts, "\t")
+    outputLines[#outputLines + 1] = line
+    nativePrint(line)
+end
 local matchCount = math.floor(tonumber(args[1]) or 100)
 matchCount = math.max(2, math.min(2000, matchCount))
 
@@ -170,15 +183,15 @@ local function mixedDeckPair()
     return shuffle(a), shuffle(b)
 end
 
-print("CC-Minecraft Royale balance benchmark")
-print(("Mode: %s   Matches: %d   Seed: %d"):format(string.upper(mode), matchCount, seed))
+reportPrint("CC-Minecraft Royale balance benchmark")
+reportPrint(("Mode: %s   Matches: %d   Seed: %d"):format(string.upper(mode), matchCount, seed))
 if mode == "mixed" then
-    print("All 16 cards are reshuffled into two 8-card decks.")
-    print("Deck pairs are replayed with sides swapped to reduce P1/P2 bias.")
+    reportPrint("All 16 cards are reshuffled into two 8-card decks.")
+    reportPrint("Deck pairs are replayed with sides swapped to reduce P1/P2 bias.")
 else
-    print("Using the original fixed Deck A vs Deck B comparison.")
+    reportPrint("Using the original fixed Deck A vs Deck B comparison.")
 end
-print("")
+reportPrint("")
 
 local completed = 0
 while completed < matchCount do
@@ -199,17 +212,17 @@ while completed < matchCount do
     end
 
     if completed % 20 == 0 or completed >= matchCount then
-        print(("  %d / %d"):format(completed, matchCount))
+        reportPrint(("  %d / %d"):format(completed, matchCount))
         if sleep then sleep(0) end
     end
 end
 
-print("")
-print("GLOBAL")
-print(("P1 wins: %d (%.1f%%)"):format(report.p1Wins, report.p1Wins / report.matches * 100))
-print(("P2 wins: %d (%.1f%%)"):format(report.p2Wins, report.p2Wins / report.matches * 100))
-print(("Draws:   %d (%.1f%%)"):format(report.draws, report.draws / report.matches * 100))
-print(("Avg match: %.1fs"):format(report.totalTime / report.matches))
+reportPrint("")
+reportPrint("GLOBAL")
+reportPrint(("P1 wins: %d (%.1f%%)"):format(report.p1Wins, report.p1Wins / report.matches * 100))
+reportPrint(("P2 wins: %d (%.1f%%)"):format(report.p2Wins, report.p2Wins / report.matches * 100))
+reportPrint(("Draws:   %d (%.1f%%)"):format(report.draws, report.draws / report.matches * 100))
+reportPrint(("Avg match: %.1fs"):format(report.totalTime / report.matches))
 
 local rows = {}
 for _, card in ipairs(cards.list) do
@@ -251,11 +264,11 @@ table.sort(rows, function(a, b)
     return a.scoreRate > b.scoreRate
 end)
 
-print("")
-print("CARD BALANCE")
-print("Card             Score  P/M   U/E   T/E   Flag")
+reportPrint("")
+reportPrint("CARD BALANCE")
+reportPrint("Card             Score  P/M   U/E   T/E   Flag")
 for _, row in ipairs(rows) do
-    print(("%-16s %5.1f %4.1f %5.1f %5.1f %-6s"):format(
+    reportPrint(("%-16s %5.1f %4.1f %5.1f %5.1f %-6s"):format(
         row.name,
         row.scoreRate,
         row.playsPerMatch,
@@ -265,9 +278,9 @@ for _, row in ipairs(rows) do
     ))
 end
 
-print("")
-print("UTILITY")
-print("Card             BonusE  Slow/s  Hits/Play")
+reportPrint("")
+reportPrint("UTILITY")
+reportPrint("Card             BonusE  Slow/s  Hits/Play")
 for _, row in ipairs(rows) do
     local bonusPerMatch = report.cards[row.id].deckMatches > 0
         and row.emeraldBonus / report.cards[row.id].deckMatches
@@ -276,7 +289,7 @@ for _, row in ipairs(rows) do
     local hitsPerPlay = row.totalPlays > 0 and row.targetsHit / row.totalPlays or 0
 
     if bonusPerMatch > 0 or slowPerPlay > 0 or hitsPerPlay > 0 then
-        print(("%-16s %6.2f %7.2f %9.2f"):format(
+        reportPrint(("%-16s %6.2f %7.2f %9.2f"):format(
             row.name,
             bonusPerMatch,
             slowPerPlay,
@@ -285,12 +298,27 @@ for _, row in ipairs(rows) do
     end
 end
 
-print("")
-print("HOW TO READ")
-print("Score = deck win rate with draws worth half a win.")
-print("P/M   = times played per match while the card is in deck.")
-print("U/E   = unit damage per Emerald spent.")
-print("T/E   = tower damage per Emerald spent.")
-print("WATCH+/- means investigate, not automatic nerf/buff.")
-print("")
-print("Recommended benchmark: simulate 500 mixed")
+reportPrint("")
+reportPrint("HOW TO READ")
+reportPrint("Score = deck win rate with draws worth half a win.")
+reportPrint("P/M   = times played per match while the card is in deck.")
+reportPrint("U/E   = unit damage per Emerald spent.")
+reportPrint("T/E   = tower damage per Emerald spent.")
+reportPrint("WATCH+/- means investigate, not automatic nerf/buff.")
+reportPrint("")
+reportPrint("Recommended benchmark: simulate 500 mixed")
+
+local resultPath = "balance_results.txt"
+local handle = fs.open(resultPath, "w")
+if handle then
+    handle.write(table.concat(outputLines, "\n"))
+    handle.write("\n")
+    handle.close()
+
+    nativePrint("")
+    nativePrint("Saved full report to: " .. resultPath)
+    nativePrint("Open it with: edit " .. resultPath)
+    nativePrint("Share it with: pastebin put " .. resultPath)
+else
+    nativePrint("WARNING: Could not save " .. resultPath)
+end
