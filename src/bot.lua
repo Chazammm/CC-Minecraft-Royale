@@ -216,7 +216,7 @@ local function bestArrowTarget(state, playerId)
         end
     end
 
-    if best and bestScore >= 2.4 then
+    if best then
         return best.x, best.y, bestScore
     end
     return nil, nil, bestScore
@@ -354,6 +354,13 @@ local function shouldSaveForPowerCard(bot, state, ctx, arrowScore)
     return bestCost ~= nil
 end
 
+local function botDefenseThreshold(bot, state)
+    local cfg = difficultyConfig(bot)
+    local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
+    local base = state.overtime and 5.0 or (lateGame and 4.2 or 3.0)
+    return base + cfg.defenseOffset
+end
+
 local function scoreCard(bot, state, ctx, card, slot, arrowScore)
     local player = state.players[bot.playerId]
     if player.emeralds + 0.0001 < card.cost then return -math.huge end
@@ -362,8 +369,7 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore)
     local score = 0
     local threat = ctx.primaryThreat
     local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
-    local baseDefenseThreshold = state.overtime and 5.0 or (lateGame and 4.2 or 3.0)
-    local defenseThreshold = baseDefenseThreshold + cfg.defenseOffset
+    local defenseThreshold = botDefenseThreshold(bot, state)
     local defending = threat and ctx.primaryThreatScore >= defenseThreshold
 
     -- Economy cards were effectively never tested because the bot kept
@@ -471,7 +477,9 @@ local function choosePlay(bot, state)
 
     if best.card.id == "arrows" and arrowX then
         best.x, best.y = arrowX, arrowY
-    elseif ctx.primaryThreat and ctx.primaryThreatScore >= 3 then
+    elseif ctx.primaryThreat
+        and ctx.primaryThreatScore >= botDefenseThreshold(bot, state)
+    then
         best.x, best.y = defensivePlacement(bot, best.card, ctx.primaryThreat)
     else
         best.x, best.y = offensivePlacement(bot, state, best.card)
