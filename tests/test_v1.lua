@@ -442,15 +442,37 @@ assertTrue(not firstPiglinStillAlive, "Piglin must disappear after its ten-secon
 local rangedPiglinState = Game.new()
 Game.debugLoadScenario(rangedPiglinState, "empty")
 Game.debugSpawnCard(rangedPiglinState, 1, "nether_portal", 25, 100)
-Game.debugSpawnCard(rangedPiglinState, 2, "villager", 40, 100)
+Game.debugSpawnCard(rangedPiglinState, 2, "bat_swarm", 37, 100)
 Game.debugSetPaused(rangedPiglinState, false)
-for _ = 1, 8 do Game.update(rangedPiglinState, 0.25) end
-local rangedTarget
+for _ = 1, 9 do Game.update(rangedPiglinState, 0.25) end
+
+local rangedBat
 for _, entity in ipairs(rangedPiglinState.entities) do
-    if entity.name == "Villager" then rangedTarget = entity end
+    if entity.name == "Bat Swarm" then
+        rangedBat = entity
+        break
+    end
 end
-assertTrue(rangedTarget ~= nil, "Ranged Piglin test target must exist")
-assertEq(rangedTarget.hp, 157, "Piglin must use its 28-damage crossbow at range")
+assertTrue(rangedBat ~= nil, "Ranged Piglin flying target must exist")
+assertTrue(rangedBat.hp < rangedBat.maxHp, "Piglin must use its crossbow against flying targets")
+
+local groundNoCrossbowState = Game.new()
+Game.debugLoadScenario(groundNoCrossbowState, "empty")
+Game.debugSpawnCard(groundNoCrossbowState, 1, "nether_portal", 25, 100)
+Game.debugSpawnCard(groundNoCrossbowState, 2, "villager", 40, 100)
+Game.debugSetPaused(groundNoCrossbowState, false)
+
+for _ = 1, 9 do Game.update(groundNoCrossbowState, 0.25) end
+local distantGroundTarget
+for _, entity in ipairs(groundNoCrossbowState.entities) do
+    if entity.name == "Villager" then distantGroundTarget = entity end
+end
+assertTrue(distantGroundTarget ~= nil, "Distant ground target must exist")
+assertEq(
+    distantGroundTarget.hp,
+    distantGroundTarget.maxHp,
+    "Piglin must not fire its crossbow at grounded targets"
+)
 
 local meleePiglinState = Game.new()
 Game.debugLoadScenario(meleePiglinState, "empty")
