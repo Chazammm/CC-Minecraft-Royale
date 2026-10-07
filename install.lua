@@ -18,6 +18,7 @@ local files = {
   "src/render.lua",
   "src/admin_render.lua",
   "diagnose.lua",
+  "simulate.lua",
 }
 
 local base = ("https://raw.githubusercontent.com/%s/%s/%s/"):format(OWNER, REPO, BRANCH)
@@ -76,3 +77,4 @@ print("Install complete.")
 print("Run: diagnose")
 print("Then: main")
 print("Admin sandbox: admin")
+print("Balance sim: simulate 100")
