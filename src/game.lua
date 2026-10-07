@@ -303,6 +303,34 @@ damageEntity = function(state, target, damage, sourceOwner)
     end
 end
 
+local function explodeProximityUnit(state, entity)
+    local spec = entity.proximityExplosion
+    if not spec or not entity.alive then return end
+
+    addEffect(state, "explosion", entity.x, entity.y, spec.radius or 8, 0.55, entity.owner)
+    emitSound(state, "minecraft:entity.generic.explode", 0.9, 1.0)
+
+    local victims = {}
+    for _, candidate in ipairs(state.entities) do
+        if candidate.alive and candidate.id ~= entity.id and candidate.owner ~= entity.owner then
+            local d = util.distance(entity.x, entity.y, candidate.x, candidate.y)
+            if d <= (spec.radius or 8) then
+                table.insert(victims, candidate)
+            end
+        end
+    end
+
+    -- Mark the Creeper dead directly. This is a self-detonation, not a normal
+    -- death-trigger ability, so getting killed before the fuse completes does
+    -- not cause an explosion.
+    entity.alive = false
+    entity.fuseRemaining = nil
+
+    for _, victim in ipairs(victims) do
+        damageEntity(state, victim, spec.damage or 0, entity.owner)
+    end
+end
+
 local function handleDeathAbilities(state, entity)
     if entity.deathDamage then
         addEffect(state, "explosion", entity.x, entity.y, entity.deathDamage.radius, 0.45, entity.owner)
@@ -431,10 +459,41 @@ local function updateCombatEntity(state, entity, dt)
         entity.targetId = target and target.id or nil
     end
 
-    if not target then return end
+    if not target then
+        entity.fuseRemaining = nil
+        return
+    end
 
     local distance = util.distance(entity.x, entity.y, target.x, target.y)
     local attackRange = entity.attackRange or 0
+
+    if entity.kind == "unit" and entity.proximityExplosion then
+        local spec = entity.proximityExplosion
+        local triggerRange = spec.triggerRange or 4
+        local cancelRange = spec.cancelRange or (triggerRange + 2)
+
+        if entity.fuseRemaining then
+            if distance > cancelRange then
+                entity.fuseRemaining = nil
+            else
+                entity.fuseRemaining = entity.fuseRemaining - dt
+                if entity.fuseRemaining <= 0 then
+                    explodeProximityUnit(state, entity)
+                end
+                return
+            end
+        end
+
+        if distance <= triggerRange then
+            entity.fuseRemaining = spec.fuseTime or 1.5
+            emitSound(state, "minecraft:entity.creeper.primed", 0.7, 1.0)
+            return
+        end
+
+        local tx, ty = arena.navigationPoint(entity, target)
+        moveToward(entity, tx, ty, dt)
+        return
+    end
 
     if entity.kind == "unit"
         and entity.preferredMinRange
