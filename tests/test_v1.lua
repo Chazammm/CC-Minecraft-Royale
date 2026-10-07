@@ -347,13 +347,32 @@ assertTrue(botStatus.enabled and botStatus.playerId == 2, "Bot status must repor
 local sharedModeState = Game.new()
 local sharedModeLayout = {
     modeButton = { x1 = 1, y1 = 1, x2 = 10, y2 = 3 },
+    botDifficultyButton = { x1 = 1, y1 = 5, x2 = 10, y2 = 7 },
     readyButton = { x1 = 20, y1 = 20, x2 = 30, y2 = 22 },
     collectionCards = {},
 }
+
+-- If P2 requests VS BOT, P2 must remain human and P1 becomes the AI.
 Game.handleTouch(sharedModeState, 2, 5, 2, sharedModeLayout)
 assertEq(sharedModeState.gameMode, "bot", "P2 monitor must be able to switch to VS BOT")
+assertEq(sharedModeState.botPlayerId, 1, "P2 selecting VS BOT must make P1 the bot")
+
 Game.handleTouch(sharedModeState, 2, 5, 2, sharedModeLayout)
 assertEq(sharedModeState.gameMode, "pvp", "P2 monitor must be able to switch back to PVP")
+
+-- If P1 requests VS BOT, preserve the traditional P2 AI behavior.
+Game.handleTouch(sharedModeState, 1, 5, 2, sharedModeLayout)
+assertEq(sharedModeState.gameMode, "bot", "P1 monitor must be able to switch to VS BOT")
+assertEq(sharedModeState.botPlayerId, 2, "P1 selecting VS BOT must make P2 the bot")
+
+Game.handleTouch(sharedModeState, 1, 5, 2, sharedModeLayout)
+assertEq(sharedModeState.gameMode, "pvp", "P1 monitor must be able to switch back to PVP")
+
+-- P2-human path must also auto-ready the dynamically selected P1 bot.
+Game.handleTouch(sharedModeState, 2, 5, 2, sharedModeLayout)
+assertEq(sharedModeState.botPlayerId, 1, "P2-human bot match must keep P1 as AI")
+Game.handleTouch(sharedModeState, 2, 25, 21, sharedModeLayout)
+assertEq(sharedModeState.phase, "countdown", "P2 human READY must auto-ready P1 bot and start")
 
 local modeState = Game.new()
 assertTrue(Game.setGameMode(modeState, "bot"), "Game must support VS BOT mode")
