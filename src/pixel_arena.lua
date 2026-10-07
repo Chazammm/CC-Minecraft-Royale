@@ -393,16 +393,26 @@ local function alignTexelY(y)
 end
 
 local function drawHp(box, entity, playerId, cx, topY, width)
-    local maxW = math.max(5, width)
     local ratio = math.max(0, math.min(1, entity.hp / math.max(1, entity.maxHp)))
+    local maxW = entity.kind == "tower" and math.max(12, width + 4) or math.max(5, width)
     local filled = math.max(1, math.floor(maxW * ratio + 0.5))
     local x1 = math.floor(cx - maxW / 2)
     local y = math.floor(topY - 2)
-    local team = entity.owner == playerId and colors.lightBlue or colors.red
 
-    -- No background track: only team colour + arena colour share a texel.
-    -- This is much cleaner in CC semigraphics than a 3-colour HP bar.
-    fillRect(box, x1, y, x1 + filled - 1, y + 1, team)
+    local barColor
+    if entity.kind == "tower" then
+        if ratio <= 0.25 then
+            barColor = colors.red
+        elseif ratio <= 0.55 then
+            barColor = colors.yellow
+        else
+            barColor = colors.lime
+        end
+    else
+        barColor = entity.owner == playerId and colors.lightBlue or colors.red
+    end
+
+    fillRect(box, x1, y, x1 + filled - 1, y + 1, barColor)
 end
 
 local function drawSprite(box, entity, playerId)
@@ -417,6 +427,7 @@ local function drawSprite(box, entity, playerId)
     local y1 = alignTexelY(rawY)
 
     local team = entity.owner == playerId and colors.lightBlue or colors.red
+    local hpRatio = entity.hp / math.max(1, entity.maxHp or 1)
     local flash = entity.damageFlash and entity.damageFlash > 0
     local fuseBlink = entity.fuseRemaining
         and math.floor(entity.fuseRemaining * 10) % 2 == 0
@@ -432,6 +443,14 @@ local function drawSprite(box, entity, playerId)
                         color = colors.white
                     elseif fuseBlink and entity.name == "Creeper" then
                         color = token == "K" and colors.black or colors.white
+                    elseif entity.kind == "tower" and token == "T" then
+                        -- Deterministic crack pixels make damaged towers look
+                        -- visibly worn without losing their team silhouette.
+                        if hpRatio <= 0.25 and (rowIndex + col * 2) % 5 == 0 then
+                            color = colors.black
+                        elseif hpRatio <= 0.55 and (rowIndex * 2 + col) % 7 == 0 then
+                            color = colors.gray
+                        end
                     end
                     put(box, x1 + col - 1, y1 + rowIndex - 1, color)
                 end
@@ -545,6 +564,33 @@ local function drawRingEffect(box, playerId, effect, color)
     end
 end
 
+local function drawSparkle(box, playerId, effect, color)
+    local cx, cy = worldToPixel(box, playerId, effect.x, effect.y)
+    local duration = math.max(0.001, effect.duration or 0.4)
+    local progress = math.max(0, math.min(1, 1 - effect.ttl / duration))
+    local rise = progress * 5
+
+    put(box, cx, cy - rise - 1, color)
+    put(box, cx - 2, cy - rise + 1, color)
+    put(box, cx + 2, cy - rise, color)
+    put(box, cx, cy - rise + 2, colors.white)
+end
+
+local function drawTowerDown(box, playerId, effect)
+    drawExplosion(box, playerId, effect)
+    local cx, cy = worldToPixel(box, playerId, effect.x, effect.y)
+    local duration = math.max(0.001, effect.duration or 0.7)
+    local progress = math.max(0, math.min(1, 1 - effect.ttl / duration))
+    local spread = 2 + progress * 9
+
+    for i = 1, 8 do
+        local angle = i * 2.399
+        local x = cx + math.cos(angle) * spread
+        local y = cy + math.sin(angle) * spread * 0.65 + progress * 3
+        put(box, x, y, i % 2 == 0 and colors.gray or colors.brown)
+    end
+end
+
 local function drawEffect(box, playerId, effect)
     if effect.kind == "arrows" then
         drawArrowVolley(box, playerId, effect)
@@ -556,6 +602,19 @@ local function drawEffect(box, playerId, effect)
         drawRingEffect(box, playerId, effect, colors.purple)
     elseif effect.kind == "summon" then
         drawRingEffect(box, playerId, effect, colors.lime)
+    elseif effect.kind == "spawn" then
+        local team = effect.owner == playerId and colors.lightBlue or colors.red
+        drawRingEffect(box, playerId, effect, team)
+    elseif effect.kind == "death" then
+        drawRingEffect(box, playerId, effect, colors.lightGray)
+    elseif effect.kind == "slow" then
+        drawRingEffect(box, playerId, effect, colors.cyan)
+    elseif effect.kind == "emerald" then
+        drawSparkle(box, playerId, effect, colors.lime)
+    elseif effect.kind == "tower_warning" then
+        drawRingEffect(box, playerId, effect, colors.red)
+    elseif effect.kind == "tower_down" then
+        drawTowerDown(box, playerId, effect)
     else
         drawExplosion(box, playerId, effect)
     end
