@@ -294,7 +294,7 @@ cards.list = {
             targetMode = "none",
             passive = true,
             lifetime = 50,
-            emeraldBoost = 0.50,
+            emeraldBoost = 0.616,
         },
     },
     {
