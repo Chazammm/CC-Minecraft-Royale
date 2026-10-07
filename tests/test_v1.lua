@@ -24,6 +24,7 @@ package.path = "./?.lua;./?/init.lua;" .. package.path
 local cards = require("src.cards")
 local arena = require("src.arena")
 local Game = require("src.game")
+local sprites = require("src.sprites")
 
 local function assertEq(actual, expected, message)
     if actual ~= expected then
@@ -207,4 +208,31 @@ Game.debugSpawnCard(killedCreeperState, 2, "arrows", 50, 80)
 
 assertEq(nearbyZombie.hp, nearbyZombieHp, "Killed Creeper must not explode on death")
 
-print("V1 smoke tests passed")
+for _, card in ipairs(cards.list) do
+    local sprite = sprites.forCard(card)
+    assertTrue(sprite.width >= 3, "Every V2 card must have a readable sprite: " .. card.id)
+    assertTrue(sprite.height >= 1, "Every V2 card sprite must have at least one row: " .. card.id)
+end
+
+local visualState = Game.new()
+Game.debugLoadScenario(visualState, "empty")
+Game.debugSpawnCard(visualState, 1, "skeleton", 50, 90)
+Game.debugSpawnCard(visualState, 2, "zombie", 50, 80)
+Game.debugSetPaused(visualState, false)
+Game.update(visualState, 0.1)
+
+assertTrue(#visualState.projectiles >= 1, "Skeleton must create a visible projectile")
+assertEq(visualState.projectiles[1].visual, "arrow", "Skeleton projectile must use arrow visual")
+
+local flashState = Game.new()
+Game.debugLoadScenario(flashState, "empty")
+Game.debugSpawnCard(flashState, 2, "zombie", 50, 80)
+Game.debugSpawnCard(flashState, 1, "arrows", 50, 80)
+
+local flashedZombie
+for _, entity in ipairs(flashState.entities) do
+    if entity.name == "Zombie" then flashedZombie = entity end
+end
+assertTrue(flashedZombie and flashedZombie.damageFlash and flashedZombie.damageFlash > 0, "Damage must set hit-flash state")
+
+print("Smoke tests passed")
