@@ -669,20 +669,11 @@ end
 local function performAttack(state, entity, target)
     if entity.hybridAttack then
         local spec = entity.hybridAttack
-        local distance = util.distance(entity.x, entity.y, target.x, target.y)
-        local useMelee = not target.flying and distance <= (spec.meleeRange or 2.5)
 
-        if useMelee then
-            damageEntity(
-                state,
-                target,
-                spec.meleeDamage or entity.damage or 0,
-                entity.owner,
-                entity.sourceCardId
-            )
-            entity.attackCooldownLeft = spec.meleeCooldown or entity.attackCooldown or 1
-            emitSound(state, "minecraft:entity.player.attack.sweep", 0.35, 1.25)
-        else
+        -- Piglin-style hybrid units only use their ranged weapon against
+        -- flying targets. Every grounded target (troops, buildings, towers)
+        -- is attacked with the melee weapon.
+        if target.flying then
             spawnProjectile(
                 state,
                 entity,
@@ -692,6 +683,16 @@ local function performAttack(state, entity, target)
             )
             entity.attackCooldownLeft = spec.rangedCooldown or entity.attackCooldown or 1
             emitSound(state, "minecraft:item.crossbow.shoot", 0.35, 1.15)
+        else
+            damageEntity(
+                state,
+                target,
+                spec.meleeDamage or entity.damage or 0,
+                entity.owner,
+                entity.sourceCardId
+            )
+            entity.attackCooldownLeft = spec.meleeCooldown or entity.attackCooldown or 1
+            emitSound(state, "minecraft:entity.player.attack.sweep", 0.35, 1.25)
         end
         return
     end
@@ -807,6 +808,10 @@ local function updateCombatEntity(state, entity, dt)
 
     local distance = util.distance(entity.x, entity.y, target.x, target.y)
     local attackRange = entity.attackRange or 0
+
+    if entity.hybridAttack and not target.flying then
+        attackRange = entity.hybridAttack.meleeRange or 2.5
+    end
 
     if entity.kind == "unit" and entity.teleport and entity.teleportCooldownLeft <= 0 then
         local spec = entity.teleport
