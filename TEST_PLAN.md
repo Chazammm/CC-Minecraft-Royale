@@ -1,0 +1,180 @@
+# CC-Minecraft Royale V1 - In-game test plan
+
+Run these in order. Do not try to validate everything in one match; isolating one mechanic at a time makes bugs much easier to identify.
+
+## 1. Hardware and orientation
+
+- Build two separate 3x4 Advanced Monitor walls.
+- Run the game.
+- Confirm both monitors render at text scale 0.5.
+- Confirm one says PLAYER 1 and the other PLAYER 2.
+- Confirm the displayed monitor peripheral names match the intended sides.
+- If they are reversed, set config.MONITOR_NAMES explicitly.
+- Confirm no warning about a small display appears.
+
+Pass condition: both displays are stable, readable and assigned correctly.
+
+## 2. Ready, countdown and mirrored view
+
+- Press READY on Player 1 only.
+- Confirm Player 2 sees that the opponent is ready and the match does not start.
+- Ready Player 2.
+- Confirm a 3-second countdown appears.
+- When the arena appears, compare both screens.
+
+Pass condition: the same arena state is shown from opposite perspectives and each player's own King Tower is at the bottom.
+
+## 3. Touch selection and placement limits
+
+- Select a card, then tap it again.
+- Confirm selection cancels.
+- Select Zombie and deploy on your own half.
+- Try to deploy another troop on the enemy half.
+- Select Arrow Volley and target the enemy half.
+
+Pass condition: troop/building deployment is rejected on the enemy half, while Arrow Volley can target anywhere.
+
+## 4. Emerald economy and card cycle
+
+- Observe the Emerald counter rising.
+- Spend a cheap card and confirm the exact cost is removed.
+- Try to use a card you cannot afford.
+- Play the first hand slot once and note which card replaces it.
+- Cycle enough cards to verify the played card eventually returns.
+
+Pass condition: max is 10, unaffordable cards cannot deploy, and the 8-card / 4-card cycle remains stable.
+
+## 5. Zombie baseline combat
+
+- Send one Zombie down a lane with no distractions.
+- Watch it route through a bridge.
+- Let it reach a tower.
+
+Pass condition: movement, target acquisition, melee attacks, tower retaliation and HP reduction all work without the unit freezing in the river.
+
+## 6. Bridge pathfinding
+
+- Place ground troops at several far-left, center and far-right positions.
+- Do this in both lanes and for both players.
+- Try to force a target across the river on the opposite lane.
+
+Pass condition: ground units never walk through water and consistently choose/reach one of the two bridges.
+
+## 7. Skeleton ranged combat and kiting
+
+- Send a Skeleton toward an enemy.
+- Let the Skeleton attack from range.
+- Push a melee unit close to it.
+
+Pass condition: arrows/projectiles travel to the target and the Skeleton tries to create distance when an enemy gets too close.
+
+## 8. Iron Golem target preference
+
+- Place an enemy troop near the Iron Golem.
+- Place/leave an enemy Cannon or tower farther away.
+
+Pass condition: the Iron Golem ignores normal troops and continues toward buildings/towers.
+
+## 9. Bat Swarm flying
+
+- Deploy Bat Swarm away from a bridge.
+- Observe all three Bats.
+- Let them cross the river.
+- Put a ground-only Cannon in their path.
+
+Pass condition: three units spawn, fly directly over water and are not targeted by the ground-only Cannon.
+
+## 10. Cannon building behavior
+
+- Place a Cannon on your own half.
+- Send enemy ground units into range.
+- Then test an enemy Bat Swarm.
+- Leave a Cannon alive long enough to expire.
+
+Pass condition: Cannon is stationary, attacks ground troops, ignores flying troops and disappears after its lifetime.
+
+## 11. Arrow Volley AoE
+
+- Cluster multiple enemy troops.
+- Cast Arrow Volley over them.
+- Also hit a tower with the edge/center of the spell.
+
+Pass condition: multiple enemy units take damage once, the visible effect appears, and tower spell damage is reduced.
+
+## 12. Creeper death explosion
+
+- Put multiple enemy units around a Creeper.
+- Kill the Creeper.
+
+Pass condition: the Creeper's death creates an explosion and damages nearby enemies exactly once.
+
+## 13. Slime split-on-death
+
+- Deploy a Slime.
+- Kill it while there is room around it.
+
+Pass condition: exactly two Mini Slimes appear and continue fighting as normal units.
+
+## 14. Tower scoring and normal match end
+
+For this test, temporarily lower config.MATCH.normalTime if you do not want to wait three minutes.
+
+- Destroy one side tower and let normal time expire.
+
+Pass condition: the player with more destroyed side towers wins at the end of normal time.
+
+## 15. Overtime and 3x Emerald generation
+
+For this test, temporarily lower normal/overtime times.
+
+- Let normal time expire at an equal tower score.
+- Measure/observe Emerald regeneration before and after overtime.
+- Destroy one side tower during overtime.
+
+Pass condition: overtime begins only on a tie, Emerald generation is approximately three times faster, and the next destroyed tower ends the match immediately.
+
+## 16. King Tower instant win
+
+- Destroy the enemy King Tower during normal time.
+
+Pass condition: the match ends immediately regardless of side-tower score or remaining time.
+
+## 17. Overtime draw
+
+Temporarily set short times.
+
+- Reach overtime with a tie.
+- Destroy no tower before overtime expires.
+
+Pass condition: the result is DRAW.
+
+## 18. Simultaneous input stress test
+
+- Have both players repeatedly select/deploy cards at roughly the same time.
+- Create many units, spells and projectiles.
+- Keep both screens active.
+
+Pass condition: neither display desynchronizes, input remains responsive and no Lua error terminates the game.
+
+## 19. Result/rematch flow
+
+- Finish a match.
+- Press REMATCH on one side only.
+- Then press REMATCH on the other side.
+- On another result screen, test DECK/LOBBY and EXIT.
+
+Pass condition: one rematch vote waits for the opponent, two votes start a fresh countdown, and lobby buttons reset match state cleanly.
+
+## Bug report format
+
+When something fails, send:
+
+- Test number
+- Which player/screen
+- What you touched/placed
+- What you expected
+- What actually happened
+- A screenshot of both monitors if the issue is visual
+- The complete Lua error if the computer crashes
+
+That information is usually enough to reproduce and patch the bug quickly.
