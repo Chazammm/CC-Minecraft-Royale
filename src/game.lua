@@ -5,6 +5,63 @@ local arena = require("src.arena")
 
 local Game = {}
 
+local PRESET_FILE = "deck_presets.db"
+
+local function emptyPresets()
+    return {
+        [1] = { nil, nil, nil },
+        [2] = { nil, nil, nil },
+    }
+end
+
+local function loadPresets()
+    local presets = emptyPresets()
+    if not fs or not fs.exists or not fs.exists(PRESET_FILE) then return presets end
+
+    local handle = fs.open(PRESET_FILE, "r")
+    if not handle then return presets end
+    local raw = handle.readAll()
+    handle.close()
+
+    local ok, decoded = pcall(textutils.unserialize, raw)
+    if ok and type(decoded) == "table" then
+        for playerId = 1, 2 do
+            if type(decoded[playerId]) == "table" then
+                for slot = 1, 3 do
+                    if cards.isValidDeck(decoded[playerId][slot]) then
+                        presets[playerId][slot] = util.deepcopy(decoded[playerId][slot])
+                    end
+                end
+            end
+        end
+    end
+
+    return presets
+end
+
+local function savePresets(presets)
+    if not fs or not fs.open or not textutils or not textutils.serialize then return false end
+    local handle = fs.open(PRESET_FILE, "w")
+    if not handle then return false end
+    handle.write(textutils.serialize(presets))
+    handle.close()
+    return true
+end
+
+local function randomDeck()
+    local pool = {}
+    for _, card in ipairs(cards.list) do pool[#pool + 1] = card.id end
+
+    for i = #pool, 2, -1 do
+        local j = math.random(i)
+        pool[i], pool[j] = pool[j], pool[i]
+    end
+
+    local deck = {}
+    for i = 1, 8 do deck[i] = pool[i] end
+    return deck
+end
+
 local function newPlayerStats()
     return {
         cardsPlayed = 0,
@@ -872,6 +929,8 @@ function Game.new(soundCallback)
         adminPaused = false,
         adminScenario = nil,
         gameMode = "pvp",
+        botDifficulty = "normal",
+        deckPresets = loadPresets(),
         stats = newMatchStats(),
     }
 
@@ -1088,6 +1147,63 @@ function Game.toggleGameMode(state)
     return Game.setGameMode(state, state.gameMode == "bot" and "pvp" or "bot")
 end
 
+function Game.cycleBotDifficulty(state)
+    if state.phase ~= "lobby" or state.gameMode ~= "bot" then return false end
+    local order = { "easy", "normal", "hard" }
+    local current = state.botDifficulty or "normal"
+    local nextValue = "easy"
+
+    for i, value in ipairs(order) do
+        if value == current then
+            nextValue = order[(i % #order) + 1]
+            break
+        end
+    end
+
+    state.botDifficulty = nextValue
+    return true
+end
+
+function Game.saveDeckPreset(state, playerId, slot)
+    local player = state.players[playerId]
+    if not player or slot < 1 or slot > 3 then return false end
+    if not cards.isValidDeck(player.deck) then
+        setFeedback(player, "NEED A VALID 8-CARD DECK", 1.2)
+        return false
+    end
+
+    state.deckPresets[playerId][slot] = util.deepcopy(player.deck)
+    savePresets(state.deckPresets)
+    setFeedback(player, "PRESET " .. tostring(slot) .. " SAVED", 1.0)
+    return true
+end
+
+function Game.loadDeckPreset(state, playerId, slot)
+    local player = state.players[playerId]
+    if not player or slot < 1 or slot > 3 then return false end
+    local preset = state.deckPresets[playerId][slot]
+
+    if not cards.isValidDeck(preset) then
+        setFeedback(player, "PRESET " .. tostring(slot) .. " EMPTY", 1.0)
+        return false
+    end
+
+    player.deck = util.deepcopy(preset)
+    player.ready = false
+    setFeedback(player, "PRESET " .. tostring(slot) .. " LOADED", 1.0)
+    return true
+end
+
+function Game.randomizeDeck(state, playerId)
+    local player = state.players[playerId]
+    if not player then return false end
+
+    player.deck = randomDeck()
+    player.ready = false
+    setFeedback(player, "RANDOM DECK", 1.0)
+    return true
+end
+
 local function hit(zone, x, y)
     return zone
         and x >= zone.x1 and x <= zone.x2
@@ -1134,8 +1250,35 @@ function Game.handleTouch(state, playerId, x, y, layout)
             return
         end
 
+        if hit(layout.botDifficultyButton, x, y) and state.gameMode == "bot" and playerId == 1 then
+            Game.cycleBotDifficulty(state)
+            emitSound(state, "minecraft:block.note_block.pling", 0.5, state.botDifficulty == "hard" and 1.7 or 1.2)
+            return
+        end
+
         if state.gameMode == "bot" and playerId == 2 then
             return
+        end
+
+        if layout.presetButtons then
+            for slot = 1, 3 do
+                if hit(layout.presetButtons["save" .. tostring(slot)], x, y) then
+                    Game.saveDeckPreset(state, playerId, slot)
+                    emitSound(state, "minecraft:block.note_block.chime", 0.45, 1.2)
+                    return
+                end
+                if hit(layout.presetButtons["load" .. tostring(slot)], x, y) then
+                    Game.loadDeckPreset(state, playerId, slot)
+                    emitSound(state, "minecraft:block.note_block.hat", 0.4, 1.1)
+                    return
+                end
+            end
+
+            if hit(layout.presetButtons.random, x, y) then
+                Game.randomizeDeck(state, playerId)
+                emitSound(state, "minecraft:block.note_block.pling", 0.45, 1.5)
+                return
+            end
         end
 
         if layout.collectionCards then
