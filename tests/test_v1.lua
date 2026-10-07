@@ -302,24 +302,17 @@ Game.update(teleportState, 0.1)
 local distanceAfterTeleport = math.abs(testEnderman.y - teleportZombie.y)
 assertTrue(distanceAfterTeleport < distanceBeforeTeleport, "Enderman must teleport closer to a valid target")
 
-local splashState = Game.new()
-Game.debugLoadScenario(splashState, "empty")
-Game.debugSpawnCard(splashState, 1, "witch", 50, 95)
-Game.debugSpawnCard(splashState, 2, "zombie", 49, 80)
-Game.debugSpawnCard(splashState, 2, "zombie", 53, 81)
-Game.debugSetPaused(splashState, false)
+local summonState = Game.new()
+Game.debugLoadScenario(summonState, "empty")
+Game.debugSpawnCard(summonState, 1, "witch", 50, 95)
+Game.debugSetPaused(summonState, false)
 
-local splashTargets = {}
-for _, entity in ipairs(splashState.entities) do
-    if entity.name == "Zombie" then
-        table.insert(splashTargets, { entity = entity, hp = entity.hp })
-    end
+for _ = 1, 18 do Game.update(summonState, 0.25) end
+
+local babyZombieCount = 0
+for _, entity in ipairs(summonState.entities) do
+    if entity.name == "Baby Zombie" then babyZombieCount = babyZombieCount + 1 end
 end
-for _ = 1, 8 do Game.update(splashState, 0.15) end
-assertTrue(
-    splashTargets[1].entity.hp < splashTargets[1].hp
-        and splashTargets[2].entity.hp < splashTargets[2].hp,
-    "Witch potion must splash nearby enemies"
-)
+assertTrue(babyZombieCount >= 1, "Witch must periodically summon a Baby Zombie")
 
 print("Smoke tests passed")
