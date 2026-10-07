@@ -166,8 +166,11 @@ function render.draw(monitor, state, viewerId, ui)
         local card = cards.list[(page - 1) * pageSize + slot]
         if card then
             local selected = ui.selectedCard == card.id
-            local label = (card.icon or "?") .. " " .. card.name
-            drawButton(b, layout.cards[slot], label, selected, card.color or colors.orange)
+            local zone = layout.cards[slot]
+            local width = zone.x2 - zone.x1 + 1
+            local withIcon = (card.icon or "?") .. " " .. card.name
+            local label = #withIcon <= math.max(1, width - 2) and withIcon or card.name
+            drawButton(b, zone, label, selected, card.color or colors.orange)
         end
     end
 
