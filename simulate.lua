@@ -4,10 +4,42 @@ local cards = require("src.cards")
 
 local args = { ... }
 local matchCount = math.floor(tonumber(args[1]) or 100)
-matchCount = math.max(1, math.min(500, matchCount))
+matchCount = math.max(2, math.min(2000, matchCount))
 
-local DECK_A = Bot.defaultDeck()
-local DECK_B = {
+local mode = string.lower(tostring(args[2] or "mixed"))
+if mode ~= "mixed" and mode ~= "fixed" then mode = "mixed" end
+
+local seed = math.floor(tonumber(args[3]) or 1337)
+local rngState = seed % 2147483647
+if rngState <= 0 then rngState = 1 end
+
+local function randomInt(maximum)
+    rngState = (rngState * 48271) % 2147483647
+    return (rngState % maximum) + 1
+end
+
+local function copy(list)
+    local out = {}
+    for i, value in ipairs(list) do out[i] = value end
+    return out
+end
+
+local function shuffle(list)
+    local out = copy(list)
+    for i = #out, 2, -1 do
+        local j = randomInt(i)
+        out[i], out[j] = out[j], out[i]
+    end
+    return out
+end
+
+local ALL_CARDS = {}
+for _, card in ipairs(cards.list) do
+    table.insert(ALL_CARDS, card.id)
+end
+
+local FIXED_A = Bot.defaultDeck()
+local FIXED_B = {
     "skeleton",
     "iron_golem",
     "bat_swarm",
@@ -19,69 +51,92 @@ local DECK_B = {
 }
 
 local report = {
-    aWins = 0,
-    bWins = 0,
+    matches = 0,
+    p1Wins = 0,
+    p2Wins = 0,
     draws = 0,
     totalTime = 0,
-    aTowerDamage = 0,
-    bTowerDamage = 0,
     cards = {},
 }
 
-local function addCardStats(label, source)
-    for cardId, stat in pairs(source or {}) do
-        local key = label .. ":" .. cardId
-        local out = report.cards[key]
-        if not out then
-            out = {
-                label = label,
-                cardId = cardId,
-                plays = 0,
-                emeraldSpent = 0,
-                unitDamage = 0,
-                towerDamage = 0,
-                kills = 0,
-                towersKilled = 0,
-            }
-            report.cards[key] = out
-        end
+local function cardReport(cardId)
+    local out = report.cards[cardId]
+    if not out then
+        out = {
+            cardId = cardId,
+            deckMatches = 0,
+            wins = 0,
+            draws = 0,
+            plays = 0,
+            emeraldSpent = 0,
+            unitDamage = 0,
+            towerDamage = 0,
+            kills = 0,
+            towersKilled = 0,
+            emeraldBonus = 0,
+            slowSeconds = 0,
+            targetsHit = 0,
+        }
+        report.cards[cardId] = out
+    end
+    return out
+end
 
-        out.plays = out.plays + (stat.plays or 0)
-        out.emeraldSpent = out.emeraldSpent + (stat.emeraldSpent or 0)
-        out.unitDamage = out.unitDamage + (stat.unitDamage or 0)
-        out.towerDamage = out.towerDamage + (stat.towerDamage or 0)
-        out.kills = out.kills + (stat.kills or 0)
-        out.towersKilled = out.towersKilled + (stat.towersKilled or 0)
+local function contains(deck, cardId)
+    for _, id in ipairs(deck) do
+        if id == cardId then return true end
+    end
+    return false
+end
+
+local function addDeckResult(deck, owner, state)
+    local won = state.winner == owner
+    local drew = state.winner == nil
+    local playerStats = state.stats.players[owner]
+
+    for _, cardId in ipairs(deck) do
+        local out = cardReport(cardId)
+        out.deckMatches = out.deckMatches + 1
+        if won then out.wins = out.wins + 1 end
+        if drew then out.draws = out.draws + 1 end
+
+        local stat = playerStats.cards[cardId]
+        if stat then
+            out.plays = out.plays + (stat.plays or 0)
+            out.emeraldSpent = out.emeraldSpent + (stat.emeraldSpent or 0)
+            out.unitDamage = out.unitDamage + (stat.unitDamage or 0)
+            out.towerDamage = out.towerDamage + (stat.towerDamage or 0)
+            out.kills = out.kills + (stat.kills or 0)
+            out.towersKilled = out.towersKilled + (stat.towersKilled or 0)
+            out.emeraldBonus = out.emeraldBonus + (stat.emeraldBonus or 0)
+            out.slowSeconds = out.slowSeconds + (stat.slowSeconds or 0)
+            out.targetsHit = out.targetsHit + (stat.targetsHit or 0)
+        end
     end
 end
 
-local function runMatch(index)
+local function runMatch(deck1, deck2)
     local state = Game.new()
+    local bot1 = Bot.new(1, deck1)
+    local bot2 = Bot.new(2, deck2)
 
-    -- Swap sides every match so P1/P2 geometry does not bias the report.
-    local aOwner = index % 2 == 1 and 1 or 2
-    local bOwner = aOwner == 1 and 2 or 1
-
-    local botA = Bot.new(aOwner, DECK_A)
-    local botB = Bot.new(bOwner, DECK_B)
-
-    Bot.prepare(botA, state)
-    Bot.prepare(botB, state)
+    Bot.prepare(bot1, state)
+    Bot.prepare(bot2, state)
 
     state.players[1].ready = true
     state.players[2].ready = true
     Game.startCountdown(state)
 
-    Bot.beginMatch(botA)
-    Bot.beginMatch(botB)
-    botA.enabled = true
-    botB.enabled = true
+    Bot.beginMatch(bot1)
+    Bot.beginMatch(bot2)
+    bot1.enabled = true
+    bot2.enabled = true
 
     local ticks = 0
     while state.phase ~= "result" and ticks < 1400 do
         Game.update(state, 0.25)
-        Bot.update(botA, state, 0.25)
-        Bot.update(botB, state, 0.25)
+        Bot.update(bot1, state, 0.25)
+        Bot.update(bot2, state, 0.25)
         ticks = ticks + 1
     end
 
@@ -89,86 +144,153 @@ local function runMatch(index)
         Game.finish(state, nil, "SIMULATION TIMEOUT")
     end
 
-    if state.winner == aOwner then
-        report.aWins = report.aWins + 1
-    elseif state.winner == bOwner then
-        report.bWins = report.bWins + 1
+    report.matches = report.matches + 1
+    report.totalTime = report.totalTime + (state.stats.elapsed or 0)
+
+    if state.winner == 1 then
+        report.p1Wins = report.p1Wins + 1
+    elseif state.winner == 2 then
+        report.p2Wins = report.p2Wins + 1
     else
         report.draws = report.draws + 1
     end
 
-    report.totalTime = report.totalTime + (state.stats.elapsed or 0)
-
-    local aStats = state.stats.players[aOwner]
-    local bStats = state.stats.players[bOwner]
-    report.aTowerDamage = report.aTowerDamage + (aStats.towerDamage or 0)
-    report.bTowerDamage = report.bTowerDamage + (bStats.towerDamage or 0)
-
-    addCardStats("A", aStats.cards)
-    addCardStats("B", bStats.cards)
+    addDeckResult(deck1, 1, state)
+    addDeckResult(deck2, 2, state)
 end
 
-print("CC-Minecraft Royale balance simulation")
-print(("Running %d bot-vs-bot matches..."):format(matchCount))
+local function mixedDeckPair()
+    local pool = shuffle(ALL_CARDS)
+    local a, b = {}, {}
+
+    for i = 1, 8 do a[i] = pool[i] end
+    for i = 9, 16 do b[i - 8] = pool[i] end
+
+    -- Randomize hand/cycle order inside both decks too.
+    return shuffle(a), shuffle(b)
+end
+
+print("CC-Minecraft Royale balance benchmark")
+print(("Mode: %s   Matches: %d   Seed: %d"):format(string.upper(mode), matchCount, seed))
+if mode == "mixed" then
+    print("All 16 cards are reshuffled into two 8-card decks.")
+    print("Deck pairs are replayed with sides swapped to reduce P1/P2 bias.")
+else
+    print("Using the original fixed Deck A vs Deck B comparison.")
+end
 print("")
 
-for i = 1, matchCount do
-    runMatch(i)
-    if i % 10 == 0 or i == matchCount then
-        print(("  %d / %d"):format(i, matchCount))
+local completed = 0
+while completed < matchCount do
+    local deckA, deckB
+
+    if mode == "fixed" then
+        deckA, deckB = copy(FIXED_A), copy(FIXED_B)
+    else
+        deckA, deckB = mixedDeckPair()
+    end
+
+    runMatch(deckA, deckB)
+    completed = completed + 1
+
+    if completed < matchCount then
+        runMatch(deckB, deckA)
+        completed = completed + 1
+    end
+
+    if completed % 20 == 0 or completed >= matchCount then
+        print(("  %d / %d"):format(completed, matchCount))
         if sleep then sleep(0) end
     end
 end
 
 print("")
-print("RESULT")
-print(("Deck A wins: %d (%.1f%%)"):format(report.aWins, report.aWins / matchCount * 100))
-print(("Deck B wins: %d (%.1f%%)"):format(report.bWins, report.bWins / matchCount * 100))
-print(("Draws:       %d (%.1f%%)"):format(report.draws, report.draws / matchCount * 100))
-print(("Avg match:   %.1fs"):format(report.totalTime / matchCount))
-print(("Avg tower damage A/B: %.0f / %.0f"):format(
-    report.aTowerDamage / matchCount,
-    report.bTowerDamage / matchCount
-))
+print("GLOBAL")
+print(("P1 wins: %d (%.1f%%)"):format(report.p1Wins, report.p1Wins / report.matches * 100))
+print(("P2 wins: %d (%.1f%%)"):format(report.p2Wins, report.p2Wins / report.matches * 100))
+print(("Draws:   %d (%.1f%%)"):format(report.draws, report.draws / report.matches * 100))
+print(("Avg match: %.1fs"):format(report.totalTime / report.matches))
 
 local rows = {}
-for _, stat in pairs(report.cards) do
-    if stat.plays > 0 then
-        local card = cards.get(stat.cardId)
-        local value = stat.unitDamage + stat.towerDamage * 1.5
-        local perEmerald = stat.emeraldSpent > 0 and value / stat.emeraldSpent or 0
-        table.insert(rows, {
-            label = stat.label,
-            name = card and card.name or stat.cardId,
-            plays = stat.plays,
-            spent = stat.emeraldSpent,
-            unitDamage = stat.unitDamage,
-            towerDamage = stat.towerDamage,
-            kills = stat.kills,
-            valuePerEmerald = perEmerald,
-        })
+for _, card in ipairs(cards.list) do
+    local stat = cardReport(card.id)
+    local scoreRate = stat.deckMatches > 0
+        and (stat.wins + stat.draws * 0.5) / stat.deckMatches * 100
+        or 0
+    local playsPerMatch = stat.deckMatches > 0 and stat.plays / stat.deckMatches or 0
+    local unitPerE = stat.emeraldSpent > 0 and stat.unitDamage / stat.emeraldSpent or 0
+    local towerPerE = stat.emeraldSpent > 0 and stat.towerDamage / stat.emeraldSpent or 0
+
+    local flag = "OK"
+    if stat.deckMatches >= 20 then
+        if scoreRate >= 56 then
+            flag = "WATCH+"
+        elseif scoreRate <= 44 then
+            flag = "WATCH-"
+        end
     end
+
+    table.insert(rows, {
+        id = card.id,
+        name = card.name,
+        scoreRate = scoreRate,
+        playsPerMatch = playsPerMatch,
+        unitPerE = unitPerE,
+        towerPerE = towerPerE,
+        kills = stat.kills,
+        emeraldBonus = stat.emeraldBonus,
+        slowSeconds = stat.slowSeconds,
+        targetsHit = stat.targetsHit,
+        totalPlays = stat.plays,
+        flag = flag,
+    })
 end
 
 table.sort(rows, function(a, b)
-    return a.valuePerEmerald > b.valuePerEmerald
+    if a.scoreRate == b.scoreRate then return a.name < b.name end
+    return a.scoreRate > b.scoreRate
 end)
 
 print("")
-print("CARD VALUE (damage-weighted per Emerald)")
-print("Deck Card             Plays  Dmg/E  TowerDmg")
+print("CARD BALANCE")
+print("Card             Score  P/M   U/E   T/E   Flag")
 for _, row in ipairs(rows) do
-    print(("%-4s %-16s %5d %6.1f %8.0f"):format(
-        row.label,
+    print(("%-16s %5.1f %4.1f %5.1f %5.1f %-6s"):format(
         row.name,
-        row.plays,
-        row.valuePerEmerald,
-        row.towerDamage
+        row.scoreRate,
+        row.playsPerMatch,
+        row.unitPerE,
+        row.towerPerE,
+        row.flag
     ))
 end
 
 print("")
-print("Deck A:")
-print("  " .. table.concat(DECK_A, ", "))
-print("Deck B:")
-print("  " .. table.concat(DECK_B, ", "))
+print("UTILITY")
+print("Card             BonusE  Slow/s  Hits/Play")
+for _, row in ipairs(rows) do
+    local bonusPerMatch = report.cards[row.id].deckMatches > 0
+        and row.emeraldBonus / report.cards[row.id].deckMatches
+        or 0
+    local slowPerPlay = row.totalPlays > 0 and row.slowSeconds / row.totalPlays or 0
+    local hitsPerPlay = row.totalPlays > 0 and row.targetsHit / row.totalPlays or 0
+
+    if bonusPerMatch > 0 or slowPerPlay > 0 or hitsPerPlay > 0 then
+        print(("%-16s %6.2f %7.2f %9.2f"):format(
+            row.name,
+            bonusPerMatch,
+            slowPerPlay,
+            hitsPerPlay
+        ))
+    end
+end
+
+print("")
+print("HOW TO READ")
+print("Score = deck win rate with draws worth half a win.")
+print("P/M   = times played per match while the card is in deck.")
+print("U/E   = unit damage per Emerald spent.")
+print("T/E   = tower damage per Emerald spent.")
+print("WATCH+/- means investigate, not automatic nerf/buff.")
+print("")
+print("Recommended benchmark: simulate 500 mixed")
