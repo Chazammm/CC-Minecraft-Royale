@@ -69,17 +69,60 @@ local function seekTo(handle, offset)
     return true
 end
 
+local function localPackAvailable()
+    return fs
+        and fs.exists
+        and fs.exists(manifest.path)
+        and (not fs.getSize or not manifest.packSize or fs.getSize(manifest.path) == manifest.packSize)
+end
+
+local function openRemoteRange(track)
+    if not http or not http.get or not manifest.remoteUrl then
+        return nil, "HTTP MUSIC UNAVAILABLE"
+    end
+
+    local lastByte = track.offset + track.bytes - 1
+    local headers = {
+        ["Range"] = ("bytes=%d-%d"):format(track.offset, lastByte),
+        ["Accept"] = "application/octet-stream",
+    }
+    local url = manifest.remoteUrl .. "?v=" .. tostring(manifest.packVersion or manifest.packSize or "1")
+    local response, err = http.get(url, headers, true)
+    if not response then return nil, tostring(err or "MUSIC HTTP FAILED") end
+
+    if response.getResponseCode then
+        local code = response.getResponseCode()
+        -- For non-zero offsets we need true range support. A 200 response
+        -- would start at byte zero and therefore play the wrong song.
+        if track.offset > 0 and code ~= 206 then
+            response.close()
+            return nil, "MUSIC HOST DOES NOT SUPPORT BYTE RANGES"
+        end
+    end
+
+    return response
+end
+
 local function openTrack(controller, trackIndex)
     closeHandle(controller)
 
     local track = manifest.tracks[trackIndex]
     if not track then return false, "TRACK NOT FOUND" end
 
-    local handle = fs.open(manifest.path, "rb")
-    if not handle then return false, "MUSIC PACK MISSING" end
-    if not seekTo(handle, track.offset) then
-        handle.close()
-        return false, "MUSIC SEEK FAILED"
+    local handle
+    if localPackAvailable() then
+        handle = fs.open(manifest.path, "rb")
+        if not handle then return false, "MUSIC PACK OPEN FAILED" end
+        if not seekTo(handle, track.offset) then
+            handle.close()
+            return false, "MUSIC SEEK FAILED"
+        end
+        controller.source = "local"
+    else
+        local err
+        handle, err = openRemoteRange(track)
+        if not handle then return false, err end
+        controller.source = "stream"
     end
 
     controller.handle = handle
@@ -133,9 +176,7 @@ function Music.new(speaker, speakerName)
         active = false,
         available = speaker ~= nil
             and ok
-            and fs
-            and fs.exists
-            and fs.exists(manifest.path),
+            and (localPackAvailable() or (http and http.get and manifest.remoteUrl ~= nil)),
         handle = nil,
         remaining = 0,
         decoder = nil,
@@ -150,18 +191,15 @@ function Music.new(speaker, speakerName)
 end
 
 function Music.refreshAvailability(controller)
+    local localReady = localPackAvailable()
+    local remoteReady = http and http.get and manifest.remoteUrl ~= nil
+
     controller.available = controller.speaker ~= nil
         and controller.dfpwm ~= nil
-        and fs
-        and fs.exists
-        and fs.exists(manifest.path)
+        and (localReady or remoteReady)
 
-    if controller.available and fs.getSize then
-        local size = fs.getSize(manifest.path)
-        if manifest.packSize and size ~= manifest.packSize then
-            controller.available = false
-            controller.error = "MUSIC PACK SIZE MISMATCH"
-        end
+    if not controller.available then
+        controller.error = "BATTLE MUSIC SOURCE UNAVAILABLE"
     end
 
     return controller.available
@@ -272,6 +310,7 @@ function Music.status(controller)
         active = controller.active,
         track = controller.currentTrackId,
         tracks = #manifest.tracks,
+        source = controller.source,
         error = controller.error,
     }
 end
