@@ -432,10 +432,21 @@ assertEq(featureBot.mode, "hard", "Bot mode must store HARD difficulty")
 local presetState = Game.new()
 local originalPresetDeck = {}
 for i, id in ipairs(presetState.players[1].deck) do originalPresetDeck[i] = id end
-assertTrue(Game.saveDeckPreset(presetState, 1, 1), "Valid deck must save into preset 1")
+assertEq(presetState.players[1].presetSlot, 1, "Preset selector should start at slot 1")
+assertTrue(Game.cycleDeckPresetSlot(presetState, 1, 1), "Preset selector must move right")
+assertEq(presetState.players[1].presetSlot, 2, "Preset selector should move to slot 2")
+assertTrue(Game.cycleDeckPresetSlot(presetState, 1, 1), "Preset selector must move right again")
+assertEq(presetState.players[1].presetSlot, 3, "Preset selector should move to slot 3")
+assertTrue(Game.cycleDeckPresetSlot(presetState, 1, 1), "Preset selector must wrap right")
+assertEq(presetState.players[1].presetSlot, 1, "Preset selector should wrap 3 -> 1")
+assertTrue(Game.cycleDeckPresetSlot(presetState, 1, -1), "Preset selector must wrap left")
+assertEq(presetState.players[1].presetSlot, 3, "Preset selector should wrap 1 -> 3")
+presetState.players[1].presetSlot = 1
+
+assertTrue(Game.saveDeckPreset(presetState, 1, presetState.players[1].presetSlot), "Selected preset must save")
 Game.toggleDeckCard(presetState, 1, originalPresetDeck[1])
 Game.toggleDeckCard(presetState, 1, "blaze")
-assertTrue(Game.loadDeckPreset(presetState, 1, 1), "Saved preset must load")
+assertTrue(Game.loadDeckPreset(presetState, 1, presetState.players[1].presetSlot), "Selected preset must load")
 for i = 1, 8 do
     assertEq(presetState.players[1].deck[i], originalPresetDeck[i], "Loaded preset must restore deck order")
 end
