@@ -728,8 +728,8 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
         modeLabel = "MODE: VS BOT (P2 AI)"
     end
 
-    -- The mode is visible on both monitors. Only P1 can change it; P2 is
-    -- deliberately read-only so both displays always describe the same match.
+    -- The mode is visible and switchable on both monitors. In VS BOT mode
+    -- P2's deck controls remain locked because P2 is the AI side.
     drawButton(
         buffer,
         layout.modeButton,
