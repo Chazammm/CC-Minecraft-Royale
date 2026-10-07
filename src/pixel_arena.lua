@@ -26,14 +26,17 @@ local PALETTE = {
 
 local SPRITES = {
     zombie = {
+        -- Green block head, blue shirt, purple trousers.
         rows = {
-            ".LLL.",
-            ".LKL.",
-            ".LLL.",
-            "LLLLL",
-            ".LLL.",
-            ".L.L.",
-            "LL.LL",
+            "..LLL..",
+            ".LKLKL.",
+            "..LLL..",
+            ".BBBBB.",
+            "BBBBBBB",
+            "..BBB..",
+            "..P.P..",
+            "..P.P..",
+            ".PP.PP.",
         },
     },
     skeleton = {
@@ -79,15 +82,18 @@ local SPRITES = {
         },
     },
     creeper = {
+        -- Oversized Minecraft head, narrow body and split feet.
         rows = {
-            "LLLLL",
-            "LKLKL",
-            "LLKLL",
-            "LLLLL",
-            ".LLL.",
-            ".LLL.",
-            ".L.L.",
-            "LL.LL",
+            ".LLLLL.",
+            ".LKLKL.",
+            ".LLKLL.",
+            ".LKKKL.",
+            "..LLL..",
+            "..LLL..",
+            "..LLL..",
+            ".LL.LL.",
+            ".L...L.",
+            "LL...LL",
         },
     },
     slime = {
@@ -125,10 +131,14 @@ local SPRITES = {
         },
     },
     witch = {
+        -- Hat / face / robe are split vertically to keep Pixelbox clean.
         rows = {
+            "...P...",
             "..PPP..",
             ".PPPPP.",
-            "..PKP..",
+            "..OOO..",
+            ".OKOKO.",
+            "...O...",
             "..PPP..",
             ".PPPPP.",
             "..P.P..",
@@ -136,15 +146,19 @@ local SPRITES = {
         },
     },
     enderman = {
+        -- Black, very tall and thin with the iconic purple eyes.
         rows = {
-            ".MMMMM.",
-            ".MKMKM.",
-            ".MMMMM.",
-            "...M...",
-            "..MMM..",
-            "...M...",
-            "..M.M..",
-            ".M...M.",
+            "..KKK..",
+            ".KPKPK.",
+            "..KKK..",
+            "...K...",
+            "..KKK..",
+            "K..K..K",
+            "K..K..K",
+            "...K...",
+            "..K.K..",
+            "..K.K..",
+            ".K...K.",
         },
     },
     spider = {
@@ -170,12 +184,14 @@ local SPRITES = {
         },
     },
     villager = {
+        -- Big tan head, heavy brow/nose and brown robe.
         rows = {
+            "..OOO..",
+            ".OKOKO.",
+            ".OOOOO.",
+            "...O...",
             "..NNN..",
-            ".NNKNN.",
             ".NNNNN.",
-            "...N...",
-            "..NNN..",
             ".NNNNN.",
             "..N.N..",
         },
@@ -188,13 +204,15 @@ local SPRITES = {
         },
     },
     wolf = {
+        -- Side-on four-legged tamed wolf with a visible red collar.
         rows = {
-            "S...S",
-            ".SSS.",
-            ".SKS.",
-            "SSSSS",
-            ".S.S.",
-            "S...S",
+            "..S......",
+            ".SSS.....",
+            "SSKSS....",
+            ".SRRSSSS.",
+            ".SSSSSSS.",
+            "..S.S.S..",
+            ".S...S...",
         },
     },
     princess_tower = {
