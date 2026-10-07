@@ -333,6 +333,49 @@ cards.list = {
             targetMode = "any",
         },
     },
+    {
+        id = "falling_anvil",
+        name = "Falling Anvil",
+        icon = "H",
+        cost = 4,
+        kind = "spell",
+        color = colors.gray,
+        placement = "anywhere",
+        spell = {
+            radius = 5.5,
+            damage = 549,
+            towerMultiplier = 0.35,
+            delay = 3.0,
+            groundOnly = true,
+            visual = "anvil",
+        },
+    },
+    {
+        id = "nether_portal",
+        name = "Nether Portal",
+        icon = "O",
+        cost = 5,
+        kind = "building",
+        color = colors.purple,
+        building = {
+            maxHp = 520,
+            damage = 0,
+            attackRange = 0,
+            attackCooldown = 1,
+            canAttackAir = false,
+            targetMode = "none",
+            passive = true,
+            lifetime = 30,
+            periodicSpawn = {
+                template = "piglin",
+                interval = 7.0,
+                initialDelay = 2.0,
+                count = 1,
+                radius = 3,
+                maxAlive = 2,
+            },
+        },
+    },
 }
 
 cards.internalUnits = {
@@ -361,6 +404,29 @@ cards.internalUnits = {
         aggroRange = 25,
         canAttackAir = false,
         targetMode = "any",
+    },
+    piglin = {
+        name = "Piglin",
+        icon = "Q",
+        color = colors.orange,
+        maxHp = 155,
+        damage = 28,
+        moveSpeed = 7.4,
+        attackRange = 13.0,
+        attackCooldown = 1.20,
+        aggroRange = 30,
+        canAttackAir = true,
+        targetMode = "any",
+        projectileSpeed = 54,
+        projectileVisual = "crossbow_bolt",
+        lifetime = 10.0,
+        hybridAttack = {
+            meleeRange = 2.6,
+            meleeDamage = 58,
+            meleeCooldown = 0.85,
+            rangedDamage = 28,
+            rangedCooldown = 1.20,
+        },
     },
 }
 
@@ -445,6 +511,14 @@ cards.info = {
     wolf = {
         role = "Fast fighter",
         description = "Quick melee fighter with strong attack speed. Useful for punishing ranged troops and applying lane pressure.",
+    },
+    falling_anvil = {
+        role = "Delayed burst spell",
+        description = "Marks an area for 3 seconds, then an anvil crashes down. A direct hit leaves a full-health Zombie at exactly 1 HP, so timing matters.",
+    },
+    nether_portal = {
+        role = "Spawner building",
+        description = "Opens a temporary Nether Portal that periodically sends out short-lived Piglins. Piglins use a crossbow at range and an axe in melee.",
     },
 }
 
