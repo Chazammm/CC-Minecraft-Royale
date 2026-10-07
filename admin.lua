@@ -4,15 +4,19 @@ local Game = require("src.game")
 local arena = require("src.arena")
 local cards = require("src.cards")
 local render = require("src.admin_render")
+local Bot = require("src.bot")
 
 local hw = hardware.init()
 local state = Game.new(function(name, volume, pitch)
     hardware.playSound(hw, name, volume, pitch)
 end)
 
+local bot = Bot.new(2)
+
 local ui = {
     owner = 1,
     selectedCard = cards.list[1].id,
+    bot = bot,
 }
 
 Game.debugLoadScenario(state, "full")
@@ -42,6 +46,7 @@ local function handleTouch(monitorName, x, y)
     for i, zone in ipairs(layout.scenarios) do
         if hit(zone, x, y) then
             Game.debugLoadScenario(state, render.scenarioIds[i])
+            if bot.enabled then Bot.reset(bot, state) end
             redraw()
             return
         end
@@ -61,6 +66,12 @@ local function handleTouch(monitorName, x, y)
 
     if hit(layout.controls[3], x, y) then
         Game.debugClearUnits(state)
+        redraw()
+        return
+    end
+
+    if hit(layout.controls[4], x, y) then
+        Bot.toggle(bot, state)
         redraw()
         return
     end
@@ -114,6 +125,10 @@ while true do
             redraw()
         elseif e[2] == keys.r then
             Game.debugLoadScenario(state, state.adminScenario or "full")
+            if bot.enabled then Bot.reset(bot, state) end
+            redraw()
+        elseif e[2] == keys.b then
+            Bot.toggle(bot, state)
             redraw()
         end
 
@@ -124,6 +139,7 @@ while true do
         if dt <= 0 then dt = config.TICK_RATE end
 
         Game.update(state, dt)
+        Bot.update(bot, state, dt)
         tickTimer = os.startTimer(config.TICK_RATE)
         redraw()
     end
