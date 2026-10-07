@@ -79,15 +79,23 @@ function render.layoutFor(monitor)
         width = w,
         height = h,
         scenarios = makeColumns(w, 5, 3, 5),
-        arena = { x1 = 1, y1 = 6, x2 = w, y2 = h - 18 },
-        controls = makeColumns(w, 3, h - 17, h - 14),
+        arena = { x1 = 1, y1 = 6, x2 = w, y2 = h - 22 },
+        controls = makeColumns(w, 3, h - 21, h - 18),
         cards = {},
     }
 
-    local top = makeColumns(w, 4, h - 13, h - 7)
-    local bottom = makeColumns(w, 4, h - 6, h)
-    for i = 1, 4 do layout.cards[i] = top[i] end
-    for i = 1, 4 do layout.cards[i + 4] = bottom[i] end
+    local cardTop = h - 17
+    local cardHeight = h - cardTop + 1
+    for i = 1, 16 do
+        local col = (i - 1) % 4
+        local row = math.floor((i - 1) / 4)
+        layout.cards[i] = {
+            x1 = math.floor(col * w / 4) + 1,
+            x2 = math.floor((col + 1) * w / 4),
+            y1 = cardTop + math.floor(row * cardHeight / 4),
+            y2 = cardTop + math.floor((row + 1) * cardHeight / 4) - 1,
+        }
+    end
 
     return layout
 end
