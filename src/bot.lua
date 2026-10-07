@@ -272,28 +272,64 @@ local function offensivePlacement(bot, state, card)
     return clampOwnPlacement(playerId, laneX, y)
 end
 
+local function shouldSaveForPowerCard(bot, state, ctx, arrowScore)
+    local player = state.players[bot.playerId]
+    local threat = ctx.primaryThreat
+    local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
+
+    if threat and ctx.primaryThreatScore >= (lateGame and 4.5 or 3) then
+        return false
+    end
+    if arrowScore and arrowScore >= 2.4 then
+        return false
+    end
+
+    local bestCost = nil
+    local bestPriority = -math.huge
+
+    local priority = {
+        iron_golem = 9,
+        villager = lateGame and -math.huge or 8,
+        witch = 7,
+        enderman = 6,
+        creeper = 5.5,
+        blaze = 5,
+    }
+
+    for slot = 1, 4 do
+        local card = cards.get(player.hand[slot])
+        if card and player.emeralds < card.cost then
+            local gap = card.cost - player.emeralds
+            local p = priority[card.id] or 0
+
+            if card.id == "villager" and ownedVillagerCount(state, bot.playerId) > 0 then
+                p = -math.huge
+            end
+
+            -- Only wait a short time; never sit forever on a distant expensive card.
+            if gap <= 2.25 and p > bestPriority then
+                bestPriority = p
+                bestCost = card.cost
+            end
+        end
+    end
+
+    return bestCost ~= nil
+end
+
 local function scoreCard(bot, state, ctx, card, slot, arrowScore)
     local player = state.players[bot.playerId]
     if player.emeralds + 0.0001 < card.cost then return -math.huge end
 
     local score = 0
     local threat = ctx.primaryThreat
-    local defending = threat and ctx.primaryThreatScore >= 3
     local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
+    local defenseThreshold = state.overtime and 5.0 or (lateGame and 4.2 or 3.0)
+    local defending = threat and ctx.primaryThreatScore >= defenseThreshold
 
     -- Economy cards were effectively never tested because the bot kept
     -- spending cheap cards before reaching 7E. When safe, reserve the last
     -- couple of Emeralds so Villager gets a real chance to enter the match.
-    local savingForVillager = not defending
-        and not lateGame
-        and ownedVillagerCount(state, bot.playerId) == 0
-        and handHasCard(player, "villager")
-        and player.emeralds >= 5
-        and player.emeralds < 7
-
-    if savingForVillager and card.id ~= "villager" then
-        return -math.huge
-    end
 
     if card.id == "arrows" then
         if arrowScore >= 2.4 then
@@ -352,7 +388,7 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore)
         }
         score = offense[card.id] or 2
         if lateGame and card.id ~= "cannon" and card.id ~= "villager" then
-            score = score + 2.5
+            score = score + (state.overtime and 4.5 or 3.0)
         end
     end
 
@@ -365,6 +401,10 @@ local function choosePlay(bot, state)
     local player = state.players[bot.playerId]
     local ctx = battlefield(state, bot.playerId)
     local arrowX, arrowY, arrowScore = bestArrowTarget(state, bot.playerId)
+
+    if shouldSaveForPowerCard(bot, state, ctx, arrowScore) then
+        return nil
+    end
 
     local best = nil
     local bestScore = -math.huge
@@ -467,7 +507,8 @@ function Bot.update(bot, state, dt)
     if bot.thinkTimer > 0 then return end
 
     bot.decisionCount = bot.decisionCount + 1
-    local baseThink = (state.overtime or (state.timeLeft and state.timeLeft <= 60)) and 0.45 or 0.65
+    local baseThink = state.overtime and 0.32
+        or ((state.timeLeft and state.timeLeft <= 60) and 0.42 or 0.65)
     bot.thinkTimer = baseThink + ((bot.decisionCount * 11 + bot.playerId) % 6) * 0.08
 
     local choice = choosePlay(bot, state)
