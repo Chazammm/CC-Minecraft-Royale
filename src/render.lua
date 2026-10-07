@@ -684,13 +684,17 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
         drawDeckSlot(buffer, layout.deckSlots[slot], slot, cardId and cards.get(cardId) or nil)
     end
 
-    drawButton(buffer, layout.presetButtons.save1, "SAVE 1", false)
-    drawButton(buffer, layout.presetButtons.load1, "LOAD 1", state.deckPresets[playerId][1] ~= nil)
-    drawButton(buffer, layout.presetButtons.save2, "SAVE 2", false)
-    drawButton(buffer, layout.presetButtons.load2, "LOAD 2", state.deckPresets[playerId][2] ~= nil)
-    drawButton(buffer, layout.presetButtons.save3, "SAVE 3", false)
-    drawButton(buffer, layout.presetButtons.load3, "LOAD 3", state.deckPresets[playerId][3] ~= nil)
-    drawButton(buffer, layout.presetButtons.random, "RANDOM 8", false)
+    if not (state.gameMode == "bot" and playerId == 2) then
+        drawButton(buffer, layout.presetButtons.save1, "SAVE 1", false)
+        drawButton(buffer, layout.presetButtons.load1, "LOAD 1", state.deckPresets[playerId][1] ~= nil)
+        drawButton(buffer, layout.presetButtons.save2, "SAVE 2", false)
+        drawButton(buffer, layout.presetButtons.load2, "LOAD 2", state.deckPresets[playerId][2] ~= nil)
+        drawButton(buffer, layout.presetButtons.save3, "SAVE 3", false)
+        drawButton(buffer, layout.presetButtons.load3, "LOAD 3", state.deckPresets[playerId][3] ~= nil)
+        drawButton(buffer, layout.presetButtons.random, "RANDOM 8", false)
+    else
+        centered(buffer, 37, "BOT DECK LOCKED", colors.gray, colors.black)
+    end
 
     drawButton(buffer, layout.infoButton, "UNIT INFO", false)
 
