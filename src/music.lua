@@ -69,15 +69,37 @@ local function seekTo(handle, offset)
     return true
 end
 
-local function localPackAvailable()
-    return fs
+local function packForTrack(track)
+    return manifest.packs and manifest.packs[track.pack or 1] or nil
+end
+
+local function localPackAvailable(pack)
+    return pack
+        and fs
         and fs.exists
-        and fs.exists(manifest.path)
-        and (not fs.getSize or not manifest.packSize or fs.getSize(manifest.path) == manifest.packSize)
+        and fs.exists(pack.path)
+        and (not fs.getSize or not pack.size or fs.getSize(pack.path) == pack.size)
+end
+
+local function allLocalPacksAvailable()
+    if not manifest.packs then return false end
+    for _, pack in pairs(manifest.packs) do
+        if not localPackAvailable(pack) then return false end
+    end
+    return true
+end
+
+local function remotePacksAvailable()
+    if not http or not http.get or not manifest.packs then return false end
+    for _, pack in pairs(manifest.packs) do
+        if not pack.remoteUrl then return false end
+    end
+    return true
 end
 
 local function openRemoteRange(track, relativeOffset)
-    if not http or not http.get or not manifest.remoteUrl then
+    local pack = packForTrack(track)
+    if not pack or not http or not http.get or not pack.remoteUrl then
         return nil, "HTTP MUSIC UNAVAILABLE"
     end
 
@@ -88,7 +110,7 @@ local function openRemoteRange(track, relativeOffset)
         ["Range"] = ("bytes=%d-%d"):format(startByte, lastByte),
         ["Accept"] = "application/octet-stream",
     }
-    local url = manifest.remoteUrl .. "?v=" .. tostring(manifest.packVersion or manifest.packSize or "1")
+    local url = pack.remoteUrl .. "?v=" .. tostring(pack.version or pack.size or "1")
     local response, err = http.get(url, headers, true)
     if not response then return nil, tostring(err or "MUSIC HTTP FAILED") end
 
@@ -115,9 +137,12 @@ local function openSource(controller, track, relativeOffset)
     closeHandle(controller)
     relativeOffset = relativeOffset or 0
 
+    local pack = packForTrack(track)
+    if not pack then return false, "MUSIC PACK NOT FOUND" end
+
     local handle
-    if localPackAvailable() then
-        handle = fs.open(manifest.path, "rb")
+    if localPackAvailable(pack) then
+        handle = fs.open(pack.path, "rb")
         if not handle then return false, "MUSIC PACK OPEN FAILED" end
         if not seekTo(handle, track.offset + relativeOffset) then
             handle.close()
@@ -187,7 +212,7 @@ function Music.new(speaker, speakerName)
         active = false,
         available = speaker ~= nil
             and ok
-            and (localPackAvailable() or (http and http.get and manifest.remoteUrl ~= nil)),
+            and (allLocalPacksAvailable() or remotePacksAvailable()),
         handle = nil,
         remaining = 0,
         bytesRead = 0,
@@ -206,8 +231,8 @@ function Music.new(speaker, speakerName)
 end
 
 function Music.refreshAvailability(controller)
-    local localReady = localPackAvailable()
-    local remoteReady = http and http.get and manifest.remoteUrl ~= nil
+    local localReady = allLocalPacksAvailable()
+    local remoteReady = remotePacksAvailable()
 
     controller.available = controller.speaker ~= nil
         and controller.dfpwm ~= nil
