@@ -1098,15 +1098,6 @@ function Game.handleTouch(state, playerId, x, y, layout)
     local player = state.players[playerId]
 
     if state.phase == "lobby" then
-        if hit(layout.infoButton, x, y) then
-            player.infoOpen = not player.infoOpen
-            if player.infoOpen and not cards.get(player.infoCardId) then
-                player.infoCardId = cards.list[1] and cards.list[1].id or nil
-            end
-            emitSound(state, "minecraft:block.note_block.pling", 0.45, player.infoOpen and 1.5 or 1.0)
-            return
-        end
-
         if player.infoOpen then
             if layout.collectionCards then
                 for i, zone in ipairs(layout.collectionCards) do
@@ -1125,6 +1116,15 @@ function Game.handleTouch(state, playerId, x, y, layout)
                 player.infoOpen = false
                 emitSound(state, "minecraft:block.note_block.pling", 0.45, 1.0)
             end
+            return
+        end
+
+        if hit(layout.infoButton, x, y) then
+            player.infoOpen = true
+            if not cards.get(player.infoCardId) then
+                player.infoCardId = cards.list[1] and cards.list[1].id or nil
+            end
+            emitSound(state, "minecraft:block.note_block.pling", 0.45, 1.5)
             return
         end
 
