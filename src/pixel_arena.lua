@@ -146,19 +146,21 @@ local SPRITES = {
         },
     },
     enderman = {
-        -- Black, very tall and thin with the iconic purple eyes.
+        -- 6x12: full 2x3 head texel block, then extremely long limbs.
+        -- Keeping purple confined to the filled head avoids Pixelbox colour bleed.
         rows = {
-            "..KKK..",
-            ".KPKPK.",
-            "..KKK..",
-            "...K...",
-            "..KKK..",
-            "K..K..K",
-            "K..K..K",
-            "...K...",
-            "..K.K..",
-            "..K.K..",
-            ".K...K.",
+            "KKKKKK",
+            "KPKKPK",
+            "KKKKKK",
+            "K.KK.K",
+            "K.KK.K",
+            "K.KK.K",
+            "K.KK.K",
+            "K.KK.K",
+            "K.KK.K",
+            "K....K",
+            "K....K",
+            "K....K",
         },
     },
     spider = {
@@ -184,16 +186,18 @@ local SPRITES = {
         },
     },
     villager = {
-        -- Big tan head, heavy brow/nose and brown robe.
+        -- 6x9 aligned to Pixelbox texels: big square head, unibrow/eyes,
+        -- oversized nose, then the classic long brown robe.
         rows = {
-            "..OOO..",
-            ".OKOKO.",
-            ".OOOOO.",
-            "...O...",
-            "..NNN..",
-            ".NNNNN.",
-            ".NNNNN.",
-            "..N.N..",
+            "SSSSSS",
+            "SKSSKS",
+            "SSKKSS",
+            "NNNNNN",
+            "NNNNNN",
+            "NNNNNN",
+            "NNNNNN",
+            "NN..NN",
+            "NN..NN",
         },
     },
     endermite = {
@@ -204,15 +208,15 @@ local SPRITES = {
         },
     },
     wolf = {
-        -- Side-on four-legged tamed wolf with a visible red collar.
+        -- 12x6 side profile. Large square muzzle/head on the left,
+        -- long body and four legs, with a clear tamed-wolf red collar.
         rows = {
-            "..S......",
-            ".SSS.....",
-            "SSKSS....",
-            ".SRRSSSS.",
-            ".SSSSSSS.",
-            "..S.S.S..",
-            ".S...S...",
+            "..SS........",
+            ".SSSSSSSS...",
+            "SSKSSSSSSSS.",
+            ".SSRSSSSSSS.",
+            "..SRSSSSSS..",
+            "..SS..SS..SS",
         },
     },
     princess_tower = {
