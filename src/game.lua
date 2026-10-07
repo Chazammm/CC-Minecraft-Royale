@@ -125,6 +125,7 @@ local function newPlayer(playerId)
         selectedSlot = nil,
         infoOpen = false,
         infoCardId = cards.list[1] and cards.list[1].id or nil,
+        collectionPage = 1,
         presetSlot = 1,
         towersDestroyed = 0,
         feedback = nil,
@@ -257,6 +258,9 @@ local function spawnBuilding(state, owner, card, x, y)
     entity.attackCooldown = entity.attackCooldown or 1
     entity.canAttackAir = entity.canAttackAir == true
     entity.remainingLifetime = entity.lifetime
+    entity.periodicSpawnTimer = entity.periodicSpawn
+        and (entity.periodicSpawn.initialDelay or entity.periodicSpawn.interval or 8)
+        or nil
 
     table.insert(state.entities, entity)
     return entity
@@ -415,16 +419,17 @@ end
 local damageEntity
 local killEntity
 
-local function spawnProjectile(state, attacker, target)
+local function spawnProjectile(state, attacker, target, damageOverride, visualOverride)
     table.insert(state.projectiles, {
         x = attacker.x,
         y = attacker.y,
         targetId = target.id,
         owner = attacker.owner,
         sourceCardId = attacker.sourceCardId,
-        damage = attacker.damage,
+        damage = damageOverride or attacker.damage,
         speed = attacker.projectileSpeed or 50,
-        visual = attacker.projectileVisual
+        visual = visualOverride
+            or attacker.projectileVisual
             or (attacker.name == "Skeleton" and "arrow")
             or (attacker.name == "Cannon" and "cannonball")
             or (attacker.kind == "tower" and "tower_shot")
@@ -649,6 +654,35 @@ local function updatePeriodicSpawn(state, entity, dt)
 end
 
 local function performAttack(state, entity, target)
+    if entity.hybridAttack then
+        local spec = entity.hybridAttack
+        local distance = util.distance(entity.x, entity.y, target.x, target.y)
+        local useMelee = not target.flying and distance <= (spec.meleeRange or 2.5)
+
+        if useMelee then
+            damageEntity(
+                state,
+                target,
+                spec.meleeDamage or entity.damage or 0,
+                entity.owner,
+                entity.sourceCardId
+            )
+            entity.attackCooldownLeft = spec.meleeCooldown or entity.attackCooldown or 1
+            emitSound(state, "minecraft:entity.player.attack.sweep", 0.35, 1.25)
+        else
+            spawnProjectile(
+                state,
+                entity,
+                target,
+                spec.rangedDamage or entity.damage,
+                entity.projectileVisual or "crossbow_bolt"
+            )
+            entity.attackCooldownLeft = spec.rangedCooldown or entity.attackCooldown or 1
+            emitSound(state, "minecraft:item.crossbow.shoot", 0.35, 1.15)
+        end
+        return
+    end
+
     if entity.projectileSpeed then
         spawnProjectile(state, entity, target)
     else
@@ -966,6 +1000,7 @@ function Game.new(soundCallback)
         entities = {},
         projectiles = {},
         effects = {},
+        pendingSpells = {},
         nextEntityId = 1,
         countdown = config.MATCH.countdown,
         timeLeft = config.MATCH.normalTime,
@@ -993,6 +1028,7 @@ function Game.resetLobby(state)
     state.entities = {}
     state.projectiles = {}
     state.effects = {}
+    state.pendingSpells = {}
     state.winner = nil
     state.resultReason = nil
     state.overtime = false
@@ -1052,6 +1088,83 @@ function Game.finish(state, winner, reason)
     else
         emitSound(state, "minecraft:block.note_block.bass", 0.8, 0.7)
     end
+end
+
+local function castFallingAnvil(state, playerId, card, x, y)
+    local spell = card.spell
+    local delay = spell.delay or 3
+
+    state.pendingSpells[#state.pendingSpells + 1] = {
+        kind = "falling_anvil",
+        owner = playerId,
+        cardId = card.id,
+        x = x,
+        y = y,
+        remaining = delay,
+        delay = delay,
+        spell = util.deepcopy(spell),
+    }
+
+    addEffect(state, "anvil_warning", x, y, spell.radius or 5.5, delay, playerId)
+    emitSound(state, "minecraft:block.anvil.place", 0.45, 1.7)
+end
+
+local function resolveFallingAnvil(state, pending)
+    local spell = pending.spell
+    local targets = {}
+
+    for _, entity in ipairs(state.entities) do
+        if entity.alive
+            and entity.owner ~= pending.owner
+            and (not spell.groundOnly or not entity.flying)
+        then
+            local distance = util.distance(pending.x, pending.y, entity.x, entity.y)
+            if distance <= (spell.radius or 5.5) then
+                targets[#targets + 1] = entity
+            end
+        end
+    end
+
+    if state.phase == "battle" and state.stats then
+        local cardStats = getCardStats(state, pending.owner, pending.cardId)
+        cardStats.targetsHit = cardStats.targetsHit + #targets
+    end
+
+    for _, target in ipairs(targets) do
+        local damage = spell.damage or 0
+        if target.kind == "tower" then
+            damage = damage * (spell.towerMultiplier or 1)
+        end
+        damageEntity(state, target, damage, pending.owner, pending.cardId)
+    end
+
+    addEffect(
+        state,
+        "anvil_impact",
+        pending.x,
+        pending.y,
+        spell.radius or 5.5,
+        0.65,
+        pending.owner
+    )
+    emitSound(state, "minecraft:block.anvil.land", 1.0, 0.75)
+end
+
+local function updatePendingSpells(state, dt)
+    local kept = {}
+
+    for _, pending in ipairs(state.pendingSpells) do
+        pending.remaining = pending.remaining - dt
+        if pending.remaining <= 0 then
+            if pending.kind == "falling_anvil" then
+                resolveFallingAnvil(state, pending)
+            end
+        else
+            kept[#kept + 1] = pending
+        end
+    end
+
+    state.pendingSpells = kept
 end
 
 local function castArrows(state, playerId, card, x, y)
@@ -1121,7 +1234,11 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
         spawnBuilding(state, playerId, card, x, y)
         addEffect(state, "spawn", x, y, 5, 0.35, playerId)
     elseif card.kind == "spell" then
-        castArrows(state, playerId, card, x, y)
+        if card.id == "falling_anvil" then
+            castFallingAnvil(state, playerId, card, x, y)
+        else
+            castArrows(state, playerId, card, x, y)
+        end
     else
         setFeedback(player, "UNSUPPORTED CARD")
         return false, "UNSUPPORTED CARD"
@@ -1541,6 +1658,8 @@ function Game.update(state, dt)
             end
         end
     end
+
+    updatePendingSpells(state, dt)
 
     for _, entity in ipairs(state.entities) do
         if isBattle and state.phase ~= "battle" then break end
