@@ -196,7 +196,17 @@ local function drawStatus(buffer, state, playerId)
     local score = tostring(player.towersDestroyed) .. " - " .. tostring(opponent.towersDestroyed)
     writeText(buffer, math.max(1, buffer.width - #score + 1), 1, score, colors.white, colors.black)
 
+    local emeraldBoost = 0
+    for _, entity in ipairs(state.entities) do
+        if entity.alive and entity.owner == playerId and entity.emeraldBoost then
+            emeraldBoost = emeraldBoost + entity.emeraldBoost
+        end
+    end
+
     local emeraldText = string.format("EMERALDS %.1f/%.0f", player.emeralds, player.maxEmeralds)
+    if emeraldBoost > 0 then
+        emeraldText = emeraldText .. string.format("  +%d%%", math.floor(emeraldBoost * 100 + 0.5))
+    end
     writeText(buffer, 1, 2, util.truncate(emeraldText, buffer.width), colors.lime, colors.black)
 
     if player.feedback then
