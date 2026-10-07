@@ -9,6 +9,7 @@ local files = {
   "startup.lua",
   "src/util.lua",
   "src/cards.lua",
+  "src/sprites.lua",
   "src/arena.lua",
   "src/hardware.lua",
   "src/game.lua",
@@ -48,7 +49,7 @@ local function download(path)
   print("OK")
 end
 
-print("CC-Minecraft Royale V1 installer")
+print("CC-Minecraft Royale installer")
 print("--------------------------------")
 if not http then
   error("HTTP API is disabled on this server/client.", 0)
