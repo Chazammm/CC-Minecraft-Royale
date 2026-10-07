@@ -215,6 +215,7 @@ local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color, 
     entity.periodicSpawnTimer = entity.periodicSpawn
         and (entity.periodicSpawn.initialDelay or entity.periodicSpawn.interval or 8)
         or nil
+    entity.emeraldPulseTimer = entity.emeraldBoost and 0.25 or nil
 
     table.insert(state.entities, entity)
     return entity
@@ -457,6 +458,18 @@ damageEntity = function(state, target, damage, sourceOwner, sourceCardId)
     end
 
     target.hp = target.hp - (damage or 0)
+
+    if target.kind == "tower"
+        and target.alive
+        and not target.lowHpAlerted
+        and target.hp > 0
+        and target.hp / math.max(1, target.maxHp) <= 0.25
+    then
+        target.lowHpAlerted = true
+        addEffect(state, "tower_warning", target.x, target.y, 6, 0.65, target.owner)
+        emitSound(state, "minecraft:block.note_block.bass", 0.7, 0.55)
+    end
+
     if target.hp <= 0 then
         killEntity(state, target, sourceOwner, sourceCardId)
     end
@@ -571,7 +584,10 @@ killEntity = function(state, entity, sourceOwner, sourceCardId)
             end
         end
     elseif entity.kind == "unit" then
+        addEffect(state, "death", entity.x, entity.y, 3.5, 0.28, entity.owner)
         handleDeathAbilities(state, entity)
+    elseif entity.kind == "building" then
+        addEffect(state, "death", entity.x, entity.y, 4.5, 0.35, entity.owner)
     end
 end
 
@@ -666,6 +682,14 @@ local function updateCombatEntity(state, entity, dt)
     end
 
     updatePeriodicSpawn(state, entity, dt)
+
+    if entity.emeraldBoost then
+        entity.emeraldPulseTimer = (entity.emeraldPulseTimer or 0) - dt
+        if entity.emeraldPulseTimer <= 0 then
+            addEffect(state, "emerald", entity.x, entity.y, 2.5, 0.45, entity.owner)
+            entity.emeraldPulseTimer = 1.0
+        end
+    end
 
     if entity.passive or entity.targetMode == "none" then
         entity.targetId = nil
@@ -842,6 +866,7 @@ local function updateProjectiles(state, dt)
                                 victim.slowFactor or 1,
                                 projectile.onHitSlow.factor or 0.7
                             )
+                            addEffect(state, "slow", victim.x, victim.y, 3.5, 0.28, projectile.owner)
 
                             if state.phase == "battle"
                                 and state.stats
@@ -1067,8 +1092,10 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
 
     if card.kind == "unit" then
         spawnCardUnit(state, playerId, card, x, y)
+        addEffect(state, "spawn", x, y, card.spawnCount and 5 or 3.5, 0.30, playerId)
     elseif card.kind == "building" then
         spawnBuilding(state, playerId, card, x, y)
+        addEffect(state, "spawn", x, y, 5, 0.35, playerId)
     elseif card.kind == "spell" then
         castArrows(state, playerId, card, x, y)
     else
