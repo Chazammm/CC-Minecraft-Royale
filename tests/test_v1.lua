@@ -134,4 +134,32 @@ assertEq(#debugState.entities, 1, "Admin spawn must create the selected unit")
 Game.debugSetPaused(debugState, false)
 assertTrue(not debugState.adminPaused, "Admin pause control must resume simulation")
 
+local retargetState = Game.new()
+Game.debugLoadScenario(retargetState, "king")
+Game.debugSpawnCard(retargetState, 1, "skeleton", 50, 92)
+Game.debugSpawnCard(retargetState, 2, "zombie", 50, 68)
+
+local skeleton, zombie, enemyKingForSkeleton, enemyKingForZombie
+for _, entity in ipairs(retargetState.entities) do
+    if entity.name == "Skeleton" then skeleton = entity end
+    if entity.name == "Zombie" then zombie = entity end
+    if entity.kind == "tower" and entity.towerType == "king" then
+        if entity.owner == 2 then enemyKingForSkeleton = entity end
+        if entity.owner == 1 then enemyKingForZombie = entity end
+    end
+end
+
+assertTrue(skeleton and zombie, "Retarget test units must exist")
+assertTrue(enemyKingForSkeleton and enemyKingForZombie, "Retarget test kings must exist")
+
+-- Reproduce the old bug: both troops were already locked onto distant towers.
+skeleton.targetId = enemyKingForSkeleton.id
+zombie.targetId = enemyKingForZombie.id
+
+Game.debugSetPaused(retargetState, false)
+Game.update(retargetState, 0.1)
+
+assertEq(skeleton.targetId, zombie.id, "Skeleton must switch from tower to nearby enemy troop")
+assertEq(zombie.targetId, skeleton.id, "Zombie must switch from tower to nearby enemy troop")
+
 print("V1 smoke tests passed")
