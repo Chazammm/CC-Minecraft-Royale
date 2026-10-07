@@ -503,8 +503,7 @@ local function drawResult(buffer, state, playerId, layout)
     local o = state.players[playerId == 1 and 2 or 1]
     centered(buffer, 10, string.format("TOWERS %d - %d", p.towersDestroyed, o.towersDestroyed), colors.lightGray, colors.black)
 
-    local stats = Game and nil
-    -- Keep rendering independent: state.stats is already a plain data snapshot.
+    -- state.stats is a plain data snapshot maintained by the game logic.
     local ps = state.stats and state.stats.players[playerId] or nil
     if ps then
         centered(
