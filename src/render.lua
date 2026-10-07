@@ -182,20 +182,43 @@ local function drawEntities(buffer, state, playerId, rect)
     for _, entity in ipairs(state.entities) do
         if entity.alive then
             local sx, sy = arena.worldToScreen(playerId, entity.x, entity.y, rect)
+            local isOwn = entity.owner == playerId
             local fg
 
-            if entity.owner == playerId then
-                fg = entity.color or colors.white
+            if entity.kind == "tower" then
+                -- Tower team colors are always relative to the viewer.
+                -- This avoids Player 2 seeing both teams as red.
+                fg = isOwn and colors.lightBlue or colors.red
+
+                local towerBg = isOwn and colors.blue or colors.red
+                local label = entity.towerType == "king" and "K" or "T"
+
+                -- Make towers much easier to read on a 3x4 / 57x52 monitor.
+                for dx = -1, 1 do
+                    setCell(buffer, sx + dx, sy, " ", colors.white, towerBg)
+                end
+                setCell(buffer, sx, sy, label, colors.white, towerBg)
+
+                if sy > rect.y1 then
+                    for dx = -1, 1 do
+                        local hpBg = buffer.bg[sy - 1] and buffer.bg[sy - 1][sx + dx] or colors.black
+                        setCell(buffer, sx + dx, sy - 1, "-", hpColor(entity), hpBg)
+                    end
+                end
             else
-                fg = colors.red
-            end
+                if isOwn then
+                    fg = entity.color or colors.white
+                else
+                    fg = colors.red
+                end
 
-            local bg = buffer.bg[sy] and buffer.bg[sy][sx] or colors.black
-            setCell(buffer, sx, sy, entityChar(entity), fg, bg)
+                local bg = buffer.bg[sy] and buffer.bg[sy][sx] or colors.black
+                setCell(buffer, sx, sy, entityChar(entity), fg, bg)
 
-            if sy > rect.y1 then
-                local hpBg = buffer.bg[sy - 1] and buffer.bg[sy - 1][sx] or colors.black
-                setCell(buffer, sx, sy - 1, "-", hpColor(entity), hpBg)
+                if sy > rect.y1 then
+                    local hpBg = buffer.bg[sy - 1] and buffer.bg[sy - 1][sx] or colors.black
+                    setCell(buffer, sx, sy - 1, "-", hpColor(entity), hpBg)
+                end
             end
         end
     end
