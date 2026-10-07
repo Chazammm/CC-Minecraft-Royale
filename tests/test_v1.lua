@@ -344,4 +344,48 @@ assertTrue(bot.lastAction ~= "NONE", "Bot should expose its last action for admi
 local botStatus = Bot.status(bot, botState)
 assertTrue(botStatus.enabled and botStatus.playerId == 2, "Bot status must report P2 enabled")
 
+local modeState = Game.new()
+assertTrue(Game.setGameMode(modeState, "bot"), "Game must support VS BOT mode")
+assertEq(modeState.gameMode, "bot", "VS BOT mode must be stored on state")
+
+local liveBot = Bot.new(2)
+Bot.prepare(liveBot, modeState)
+assertTrue(cards.isValidDeck(modeState.players[2].deck), "Live bot must prepare a valid eight-card deck")
+
+modeState.players[1].ready = true
+modeState.players[2].ready = true
+Game.startCountdown(modeState)
+for _ = 1, 13 do Game.update(modeState, 0.25) end
+assertEq(modeState.phase, "battle", "VS BOT countdown must start a normal battle")
+
+local p1 = modeState.players[1]
+p1.emeralds = 10
+local played = Game.playCardFromSlot(modeState, 1, 1, 25, 112)
+assertTrue(played, "Shared play API must deploy a normal player card")
+assertEq(modeState.stats.players[1].cardsPlayed, 1, "Match telemetry must count card plays")
+assertTrue(modeState.stats.players[1].emeraldSpent > 0, "Match telemetry must count Emerald spending")
+
+-- Telemetry must attribute spell damage to the card that caused it.
+modeState.players[2].emeralds = 10
+Game.playCardFromSlot(modeState, 2, 1, 50, 55)
+modeState.players[1].hand[1] = "arrows"
+modeState.players[1].emeralds = 10
+Game.playCardFromSlot(modeState, 1, 1, 50, 55)
+assertTrue(modeState.stats.players[1].unitDamage > 0, "Telemetry must record unit damage")
+assertTrue(
+    modeState.stats.players[1].cards.arrows
+        and modeState.stats.players[1].cards.arrows.unitDamage > 0,
+    "Arrow Volley damage must be attributed to Arrow Volley"
+)
+
+Bot.beginMatch(liveBot)
+liveBot.enabled = true
+modeState.players[2].emeralds = 10
+local botActionsBefore = liveBot.actions
+for _ = 1, 12 do
+    Game.update(modeState, 0.25)
+    Bot.update(liveBot, modeState, 0.25)
+end
+assertTrue(liveBot.actions > botActionsBefore, "Live VS BOT must play through the normal card API")
+
 print("Smoke tests passed")
