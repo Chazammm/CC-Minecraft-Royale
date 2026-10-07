@@ -407,6 +407,18 @@ local function updateCombatEntity(state, entity, dt)
     local distance = util.distance(entity.x, entity.y, target.x, target.y)
     local attackRange = entity.attackRange or 0
 
+    if entity.kind == "unit"
+        and entity.preferredMinRange
+        and target.kind == "unit"
+        and distance < entity.preferredMinRange
+    then
+        if distance <= attackRange and entity.attackCooldownLeft <= 0 then
+            performAttack(state, entity, target)
+        end
+        moveAway(entity, target, dt)
+        return
+    end
+
     if distance <= attackRange then
         if entity.attackCooldownLeft <= 0 then
             performAttack(state, entity, target)
@@ -416,11 +428,6 @@ local function updateCombatEntity(state, entity, dt)
 
     if entity.kind ~= "unit" then
         entity.targetId = nil
-        return
-    end
-
-    if entity.preferredMinRange and target.kind == "unit" and distance < entity.preferredMinRange then
-        moveAway(entity, target, dt)
         return
     end
 
@@ -745,6 +752,10 @@ function Game.update(state, dt)
         updateProjectiles(state, dt)
         updateEffects(state, dt)
         cleanupEntities(state)
+
+        if state.phase ~= "battle" then
+            return
+        end
 
         state.timeLeft = state.timeLeft - dt
         if state.timeLeft <= 0 then
