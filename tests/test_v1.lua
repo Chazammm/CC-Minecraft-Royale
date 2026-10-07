@@ -512,8 +512,10 @@ assertTrue(Game.playCardFromSlot(featureBattle, 1, 1, 25, 112), "Playing a troop
 assertTrue(#featureBattle.effects > effectsBefore, "Deploying a troop must create combat feedback")
 
 assertEq(#musicManifest.tracks, 34, "Battle music playlist must expose 34 shuffled tracks")
-assertEq(musicManifest.sourceRate, 24000, "Battle music pack must use 24 kHz DFPWM")
-assertEq(musicManifest.repeatFactor, 2, "24 kHz music must be doubled to the 48 kHz speaker rate")
+assertEq(musicManifest.sourceRate, 48000, "Battle music pack must use native 48 kHz DFPWM")
+assertEq(musicManifest.outputRate, 48000, "Speaker output must stay at native 48 kHz")
+assertEq(musicManifest.repeatFactor, 1, "Native 48 kHz music must not duplicate samples")
+assertEq(musicManifest.chunkBytes, 16384, "Music chunks should fill the speaker buffer efficiently")
 
 local expectedOffset = 0
 for i, track in ipairs(musicManifest.tracks) do
