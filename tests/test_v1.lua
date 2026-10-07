@@ -26,6 +26,7 @@ local arena = require("src.arena")
 local Game = require("src.game")
 local pixelArena = require("src.pixel_arena")
 local Bot = require("src.bot")
+local musicManifest = require("src.music_manifest")
 
 local function assertEq(actual, expected, message)
     if actual ~= expected then
@@ -509,5 +510,18 @@ local effectsBefore = #featureBattle.effects
 featureBattle.players[1].emeralds = 10
 assertTrue(Game.playCardFromSlot(featureBattle, 1, 1, 25, 112), "Playing a troop must succeed")
 assertTrue(#featureBattle.effects > effectsBefore, "Deploying a troop must create combat feedback")
+
+assertEq(#musicManifest.tracks, 34, "Battle music playlist must expose 34 shuffled tracks")
+assertEq(musicManifest.sourceRate, 24000, "Battle music pack must use 24 kHz DFPWM")
+assertEq(musicManifest.repeatFactor, 2, "24 kHz music must be doubled to the 48 kHz speaker rate")
+
+local expectedOffset = 0
+for i, track in ipairs(musicManifest.tracks) do
+    assertEq(track.id, i, "Music track IDs must be sequential")
+    assertEq(track.offset, expectedOffset, "Music track pack offsets must be contiguous")
+    assertTrue(track.bytes > 0, "Music track must contain audio bytes")
+    expectedOffset = expectedOffset + track.bytes
+end
+assertEq(expectedOffset, musicManifest.packSize, "Music manifest must cover the whole DFPWM pack")
 
 print("Smoke tests passed")
