@@ -36,8 +36,9 @@ local function assertTrue(value, message)
     if not value then error(message or "assertTrue failed") end
 end
 
-assertEq(#cards.list, 8, "V1 must contain exactly eight test cards")
+assertEq(#cards.list, 16, "V2 card pool must contain exactly sixteen cards")
 assertEq(#cards.defaultDeck(), 8, "Default deck must contain eight cards")
+assertTrue(cards.isValidDeck(cards.defaultDeck()), "Default deck must be valid")
 
 local seen = {}
 for _, card in ipairs(cards.list) do
@@ -46,6 +47,28 @@ for _, card in ipairs(cards.list) do
     assertTrue(card.cost > 0, "Card must have a positive cost: " .. tostring(card.id))
     assertTrue(card.kind == "unit" or card.kind == "building" or card.kind == "spell", "Unknown card kind")
 end
+
+local deckState = Game.new()
+assertEq(#deckState.players[1].deck, 8, "Player must start with an eight-card deck")
+Game.toggleDeckCard(deckState, 1, "zombie")
+assertEq(#deckState.players[1].deck, 7, "Removing a deck card must leave seven cards")
+assertTrue(not cards.isValidDeck(deckState.players[1].deck), "Seven-card deck must be invalid")
+Game.toggleDeckCard(deckState, 1, "blaze")
+assertEq(#deckState.players[1].deck, 8, "Adding a new card must restore eight cards")
+assertTrue(cards.isValidDeck(deckState.players[1].deck), "Edited eight-card deck must be valid")
+assertEq(deckState.players[1].deck[8], "blaze", "Added card should occupy the open deck slot")
+
+local villagerCard = cards.get("villager")
+assertTrue(villagerCard and villagerCard.kind == "unit", "Villager must be a unit, not a building")
+assertEq(villagerCard.cost, 8, "Villager must cost eight Emeralds")
+assertTrue(villagerCard.unit.passive, "Villager must be passive")
+assertEq(villagerCard.unit.lifetime, 60, "Villager must last sixty seconds")
+assertEq(villagerCard.unit.emeraldBoost, 0.10, "Villager must boost Emerald generation by ten percent")
+
+local endermiteCard = cards.get("endermite")
+assertEq(endermiteCard.cost, 1, "Endermite must cost one Emerald")
+assertTrue(endermiteCard.unit.maxHp < 150, "Endermite should have low HP")
+assertTrue(endermiteCard.unit.damage < 25, "Endermite should have low DPS damage")
 
 local config = require("config")
 local riverMid = (config.ARENA.riverTop + config.ARENA.riverBottom) / 2
@@ -230,5 +253,73 @@ for _, entity in ipairs(flashState.entities) do
     if entity.name == "Zombie" then flashedZombie = entity end
 end
 assertTrue(flashedZombie and flashedZombie.damageFlash and flashedZombie.damageFlash > 0, "Damage must set hit-flash state")
+
+local villagerState = Game.new()
+Game.debugLoadScenario(villagerState, "empty")
+Game.debugSpawnCard(villagerState, 1, "villager", 50, 120)
+villagerState.phase = "battle"
+villagerState.adminMode = false
+villagerState.players[1].emeralds = 0
+villagerState.players[2].emeralds = 0
+Game.update(villagerState, 0.25)
+
+local baseGain = config.MATCH.emeraldPerSecond * 0.25
+assertTrue(
+    villagerState.players[1].emeralds > baseGain,
+    "Living Villager must increase its owner's Emerald generation"
+)
+assertTrue(
+    math.abs(villagerState.players[1].emeralds - baseGain * 1.10) < 0.001,
+    "Villager boost must be exactly ten percent"
+)
+
+local slowState = Game.new()
+Game.debugLoadScenario(slowState, "empty")
+Game.debugSpawnCard(slowState, 1, "snow_golem", 50, 90)
+Game.debugSpawnCard(slowState, 2, "zombie", 50, 80)
+Game.debugSetPaused(slowState, false)
+for _ = 1, 4 do Game.update(slowState, 0.15) end
+
+local slowedZombie
+for _, entity in ipairs(slowState.entities) do
+    if entity.name == "Zombie" then slowedZombie = entity end
+end
+assertTrue(slowedZombie and slowedZombie.slowRemaining > 0, "Snow Golem snowball must slow targets")
+
+local teleportState = Game.new()
+Game.debugLoadScenario(teleportState, "empty")
+Game.debugSpawnCard(teleportState, 1, "enderman", 50, 110)
+Game.debugSpawnCard(teleportState, 2, "zombie", 50, 90)
+
+local testEnderman, teleportZombie
+for _, entity in ipairs(teleportState.entities) do
+    if entity.name == "Enderman" then testEnderman = entity end
+    if entity.name == "Zombie" then teleportZombie = entity end
+end
+local distanceBeforeTeleport = math.abs(testEnderman.y - teleportZombie.y)
+Game.debugSetPaused(teleportState, false)
+Game.update(teleportState, 0.1)
+local distanceAfterTeleport = math.abs(testEnderman.y - teleportZombie.y)
+assertTrue(distanceAfterTeleport < distanceBeforeTeleport, "Enderman must teleport closer to a valid target")
+
+local splashState = Game.new()
+Game.debugLoadScenario(splashState, "empty")
+Game.debugSpawnCard(splashState, 1, "witch", 50, 95)
+Game.debugSpawnCard(splashState, 2, "zombie", 49, 80)
+Game.debugSpawnCard(splashState, 2, "zombie", 53, 81)
+Game.debugSetPaused(splashState, false)
+
+local splashTargets = {}
+for _, entity in ipairs(splashState.entities) do
+    if entity.name == "Zombie" then
+        table.insert(splashTargets, { entity = entity, hp = entity.hp })
+    end
+end
+for _ = 1, 8 do Game.update(splashState, 0.15) end
+assertTrue(
+    splashTargets[1].entity.hp < splashTargets[1].hp
+        and splashTargets[2].entity.hp < splashTargets[2].hp,
+    "Witch potion must splash nearby enemies"
+)
 
 print("Smoke tests passed")
