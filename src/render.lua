@@ -94,6 +94,12 @@ function render.layoutFor(monitor)
         cards = {},
         collectionCards = {},
         deckSlots = {},
+        infoButton = {
+            x1 = math.floor(width * 0.25),
+            x2 = math.ceil(width * 0.75),
+            y1 = height - 13,
+            y2 = height - 11,
+        },
         modeButton = {
             x1 = math.floor(width * 0.25),
             x2 = math.ceil(width * 0.75),
@@ -373,6 +379,225 @@ local function drawDeckSlot(buffer, zone, slot, card)
     end
 end
 
+local function wrapWords(text, maxWidth)
+    local lines = {}
+    local line = ""
+
+    for word in tostring(text or ""):gmatch("%S+") do
+        if line == "" then
+            line = word
+        elseif #line + 1 + #word <= maxWidth then
+            line = line .. " " .. word
+        else
+            table.insert(lines, line)
+            line = word
+        end
+    end
+
+    if line ~= "" then table.insert(lines, line) end
+    return lines
+end
+
+local function numberText(value, decimals)
+    if value == nil then return "-" end
+    if decimals then return string.format("%." .. tostring(decimals) .. "f", value) end
+    if math.floor(value) == value then return tostring(math.floor(value)) end
+    return string.format("%.1f", value)
+end
+
+local function infoStatLines(card)
+    local lines = {}
+
+    if card.kind == "unit" then
+        local u = card.unit
+        local dps = (u.damage or 0) / math.max(0.01, u.attackCooldown or 1)
+        local typeText = u.flying and "UNIT / FLYING" or "UNIT / GROUND"
+        if u.passive then typeText = "UNIT / STATIONARY" end
+
+        table.insert(lines, "TYPE: " .. typeText)
+        table.insert(lines, string.format(
+            "HP %s   DAMAGE %s   DPS %.1f",
+            numberText(u.maxHp),
+            numberText(u.damage),
+            dps
+        ))
+        table.insert(lines, string.format(
+            "RANGE %s   SPEED %s   ATTACK %ss",
+            numberText(u.attackRange, 1),
+            numberText(u.moveSpeed, 1),
+            numberText(u.attackCooldown, 2)
+        ))
+
+        local targets = u.canAttackAir and "AIR + GROUND" or "GROUND"
+        if u.targetMode == "buildings" then targets = "BUILDINGS / TOWERS" end
+        if u.targetMode == "none" then targets = "NONE" end
+        table.insert(lines, "TARGETS: " .. targets)
+
+        if card.spawnCount then
+            table.insert(lines, string.format("SPAWNS: %d units", card.spawnCount))
+        elseif u.proximityExplosion then
+            local e = u.proximityExplosion
+            table.insert(lines, string.format(
+                "EXPLOSION: %s dmg  radius %s  fuse %ss",
+                numberText(e.damage),
+                numberText(e.radius, 1),
+                numberText(e.fuseTime, 2)
+            ))
+        elseif u.splitOnDeath then
+            table.insert(lines, string.format("ON DEATH: splits into %d Mini Slimes", u.splitOnDeath.count or 2))
+        elseif u.periodicSpawn then
+            table.insert(lines, string.format(
+                "SUMMON: Baby Zombie every %ss  max %d",
+                numberText(u.periodicSpawn.interval, 1),
+                u.periodicSpawn.maxAlive or 0
+            ))
+        elseif u.teleport then
+            table.insert(lines, string.format(
+                "TELEPORT: %s-%s range  %ss cooldown",
+                numberText(u.teleport.minRange, 1),
+                numberText(u.teleport.maxRange, 1),
+                numberText(u.teleport.cooldown, 1)
+            ))
+        elseif u.onHitSlow then
+            table.insert(lines, string.format(
+                "SLOW: %d%% for %ss",
+                math.floor((1 - u.onHitSlow.factor) * 100 + 0.5),
+                numberText(u.onHitSlow.duration, 1)
+            ))
+        elseif u.emeraldBoost then
+            table.insert(lines, string.format(
+                "ECONOMY: +%d%% Emeralds for %ss",
+                math.floor(u.emeraldBoost * 100 + 0.5),
+                numberText(u.lifetime, 0)
+            ))
+        elseif u.preferredMinRange then
+            table.insert(lines, "KITES when enemies get too close")
+        end
+    elseif card.kind == "building" then
+        local b = card.building
+        local dps = (b.damage or 0) / math.max(0.01, b.attackCooldown or 1)
+        table.insert(lines, "TYPE: BUILDING")
+        table.insert(lines, string.format(
+            "HP %s   DAMAGE %s   DPS %.1f",
+            numberText(b.maxHp),
+            numberText(b.damage),
+            dps
+        ))
+        table.insert(lines, string.format(
+            "RANGE %s   ATTACK %ss   LIFE %ss",
+            numberText(b.attackRange, 1),
+            numberText(b.attackCooldown, 2),
+            numberText(b.lifetime, 0)
+        ))
+        table.insert(lines, "TARGETS: " .. (b.canAttackAir and "AIR + GROUND" or "GROUND"))
+    elseif card.kind == "spell" then
+        local s = card.spell
+        table.insert(lines, "TYPE: SPELL / ANYWHERE")
+        table.insert(lines, string.format(
+            "DAMAGE %s   RADIUS %s",
+            numberText(s.damage),
+            numberText(s.radius, 1)
+        ))
+        table.insert(lines, string.format(
+            "TOWER DAMAGE: %.1f (%d%%)",
+            (s.damage or 0) * (s.towerMultiplier or 1),
+            math.floor((s.towerMultiplier or 1) * 100 + 0.5)
+        ))
+    end
+
+    return lines
+end
+
+local function drawInfoCollectionCard(buffer, zone, card, selected)
+    local bg = selected and colors.blue or colors.gray
+    fill(buffer, zone.x1, zone.y1, zone.x2, zone.y2, bg)
+
+    local width = zone.x2 - zone.x1 + 1
+    local top = string.format("%s %dE", card.icon or "?", card.cost)
+    local name = util.truncate(card.name, math.max(1, width - 2))
+
+    writeText(
+        buffer,
+        zone.x1 + math.max(0, math.floor((width - #top) / 2)),
+        zone.y1 + 1,
+        top,
+        card.color or colors.white,
+        bg
+    )
+    writeText(
+        buffer,
+        zone.x1 + math.max(0, math.floor((width - #name) / 2)),
+        zone.y1 + 3,
+        name,
+        colors.white,
+        bg
+    )
+end
+
+local function drawCardInfoScreen(buffer, state, playerId, layout)
+    fill(buffer, 1, 1, buffer.width, buffer.height, colors.black)
+
+    local player = state.players[playerId]
+    local selected = cards.get(player.infoCardId) or cards.list[1]
+    local info = selected and cards.getInfo(selected.id) or nil
+
+    centered(buffer, 1, "CC-MINECRAFT ROYALE", colors.lime, colors.black)
+    centered(buffer, 2, "UNIT INFO / CARD DATABASE", colors.yellow, colors.black)
+    centered(buffer, 3, "TAP ANY CARD TO INSPECT", colors.lightGray, colors.black)
+
+    for i, card in ipairs(cards.list) do
+        drawInfoCollectionCard(
+            buffer,
+            layout.collectionCards[i],
+            card,
+            selected and card.id == selected.id
+        )
+    end
+
+    if selected then
+        centered(
+            buffer,
+            26,
+            string.format("%s  |  %dE", selected.name, selected.cost),
+            selected.color or colors.white,
+            colors.black
+        )
+
+        if info then
+            centered(
+                buffer,
+                28,
+                string.upper(info.role or selected.kind),
+                colors.lightBlue,
+                colors.black
+            )
+
+            local descriptionLines = wrapWords(info.description or "", buffer.width - 4)
+            local y = 30
+            for i = 1, math.min(3, #descriptionLines) do
+                writeText(buffer, 3, y, descriptionLines[i], colors.white, colors.black)
+                y = y + 1
+            end
+        end
+
+        local statY = 34
+        for _, line in ipairs(infoStatLines(selected)) do
+            if statY >= layout.readyButton.y1 - 1 then break end
+            writeText(
+                buffer,
+                3,
+                statY,
+                util.truncate(line, buffer.width - 4),
+                colors.lightGray,
+                colors.black
+            )
+            statY = statY + 2
+        end
+    end
+
+    drawButton(buffer, layout.readyButton, "BACK TO DECK", false)
+end
+
 local function drawLobby(buffer, state, playerId, layout, monitorName)
     fill(buffer, 1, 1, buffer.width, buffer.height, colors.black)
 
@@ -418,7 +643,7 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
     if player.feedback then
         centered(
             buffer,
-            38,
+            37,
             util.truncate(player.feedback, buffer.width - 2),
             colors.yellow,
             colors.black
@@ -426,20 +651,14 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
     else
         centered(
             buffer,
-            38,
+            37,
             validDeck and "DECK READY" or "SELECT EXACTLY 8 UNIQUE CARDS",
             validDeck and colors.lime or colors.orange,
             colors.black
         )
     end
 
-    centered(
-        buffer,
-        41,
-        util.truncate(string.format("%s  %dx%d", monitorName or "", buffer.width, buffer.height), buffer.width - 2),
-        colors.gray,
-        colors.black
-    )
+    drawButton(buffer, layout.infoButton, "UNIT INFO", false)
 
     local modeLabel = state.gameMode == "bot" and "MODE: VS BOT" or "MODE: PVP"
     if state.gameMode == "bot" and playerId == 2 then
@@ -578,7 +797,11 @@ function render.draw(monitor, state, playerId, monitorName)
     local layout = render.layoutFor(monitor)
 
     if state.phase == "lobby" then
-        drawLobby(buffer, state, playerId, layout, monitorName or "")
+        if state.players[playerId].infoOpen then
+            drawCardInfoScreen(buffer, state, playerId, layout)
+        else
+            drawLobby(buffer, state, playerId, layout, monitorName or "")
+        end
         flush(buffer, monitor)
     elseif state.phase == "result" then
         drawResult(buffer, state, playerId, layout)
