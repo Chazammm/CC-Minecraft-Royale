@@ -21,6 +21,9 @@ local function syncBot()
         end
 
         if state.phase == "countdown" or state.phase == "battle" then
+            if state.phase == "countdown" and previousPhase ~= "countdown" then
+                Bot.beginMatch(bot)
+            end
             bot.enabled = true
         elseif state.phase == "lobby" or state.phase == "result" then
             bot.enabled = false
