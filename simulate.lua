@@ -193,8 +193,8 @@ end
 reportPrint("CC-Minecraft Royale balance benchmark")
 reportPrint(("Mode: %s   Matches: %d   Seed: %d"):format(string.upper(mode), matchCount, seed))
 if mode == "mixed" then
-    reportPrint("All 16 cards are reshuffled into two 8-card decks.")
-    reportPrint("Deck pairs are replayed with sides swapped to reduce P1/P2 bias.")
+    reportPrint(("%d-card pool: 16 are sampled into two disjoint 8-card decks each pair."):format(#ALL_CARDS))
+    reportPrint("The unused cards change every shuffle; pairs are replayed with sides swapped.")
 else
     reportPrint("Using the original fixed Deck A vs Deck B comparison.")
 end
