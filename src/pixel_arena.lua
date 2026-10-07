@@ -105,6 +105,15 @@ local SPRITES = {
             "LLL",
         },
     },
+    baby_zombie = {
+        rows = {
+            ".LL.",
+            ".LKL",
+            ".LL.",
+            "LLLL",
+            ".L.L",
+        },
+    },
     blaze = {
         rows = {
             "..OOO..",
@@ -224,6 +233,7 @@ local NAME_TO_SPRITE = {
     ["Creeper"] = "creeper",
     ["Slime"] = "slime",
     ["Mini Slime"] = "mini_slime",
+    ["Baby Zombie"] = "baby_zombie",
     ["Blaze"] = "blaze",
     ["Witch"] = "witch",
     ["Enderman"] = "enderman",
@@ -518,6 +528,8 @@ local function drawEffect(box, playerId, effect)
         drawRingEffect(box, playerId, effect, colors.magenta)
     elseif effect.kind == "splash" then
         drawRingEffect(box, playerId, effect, colors.purple)
+    elseif effect.kind == "summon" then
+        drawRingEffect(box, playerId, effect, colors.lime)
     else
         drawExplosion(box, playerId, effect)
     end
