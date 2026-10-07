@@ -1308,7 +1308,7 @@ function Game.handleTouch(state, playerId, x, y, layout)
             return
         end
 
-        if hit(layout.modeButton, x, y) and playerId == 1 then
+        if hit(layout.modeButton, x, y) then
             Game.toggleGameMode(state)
             emitSound(state, "minecraft:block.note_block.pling", 0.5, state.gameMode == "bot" and 1.4 or 1.0)
             return
