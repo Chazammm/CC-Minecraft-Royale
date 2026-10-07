@@ -678,7 +678,7 @@ assertTrue(featureBattle.players[1].queue[1] ~= nil, "Battle must expose a next 
 local sawPrincess, sawKing = false, false
 for _, entity in ipairs(featureBattle.entities) do
     if entity.kind == "tower" and entity.towerType == "princess" then
-        assertEq(entity.maxHp, 1663, "Princess Tower must use five-percent HP nerf")
+        assertEq(entity.maxHp, 1580, "Princess Tower must use the additional five-percent HP nerf")
         sawPrincess = true
     elseif entity.kind == "tower" and entity.towerType == "king" then
         assertEq(entity.maxHp, 2565, "King Tower must use five-percent HP nerf")
