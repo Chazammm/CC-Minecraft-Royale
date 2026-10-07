@@ -66,6 +66,8 @@ local function newPlayer(playerId)
         hand = {},
         queue = {},
         selectedSlot = nil,
+        infoOpen = false,
+        infoCardId = cards.list[1] and cards.list[1].id or nil,
         towersDestroyed = 0,
         feedback = nil,
         feedbackTime = 0,
@@ -837,6 +839,7 @@ local function resetPlayersForMatch(state)
         player.emeralds = config.MATCH.emeraldStart
         player.towersDestroyed = 0
         player.rematch = false
+        player.infoOpen = false
         player.feedback = nil
         player.feedbackTime = 0
     end
@@ -893,6 +896,10 @@ function Game.resetLobby(state)
         local player = state.players[playerId]
         player.ready = false
         player.rematch = false
+        player.infoOpen = false
+        if not cards.get(player.infoCardId) then
+            player.infoCardId = cards.list[1] and cards.list[1].id or nil
+        end
         resetDeck(player)
         player.emeralds = config.MATCH.emeraldStart
         player.towersDestroyed = 0
@@ -1091,6 +1098,36 @@ function Game.handleTouch(state, playerId, x, y, layout)
     local player = state.players[playerId]
 
     if state.phase == "lobby" then
+        if hit(layout.infoButton, x, y) then
+            player.infoOpen = not player.infoOpen
+            if player.infoOpen and not cards.get(player.infoCardId) then
+                player.infoCardId = cards.list[1] and cards.list[1].id or nil
+            end
+            emitSound(state, "minecraft:block.note_block.pling", 0.45, player.infoOpen and 1.5 or 1.0)
+            return
+        end
+
+        if player.infoOpen then
+            if layout.collectionCards then
+                for i, zone in ipairs(layout.collectionCards) do
+                    if hit(zone, x, y) then
+                        local card = cards.list[i]
+                        if card then
+                            player.infoCardId = card.id
+                            emitSound(state, "minecraft:block.note_block.hat", 0.35, 1.3)
+                        end
+                        return
+                    end
+                end
+            end
+
+            if hit(layout.readyButton, x, y) then
+                player.infoOpen = false
+                emitSound(state, "minecraft:block.note_block.pling", 0.45, 1.0)
+            end
+            return
+        end
+
         if hit(layout.modeButton, x, y) and playerId == 1 then
             Game.toggleGameMode(state)
             emitSound(state, "minecraft:block.note_block.pling", 0.5, state.gameMode == "bot" and 1.4 or 1.0)
