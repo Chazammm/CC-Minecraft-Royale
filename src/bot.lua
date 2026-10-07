@@ -393,6 +393,13 @@ function Bot.reset(bot, state)
     Bot.prepare(bot, state)
 end
 
+function Bot.beginMatch(bot)
+    bot.thinkTimer = 0.75
+    bot.decisionCount = 0
+    bot.actions = 0
+    bot.lastAction = "NONE"
+end
+
 function Bot.setEnabled(bot, state, enabled, prepare)
     bot.enabled = enabled == true
     if bot.enabled and prepare ~= false then
