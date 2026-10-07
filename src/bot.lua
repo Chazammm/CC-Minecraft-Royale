@@ -5,6 +5,40 @@ local Game = require("src.game")
 
 local Bot = {}
 
+local DIFFICULTIES = {
+    easy = {
+        think = 1.05,
+        lateThink = 0.80,
+        overtimeThink = 0.65,
+        defenseOffset = 0.8,
+        arrowThreshold = 3.4,
+        saveForPower = false,
+        minPlayScore = 2.8,
+    },
+    normal = {
+        think = 0.65,
+        lateThink = 0.42,
+        overtimeThink = 0.32,
+        defenseOffset = 0,
+        arrowThreshold = 2.4,
+        saveForPower = true,
+        minPlayScore = 2.0,
+    },
+    hard = {
+        think = 0.42,
+        lateThink = 0.30,
+        overtimeThink = 0.22,
+        defenseOffset = -0.45,
+        arrowThreshold = 1.9,
+        saveForPower = true,
+        minPlayScore = 1.5,
+    },
+}
+
+local function difficultyConfig(bot)
+    return DIFFICULTIES[bot.mode or "normal"] or DIFFICULTIES.normal
+end
+
 local NORMAL_DECK = {
     "zombie",
     "cannon",
@@ -273,6 +307,9 @@ local function offensivePlacement(bot, state, card)
 end
 
 local function shouldSaveForPowerCard(bot, state, ctx, arrowScore)
+    local cfg = difficultyConfig(bot)
+    if not cfg.saveForPower then return false end
+
     local player = state.players[bot.playerId]
     local threat = ctx.primaryThreat
     local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
@@ -280,7 +317,7 @@ local function shouldSaveForPowerCard(bot, state, ctx, arrowScore)
     if threat and ctx.primaryThreatScore >= (lateGame and 4.5 or 3) then
         return false
     end
-    if arrowScore and arrowScore >= 2.4 then
+    if arrowScore and arrowScore >= difficultyConfig(bot).arrowThreshold then
         return false
     end
 
@@ -321,10 +358,12 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore)
     local player = state.players[bot.playerId]
     if player.emeralds + 0.0001 < card.cost then return -math.huge end
 
+    local cfg = difficultyConfig(bot)
     local score = 0
     local threat = ctx.primaryThreat
     local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
-    local defenseThreshold = state.overtime and 5.0 or (lateGame and 4.2 or 3.0)
+    local baseDefenseThreshold = state.overtime and 5.0 or (lateGame and 4.2 or 3.0)
+    local defenseThreshold = baseDefenseThreshold + cfg.defenseOffset
     local defending = threat and ctx.primaryThreatScore >= defenseThreshold
 
     -- Economy cards were effectively never tested because the bot kept
@@ -332,7 +371,7 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore)
     -- couple of Emeralds so Villager gets a real chance to enter the match.
 
     if card.id == "arrows" then
-        if arrowScore >= 2.4 then
+        if arrowScore >= cfg.arrowThreshold then
             score = 8 + arrowScore
         else
             return -math.huge
@@ -398,6 +437,14 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore)
 end
 
 local function choosePlay(bot, state)
+    local cfg = difficultyConfig(bot)
+
+    -- EASY intentionally misses some decision windows so it feels human and
+    -- gives the player time to exploit openings.
+    if bot.mode == "easy" and bot.decisionCount % 4 == 0 then
+        return nil
+    end
+
     local player = state.players[bot.playerId]
     local ctx = battlefield(state, bot.playerId)
     local arrowX, arrowY, arrowScore = bestArrowTarget(state, bot.playerId)
@@ -420,7 +467,7 @@ local function choosePlay(bot, state)
         end
     end
 
-    if not best or bestScore < 2 then return nil end
+    if not best or bestScore < cfg.minPlayScore then return nil end
 
     if best.card.id == "arrows" and arrowX then
         best.x, best.y = arrowX, arrowY
@@ -456,13 +503,20 @@ function Bot.new(playerId, deck)
     return {
         playerId = playerId or 2,
         enabled = false,
-        mode = "NORMAL",
+        mode = "normal",
         deck = copyDeck(deck),
         thinkTimer = 0.75,
         decisionCount = 0,
         actions = 0,
         lastAction = "NONE",
     }
+end
+
+function Bot.setDifficulty(bot, difficulty)
+    difficulty = string.lower(tostring(difficulty or "normal"))
+    if not DIFFICULTIES[difficulty] then return false end
+    bot.mode = difficulty
+    return true
 end
 
 function Bot.reset(bot, state)
@@ -507,9 +561,12 @@ function Bot.update(bot, state, dt)
     if bot.thinkTimer > 0 then return end
 
     bot.decisionCount = bot.decisionCount + 1
-    local baseThink = state.overtime and 0.32
-        or ((state.timeLeft and state.timeLeft <= 60) and 0.42 or 0.65)
-    bot.thinkTimer = baseThink + ((bot.decisionCount * 11 + bot.playerId) % 6) * 0.08
+    local cfg = difficultyConfig(bot)
+    local baseThink = state.overtime and cfg.overtimeThink
+        or ((state.timeLeft and state.timeLeft <= 60) and cfg.lateThink or cfg.think)
+
+    local jitter = bot.mode == "hard" and 0.035 or (bot.mode == "easy" and 0.11 or 0.08)
+    bot.thinkTimer = baseThink + ((bot.decisionCount * 11 + bot.playerId) % 6) * jitter
 
     local choice = choosePlay(bot, state)
     if choice then play(bot, state, choice) end
