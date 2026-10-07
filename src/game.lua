@@ -5,6 +5,49 @@ local arena = require("src.arena")
 
 local Game = {}
 
+local function newPlayerStats()
+    return {
+        cardsPlayed = 0,
+        emeraldSpent = 0,
+        emeraldGenerated = 0,
+        villagerBonus = 0,
+        emeraldWasted = 0,
+        unitDamage = 0,
+        towerDamage = 0,
+        kills = 0,
+        towersKilled = 0,
+        cards = {},
+    }
+end
+
+local function newMatchStats()
+    return {
+        elapsed = 0,
+        players = {
+            [1] = newPlayerStats(),
+            [2] = newPlayerStats(),
+        },
+    }
+end
+
+local function getCardStats(state, playerId, cardId)
+    if not state.stats or not state.stats.players[playerId] or not cardId then return nil end
+    local playerStats = state.stats.players[playerId]
+    local stat = playerStats.cards[cardId]
+    if not stat then
+        stat = {
+            plays = 0,
+            emeraldSpent = 0,
+            unitDamage = 0,
+            towerDamage = 0,
+            kills = 0,
+            towersKilled = 0,
+        }
+        playerStats.cards[cardId] = stat
+    end
+    return stat
+end
+
 local function otherPlayer(playerId)
     return playerId == 1 and 2 or 1
 end
@@ -83,7 +126,7 @@ local function makeBaseEntity(state, owner, kind, x, y)
     return entity
 end
 
-local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color)
+local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color, sourceCardId)
     local entity = makeBaseEntity(state, owner, "unit", x, y)
 
     for k, v in pairs(util.deepcopy(stats)) do
@@ -93,6 +136,7 @@ local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color)
     entity.name = name or "Unit"
     entity.icon = icon or "?"
     entity.color = color or colors.white
+    entity.sourceCardId = sourceCardId
     entity.maxHp = entity.maxHp or 100
     entity.hp = entity.maxHp
     entity.moveSpeed = entity.moveSpeed or 5
@@ -126,9 +170,9 @@ local function spawnCardUnit(state, owner, card, x, y)
         local sy = util.clamp(y + oy, 2, config.ARENA.height - 2)
 
         if card.unit.flying or arena.isWalkable(card.unit, sx, sy) then
-            spawnUnitFromStats(state, owner, card.unit, sx, sy, card.name, card.icon, card.color)
+            spawnUnitFromStats(state, owner, card.unit, sx, sy, card.name, card.icon, card.color, card.id)
         else
-            spawnUnitFromStats(state, owner, card.unit, x, y, card.name, card.icon, card.color)
+            spawnUnitFromStats(state, owner, card.unit, x, y, card.name, card.icon, card.color, card.id)
         end
     end
 end
@@ -142,6 +186,7 @@ local function spawnBuilding(state, owner, card, x, y)
     entity.name = card.name
     entity.icon = card.icon
     entity.color = card.color
+    entity.sourceCardId = card.id
     entity.maxHp = entity.maxHp or 500
     entity.hp = entity.maxHp
     entity.attackRange = entity.attackRange or 20
@@ -312,6 +357,7 @@ local function spawnProjectile(state, attacker, target)
         y = attacker.y,
         targetId = target.id,
         owner = attacker.owner,
+        sourceCardId = attacker.sourceCardId,
         damage = attacker.damage,
         speed = attacker.projectileSpeed or 50,
         visual = attacker.projectileVisual
@@ -325,17 +371,32 @@ local function spawnProjectile(state, attacker, target)
     })
 end
 
-damageEntity = function(state, target, damage, sourceOwner)
+damageEntity = function(state, target, damage, sourceOwner, sourceCardId)
     if not target or not target.alive then return end
 
-    if damage > 0 then
+    local actualDamage = math.min(math.max(0, damage or 0), math.max(0, target.hp or 0))
+
+    if actualDamage > 0 then
         target.damageFlash = 0.18
         addEffect(state, "hit", target.x, target.y, 1.5, 0.16, sourceOwner)
+
+        if state.phase == "battle" and sourceOwner and sourceCardId and state.stats then
+            local playerStats = state.stats.players[sourceOwner]
+            local cardStats = getCardStats(state, sourceOwner, sourceCardId)
+
+            if target.kind == "tower" then
+                playerStats.towerDamage = playerStats.towerDamage + actualDamage
+                cardStats.towerDamage = cardStats.towerDamage + actualDamage
+            else
+                playerStats.unitDamage = playerStats.unitDamage + actualDamage
+                cardStats.unitDamage = cardStats.unitDamage + actualDamage
+            end
+        end
     end
 
-    target.hp = target.hp - damage
+    target.hp = target.hp - (damage or 0)
     if target.hp <= 0 then
-        killEntity(state, target, sourceOwner)
+        killEntity(state, target, sourceOwner, sourceCardId)
     end
 end
 
@@ -363,7 +424,7 @@ local function explodeProximityUnit(state, entity)
     entity.fuseRemaining = nil
 
     for _, victim in ipairs(victims) do
-        damageEntity(state, victim, spec.damage or 0, entity.owner)
+        damageEntity(state, victim, spec.damage or 0, entity.owner, entity.sourceCardId)
     end
 end
 
@@ -382,7 +443,7 @@ local function handleDeathAbilities(state, entity)
         end
 
         for _, victim in ipairs(victims) do
-            damageEntity(state, victim, entity.deathDamage.damage, entity.owner)
+            damageEntity(state, victim, entity.deathDamage.damage, entity.owner, entity.sourceCardId)
         end
     end
 
@@ -403,7 +464,8 @@ local function handleDeathAbilities(state, entity)
                         sy,
                         template.name,
                         template.icon,
-                        template.color
+                        template.color,
+                        entity.sourceCardId
                     )
                 end
             end
@@ -411,9 +473,21 @@ local function handleDeathAbilities(state, entity)
     end
 end
 
-killEntity = function(state, entity, sourceOwner)
+killEntity = function(state, entity, sourceOwner, sourceCardId)
     if not entity.alive then return end
     entity.alive = false
+
+    if state.phase == "battle" and sourceOwner and sourceCardId and state.stats then
+        local playerStats = state.stats.players[sourceOwner]
+        local cardStats = getCardStats(state, sourceOwner, sourceCardId)
+        if entity.kind == "tower" then
+            playerStats.towersKilled = playerStats.towersKilled + 1
+            cardStats.towersKilled = cardStats.towersKilled + 1
+        else
+            playerStats.kills = playerStats.kills + 1
+            cardStats.kills = cardStats.kills + 1
+        end
+    end
 
     if entity.kind == "tower" then
         addEffect(state, "tower_down", entity.x, entity.y, 7, 0.7, sourceOwner)
@@ -483,7 +557,8 @@ local function updatePeriodicSpawn(state, entity, dt)
                 sy,
                 template.name,
                 template.icon,
-                template.color
+                template.color,
+                entity.sourceCardId
             )
             summoned.summonerId = entity.id
         end
@@ -498,7 +573,7 @@ local function performAttack(state, entity, target)
     if entity.projectileSpeed then
         spawnProjectile(state, entity, target)
     else
-        damageEntity(state, target, entity.damage or 0, entity.owner)
+        damageEntity(state, target, entity.damage or 0, entity.owner, entity.sourceCardId)
     end
     entity.attackCooldownLeft = entity.attackCooldown or 1
 end
@@ -693,7 +768,7 @@ local function updateProjectiles(state, dt)
                     end
 
                     for _, victim in ipairs(victims) do
-                        damageEntity(state, victim, projectile.damage, projectile.owner)
+                        damageEntity(state, victim, projectile.damage, projectile.owner, projectile.sourceCardId)
                         if victim.alive and projectile.onHitSlow then
                             victim.slowRemaining = math.max(
                                 victim.slowRemaining or 0,
@@ -775,6 +850,8 @@ function Game.new(soundCallback)
         adminMode = false,
         adminPaused = false,
         adminScenario = nil,
+        gameMode = "pvp",
+        stats = newMatchStats(),
     }
 
     resetDeck(state.players[1])
@@ -816,6 +893,7 @@ function Game.startCountdown(state)
     state.winner = nil
     state.resultReason = nil
     state.overtime = false
+    state.stats = newMatchStats()
     resetPlayersForMatch(state)
     emitSound(state, "minecraft:block.note_block.pling", 0.7, 1.2)
 end
@@ -861,7 +939,7 @@ local function castArrows(state, playerId, card, x, y)
         if target.kind == "tower" then
             damage = damage * (card.spell.towerMultiplier or 1)
         end
-        damageEntity(state, target, damage, playerId)
+        damageEntity(state, target, damage, playerId, card.id)
     end
 
     emitSound(state, "minecraft:entity.arrow.shoot", 0.7, 1.1)
@@ -874,27 +952,28 @@ local function cycleHand(player, slot)
     table.insert(player.queue, playedCard)
 end
 
-local function playSelectedCard(state, playerId, x, y)
+function Game.playCardFromSlot(state, playerId, slot, x, y)
     local player = state.players[playerId]
-    local slot = player.selectedSlot
-    if not slot then return false end
+    if not player or (state.phase ~= "battle" and state.phase ~= "admin") then
+        return false, "NOT PLAYABLE"
+    end
 
     local cardId = player.hand[slot]
     local card = cards.get(cardId)
     if not card then
         setFeedback(player, "CARD ERROR")
         player.selectedSlot = nil
-        return false
+        return false, "CARD ERROR"
     end
 
     if player.emeralds + 0.0001 < card.cost then
         setFeedback(player, "NOT ENOUGH EMERALDS")
-        return false
+        return false, "NOT ENOUGH EMERALDS"
     end
 
     if not arena.placementAllowed(playerId, x, y, card.placement) then
         setFeedback(player, "INVALID PLACEMENT")
-        return false
+        return false, "INVALID PLACEMENT"
     end
 
     if card.kind == "unit" then
@@ -905,15 +984,31 @@ local function playSelectedCard(state, playerId, x, y)
         castArrows(state, playerId, card, x, y)
     else
         setFeedback(player, "UNSUPPORTED CARD")
-        return false
+        return false, "UNSUPPORTED CARD"
     end
 
     player.emeralds = player.emeralds - card.cost
+
+    if state.phase == "battle" and state.stats then
+        local playerStats = state.stats.players[playerId]
+        local cardStats = getCardStats(state, playerId, card.id)
+        playerStats.cardsPlayed = playerStats.cardsPlayed + 1
+        playerStats.emeraldSpent = playerStats.emeraldSpent + card.cost
+        cardStats.plays = cardStats.plays + 1
+        cardStats.emeraldSpent = cardStats.emeraldSpent + card.cost
+    end
+
     cycleHand(player, slot)
     player.selectedSlot = nil
     setFeedback(player, card.name .. " DEPLOYED", 0.7)
     emitSound(state, "minecraft:block.amethyst_block.hit", 0.45, 1.4)
     return true
+end
+
+local function playSelectedCard(state, playerId, x, y)
+    local player = state.players[playerId]
+    if not player.selectedSlot then return false end
+    return Game.playCardFromSlot(state, playerId, player.selectedSlot, x, y)
 end
 
 local function deckPosition(deck, cardId)
@@ -947,6 +1042,22 @@ function Game.toggleDeckCard(state, playerId, cardId)
     return true
 end
 
+function Game.setGameMode(state, mode)
+    if mode ~= "pvp" and mode ~= "bot" then return false end
+    if state.phase ~= "lobby" then return false end
+
+    state.gameMode = mode
+    state.players[1].ready = false
+    state.players[2].ready = false
+    state.players[1].rematch = false
+    state.players[2].rematch = false
+    return true
+end
+
+function Game.toggleGameMode(state)
+    return Game.setGameMode(state, state.gameMode == "bot" and "pvp" or "bot")
+end
+
 local function hit(zone, x, y)
     return zone
         and x >= zone.x1 and x <= zone.x2
@@ -957,6 +1068,16 @@ function Game.handleTouch(state, playerId, x, y, layout)
     local player = state.players[playerId]
 
     if state.phase == "lobby" then
+        if hit(layout.modeButton, x, y) and playerId == 1 then
+            Game.toggleGameMode(state)
+            emitSound(state, "minecraft:block.note_block.pling", 0.5, state.gameMode == "bot" and 1.4 or 1.0)
+            return
+        end
+
+        if state.gameMode == "bot" and playerId == 2 then
+            return
+        end
+
         if layout.collectionCards then
             for i, zone in ipairs(layout.collectionCards) do
                 if hit(zone, x, y) then
@@ -981,6 +1102,10 @@ function Game.handleTouch(state, playerId, x, y, layout)
             player.ready = not player.ready
             emitSound(state, "minecraft:block.note_block.hat", 0.5, player.ready and 1.4 or 0.8)
 
+            if state.gameMode == "bot" and playerId == 1 and player.ready then
+                state.players[2].ready = true
+            end
+
             if state.players[1].ready and state.players[2].ready then
                 Game.startCountdown(state)
             end
@@ -993,6 +1118,8 @@ function Game.handleTouch(state, playerId, x, y, layout)
     end
 
     if state.phase == "battle" then
+        if state.gameMode == "bot" and playerId == 2 then return end
+
         for slot = 1, 4 do
             if hit(layout.cards[slot], x, y) then
                 if player.selectedSlot == slot then
@@ -1014,6 +1141,11 @@ function Game.handleTouch(state, playerId, x, y, layout)
     if state.phase == "result" then
         if hit(layout.resultButtons.rematch, x, y) then
             player.rematch = not player.rematch
+
+            if state.gameMode == "bot" and playerId == 1 and player.rematch then
+                state.players[2].rematch = true
+            end
+
             if state.players[1].rematch and state.players[2].rematch then
                 state.players[1].ready = true
                 state.players[2].ready = true
@@ -1053,6 +1185,8 @@ function Game.update(state, dt)
     if isAdmin and state.adminPaused then return end
 
     if isBattle then
+        if state.stats then state.stats.elapsed = state.stats.elapsed + dt end
+
         local multiplier = state.overtime and config.MATCH.overtimeMultiplier or 1
         local emeraldRate = config.MATCH.emeraldPerSecond * multiplier
 
@@ -1066,8 +1200,23 @@ function Game.update(state, dt)
                 end
             end
 
-            local playerRate = emeraldRate * (1 + boost)
-            player.emeralds = math.min(player.maxEmeralds, player.emeralds + playerRate * dt)
+            local baseGain = emeraldRate * dt
+            local bonusGain = baseGain * boost
+            local potentialGain = baseGain + bonusGain
+            local available = math.max(0, player.maxEmeralds - player.emeralds)
+            local actualGain = math.min(available, potentialGain)
+
+            player.emeralds = player.emeralds + actualGain
+
+            if state.stats then
+                local playerStats = state.stats.players[playerId]
+                playerStats.emeraldGenerated = playerStats.emeraldGenerated + actualGain
+                playerStats.emeraldWasted = playerStats.emeraldWasted + math.max(0, potentialGain - actualGain)
+
+                local baseRealized = math.min(available, baseGain)
+                local bonusAvailable = math.max(0, available - baseRealized)
+                playerStats.villagerBonus = playerStats.villagerBonus + math.min(bonusAvailable, bonusGain)
+            end
         end
     end
 
@@ -1221,6 +1370,38 @@ function Game.debugTogglePaused(state)
     if not state.adminMode then return false end
     state.adminPaused = not state.adminPaused
     return state.adminPaused
+end
+
+function Game.getMatchStats(state, playerId)
+    if not state.stats then return nil end
+    local playerStats = state.stats.players[playerId]
+    if not playerStats then return nil end
+
+    local bestCardId = nil
+    local bestValue = -1
+    for cardId, stat in pairs(playerStats.cards) do
+        local value = stat.towerDamage * 1.5 + stat.unitDamage + stat.kills * 75 + stat.towersKilled * 400
+        if value > bestValue then
+            bestValue = value
+            bestCardId = cardId
+        end
+    end
+
+    return {
+        elapsed = state.stats.elapsed,
+        cardsPlayed = playerStats.cardsPlayed,
+        emeraldSpent = playerStats.emeraldSpent,
+        emeraldGenerated = playerStats.emeraldGenerated,
+        villagerBonus = playerStats.villagerBonus,
+        emeraldWasted = playerStats.emeraldWasted,
+        unitDamage = playerStats.unitDamage,
+        towerDamage = playerStats.towerDamage,
+        kills = playerStats.kills,
+        towersKilled = playerStats.towersKilled,
+        bestCardId = bestCardId,
+        bestCard = bestCardId and cards.get(bestCardId) or nil,
+        cardStats = playerStats.cards,
+    }
 end
 
 function Game.getCardForSlot(state, playerId, slot)
