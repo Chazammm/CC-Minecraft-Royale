@@ -14,6 +14,8 @@ local DIFFICULTIES = {
         arrowThreshold = 3.4,
         saveForPower = false,
         minPlayScore = 2.8,
+        cycleMemory = false,
+        counterpush = false,
     },
     normal = {
         think = 0.65,
@@ -23,6 +25,8 @@ local DIFFICULTIES = {
         arrowThreshold = 2.4,
         saveForPower = true,
         minPlayScore = 2.0,
+        cycleMemory = true,
+        counterpush = true,
     },
     hard = {
         think = 0.42,
@@ -32,6 +36,8 @@ local DIFFICULTIES = {
         arrowThreshold = 1.9,
         saveForPower = true,
         minPlayScore = 1.5,
+        cycleMemory = true,
+        counterpush = true,
     },
 }
 
@@ -60,6 +66,77 @@ local function copyDeck(deck)
     return out
 end
 
+local function newMemory()
+    return {
+        observedPlays = {},
+        knownCards = {},
+        lastSeenPlayIndex = {},
+        enemyPlayIndex = 0,
+        enemyEmeralds = config.MATCH.emeraldStart,
+    }
+end
+
+local function resetMemory(bot)
+    bot.memory = newMemory()
+end
+
+local function observeOpponent(bot, state)
+    if not bot.memory then resetMemory(bot) end
+
+    local enemyId = otherPlayer(bot.playerId)
+    local stats = state.stats and state.stats.players and state.stats.players[enemyId]
+    if not stats then return end
+
+    -- This is information a human could track from visible plays: which cards
+    -- were used, how many cards have cycled since then, and an Emerald estimate.
+    bot.memory.enemyEmeralds = math.max(
+        0,
+        math.min(
+            config.MATCH.emeraldMax,
+            config.MATCH.emeraldStart
+                + (stats.emeraldGenerated or 0)
+                - (stats.emeraldSpent or 0)
+        )
+    )
+
+    for cardId, cardStats in pairs(stats.cards or {}) do
+        local plays = cardStats.plays or 0
+        local seen = bot.memory.observedPlays[cardId] or 0
+
+        if plays > seen then
+            for _ = seen + 1, plays do
+                bot.memory.enemyPlayIndex = bot.memory.enemyPlayIndex + 1
+                bot.memory.lastSeenPlayIndex[cardId] = bot.memory.enemyPlayIndex
+                bot.memory.knownCards[cardId] = true
+            end
+            bot.memory.observedPlays[cardId] = plays
+        end
+    end
+end
+
+local function enemyCardKnown(bot, cardId)
+    return bot.memory and bot.memory.knownCards[cardId] == true
+end
+
+local function enemyCardLikelyReady(bot, cardId)
+    if not enemyCardKnown(bot, cardId) then return false end
+    local last = bot.memory.lastSeenPlayIndex[cardId] or -999
+    return (bot.memory.enemyPlayIndex - last) >= 4
+end
+
+local function enemyCardDefinitelyCycling(bot, cardId)
+    if not enemyCardKnown(bot, cardId) then return false end
+    local last = bot.memory.lastSeenPlayIndex[cardId] or -999
+    local since = bot.memory.enemyPlayIndex - last
+    return since >= 0 and since < 4
+end
+
+local function enemyCanAfford(bot, cardId)
+    local card = cards.get(cardId)
+    if not card then return false end
+    return (bot.memory and bot.memory.enemyEmeralds or 0) + 0.25 >= card.cost
+end
+
 function Bot.defaultDeck()
     return copyDeck(NORMAL_DECK)
 end
@@ -82,6 +159,7 @@ function Bot.prepare(bot, state)
     bot.decisionCount = 0
     bot.actions = 0
     bot.lastAction = "NONE"
+    resetMemory(bot)
 end
 
 local function handHasCard(player, cardId)
@@ -216,6 +294,29 @@ local function bestArrowTarget(state, playerId)
         end
     end
 
+    local towerDamage = arrow and arrow.spell
+        and (arrow.spell.damage or 0) * (arrow.spell.towerMultiplier or 1)
+        or 0
+
+    -- A spell that can end a tower should not be ignored just because there
+    -- is no troop cluster nearby.
+    for _, tower in ipairs(state.entities) do
+        if tower.alive
+            and tower.owner ~= playerId
+            and tower.kind == "tower"
+            and towerDamage > 0
+            and tower.hp <= towerDamage + 0.001
+        then
+            local score = tower.towerType == "king" and 80 or 35
+            if state.overtime then score = score + 25 end
+
+            if score > bestScore then
+                bestScore = score
+                best = tower
+            end
+        end
+    end
+
     if best then
         return best.x, best.y, bestScore
     end
@@ -274,12 +375,71 @@ local function weakestEnemyPrincess(state, playerId)
     return best
 end
 
+local function towerPressureState(state, playerId)
+    local enemyId = otherPlayer(playerId)
+    local ownHp, enemyHp = 0, 0
+
+    for _, entity in ipairs(state.entities) do
+        if entity.alive and entity.kind == "tower" then
+            local ratio = entity.hp / math.max(1, entity.maxHp)
+            if entity.owner == playerId then
+                ownHp = ownHp + ratio
+            elseif entity.owner == enemyId then
+                enemyHp = enemyHp + ratio
+            end
+        end
+    end
+
+    local crownDelta = (state.players[playerId].towersDestroyed or 0)
+        - (state.players[enemyId].towersDestroyed or 0)
+
+    return crownDelta * 2 + (ownHp - enemyHp) * 0.35
+end
+
+local function counterpushLane(state, playerId)
+    local bestLane, bestScore = nil, 0
+
+    for _, entity in ipairs(state.entities) do
+        if entity.alive
+            and entity.owner == playerId
+            and entity.kind == "unit"
+            and not entity.passive
+        then
+            local advanced = playerId == 1 and entity.y <= 112 or entity.y >= 48
+            if advanced then
+                local hpRatio = (entity.hp or 0) / math.max(1, entity.maxHp or 1)
+                local score = hpRatio * ((entity.maxHp or 100) / 220)
+                    + unitDps(entity) / 45
+
+                if score > bestScore then
+                    bestScore = score
+                    bestLane = entity.x < 50 and 25 or 75
+                end
+            end
+        end
+    end
+
+    if bestScore >= 1.8 then return bestLane, bestScore end
+    return nil, bestScore
+end
+
 local function offensivePlacement(bot, state, card)
     local playerId = bot.playerId
+    local cfg = difficultyConfig(bot)
     local targetTower = weakestEnemyPrincess(state, playerId)
     local laneX = targetTower and targetTower.x
         or (((bot.decisionCount + bot.playerId) % 2) == 0 and 25 or 75)
     local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
+
+    if cfg.counterpush and bot.mode ~= "easy" then
+        local pushLane = counterpushLane(state, playerId)
+        local targetCritical = targetTower
+            and targetTower.hp / math.max(1, targetTower.maxHp) <= 0.30
+
+        if pushLane and not targetCritical then
+            laneX = pushLane
+        end
+    end
 
     if card.id == "villager" then
         local y = playerId == 1 and 142 or 18
@@ -358,6 +518,16 @@ local function botDefenseThreshold(bot, state)
     local cfg = difficultyConfig(bot)
     local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
     local base = state.overtime and 5.0 or (lateGame and 4.2 or 3.0)
+
+    if bot.mode == "hard" and lateGame then
+        local advantage = towerPressureState(state, bot.playerId)
+        if advantage > 0.35 then
+            base = base - 0.75 -- protect the lead
+        elseif advantage < -0.35 then
+            base = base + 0.75 -- accept more risk and push
+        end
+    end
+
     return base + cfg.defenseOffset
 end
 
@@ -392,6 +562,15 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore)
     elseif defending then
         score = 3 + ctx.primaryThreatScore * 0.35
 
+        -- Never answer a flying threat with a troop that cannot actually hit it.
+        if threat.flying
+            and card.kind == "unit"
+            and not card.unit.canAttackAir
+            and not card.unit.passive
+        then
+            return -math.huge
+        end
+
         if card.id == "cannon" and not threat.flying then
             score = score + 4
             if threat.targetMode == "buildings" or threat.name == "Iron Golem" then score = score + 5 end
@@ -400,10 +579,12 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore)
             if threat.name == "Iron Golem" or threat.name == "Creeper" then score = score + 4 end
         elseif card.id == "enderman" and (threat.attackRange or 0) >= 10 then
             score = score + 5
-        elseif card.id == "snow_golem" and not threat.flying then
-            score = score + 4
-        elseif card.id == "skeleton" and not threat.flying then
-            score = score + 3
+        elseif card.id == "snow_golem" then
+            score = score + (threat.flying and 5 or 4)
+        elseif card.id == "skeleton" then
+            score = score + (threat.flying and 4.5 or 3)
+        elseif card.id == "witch" then
+            score = score + (threat.flying and 4.5 or 3)
         elseif card.id == "bat_swarm" and not threat.canAttackAir then
             score = score + 5
         elseif card.id == "blaze" then
@@ -434,6 +615,37 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore)
         score = offense[card.id] or 2
         if lateGame and card.id ~= "cannon" and card.id ~= "villager" then
             score = score + (state.overtime and 4.5 or 3.0)
+        end
+    end
+
+    if cfg.cycleMemory and bot.mode == "hard" and not defending then
+        -- Exploit a counter which was just used and cannot be back in the
+        -- opponent's four-card hand yet.
+        if card.id == "bat_swarm" then
+            if enemyCardDefinitelyCycling(bot, "arrows") then
+                score = score + 3.0
+            elseif enemyCardLikelyReady(bot, "arrows")
+                and enemyCanAfford(bot, "arrows")
+            then
+                score = score - 3.5
+            end
+        elseif card.id == "iron_golem" then
+            if enemyCardDefinitelyCycling(bot, "cannon") then
+                score = score + 2.2
+            elseif enemyCardLikelyReady(bot, "cannon")
+                and enemyCanAfford(bot, "cannon")
+            then
+                score = score - 2.0
+            end
+        end
+
+        -- If a known dangerous tank is back in cycle and affordable, avoid
+        -- throwing away the best cheap pull before it appears.
+        if (card.id == "cannon" or card.id == "endermite")
+            and enemyCardLikelyReady(bot, "iron_golem")
+            and enemyCanAfford(bot, "iron_golem")
+        then
+            score = score - 2.8
         end
     end
 
@@ -517,6 +729,7 @@ function Bot.new(playerId, deck)
         decisionCount = 0,
         actions = 0,
         lastAction = "NONE",
+        memory = newMemory(),
     }
 end
 
@@ -536,6 +749,7 @@ function Bot.beginMatch(bot)
     bot.decisionCount = 0
     bot.actions = 0
     bot.lastAction = "NONE"
+    resetMemory(bot)
 end
 
 function Bot.setEnabled(bot, state, enabled, prepare)
@@ -555,6 +769,10 @@ function Bot.update(bot, state, dt)
     local playable = state.phase == "battle" or state.phase == "admin"
     if not playable then return end
     if state.phase == "admin" and state.adminPaused then return end
+
+    if state.phase == "battle" then
+        observeOpponent(bot, state)
+    end
 
     -- Normal battles already generate Emeralds inside Game.update().
     -- Admin sandbox does not, so give the bot the same economy there.
@@ -589,6 +807,9 @@ function Bot.status(bot, state)
         emeralds = player and player.emeralds or 0,
         actions = bot.actions,
         lastAction = bot.lastAction,
+        enemyEmeralds = bot.memory and bot.memory.enemyEmeralds or 0,
+        knownCards = bot.memory and bot.memory.knownCards or {},
+        enemyPlayIndex = bot.memory and bot.memory.enemyPlayIndex or 0,
     }
 end
 
