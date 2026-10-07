@@ -81,10 +81,16 @@ function render.layoutFor(monitor)
         scenarios = makeColumns(w, 5, 3, 5),
         arena = { x1 = 1, y1 = 6, x2 = w, y2 = h - 22 },
         controls = makeColumns(w, 4, h - 21, h - 18),
+        cardPageButtons = {},
         cards = {},
     }
 
-    local cardTop = h - 17
+    local pagerY = h - 17
+    layout.cardPageButtons.prev = { x1 = 1, x2 = math.floor(w * 0.22), y1 = pagerY, y2 = pagerY }
+    layout.cardPageButtons.label = { x1 = math.floor(w * 0.22) + 1, x2 = math.floor(w * 0.78), y1 = pagerY, y2 = pagerY }
+    layout.cardPageButtons.next = { x1 = math.floor(w * 0.78) + 1, x2 = w, y1 = pagerY, y2 = pagerY }
+
+    local cardTop = h - 16
     local cardHeight = h - cardTop + 1
     for i = 1, 16 do
         local col = (i - 1) % 4
@@ -148,10 +154,21 @@ function render.draw(monitor, state, viewerId, ui)
         colors.lime
     )
 
-    for i, card in ipairs(cards.list) do
-        local selected = ui.selectedCard == card.id
-        local label = (card.icon or "?") .. " " .. card.name
-        drawButton(b, layout.cards[i], label, selected, card.color or colors.orange)
+    local pageSize = 16
+    local pages = math.max(1, math.ceil(#cards.list / pageSize))
+    local page = math.max(1, math.min(pages, ui.cardPage or 1))
+
+    drawButton(b, layout.cardPageButtons.prev, "< PREV", false)
+    drawButton(b, layout.cardPageButtons.label, string.format("CARDS %d/%d", page, pages), false)
+    drawButton(b, layout.cardPageButtons.next, "NEXT >", false)
+
+    for slot = 1, pageSize do
+        local card = cards.list[(page - 1) * pageSize + slot]
+        if card then
+            local selected = ui.selectedCard == card.id
+            local label = (card.icon or "?") .. " " .. card.name
+            drawButton(b, layout.cards[slot], label, selected, card.color or colors.orange)
+        end
     end
 
     flush(b, monitor)
