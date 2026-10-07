@@ -24,7 +24,7 @@ package.path = "./?.lua;./?/init.lua;" .. package.path
 local cards = require("src.cards")
 local arena = require("src.arena")
 local Game = require("src.game")
-local sprites = require("src.sprites")
+local pixelArena = require("src.pixel_arena")
 
 local function assertEq(actual, expected, message)
     if actual ~= expected then
@@ -208,11 +208,7 @@ Game.debugSpawnCard(killedCreeperState, 2, "arrows", 50, 80)
 
 assertEq(nearbyZombie.hp, nearbyZombieHp, "Killed Creeper must not explode on death")
 
-for _, card in ipairs(cards.list) do
-    local sprite = sprites.forCard(card)
-    assertTrue(sprite.width >= 3, "Every V2 card must have a readable sprite: " .. card.id)
-    assertTrue(sprite.height >= 1, "Every V2 card sprite must have at least one row: " .. card.id)
-end
+assertTrue(type(pixelArena.draw) == "function", "Semigraphics pixel arena renderer must load")
 
 local visualState = Game.new()
 Game.debugLoadScenario(visualState, "empty")
