@@ -13,6 +13,7 @@ end)
 
 local bot = Bot.new(2)
 local music = Music.new(hw.musicSpeaker, hw.musicSpeakerName)
+music.volume = (config.MUSIC and config.MUSIC.volume) or music.volume
 local previousMode = state.gameMode
 local previousPhase = state.phase
 local previousMusicPhase = state.phase
@@ -49,7 +50,9 @@ end
 
 local function syncMusic()
     if state.phase == "battle" and previousMusicPhase ~= "battle" then
-        Music.start(music)
+        if not config.MUSIC or config.MUSIC.enabled ~= false then
+            Music.start(music)
+        end
     elseif state.phase ~= "battle" and previousMusicPhase == "battle" then
         -- Do not hard-stop the only speaker here: on one-speaker setups the
         -- victory/defeat SFX may be playing at the same moment.
