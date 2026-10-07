@@ -93,6 +93,7 @@ function render.layoutFor(monitor)
         hand = { x1 = 1, y1 = arenaBottom + 1, x2 = width, y2 = height },
         cards = {},
         collectionCards = {},
+        collectionPageButtons = {},
         deckSlots = {},
         presetButtons = {},
         infoButton = {
@@ -134,6 +135,26 @@ function render.layoutFor(monitor)
             y2 = collectionStartY + row * collectionCellH + collectionCellH - 1,
         }
     end
+
+    local pageY = 25
+    layout.collectionPageButtons.prev = {
+        x1 = 1,
+        x2 = math.floor(width * 0.22),
+        y1 = pageY,
+        y2 = pageY,
+    }
+    layout.collectionPageButtons.label = {
+        x1 = math.floor(width * 0.22) + 1,
+        x2 = math.floor(width * 0.78),
+        y1 = pageY,
+        y2 = pageY,
+    }
+    layout.collectionPageButtons.next = {
+        x1 = math.floor(width * 0.78) + 1,
+        x2 = width,
+        y1 = pageY,
+        y2 = pageY,
+    }
 
     local deckStartY = 28
     local deckCellH = 4
@@ -359,6 +380,34 @@ local function deckContains(deck, cardId)
     return false
 end
 
+local COLLECTION_PAGE_SIZE = 16
+
+local function collectionPageCount()
+    return math.max(1, math.ceil(#cards.list / COLLECTION_PAGE_SIZE))
+end
+
+local function collectionCardOnPage(player, slot)
+    local pages = collectionPageCount()
+    local page = math.max(1, math.min(pages, player.collectionPage or 1))
+    local index = (page - 1) * COLLECTION_PAGE_SIZE + slot
+    return cards.list[index]
+end
+
+local function drawCollectionPager(buffer, player, layout)
+    local pages = collectionPageCount()
+    if pages <= 1 then return end
+
+    local page = math.max(1, math.min(pages, player.collectionPage or 1))
+    drawButton(buffer, layout.collectionPageButtons.prev, "< PREV", false)
+    drawButton(
+        buffer,
+        layout.collectionPageButtons.label,
+        string.format("CARDS %d/%d", page, pages),
+        false
+    )
+    drawButton(buffer, layout.collectionPageButtons.next, "NEXT >", false)
+end
+
 local function drawCollectionCard(buffer, zone, card, selected)
     local bg = selected and colors.blue or colors.gray
     local fg = selected and colors.white or (card.color or colors.white)
@@ -545,6 +594,14 @@ local function infoStatLines(card)
             numberText(b.lifetime, 0)
         ))
         table.insert(lines, "TARGETS: " .. (b.canAttackAir and "AIR + GROUND" or "GROUND"))
+        if b.periodicSpawn then
+            local spawned = cards.getInternalUnit(b.periodicSpawn.template)
+            table.insert(lines, string.format(
+                "SPAWNS: %s every %ss",
+                spawned and spawned.name or tostring(b.periodicSpawn.template),
+                numberText(b.periodicSpawn.interval, 1)
+            ))
+        end
     elseif card.kind == "spell" then
         local s = card.spell
         table.insert(lines, "TYPE: SPELL / ANYWHERE")
@@ -558,6 +615,12 @@ local function infoStatLines(card)
             (s.damage or 0) * (s.towerMultiplier or 1),
             math.floor((s.towerMultiplier or 1) * 100 + 0.5)
         ))
+        if s.delay then
+            table.insert(lines, string.format("IMPACT DELAY: %ss", numberText(s.delay, 1)))
+        end
+        if s.groundOnly then
+            table.insert(lines, "TARGETS: GROUND / BUILDINGS / TOWERS")
+        end
     end
 
     return lines
@@ -600,14 +663,18 @@ local function drawCardInfoScreen(buffer, state, playerId, layout)
     centered(buffer, 2, "UNIT INFO / CARD DATABASE", colors.yellow, colors.black)
     centered(buffer, 3, "TAP ANY CARD TO INSPECT", colors.lightGray, colors.black)
 
-    for i, card in ipairs(cards.list) do
-        drawInfoCollectionCard(
-            buffer,
-            layout.collectionCards[i],
-            card,
-            selected and card.id == selected.id
-        )
+    for slot = 1, COLLECTION_PAGE_SIZE do
+        local card = collectionCardOnPage(player, slot)
+        if card then
+            drawInfoCollectionCard(
+                buffer,
+                layout.collectionCards[slot],
+                card,
+                selected and card.id == selected.id
+            )
+        end
     end
+    drawCollectionPager(buffer, player, layout)
 
     if selected then
         centered(
@@ -679,14 +746,18 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
         colors.black
     )
 
-    for i, card in ipairs(cards.list) do
-        drawCollectionCard(
-            buffer,
-            layout.collectionCards[i],
-            card,
-            deckContains(player.deck, card.id)
-        )
+    for slot = 1, COLLECTION_PAGE_SIZE do
+        local card = collectionCardOnPage(player, slot)
+        if card then
+            drawCollectionCard(
+                buffer,
+                layout.collectionCards[slot],
+                card,
+                deckContains(player.deck, card.id)
+            )
+        end
     end
+    drawCollectionPager(buffer, player, layout)
 
     centered(
         buffer,
