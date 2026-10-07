@@ -1,5 +1,7 @@
 return {
     path = "assets/battle_music.dfpwm",
+    remoteUrl = "https://raw.githubusercontent.com/Chazammm/CC-Minecraft-Royale/main/assets/battle_music.dfpwm",
+    packVersion = "392e8bd06e79ee6",
     sourceRate = 24000,
     outputRate = 48000,
     repeatFactor = 2,
