@@ -1348,6 +1348,30 @@ function Game.cycleBotDifficulty(state)
     return true
 end
 
+local COLLECTION_PAGE_SIZE = 16
+
+local function collectionPageCount()
+    return math.max(1, math.ceil(#cards.list / COLLECTION_PAGE_SIZE))
+end
+
+local function collectionCardForSlot(player, slot)
+    local page = math.max(1, math.min(collectionPageCount(), player.collectionPage or 1))
+    local index = (page - 1) * COLLECTION_PAGE_SIZE + slot
+    return cards.list[index]
+end
+
+function Game.cycleCollectionPage(state, playerId, delta)
+    local player = state.players[playerId]
+    if not player then return false end
+
+    local pages = collectionPageCount()
+    local page = (player.collectionPage or 1) + (delta or 1)
+    if page < 1 then page = pages end
+    if page > pages then page = 1 end
+    player.collectionPage = page
+    return true
+end
+
 function Game.cycleDeckPresetSlot(state, playerId, delta)
     local player = state.players[playerId]
     if not player then return false end
@@ -1413,10 +1437,22 @@ function Game.handleTouch(state, playerId, x, y, layout)
 
     if state.phase == "lobby" then
         if player.infoOpen then
+            if layout.collectionPageButtons then
+                if hit(layout.collectionPageButtons.prev, x, y) then
+                    Game.cycleCollectionPage(state, playerId, -1)
+                    emitSound(state, "minecraft:block.note_block.hat", 0.35, 0.9)
+                    return
+                elseif hit(layout.collectionPageButtons.next, x, y) then
+                    Game.cycleCollectionPage(state, playerId, 1)
+                    emitSound(state, "minecraft:block.note_block.hat", 0.35, 1.3)
+                    return
+                end
+            end
+
             if layout.collectionCards then
-                for i, zone in ipairs(layout.collectionCards) do
+                for slot, zone in ipairs(layout.collectionCards) do
                     if hit(zone, x, y) then
-                        local card = cards.list[i]
+                        local card = collectionCardForSlot(player, slot)
                         if card then
                             player.infoCardId = card.id
                             emitSound(state, "minecraft:block.note_block.hat", 0.35, 1.3)
@@ -1457,6 +1493,18 @@ function Game.handleTouch(state, playerId, x, y, layout)
             return
         end
 
+        if layout.collectionPageButtons then
+            if hit(layout.collectionPageButtons.prev, x, y) then
+                Game.cycleCollectionPage(state, playerId, -1)
+                emitSound(state, "minecraft:block.note_block.hat", 0.35, 0.9)
+                return
+            elseif hit(layout.collectionPageButtons.next, x, y) then
+                Game.cycleCollectionPage(state, playerId, 1)
+                emitSound(state, "minecraft:block.note_block.hat", 0.35, 1.3)
+                return
+            end
+        end
+
         if state.gameMode == "bot" and playerId == state.botPlayerId then
             return
         end
@@ -1494,9 +1542,9 @@ function Game.handleTouch(state, playerId, x, y, layout)
         end
 
         if layout.collectionCards then
-            for i, zone in ipairs(layout.collectionCards) do
+            for slot, zone in ipairs(layout.collectionCards) do
                 if hit(zone, x, y) then
-                    local card = cards.list[i]
+                    local card = collectionCardForSlot(player, slot)
                     if card then
                         Game.toggleDeckCard(state, playerId, card.id)
                         emitSound(state, "minecraft:block.note_block.hat", 0.4, 1.2)
