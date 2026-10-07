@@ -25,9 +25,6 @@ local PALETTE = {
 }
 
 local SPRITES = {
-    -- V2.1 sprites deliberately use one main colour plus black wherever
-    -- possible. Pixelbox encodes each 2x3 texel with two colours, so this
-    -- avoids the colour bleeding seen in the first semigraphics pass.
     zombie = {
         rows = {
             ".LLL.",
@@ -85,11 +82,12 @@ local SPRITES = {
         rows = {
             "LLLLL",
             "LKLKL",
-            "LLLLL",
             "LLKLL",
-            "LKKKL",
+            "LLLLL",
+            ".LLL.",
+            ".LLL.",
+            ".L.L.",
             "LL.LL",
-            "L...L",
         },
     },
     slime = {
@@ -105,6 +103,89 @@ local SPRITES = {
             "LLL",
             "LKL",
             "LLL",
+        },
+    },
+    blaze = {
+        rows = {
+            "..OOO..",
+            ".OKOKO.",
+            "..OOO..",
+            "O.O.O.O",
+            ".O.O.O.",
+            "O..O..O",
+        },
+    },
+    witch = {
+        rows = {
+            "..PPP..",
+            ".PPPPP.",
+            "..PKP..",
+            "..PPP..",
+            ".PPPPP.",
+            "..P.P..",
+            ".P...P.",
+        },
+    },
+    enderman = {
+        rows = {
+            ".MMMMM.",
+            ".MKMKM.",
+            ".MMMMM.",
+            "...M...",
+            "..MMM..",
+            "...M...",
+            "..M.M..",
+            ".M...M.",
+        },
+    },
+    spider = {
+        rows = {
+            "D.....D",
+            ".D.D.D.",
+            "..DDD..",
+            ".DKDKD.",
+            "..DDD..",
+            ".D.D.D.",
+            "D.....D",
+        },
+    },
+    snow_golem = {
+        rows = {
+            "..WWW..",
+            ".WKWKW.",
+            "..WWW..",
+            "...W...",
+            "..WWW..",
+            ".WWWWW.",
+            "..W.W..",
+        },
+    },
+    villager = {
+        rows = {
+            "..NNN..",
+            ".NNKNN.",
+            ".NNNNN.",
+            "...N...",
+            "..NNN..",
+            ".NNNNN.",
+            "..N.N..",
+        },
+    },
+    endermite = {
+        rows = {
+            ".PPP.",
+            "PKPKP",
+            ".PPP.",
+        },
+    },
+    wolf = {
+        rows = {
+            "S...S",
+            ".SSS.",
+            ".SKS.",
+            "SSSSS",
+            ".S.S.",
+            "S...S",
         },
     },
     princess_tower = {
@@ -143,6 +224,14 @@ local NAME_TO_SPRITE = {
     ["Creeper"] = "creeper",
     ["Slime"] = "slime",
     ["Mini Slime"] = "mini_slime",
+    ["Blaze"] = "blaze",
+    ["Witch"] = "witch",
+    ["Enderman"] = "enderman",
+    ["Spider"] = "spider",
+    ["Snow Golem"] = "snow_golem",
+    ["Villager"] = "villager",
+    ["Endermite"] = "endermite",
+    ["Wolf"] = "wolf",
 }
 
 local function normalizeSprites()
@@ -344,6 +433,13 @@ local function drawProjectile(box, state, playerId, projectile)
         put(box, px, py, colors.lightGray)
     elseif projectile.visual == "tower_shot" then
         fillRect(box, px - 1, py - 1, px + 1, py + 1, colors.yellow)
+    elseif projectile.visual == "fireball" then
+        fillRect(box, px - 1, py - 1, px + 1, py + 1, colors.orange)
+        put(box, px, py, colors.yellow)
+    elseif projectile.visual == "potion" then
+        fillRect(box, px - 1, py - 1, px + 1, py + 1, colors.purple)
+    elseif projectile.visual == "snowball" then
+        fillRect(box, px - 1, py - 1, px + 1, py + 1, colors.white)
     else
         put(box, px, py, colors.white)
     end
@@ -397,11 +493,31 @@ local function drawHit(box, playerId, effect)
     drawLine(box, x, y - 2, x, y + 2, colors.white)
 end
 
+local function drawRingEffect(box, playerId, effect, color)
+    local cx, cy = worldToPixel(box, playerId, effect.x, effect.y)
+    local rx = math.max(2, worldRadiusX(box, effect.radius or 4))
+    local ry = math.max(2, worldRadiusY(box, effect.radius or 4))
+
+    for y = math.floor(-ry), math.ceil(ry) do
+        for x = math.floor(-rx), math.ceil(rx) do
+            local nx, ny = x / rx, y / ry
+            local d = nx * nx + ny * ny
+            if d <= 1 and d >= 0.5 then
+                put(box, cx + x, cy + y, color)
+            end
+        end
+    end
+end
+
 local function drawEffect(box, playerId, effect)
     if effect.kind == "arrows" then
         drawArrowVolley(box, playerId, effect)
     elseif effect.kind == "hit" then
         drawHit(box, playerId, effect)
+    elseif effect.kind == "teleport" then
+        drawRingEffect(box, playerId, effect, colors.magenta)
+    elseif effect.kind == "splash" then
+        drawRingEffect(box, playerId, effect, colors.purple)
     else
         drawExplosion(box, playerId, effect)
     end
