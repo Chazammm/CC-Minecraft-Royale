@@ -31,7 +31,17 @@ end
 
 local function download(path)
   ensureDir(path)
-  local url = base .. path
+
+  -- raw.githubusercontent.com/CDN caches can briefly serve an older file
+  -- immediately after a push. A unique query string forces a fresh fetch.
+  local cacheBust
+  if os.epoch then
+    cacheBust = tostring(os.epoch("utc"))
+  else
+    cacheBust = tostring(math.floor(os.clock() * 1000))
+  end
+
+  local url = base .. path .. "?v=" .. cacheBust
   write(("Downloading %-24s ... "):format(path))
   local response, err = http.get(url)
   if not response then
