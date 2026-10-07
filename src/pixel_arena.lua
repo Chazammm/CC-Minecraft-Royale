@@ -672,6 +672,9 @@ local function drawEffect(box, playerId, effect)
         drawRingEffect(box, playerId, effect, colors.purple)
     elseif effect.kind == "summon" then
         drawRingEffect(box, playerId, effect, colors.lime)
+    elseif effect.kind == "portal_spawn" then
+        drawRingEffect(box, playerId, effect, colors.magenta)
+        drawSparkle(box, playerId, effect, colors.purple)
     elseif effect.kind == "spawn" then
         local team = effect.owner == playerId and colors.lightBlue or colors.red
         drawRingEffect(box, playerId, effect, team)
