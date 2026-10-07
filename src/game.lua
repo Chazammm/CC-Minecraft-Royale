@@ -125,6 +125,7 @@ local function newPlayer(playerId)
         selectedSlot = nil,
         infoOpen = false,
         infoCardId = cards.list[1] and cards.list[1].id or nil,
+        presetSlot = 1,
         towersDestroyed = 0,
         feedback = nil,
         feedbackTime = 0,
@@ -1213,6 +1214,20 @@ function Game.cycleBotDifficulty(state)
     return true
 end
 
+function Game.cycleDeckPresetSlot(state, playerId, delta)
+    local player = state.players[playerId]
+    if not player then return false end
+
+    local slot = (player.presetSlot or 1) + (delta or 1)
+    if slot < 1 then slot = 3 end
+    if slot > 3 then slot = 1 end
+    player.presetSlot = slot
+
+    local status = state.deckPresets[playerId][slot] and "SAVED" or "EMPTY"
+    setFeedback(player, "PRESET " .. tostring(slot) .. "/3 - " .. status, 0.8)
+    return true
+end
+
 function Game.saveDeckPreset(state, playerId, slot)
     local player = state.players[playerId]
     if not player or slot < 1 or slot > 3 then return false end
@@ -1310,17 +1325,28 @@ function Game.handleTouch(state, playerId, x, y, layout)
         end
 
         if layout.presetButtons then
-            for slot = 1, 3 do
-                if hit(layout.presetButtons["save" .. tostring(slot)], x, y) then
-                    Game.saveDeckPreset(state, playerId, slot)
-                    emitSound(state, "minecraft:block.note_block.chime", 0.45, 1.2)
-                    return
-                end
-                if hit(layout.presetButtons["load" .. tostring(slot)], x, y) then
-                    Game.loadDeckPreset(state, playerId, slot)
-                    emitSound(state, "minecraft:block.note_block.hat", 0.4, 1.1)
-                    return
-                end
+            if hit(layout.presetButtons.prev, x, y) then
+                Game.cycleDeckPresetSlot(state, playerId, -1)
+                emitSound(state, "minecraft:block.note_block.hat", 0.4, 0.9)
+                return
+            end
+
+            if hit(layout.presetButtons.next, x, y) then
+                Game.cycleDeckPresetSlot(state, playerId, 1)
+                emitSound(state, "minecraft:block.note_block.hat", 0.4, 1.3)
+                return
+            end
+
+            if hit(layout.presetButtons.save, x, y) then
+                Game.saveDeckPreset(state, playerId, player.presetSlot or 1)
+                emitSound(state, "minecraft:block.note_block.chime", 0.45, 1.2)
+                return
+            end
+
+            if hit(layout.presetButtons.load, x, y) then
+                Game.loadDeckPreset(state, playerId, player.presetSlot or 1)
+                emitSound(state, "minecraft:block.note_block.hat", 0.4, 1.1)
+                return
             end
 
             if hit(layout.presetButtons.random, x, y) then
