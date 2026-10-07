@@ -617,7 +617,7 @@ local function infoStatLines(card)
 
                 if spawned.hybridAttack then
                     table.insert(lines, string.format(
-                        "CROSSBOW %s dmg / AXE %s dmg",
+                        "AIR: CROSSBOW %s dmg / GROUND: AXE %s dmg",
                         numberText(spawned.hybridAttack.rangedDamage),
                         numberText(spawned.hybridAttack.meleeDamage)
                     ))
