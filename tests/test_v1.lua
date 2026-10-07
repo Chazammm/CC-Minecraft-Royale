@@ -389,6 +389,39 @@ assertTrue(spawnedPiglin ~= nil, "Nether Portal must spawn a Piglin")
 assertTrue(spawnedPiglin.remainingLifetime <= 10 and spawnedPiglin.remainingLifetime > 0, "Spawned Piglin must have a ten-second lifetime")
 assertTrue(spawnedPiglin.hybridAttack ~= nil, "Spawned Piglin must retain hybrid axe/crossbow combat")
 
+local costApiState = Game.new()
+costApiState.players[1].ready = true
+costApiState.players[2].ready = true
+Game.startCountdown(costApiState)
+for _ = 1, 13 do Game.update(costApiState, 0.25) end
+assertEq(costApiState.phase, "battle", "Cost API test must enter battle")
+
+costApiState.players[1].hand[1] = "falling_anvil"
+costApiState.players[1].emeralds = 3
+assertTrue(
+    Game.playCardFromSlot(costApiState, 1, 1, 50, 60),
+    "Falling Anvil must be playable through the normal API with exactly three Emeralds"
+)
+assertEq(costApiState.players[1].emeralds, 0, "Falling Anvil must deduct exactly three Emeralds")
+assertEq(#costApiState.pendingSpells, 1, "Normal Anvil play must create a delayed pending spell")
+
+costApiState.players[1].hand[1] = "nether_portal"
+costApiState.players[1].emeralds = 3
+assertTrue(
+    Game.playCardFromSlot(costApiState, 1, 1, 25, 100),
+    "Nether Portal must be playable through the normal API with exactly three Emeralds"
+)
+assertEq(costApiState.players[1].emeralds, 0, "Nether Portal must deduct exactly three Emeralds")
+
+local normalPortalFound = false
+for _, entity in ipairs(costApiState.entities) do
+    if entity.name == "Nether Portal" and entity.owner == 1 then
+        normalPortalFound = true
+        break
+    end
+end
+assertTrue(normalPortalFound, "Normal Nether Portal play must create the building")
+
 local firstPiglinId = spawnedPiglin.id
 local maxAlivePiglins = 0
 for _ = 1, 120 do
