@@ -2,6 +2,7 @@ local config = require("config")
 local util = require("src.util")
 local arena = require("src.arena")
 local cards = require("src.cards")
+local sprites = require("src.sprites")
 
 local render = {}
 
@@ -110,6 +111,128 @@ local function terrainColor(wx, wy)
     return colors.green
 end
 
+local function inside(rect, x, y)
+    return x >= rect.x1 and x <= rect.x2 and y >= rect.y1 and y <= rect.y2
+end
+
+local function arenaCell(b, rect, x, y, ch, fg, bg)
+    if inside(rect, x, y) then
+        setCell(b, x, y, ch, fg, bg)
+    end
+end
+
+local function drawEntity(b, rect, entity, viewerId)
+    local sx, sy = arena.worldToScreen(viewerId, entity.x, entity.y, rect)
+    local sprite = sprites.forEntity(entity)
+    local x1 = sx - math.floor(sprite.width / 2)
+    local y1 = sy - math.floor((sprite.height - 1) / 2)
+    local own = entity.owner == viewerId
+    local teamBg = own and colors.blue or colors.red
+    local fg = entity.color or colors.white
+    local bg = sprite.tower and teamBg or colors.black
+
+    if entity.damageFlash and entity.damageFlash > 0 then
+        fg = colors.white
+        bg = colors.orange
+    elseif entity.fuseRemaining then
+        fg = math.floor(entity.fuseRemaining * 8) % 2 == 0 and colors.white or colors.yellow
+    end
+
+    for rowIndex, row in ipairs(sprite.rows) do
+        for col = 1, #row do
+            local ch = row:sub(col, col)
+            if ch ~= " " and ch ~= "." then
+                arenaCell(b, rect, x1 + col - 1, y1 + rowIndex - 1, ch, fg, bg)
+            end
+        end
+    end
+
+    local width = math.max(3, sprite.width)
+    local barX = sx - math.floor(width / 2)
+    local barY = y1 - 1
+    local ratio = math.max(0, math.min(1, entity.hp / math.max(1, entity.maxHp)))
+    local filled = math.ceil(ratio * width)
+    local hpFg = ratio > 0.6 and colors.lime or (ratio > 0.3 and colors.yellow or colors.red)
+
+    for i = 0, width - 1 do
+        arenaCell(
+            b,
+            rect,
+            barX + i,
+            barY,
+            i < filled and "=" or "-",
+            i < filled and hpFg or colors.black,
+            teamBg
+        )
+    end
+end
+
+local function findEntity(state, id)
+    for _, entity in ipairs(state.entities) do
+        if entity.id == id and entity.alive then return entity end
+    end
+    return nil
+end
+
+local function drawProjectile(b, state, viewerId, rect, projectile)
+    local sx, sy = arena.worldToScreen(viewerId, projectile.x, projectile.y, rect)
+    local ch, fg = ".", colors.white
+
+    if projectile.visual == "arrow" then
+        local target = findEntity(state, projectile.targetId)
+        ch = ">"
+        if target then
+            local tx, ty = arena.worldToScreen(viewerId, target.x, target.y, rect)
+            local dx, dy = tx - sx, ty - sy
+            if math.abs(dy) > math.abs(dx) then
+                ch = dy >= 0 and "v" or "^"
+            else
+                ch = dx >= 0 and ">" or "<"
+            end
+        end
+    elseif projectile.visual == "cannonball" then
+        ch, fg = "o", colors.lightGray
+    elseif projectile.visual == "tower_shot" then
+        ch, fg = "*", colors.yellow
+    end
+
+    local bg = b.bg[sy] and b.bg[sy][sx] or colors.black
+    arenaCell(b, rect, sx, sy, ch, fg, bg)
+end
+
+local function drawEffect(b, viewerId, rect, effect)
+    local sx, sy = arena.worldToScreen(viewerId, effect.x, effect.y, rect)
+
+    if effect.kind == "hit" then
+        local bg = b.bg[sy] and b.bg[sy][sx] or colors.black
+        arenaCell(b, rect, sx, sy, "+", colors.white, bg)
+        return
+    end
+
+    local ex = arena.worldToScreen(viewerId, effect.x + (effect.radius or 1), effect.y, rect)
+    local _, ey = arena.worldToScreen(viewerId, effect.x, effect.y + (effect.radius or 1), rect)
+    local rx = math.max(1, math.abs(ex - sx))
+    local ry = math.max(1, math.abs(ey - sy))
+    local fg = effect.kind == "arrows" and colors.yellow or colors.orange
+    local ch = effect.kind == "arrows" and "v" or "*"
+
+    for dy = -ry, ry do
+        for dx = -rx, rx do
+            local nx, ny = dx / rx, dy / ry
+            if nx * nx + ny * ny <= 1 then
+                local shouldDraw = effect.kind == "arrows"
+                    and (math.abs(dx * 3 + dy * 5) % 4 == 0)
+                    or (effect.kind ~= "arrows" and (math.abs(dx) + math.abs(dy)) % 2 == 0)
+                if shouldDraw then
+                    local px, py = sx + dx, sy + dy
+                    local bg = b.bg[py] and b.bg[py][px] or colors.black
+                    arenaCell(b, rect, px, py, ch, fg, bg)
+                end
+            end
+        end
+    end
+end
+
 local function drawArena(b, state, viewerId, rect)
     for sy = rect.y1, rect.y2 do
         for sx = rect.x1, rect.x2 do
@@ -119,46 +242,15 @@ local function drawArena(b, state, viewerId, rect)
     end
 
     for _, entity in ipairs(state.entities) do
-        if entity.alive then
-            local sx, sy = arena.worldToScreen(viewerId, entity.x, entity.y, rect)
-            local own = entity.owner == viewerId
-            local fg = own and (entity.color or colors.white) or colors.red
-
-            if entity.kind == "tower" then
-                local towerBg = own and colors.blue or colors.red
-                local label = entity.towerType == "king" and "K" or "T"
-                for dx = -1, 1 do
-                    setCell(b, sx + dx, sy, " ", colors.white, towerBg)
-                end
-                setCell(b, sx, sy, label, colors.white, towerBg)
-            elseif entity.kind == "building" then
-                setCell(b, sx - 1, sy, " ", colors.white, colors.black)
-                setCell(b, sx, sy, entity.icon or "?", fg, colors.black)
-                setCell(b, sx + 1, sy, " ", colors.white, colors.black)
-            else
-                setCell(b, sx, sy, entity.icon or "?", fg, colors.black)
-            end
-
-            if sy > rect.y1 then
-                local ratio = entity.hp / math.max(1, entity.maxHp)
-                local hpColor = ratio > 0.6 and colors.lime or (ratio > 0.3 and colors.yellow or colors.red)
-                setCell(b, sx, sy - 1, "-", hpColor, b.bg[sy - 1][sx])
-            end
-        end
+        if entity.alive then drawEntity(b, rect, entity, viewerId) end
     end
 
     for _, projectile in ipairs(state.projectiles) do
-        if projectile.alive then
-            local sx, sy = arena.worldToScreen(viewerId, projectile.x, projectile.y, rect)
-            setCell(b, sx, sy, ".", colors.white, b.bg[sy][sx])
-        end
+        if projectile.alive then drawProjectile(b, state, viewerId, rect, projectile) end
     end
 
     for _, effect in ipairs(state.effects) do
-        local sx, sy = arena.worldToScreen(viewerId, effect.x, effect.y, rect)
-        local ch = effect.kind == "arrows" and "*" or "!"
-        local fg = effect.kind == "arrows" and colors.yellow or colors.orange
-        setCell(b, sx, sy, ch, fg, b.bg[sy][sx])
+        drawEffect(b, viewerId, rect, effect)
     end
 end
 
