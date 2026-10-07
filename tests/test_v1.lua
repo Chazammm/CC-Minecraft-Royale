@@ -109,4 +109,29 @@ Game.handleTouch(state, 1, 29, 35, layout)
 assertTrue(#state.entities > 6, "Valid troop placement must spawn a unit")
 assertTrue(state.players[1].hand[1] ~= firstCard, "Played card must cycle out of the hand")
 
+local debugState = Game.new()
+Game.debugLoadScenario(debugState, "full")
+assertEq(debugState.phase, "admin", "Admin scenario must enter admin phase")
+assertTrue(debugState.adminPaused, "Admin scenario should start paused")
+assertEq(#debugState.entities, 6, "Full admin scenario must have six towers")
+
+Game.debugLoadScenario(debugState, "princess")
+assertEq(#debugState.entities, 4, "Princess-only scenario must have four side towers")
+
+Game.debugLoadScenario(debugState, "king")
+assertEq(#debugState.entities, 2, "King-only scenario must have two King Towers")
+
+Game.debugLoadScenario(debugState, "single_tower")
+assertEq(#debugState.entities, 2, "1v1 tower scenario must have one tower per player")
+
+Game.debugLoadScenario(debugState, "empty")
+assertEq(#debugState.entities, 0, "Empty admin scenario must start empty")
+
+local ok = Game.debugSpawnCard(debugState, 1, "zombie", 50, 120)
+assertTrue(ok, "Admin must spawn cards without Emerald or side restrictions")
+assertEq(#debugState.entities, 1, "Admin spawn must create the selected unit")
+
+Game.debugSetPaused(debugState, false)
+assertTrue(not debugState.adminPaused, "Admin pause control must resume simulation")
+
 print("V1 smoke tests passed")
