@@ -223,6 +223,30 @@ local SPRITES = {
             "..SS..SS....",
         },
     },
+    nether_portal = {
+        rows = {
+            ".PPPPP.",
+            "PPMMMMM",
+            "PPMKKMM",
+            "PPMKKMM",
+            "PPMKKMM",
+            "PPMKKMM",
+            "PPMMMMM",
+            ".PPPPP.",
+        },
+    },
+    piglin = {
+        rows = {
+            "..OOO..",
+            ".ONONO.",
+            "..ONO..",
+            ".NNNNN.",
+            "NNYNNNN",
+            "..NNN..",
+            "..N.N..",
+            ".NN.NN.",
+        },
+    },
     princess_tower = {
         rows = {
             "..TTT..",
@@ -268,6 +292,8 @@ local NAME_TO_SPRITE = {
     ["Villager"] = "villager",
     ["Endermite"] = "endermite",
     ["Wolf"] = "wolf",
+    ["Nether Portal"] = "nether_portal",
+    ["Piglin"] = "piglin",
 }
 
 local function normalizeSprites()
@@ -495,6 +521,17 @@ local function drawProjectile(box, state, playerId, projectile)
         fillRect(box, px - 1, py - 1, px + 1, py + 1, colors.purple)
     elseif projectile.visual == "snowball" then
         fillRect(box, px - 1, py - 1, px + 1, py + 1, colors.white)
+    elseif projectile.visual == "crossbow_bolt" then
+        local target = getEntityById(state, projectile.targetId)
+        local dx, dy = 1, 0
+        if target then
+            local tx, ty = worldToPixel(box, playerId, target.x, target.y)
+            dx, dy = tx - px, ty - py
+            local length = math.sqrt(dx * dx + dy * dy)
+            if length > 0 then dx, dy = dx / length, dy / length end
+        end
+        drawLine(box, px - dx, py - dy, px + dx * 1.5, py + dy * 1.5, colors.brown)
+        put(box, px + dx * 1.5, py + dy * 1.5, colors.lightGray)
     else
         put(box, px, py, colors.white)
     end
@@ -591,6 +628,39 @@ local function drawTowerDown(box, playerId, effect)
     end
 end
 
+local function drawAnvilWarning(box, playerId, effect)
+    local cx, cy = worldToPixel(box, playerId, effect.x, effect.y)
+    local duration = math.max(0.001, effect.duration or 3)
+    local progress = math.max(0, math.min(1, 1 - effect.ttl / duration))
+    local rx = math.max(2, worldRadiusX(box, effect.radius or 5.5))
+    local ry = math.max(2, worldRadiusY(box, effect.radius or 5.5))
+
+    -- Pulsing landing marker.
+    local pulse = math.floor(effect.ttl * 4) % 2 == 0
+    local ringColor = pulse and colors.red or colors.orange
+    for i = 0, 15 do
+        local angle = i / 16 * math.pi * 2
+        put(box, cx + math.cos(angle) * rx, cy + math.sin(angle) * ry, ringColor)
+    end
+    drawLine(box, cx - 2, cy, cx + 2, cy, colors.white)
+    drawLine(box, cx, cy - 2, cx, cy + 2, colors.white)
+
+    -- Anvil drops visibly from above during the three-second telegraph.
+    local startY = math.max(2, cy - 30)
+    local ay = startY + (cy - startY - 4) * progress
+    fillRect(box, cx - 3, ay, cx + 3, ay + 1, colors.gray)
+    fillRect(box, cx - 2, ay + 2, cx + 2, ay + 3, colors.lightGray)
+    fillRect(box, cx - 1, ay + 4, cx + 1, ay + 5, colors.gray)
+end
+
+local function drawAnvilImpact(box, playerId, effect)
+    local cx, cy = worldToPixel(box, playerId, effect.x, effect.y)
+    drawExplosion(box, playerId, effect)
+    fillRect(box, cx - 4, cy - 2, cx + 4, cy - 1, colors.gray)
+    fillRect(box, cx - 2, cy, cx + 2, cy + 2, colors.lightGray)
+    drawLine(box, cx - 5, cy + 3, cx + 5, cy + 3, colors.brown)
+end
+
 local function drawEffect(box, playerId, effect)
     if effect.kind == "arrows" then
         drawArrowVolley(box, playerId, effect)
@@ -615,6 +685,10 @@ local function drawEffect(box, playerId, effect)
         drawRingEffect(box, playerId, effect, colors.red)
     elseif effect.kind == "tower_down" then
         drawTowerDown(box, playerId, effect)
+    elseif effect.kind == "anvil_warning" then
+        drawAnvilWarning(box, playerId, effect)
+    elseif effect.kind == "anvil_impact" then
+        drawAnvilImpact(box, playerId, effect)
     else
         drawExplosion(box, playerId, effect)
     end
