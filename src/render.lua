@@ -672,8 +672,8 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
     centered(
         buffer,
         3,
-        (state.gameMode == "bot" and playerId == 2)
-            and "NORMAL BOT DECK - CONTROLLED BY AI"
+        (state.gameMode == "bot" and playerId == state.botPlayerId)
+            and (string.upper(state.botDifficulty or "normal") .. " BOT DECK - CONTROLLED BY AI")
             or "TAP A CARD TO ADD / REMOVE",
         colors.lightGray,
         colors.black
@@ -701,7 +701,7 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
         drawDeckSlot(buffer, layout.deckSlots[slot], slot, cardId and cards.get(cardId) or nil)
     end
 
-    if not (state.gameMode == "bot" and playerId == 2) then
+    if not (state.gameMode == "bot" and playerId == state.botPlayerId) then
         local presetSlot = player.presetSlot or 1
         local presetSaved = state.deckPresets[playerId][presetSlot] ~= nil
         local slotLabel = string.format(
@@ -724,12 +724,12 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
     drawButton(buffer, layout.infoButton, "UNIT INFO", false)
 
     local modeLabel = state.gameMode == "bot" and "MODE: VS BOT" or "MODE: PVP"
-    if state.gameMode == "bot" and playerId == 2 then
-        modeLabel = "MODE: VS BOT (P2 AI)"
+    if state.gameMode == "bot" then
+        modeLabel = string.format("MODE: VS BOT (P%d AI)", state.botPlayerId or 2)
     end
 
     -- The mode is visible and switchable on both monitors. In VS BOT mode
-    -- P2's deck controls remain locked because P2 is the AI side.
+    -- only the currently selected AI side has its deck controls locked.
     drawButton(
         buffer,
         layout.modeButton,
@@ -750,7 +750,11 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
     local opponentReady = state.players[otherId].ready
     local opponentText
     if state.gameMode == "bot" then
-        opponentText = playerId == 1 and "OPPONENT: NORMAL BOT" or "WAITING FOR PLAYER 1"
+        if playerId == state.botPlayerId then
+            opponentText = "CONTROLLED BY AI"
+        else
+            opponentText = "OPPONENT: " .. string.upper(state.botDifficulty or "normal") .. " BOT"
+        end
     else
         opponentText = opponentReady and "OPPONENT: READY" or "OPPONENT: NOT READY"
     end
