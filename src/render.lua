@@ -94,6 +94,12 @@ function render.layoutFor(monitor)
         cards = {},
         collectionCards = {},
         deckSlots = {},
+        modeButton = {
+            x1 = math.floor(width * 0.25),
+            x2 = math.ceil(width * 0.75),
+            y1 = height - 10,
+            y2 = height - 8,
+        },
         readyButton = {
             x1 = math.floor(width * 0.25),
             x2 = math.ceil(width * 0.75),
@@ -383,7 +389,15 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
         validDeck and colors.lightBlue or colors.yellow,
         colors.black
     )
-    centered(buffer, 3, "TAP A CARD TO ADD / REMOVE", colors.lightGray, colors.black)
+    centered(
+        buffer,
+        3,
+        (state.gameMode == "bot" and playerId == 2)
+            and "NORMAL BOT DECK - CONTROLLED BY AI"
+            or "TAP A CARD TO ADD / REMOVE",
+        colors.lightGray,
+        colors.black
+    )
 
     for i, card in ipairs(cards.list) do
         drawCollectionCard(
@@ -427,12 +441,30 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
         colors.black
     )
 
+    if playerId == 1 then
+        drawButton(
+            buffer,
+            layout.modeButton,
+            state.gameMode == "bot" and "MODE: VS BOT" or "MODE: PVP",
+            state.gameMode == "bot"
+        )
+    elseif state.gameMode == "bot" then
+        drawButton(buffer, layout.modeButton, "P2: BOT CONTROLLED", true)
+    end
+
     local opponentReady = state.players[otherId].ready
+    local opponentText
+    if state.gameMode == "bot" then
+        opponentText = playerId == 1 and "OPPONENT: NORMAL BOT" or "WAITING FOR PLAYER 1"
+    else
+        opponentText = opponentReady and "OPPONENT: READY" or "OPPONENT: NOT READY"
+    end
+
     centered(
         buffer,
         layout.readyButton.y1 - 2,
-        opponentReady and "OPPONENT: READY" or "OPPONENT: NOT READY",
-        opponentReady and colors.lime or colors.red,
+        opponentText,
+        (state.gameMode == "bot" or opponentReady) and colors.lime or colors.red,
         colors.black
     )
 
@@ -470,6 +502,62 @@ local function drawResult(buffer, state, playerId, layout)
     local p = state.players[playerId]
     local o = state.players[playerId == 1 and 2 or 1]
     centered(buffer, 10, string.format("TOWERS %d - %d", p.towersDestroyed, o.towersDestroyed), colors.lightGray, colors.black)
+
+    local stats = Game and nil
+    -- Keep rendering independent: state.stats is already a plain data snapshot.
+    local ps = state.stats and state.stats.players[playerId] or nil
+    if ps then
+        centered(
+            buffer,
+            13,
+            string.format("PLAYED %d   SPENT %.0fE", ps.cardsPlayed or 0, ps.emeraldSpent or 0),
+            colors.white,
+            colors.black
+        )
+        centered(
+            buffer,
+            15,
+            string.format("DMG UNITS %.0f   TOWERS %.0f", ps.unitDamage or 0, ps.towerDamage or 0),
+            colors.lightGray,
+            colors.black
+        )
+        centered(
+            buffer,
+            17,
+            string.format("KILLS %d   VILLAGER +%.1fE", ps.kills or 0, ps.villagerBonus or 0),
+            colors.lime,
+            colors.black
+        )
+        centered(
+            buffer,
+            19,
+            string.format("WASTED %.1fE   TIME %s", ps.emeraldWasted or 0, util.formatTime(state.stats.elapsed or 0)),
+            colors.yellow,
+            colors.black
+        )
+
+        local bestId, bestValue = nil, -1
+        for cardId, stat in pairs(ps.cards or {}) do
+            local value = (stat.towerDamage or 0) * 1.5
+                + (stat.unitDamage or 0)
+                + (stat.kills or 0) * 75
+                + (stat.towersKilled or 0) * 400
+            if value > bestValue then
+                bestId, bestValue = cardId, value
+            end
+        end
+
+        if bestId then
+            local bestCard = cards.get(bestId)
+            centered(
+                buffer,
+                21,
+                "TOP CARD: " .. (bestCard and bestCard.name or bestId),
+                colors.orange,
+                colors.black
+            )
+        end
+    end
 
     local rematchStatus = state.players[playerId].rematch and "REMATCH READY" or "REMATCH"
     drawButton(buffer, layout.resultButtons.rematch, rematchStatus, state.players[playerId].rematch)
