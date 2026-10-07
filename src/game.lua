@@ -355,6 +355,11 @@ killEntity = function(state, entity, sourceOwner)
         addEffect(state, "tower_down", entity.x, entity.y, 7, 0.7, sourceOwner)
         emitSound(state, "minecraft:entity.generic.explode", 0.8, 0.8)
 
+        -- Admin sandbox tests should continue after a tower dies.
+        if state.adminMode then
+            return
+        end
+
         local winner = sourceOwner or otherPlayer(entity.owner)
 
         if entity.towerType == "king" then
@@ -519,6 +524,9 @@ function Game.new(soundCallback)
         winner = nil,
         resultReason = nil,
         sound = soundCallback,
+        adminMode = false,
+        adminPaused = false,
+        adminScenario = nil,
     }
 
     resetDeck(state.players[1])
@@ -534,6 +542,9 @@ function Game.resetLobby(state)
     state.winner = nil
     state.resultReason = nil
     state.overtime = false
+    state.adminMode = false
+    state.adminPaused = false
+    state.adminScenario = nil
 
     for playerId = 1, 2 do
         local player = state.players[playerId]
@@ -547,6 +558,9 @@ end
 
 function Game.startCountdown(state)
     state.phase = "countdown"
+    state.adminMode = false
+    state.adminPaused = false
+    state.adminScenario = nil
     state.countdown = config.MATCH.countdown
     state.entities = {}
     state.projectiles = {}
@@ -733,27 +747,37 @@ function Game.update(state, dt)
         return
     end
 
-    if state.phase ~= "battle" then return end
+    local isBattle = state.phase == "battle"
+    local isAdmin = state.phase == "admin"
 
-    local multiplier = state.overtime and config.MATCH.overtimeMultiplier or 1
-    local emeraldRate = config.MATCH.emeraldPerSecond * multiplier
+    if not isBattle and not isAdmin then return end
+    if isAdmin and state.adminPaused then return end
 
-    for playerId = 1, 2 do
-        local player = state.players[playerId]
-        player.emeralds = math.min(player.maxEmeralds, player.emeralds + emeraldRate * dt)
+    if isBattle then
+        local multiplier = state.overtime and config.MATCH.overtimeMultiplier or 1
+        local emeraldRate = config.MATCH.emeraldPerSecond * multiplier
+
+        for playerId = 1, 2 do
+            local player = state.players[playerId]
+            player.emeralds = math.min(player.maxEmeralds, player.emeralds + emeraldRate * dt)
+        end
     end
 
     for _, entity in ipairs(state.entities) do
-        if state.phase ~= "battle" then break end
+        if isBattle and state.phase ~= "battle" then break end
         updateCombatEntity(state, entity, dt)
     end
 
-    if state.phase == "battle" then
+    if (isBattle and state.phase == "battle") or isAdmin then
         updateProjectiles(state, dt)
         updateEffects(state, dt)
         cleanupEntities(state)
 
-        if state.phase ~= "battle" then
+        if isBattle and state.phase ~= "battle" then
+            return
+        end
+
+        if isAdmin then
             return
         end
 
@@ -779,6 +803,116 @@ function Game.update(state, dt)
             end
         end
     end
+end
+
+local function clearSimulation(state)
+    state.entities = {}
+    state.projectiles = {}
+    state.effects = {}
+    state.nextEntityId = 1
+end
+
+local function spawnScenarioTowers(state, scenario)
+    local blueprints = arena.towerBlueprints()
+
+    if scenario == "full" then
+        for _, blueprint in ipairs(blueprints) do
+            spawnTower(state, blueprint)
+        end
+        return
+    end
+
+    if scenario == "princess" then
+        for _, blueprint in ipairs(blueprints) do
+            if blueprint.towerType == "princess" then
+                spawnTower(state, blueprint)
+            end
+        end
+        return
+    end
+
+    if scenario == "king" then
+        for _, blueprint in ipairs(blueprints) do
+            if blueprint.towerType == "king" then
+                spawnTower(state, blueprint)
+            end
+        end
+        return
+    end
+
+    if scenario == "single_tower" then
+        spawnTower(state, { owner = 1, towerType = "princess", x = 50, y = 132 })
+        spawnTower(state, { owner = 2, towerType = "princess", x = 50, y = 28 })
+    end
+end
+
+function Game.debugLoadScenario(state, scenario)
+    scenario = scenario or "full"
+    clearSimulation(state)
+
+    state.phase = "admin"
+    state.adminMode = true
+    state.adminPaused = true
+    state.adminScenario = scenario
+    state.winner = nil
+    state.resultReason = nil
+    state.overtime = false
+
+    for playerId = 1, 2 do
+        state.players[playerId].emeralds = state.players[playerId].maxEmeralds
+        state.players[playerId].towersDestroyed = 0
+        state.players[playerId].selectedSlot = nil
+    end
+
+    spawnScenarioTowers(state, scenario)
+end
+
+function Game.debugSpawnCard(state, owner, cardId, x, y)
+    if not state.adminMode then return false, "NOT IN ADMIN MODE" end
+    if owner ~= 1 and owner ~= 2 then return false, "INVALID OWNER" end
+
+    local card = cards.get(cardId)
+    if not card then return false, "UNKNOWN CARD" end
+
+    x = util.clamp(x, 2, config.ARENA.width - 2)
+    y = util.clamp(y, 2, config.ARENA.height - 2)
+
+    if card.kind == "unit" then
+        spawnCardUnit(state, owner, card, x, y)
+    elseif card.kind == "building" then
+        spawnBuilding(state, owner, card, x, y)
+    elseif card.kind == "spell" then
+        castArrows(state, owner, card, x, y)
+    else
+        return false, "UNSUPPORTED CARD"
+    end
+
+    return true
+end
+
+function Game.debugClearUnits(state)
+    local kept = {}
+    for _, entity in ipairs(state.entities) do
+        if entity.kind == "tower" and entity.alive then
+            entity.targetId = nil
+            entity.attackCooldownLeft = 0
+            table.insert(kept, entity)
+        end
+    end
+    state.entities = kept
+    state.projectiles = {}
+    state.effects = {}
+end
+
+function Game.debugSetPaused(state, paused)
+    if not state.adminMode then return end
+    state.adminPaused = paused == true
+end
+
+function Game.debugTogglePaused(state)
+    if not state.adminMode then return false end
+    state.adminPaused = not state.adminPaused
+    return state.adminPaused
 end
 
 function Game.getCardForSlot(state, playerId, slot)
