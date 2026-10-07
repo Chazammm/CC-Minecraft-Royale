@@ -354,7 +354,14 @@ local function bestAnvilTarget(state, playerId)
                     and target.owner ~= playerId
                     and not target.flying
                 then
-                    local d = math.sqrt((cx - target.x)^2 + (cy - target.y)^2)
+                    local tx, ty = target.x, target.y
+                    if target.kind == "unit" and (target.moveSpeed or 0) > 0 then
+                        local direction = playerId == 1 and 1 or -1
+                        ty = ty + direction * (target.moveSpeed or 0) * delay * 0.80
+                        ty = math.max(3, math.min(config.ARENA.height - 3, ty))
+                    end
+
+                    local d = math.sqrt((cx - tx)^2 + (cy - ty)^2)
                     if d <= radius then
                         local hitDamage = damage
                         if target.kind == "tower" then
