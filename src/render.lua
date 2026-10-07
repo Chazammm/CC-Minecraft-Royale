@@ -593,7 +593,11 @@ local function infoStatLines(card)
             numberText(b.attackCooldown, 2),
             numberText(b.lifetime, 0)
         ))
-        table.insert(lines, "TARGETS: " .. (b.canAttackAir and "AIR + GROUND" or "GROUND"))
+        local buildingTargets = b.targetMode == "none"
+            and "NONE"
+            or (b.canAttackAir and "AIR + GROUND" or "GROUND")
+        table.insert(lines, "TARGETS: " .. buildingTargets)
+
         if b.periodicSpawn then
             local spawned = cards.getInternalUnit(b.periodicSpawn.template)
             table.insert(lines, string.format(
@@ -601,6 +605,24 @@ local function infoStatLines(card)
                 spawned and spawned.name or tostring(b.periodicSpawn.template),
                 numberText(b.periodicSpawn.interval, 1)
             ))
+
+            if spawned then
+                table.insert(lines, string.format(
+                    "%s: HP %s  SPEED %s  LIFE %ss",
+                    string.upper(spawned.name),
+                    numberText(spawned.maxHp),
+                    numberText(spawned.moveSpeed, 1),
+                    numberText(spawned.lifetime, 0)
+                ))
+
+                if spawned.hybridAttack then
+                    table.insert(lines, string.format(
+                        "CROSSBOW %s dmg / AXE %s dmg",
+                        numberText(spawned.hybridAttack.rangedDamage),
+                        numberText(spawned.hybridAttack.meleeDamage)
+                    ))
+                end
+            end
         end
     elseif card.kind == "spell" then
         local s = card.spell
