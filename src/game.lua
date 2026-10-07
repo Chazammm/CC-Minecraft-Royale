@@ -977,6 +977,7 @@ function Game.new(soundCallback)
         adminPaused = false,
         adminScenario = nil,
         gameMode = "pvp",
+        botPlayerId = 2,
         botDifficulty = "normal",
         deckPresets = loadPresets(),
         stats = newMatchStats(),
@@ -1181,11 +1182,23 @@ function Game.toggleDeckCard(state, playerId, cardId)
     return true
 end
 
-function Game.setGameMode(state, mode)
+function Game.setGameMode(state, mode, requestingPlayerId)
     if mode ~= "pvp" and mode ~= "bot" then return false end
     if state.phase ~= "lobby" then return false end
 
     state.gameMode = mode
+
+    -- The player who enables VS BOT remains the human. The opposite monitor
+    -- becomes the AI side. Calls without a requester keep P2 as the legacy
+    -- default so tests/admin code remain backwards compatible.
+    if mode == "bot" then
+        if requestingPlayerId == 1 or requestingPlayerId == 2 then
+            state.botPlayerId = otherPlayer(requestingPlayerId)
+        elseif state.botPlayerId ~= 1 and state.botPlayerId ~= 2 then
+            state.botPlayerId = 2
+        end
+    end
+
     state.players[1].ready = false
     state.players[2].ready = false
     state.players[1].rematch = false
@@ -1193,8 +1206,12 @@ function Game.setGameMode(state, mode)
     return true
 end
 
-function Game.toggleGameMode(state)
-    return Game.setGameMode(state, state.gameMode == "bot" and "pvp" or "bot")
+function Game.toggleGameMode(state, requestingPlayerId)
+    return Game.setGameMode(
+        state,
+        state.gameMode == "bot" and "pvp" or "bot",
+        requestingPlayerId
+    )
 end
 
 function Game.cycleBotDifficulty(state)
@@ -1309,18 +1326,21 @@ function Game.handleTouch(state, playerId, x, y, layout)
         end
 
         if hit(layout.modeButton, x, y) then
-            Game.toggleGameMode(state)
+            Game.toggleGameMode(state, playerId)
             emitSound(state, "minecraft:block.note_block.pling", 0.5, state.gameMode == "bot" and 1.4 or 1.0)
             return
         end
 
-        if hit(layout.botDifficultyButton, x, y) and state.gameMode == "bot" and playerId == 1 then
+        if hit(layout.botDifficultyButton, x, y)
+            and state.gameMode == "bot"
+            and playerId ~= state.botPlayerId
+        then
             Game.cycleBotDifficulty(state)
             emitSound(state, "minecraft:block.note_block.pling", 0.5, state.botDifficulty == "hard" and 1.7 or 1.2)
             return
         end
 
-        if state.gameMode == "bot" and playerId == 2 then
+        if state.gameMode == "bot" and playerId == state.botPlayerId then
             return
         end
 
@@ -1380,8 +1400,11 @@ function Game.handleTouch(state, playerId, x, y, layout)
             player.ready = not player.ready
             emitSound(state, "minecraft:block.note_block.hat", 0.5, player.ready and 1.4 or 0.8)
 
-            if state.gameMode == "bot" and playerId == 1 and player.ready then
-                state.players[2].ready = true
+            if state.gameMode == "bot"
+                and playerId ~= state.botPlayerId
+                and player.ready
+            then
+                state.players[state.botPlayerId].ready = true
             end
 
             if state.players[1].ready and state.players[2].ready then
@@ -1396,7 +1419,7 @@ function Game.handleTouch(state, playerId, x, y, layout)
     end
 
     if state.phase == "battle" then
-        if state.gameMode == "bot" and playerId == 2 then return end
+        if state.gameMode == "bot" and playerId == state.botPlayerId then return end
 
         for slot = 1, 4 do
             if hit(layout.cards[slot], x, y) then
@@ -1420,8 +1443,11 @@ function Game.handleTouch(state, playerId, x, y, layout)
         if hit(layout.resultButtons.rematch, x, y) then
             player.rematch = not player.rematch
 
-            if state.gameMode == "bot" and playerId == 1 and player.rematch then
-                state.players[2].rematch = true
+            if state.gameMode == "bot"
+                and playerId ~= state.botPlayerId
+                and player.rematch
+            then
+                state.players[state.botPlayerId].rematch = true
             end
 
             if state.players[1].rematch and state.players[2].rematch then
