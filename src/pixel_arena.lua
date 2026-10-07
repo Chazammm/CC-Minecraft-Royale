@@ -25,132 +25,111 @@ local PALETTE = {
 }
 
 local SPRITES = {
+    -- V2.1 sprites deliberately use one main colour plus black wherever
+    -- possible. Pixelbox encodes each 2x3 texel with two colours, so this
+    -- avoids the colour bleeding seen in the first semigraphics pass.
     zombie = {
         rows = {
-            "..GGG..",
-            ".GKGKG.",
-            ".GGGGG.",
-            "..GGG..",
-            ".AAAAA.",
-            "A.AAA.A",
-            "..AAA..",
-            "..BBB..",
-            ".B...B.",
+            ".LLL.",
+            ".LKL.",
+            ".LLL.",
+            "LLLLL",
+            ".LLL.",
+            ".L.L.",
+            "LL.LL",
         },
     },
     skeleton = {
         rows = {
-            "..WWW..",
-            ".WKWKW.",
-            "..WWW..",
-            "...W...",
-            "N.WWW.N",
-            ".N.W.N.",
-            "...W...",
-            "..W.W..",
-            ".W...W.",
+            ".WWW.",
+            ".WKW.",
+            ".WWW.",
+            "..W..",
+            ".WWW.",
+            "W.W.W",
+            ".W.W.",
         },
     },
     iron_golem = {
         rows = {
-            "..SSSSS..",
-            ".SSRSRSS.",
-            ".SSSSSSS.",
-            "...SSS...",
-            "SSSSSSSSS",
-            "S.SSSSS.S",
-            "..SSSSS..",
-            "..SGGGS..",
-            "...SSS...",
-            "..S...S..",
-            ".SS...SS.",
+            "..SSS..",
+            ".SSKSS.",
+            ".SSSSS.",
+            "SSSSSSS",
+            "S.SSS.S",
+            "..SSS..",
+            "..SSS..",
+            ".SS.SS.",
+            "SS...SS",
         },
     },
     bat_swarm = {
         rows = {
-            "P.......P",
-            ".PP...PP.",
-            "..PPKPP..",
-            "...PPP...",
-            "....P....",
+            "P.....P",
+            "PP...PP",
+            ".PPKPP.",
+            "..PPP..",
         },
     },
     cannon = {
         rows = {
-            "....DDD....",
-            "..DDSSSDD..",
-            "DDSSSSSSDDD",
-            "..DDSSSD...",
-            "...NNNN....",
-            "..NN..NN...",
-            ".NN....NN..",
+            "...DDD.",
+            "DDDDDDD",
+            "..DDD..",
+            "...D...",
+            ".KKKKK.",
+            "K.....K",
         },
     },
     creeper = {
         rows = {
-            "..LLLL..",
-            ".LLLLLL.",
-            ".LKLLKL.",
-            ".LLLLLL.",
-            ".LLKKLL.",
-            ".LKKKKL.",
-            "..LLLL..",
-            "..L..L..",
-            ".LL..LL.",
+            "LLLLL",
+            "LKLKL",
+            "LLLLL",
+            "LLKLL",
+            "LKKKL",
+            "LL.LL",
+            "L...L",
         },
     },
     slime = {
         rows = {
-            "..LLLL..",
-            ".LLLLLL.",
-            "LLKLLKLL",
-            "LLLLLLLL",
-            ".LKKKKL.",
-            "..LLLL..",
+            ".LLL.",
+            "LLLLL",
+            "LKLKL",
+            "LLLLL",
         },
     },
     mini_slime = {
         rows = {
-            ".LLL.",
-            "LKLKL",
-            "LLLLL",
-            ".LLL.",
+            "LLL",
+            "LKL",
+            "LLL",
         },
     },
     princess_tower = {
         rows = {
-            "...TTT...",
-            "..TTTTT..",
-            ".TTTTTTT.",
-            "...YYY...",
-            "..SSSSS..",
-            ".SSSKSSS.",
-            ".SSSSSSS.",
-            ".SSSSSSS.",
-            ".SSSKSSS.",
-            ".SSSSSSS.",
-            "SSSSSSSSS",
-            "SSS...SSS",
-            "SSS...SSS",
+            "..TTT..",
+            ".TTTTT.",
+            ".TTTTT.",
+            "..TKT..",
+            ".TTTTT.",
+            ".TTTTT.",
+            "TTTTTTT",
+            "TT...TT",
         },
     },
     king_tower = {
         rows = {
-            "Y.Y.Y.Y.Y",
-            ".YYYYYYY.",
-            "..YYYYY..",
-            "..TTTTT..",
-            ".TTTTTTT.",
-            "TTTTTTTTT",
-            "..SSSSS..",
-            ".SSSKSSS.",
-            ".SSSSSSS.",
-            ".SSSSSSS.",
-            ".SSSKSSS.",
-            ".SSSSSSS.",
-            "SSSSSSSSS",
-            "SSS...SSS",
-            "SSS...SSS",
+            "T.T.T.T",
+            ".TTTTT.",
+            "TTTTTTT",
+            ".TTTTT.",
+            "..TKT..",
+            ".TTTTT.",
+            ".TTTTT.",
+            "TTTTTTT",
+            "TT...TT",
         },
     },
 }
@@ -280,51 +259,48 @@ local function drawTerrain(box)
     end
 end
 
-local function hpColor(entity)
-    local ratio = entity.hp / math.max(1, entity.maxHp)
-    if ratio > 0.60 then return colors.lime end
-    if ratio > 0.30 then return colors.yellow end
-    return colors.red
+local function alignTexelX(x)
+    return math.floor((x - 1) / 2) * 2 + 1
+end
+
+local function alignTexelY(y)
+    return math.floor((y - 1) / 3) * 3 + 1
 end
 
 local function drawHp(box, entity, playerId, cx, topY, width)
-    local barW = math.max(7, width)
-    local x1 = math.floor(cx - barW / 2)
-    local y = math.floor(topY - 3)
-    local team = entity.owner == playerId and colors.lightBlue or colors.red
+    local maxW = math.max(5, width)
     local ratio = math.max(0, math.min(1, entity.hp / math.max(1, entity.maxHp)))
-    local filled = math.floor((barW - 2) * ratio + 0.5)
+    local filled = math.max(1, math.floor(maxW * ratio + 0.5))
+    local x1 = math.floor(cx - maxW / 2)
+    local y = math.floor(topY - 2)
+    local team = entity.owner == playerId and colors.lightBlue or colors.red
 
-    fillRect(box, x1, y, x1 + barW - 1, y + 1, colors.black)
-    drawLine(box, x1, y, x1 + barW - 1, y, team)
-    for i = 0, filled - 1 do put(box, x1 + 1 + i, y + 1, hpColor(entity)) end
+    -- No background track: only team colour + arena colour share a texel.
+    -- This is much cleaner in CC semigraphics than a 3-colour HP bar.
+    fillRect(box, x1, y, x1 + filled - 1, y + 1, team)
 end
 
 local function drawSprite(box, entity, playerId)
     local sprite = spriteFor(entity)
     local cx, cy = worldToPixel(box, playerId, entity.x, entity.y)
-    local x1 = math.floor(cx - sprite.width / 2)
-    local y1 = math.floor(cy - sprite.height / 2)
+
+    -- Snap the sprite origin to Pixelbox's 2x3 texel grid. This removes most
+    -- edge shimmer/colour bleed while units are moving.
+    local rawX = cx - sprite.width / 2
+    local rawY = cy - sprite.height / 2
+    local x1 = alignTexelX(rawX)
+    local y1 = alignTexelY(rawY)
+
     local team = entity.owner == playerId and colors.lightBlue or colors.red
     local flash = entity.damageFlash and entity.damageFlash > 0
     local fuseBlink = entity.fuseRemaining
         and math.floor(entity.fuseRemaining * 10) % 2 == 0
 
-    if entity.kind ~= "tower" then
-        local shadowY = y1 + sprite.height
-        drawLine(box, x1 + 1, shadowY, x1 + sprite.width - 2, shadowY, colors.black)
-    end
-
     for rowIndex, row in ipairs(sprite.rows) do
         for col = 1, #row do
             local token = row:sub(col, col)
             if token ~= "." then
-                local color
-                if token == "T" then
-                    color = team
-                else
-                    color = PALETTE[token]
-                end
+                local color = token == "T" and team or PALETTE[token]
 
                 if color then
                     if flash then
@@ -338,11 +314,7 @@ local function drawSprite(box, entity, playerId)
         end
     end
 
-    if entity.kind ~= "tower" then
-        drawLine(box, x1, y1 + sprite.height + 1, x1 + sprite.width - 1, y1 + sprite.height + 1, team)
-    end
-
-    drawHp(box, entity, playerId, cx, y1, sprite.width + 2)
+    drawHp(box, entity, playerId, x1 + sprite.width / 2, y1, sprite.width)
 end
 
 local function getEntityById(state, id)
@@ -365,8 +337,8 @@ local function drawProjectile(box, state, playerId, projectile)
             local length = math.sqrt(dx * dx + dy * dy)
             if length > 0 then dx, dy = dx / length, dy / length end
         end
-        drawLine(box, px - dx * 2, py - dy * 2, px + dx * 2, py + dy * 2, colors.white)
-        put(box, px + dx * 2, py + dy * 2, colors.lightGray)
+        drawLine(box, px - dx, py - dy, px + dx, py + dy, colors.white)
+        put(box, px + dx, py + dy, colors.lightGray)
     elseif projectile.visual == "cannonball" then
         fillRect(box, px - 1, py - 1, px + 1, py + 1, colors.gray)
         put(box, px, py, colors.lightGray)
@@ -439,8 +411,21 @@ function pixelArena.draw(monitor, state, playerId, rect)
     local box = getSurface(monitor, rect)
     drawTerrain(box)
 
+    local drawEntities = {}
     for _, entity in ipairs(state.entities) do
-        if entity.alive then drawSprite(box, entity, playerId) end
+        if entity.alive then
+            local _, py = worldToPixel(box, playerId, entity.x, entity.y)
+            table.insert(drawEntities, { entity = entity, py = py })
+        end
+    end
+
+    table.sort(drawEntities, function(a, b)
+        if a.py == b.py then return a.entity.id < b.entity.id end
+        return a.py < b.py
+    end)
+
+    for _, entry in ipairs(drawEntities) do
+        drawSprite(box, entry.entity, playerId)
     end
 
     for _, projectile in ipairs(state.projectiles) do
