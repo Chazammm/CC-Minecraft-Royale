@@ -517,13 +517,23 @@ assertEq(musicManifest.outputRate, 48000, "Speaker output must stay at native 48
 assertEq(musicManifest.repeatFactor, 1, "Native 48 kHz music must not duplicate samples")
 assertEq(musicManifest.chunkBytes, 16384, "Music chunks should fill the speaker buffer efficiently")
 
-local expectedOffset = 0
+assertEq(#musicManifest.packs, 2, "HQ battle music must be split into two GitHub-safe packs")
+assertTrue(musicManifest.packs[1].size < 25000000, "Music pack 1 must stay below GitHub's 25 MB web limit")
+assertTrue(musicManifest.packs[2].size < 25000000, "Music pack 2 must stay below GitHub's 25 MB web limit")
+
+local packOffsets = { [1] = 0, [2] = 0 }
+local totalMusicBytes = 0
 for i, track in ipairs(musicManifest.tracks) do
     assertEq(track.id, i, "Music track IDs must be sequential")
-    assertEq(track.offset, expectedOffset, "Music track pack offsets must be contiguous")
+    assertTrue(track.pack == 1 or track.pack == 2, "Music track must reference a valid pack")
+    assertEq(track.offset, packOffsets[track.pack], "Music track offsets must be contiguous inside each pack")
     assertTrue(track.bytes > 0, "Music track must contain audio bytes")
-    expectedOffset = expectedOffset + track.bytes
+    packOffsets[track.pack] = packOffsets[track.pack] + track.bytes
+    totalMusicBytes = totalMusicBytes + track.bytes
 end
-assertEq(expectedOffset, musicManifest.packSize, "Music manifest must cover the whole DFPWM pack")
+
+assertEq(packOffsets[1], musicManifest.packs[1].size, "Music pack 1 manifest size mismatch")
+assertEq(packOffsets[2], musicManifest.packs[2].size, "Music pack 2 manifest size mismatch")
+assertEq(totalMusicBytes, musicManifest.totalSize, "Music manifest must cover the whole HQ playlist")
 
 print("Smoke tests passed")
