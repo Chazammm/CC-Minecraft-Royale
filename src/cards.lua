@@ -381,6 +381,77 @@ local DEFAULT_DECK = {
     "slime",
 }
 
+cards.info = {
+    zombie = {
+        role = "All-round melee",
+        description = "Reliable ground fighter with solid HP and damage. A simple baseline troop for pushes and defense.",
+    },
+    skeleton = {
+        role = "Ranged kiter",
+        description = "Fragile ranged unit that attacks air and ground. Tries to keep distance while shooting.",
+    },
+    iron_golem = {
+        role = "Tower tank",
+        description = "Huge tank that ignores troops and targets only buildings and towers. Slow but very durable.",
+    },
+    bat_swarm = {
+        role = "Flying swarm",
+        description = "Deploys three fast flying bats. Strong when the enemy cannot hit air, but each bat is fragile.",
+    },
+    cannon = {
+        role = "Defensive building",
+        description = "Stationary ground-only defense with long range. Excellent for pulling and stopping ground pushes.",
+    },
+    arrows = {
+        role = "Area spell",
+        description = "Damages every enemy in a target area anywhere on the arena. Deals reduced damage to towers.",
+    },
+    creeper = {
+        role = "Explosive attacker",
+        description = "Runs toward enemies, primes at close range and explodes after a short fuse. Can be killed before detonation.",
+    },
+    slime = {
+        role = "Sticky melee",
+        description = "Medium melee troop that splits into two Mini Slimes when killed, forcing the enemy to deal with extra bodies.",
+    },
+    blaze = {
+        role = "Flying ranged",
+        description = "Flying ranged attacker that can hit both air and ground. Good support damage but not very durable.",
+    },
+    witch = {
+        role = "Summoner support",
+        description = "Ranged support troop that periodically summons Baby Zombies. Becomes stronger the longer she survives.",
+    },
+    enderman = {
+        role = "Backline assassin",
+        description = "Melee attacker that teleports toward distant targets. Excellent at reaching vulnerable ranged units.",
+    },
+    spider = {
+        role = "Fast melee",
+        description = "Cheap and very fast ground attacker. Useful for pressure, chasing ranged troops and quick defense.",
+    },
+    snow_golem = {
+        role = "Slow support",
+        description = "Fragile ranged support that throws snowballs. Hits briefly slow enemy movement and it can attack air.",
+    },
+    villager = {
+        role = "Economy support",
+        description = "Stationary non-building unit. Boosts Emerald generation while alive, but is intentionally easy to remove.",
+    },
+    endermite = {
+        role = "Cheap distraction",
+        description = "Extremely cheap, fast and fragile melee unit. Best used to pull, distract and kite expensive enemies.",
+    },
+    wolf = {
+        role = "Fast fighter",
+        description = "Quick melee fighter with strong attack speed. Useful for punishing ranged troops and applying lane pressure.",
+    },
+}
+
+function cards.getInfo(id)
+    return cards.info[id]
+end
+
 function cards.get(id)
     return cards.byId[id]
 end
