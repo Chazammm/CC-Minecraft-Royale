@@ -162,4 +162,49 @@ Game.update(retargetState, 0.1)
 assertEq(skeleton.targetId, zombie.id, "Skeleton must switch from tower to nearby enemy troop")
 assertEq(zombie.targetId, skeleton.id, "Zombie must switch from tower to nearby enemy troop")
 
+local creeperState = Game.new()
+Game.debugLoadScenario(creeperState, "empty")
+Game.debugSpawnCard(creeperState, 1, "creeper", 50, 80)
+Game.debugSpawnCard(creeperState, 2, "zombie", 53, 80)
+
+local testCreeper, testZombie
+for _, entity in ipairs(creeperState.entities) do
+    if entity.name == "Creeper" then testCreeper = entity end
+    if entity.name == "Zombie" then testZombie = entity end
+end
+
+assertTrue(testCreeper and testZombie, "Creeper fuse test units must exist")
+local zombieHpBeforeFuse = testZombie.hp
+
+Game.debugSetPaused(creeperState, false)
+Game.update(creeperState, 0.1)
+
+assertTrue(testCreeper.alive, "Creeper must not deal an instant melee hit")
+assertEq(testZombie.hp, zombieHpBeforeFuse, "Creeper must deal no melee damage")
+assertTrue(testCreeper.fuseRemaining ~= nil, "Creeper must start its fuse in proximity")
+
+for _ = 1, 7 do
+    Game.update(creeperState, 0.25)
+end
+
+assertTrue(not testCreeper.alive, "Creeper must self-destruct after its fuse")
+assertTrue(testZombie.hp < zombieHpBeforeFuse, "Creeper explosion must damage nearby enemies")
+
+local killedCreeperState = Game.new()
+Game.debugLoadScenario(killedCreeperState, "empty")
+Game.debugSpawnCard(killedCreeperState, 1, "creeper", 50, 80)
+Game.debugSpawnCard(killedCreeperState, 2, "zombie", 53, 80)
+
+local nearbyZombie
+for _, entity in ipairs(killedCreeperState.entities) do
+    if entity.name == "Zombie" then nearbyZombie = entity end
+end
+local nearbyZombieHp = nearbyZombie.hp
+
+Game.debugSpawnCard(killedCreeperState, 2, "arrows", 50, 80)
+Game.debugSpawnCard(killedCreeperState, 2, "arrows", 50, 80)
+Game.debugSpawnCard(killedCreeperState, 2, "arrows", 50, 80)
+
+assertEq(nearbyZombie.hp, nearbyZombieHp, "Killed Creeper must not explode on death")
+
 print("V1 smoke tests passed")
