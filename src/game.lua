@@ -53,12 +53,14 @@ local function emitSound(state, name, volume, pitch)
 end
 
 local function addEffect(state, kind, x, y, radius, ttl, owner)
+    local lifetime = ttl or 0.3
     table.insert(state.effects, {
         kind = kind,
         x = x,
         y = y,
         radius = radius or 1,
-        ttl = ttl or 0.3,
+        ttl = lifetime,
+        duration = lifetime,
         owner = owner,
     })
 end
@@ -290,12 +292,21 @@ local function spawnProjectile(state, attacker, target)
         owner = attacker.owner,
         damage = attacker.damage,
         speed = attacker.projectileSpeed or 50,
+        visual = attacker.name == "Skeleton" and "arrow"
+            or (attacker.name == "Cannon" and "cannonball")
+            or (attacker.kind == "tower" and "tower_shot")
+            or "shot",
         alive = true,
     })
 end
 
 damageEntity = function(state, target, damage, sourceOwner)
     if not target or not target.alive then return end
+
+    if damage > 0 then
+        target.damageFlash = 0.18
+        addEffect(state, "hit", target.x, target.y, 1.5, 0.16, sourceOwner)
+    end
 
     target.hp = target.hp - damage
     if target.hp <= 0 then
@@ -414,6 +425,10 @@ end
 
 local function updateCombatEntity(state, entity, dt)
     if not entity.alive then return end
+
+    if entity.damageFlash and entity.damageFlash > 0 then
+        entity.damageFlash = math.max(0, entity.damageFlash - dt)
+    end
 
     if entity.remainingLifetime then
         entity.remainingLifetime = entity.remainingLifetime - dt
