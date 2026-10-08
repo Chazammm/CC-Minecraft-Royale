@@ -44,6 +44,8 @@ end
 assertEq(#cards.list, 22, "Card pool must contain twenty-two selectable cards")
 assertEq(#cards.defaultDeck(), 8, "Default deck must contain eight cards")
 assertTrue(cards.isValidDeck(cards.defaultDeck()), "Default deck must be valid")
+assertEq(cards.get("arrows").spell.cast, "arrows", "Arrow Volley must declare its explicit spell handler")
+assertEq(cards.get("falling_anvil").spell.cast, "falling_anvil", "Falling Anvil must declare its explicit spell handler")
 
 local seen = {}
 for _, card in ipairs(cards.list) do
@@ -957,6 +959,50 @@ assertEq(
     "A summon created during a combat tick must not lose lifetime or act until the next tick"
 )
 
+-- Generic spawner caps must hold even when one pulse asks for multiple units.
+do
+local portal = cards.get("nether_portal")
+local originalSpawn = require("src.util").deepcopy(portal.building.periodicSpawn)
+
+portal.building.periodicSpawn.count = 3
+portal.building.periodicSpawn.initialDelay = 0.10
+portal.building.periodicSpawn.maxTotal = 2
+portal.building.periodicSpawn.maxAlive = 5
+
+local capState = Game.new()
+Game.debugLoadScenario(capState, "empty")
+Game.debugSpawnCard(capState, 1, "nether_portal", 50, 110)
+Game.debugSetPaused(capState, false)
+Game.update(capState, 0.10)
+
+local cappedTotal = 0
+for _, entity in ipairs(capState.entities) do
+    if entity.name == "Piglin" then cappedTotal = cappedTotal + 1 end
+end
+assertEq(cappedTotal, 2, "periodicSpawn maxTotal must cap a multi-unit spawn pulse exactly")
+
+portal.building.periodicSpawn = require("src.util").deepcopy(originalSpawn)
+portal.building.periodicSpawn.count = 3
+portal.building.periodicSpawn.initialDelay = 0.10
+portal.building.periodicSpawn.maxTotal = nil
+portal.building.periodicSpawn.maxAlive = 1
+
+local aliveCapState = Game.new()
+Game.debugLoadScenario(aliveCapState, "empty")
+Game.debugSpawnCard(aliveCapState, 1, "nether_portal", 50, 110)
+Game.debugSetPaused(aliveCapState, false)
+Game.update(aliveCapState, 0.10)
+
+local cappedAlive = 0
+for _, entity in ipairs(aliveCapState.entities) do
+    if entity.alive and entity.name == "Piglin" then cappedAlive = cappedAlive + 1 end
+end
+assertEq(cappedAlive, 1, "periodicSpawn maxAlive must cap a multi-unit spawn pulse exactly")
+
+portal.building.periodicSpawn = originalSpawn
+end
+
+
 local costApiState = Game.new()
 costApiState.players[1].ready = true
 costApiState.players[2].ready = true
@@ -972,6 +1018,21 @@ assertTrue(
 )
 assertEq(costApiState.players[1].emeralds, 0, "Falling Anvil must deduct exactly three Emeralds")
 assertEq(#costApiState.pendingSpells, 1, "Normal Anvil play must create a delayed pending spell")
+
+local historyState = Game.new()
+historyState.players[1].deck = cards.defaultDeck()
+historyState.players[2].deck = cards.defaultDeck()
+Game.startCountdown(historyState)
+for _ = 1, 13 do Game.update(historyState, 0.25) end
+
+historyState.players[1].emeralds = 10
+historyState.players[1].hand[1] = "zombie"
+assertTrue(Game.playCardFromSlot(historyState, 1, 1, 25, 112), "History test must play Zombie")
+historyState.players[1].emeralds = 10
+historyState.players[1].hand[1] = "skeleton"
+assertTrue(Game.playCardFromSlot(historyState, 1, 1, 30, 112), "History test must play Skeleton")
+assertEq(historyState.stats.players[1].playHistory[1], "zombie", "Play history must preserve first card order")
+assertEq(historyState.stats.players[1].playHistory[2], "skeleton", "Play history must preserve second card order")
 
 costApiState.players[1].hand[1] = "nether_portal"
 costApiState.players[1].emeralds = 3
