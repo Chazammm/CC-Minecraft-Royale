@@ -5,7 +5,7 @@ local Bot = require("src.bot")
 local util = require("src.util")
 local arena = require("src.arena")
 
-local SUITE_VERSION = 4
+local SUITE_VERSION = 5
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 local EPSILON = 0.000001
@@ -176,19 +176,29 @@ runTest("boot_deck", "Lobby boots with empty human decks", function()
         data
 end)
 
-runTest("evolution_cycle", "Evolution Slot charges twice and evolves third play", function()
+runTest("evolution_cycle", "Evolution timing, cost, stats and abilities", function()
     local base = cards.get("zombie")
     local oldEvolution = base.evolution
     base.evolution = {
-        cycles = 2,
+        cycles = 3,
+        cost = { delta = 1 },
         name = "Evolved Zombie",
-        unit = {
-            multipliers = {
-                damage = 1.50,
-                maxHp = 1.10,
+        statMultipliers = {
+            damage = 1.50,
+            maxHp = 1.10,
+        },
+        abilities = {
+            canAttackAir = true,
+            onHitSlow = {
+                factor = 0.75,
+                duration = 2.0,
             },
         },
     }
+
+    local function restore()
+        base.evolution = oldEvolution
+    end
 
     local data = {}
     local state = Game.new()
@@ -197,18 +207,27 @@ runTest("evolution_cycle", "Evolution Slot charges twice and evolves third play"
 
     local selected = Game.setEvolutionCard(state, 1, "zombie")
     local rejectedNonEvo = not Game.setEvolutionCard(state, 2, "skeleton")
+    local configuredCycles = cards.evolutionCycles("zombie")
+    local configuredEvoCost = cards.evolutionCost("zombie")
 
     Game.startCountdown(state)
-    waitUntil(
+    local enteredBattle = waitUntil(
         state,
         config.MATCH.countdown + 1,
         function() return state.phase == "battle" end,
         0.10
     )
 
+    if not enteredBattle then
+        restore()
+        return false, "Evolution test never entered battle.", data
+    end
+
     local normalPlays = true
-    local evolvedThird = false
+    local evolvedFourth = false
+    local abilitiesApplied = false
     local progressSequence = {}
+    local normalCostOk = true
 
     local function newestZombie()
         local newest = nil
@@ -224,53 +243,108 @@ runTest("evolution_cycle", "Evolution Slot charges twice and evolves third play"
         state.players[1].hand[1] = "zombie"
         state.players[1].emeralds = 10
 
-        local ok = Game.playCardFromSlot(state, 1, 1, SAFE_X - 10 + playIndex * 3, SAFE_Y)
+        local ok = Game.playCardFromSlot(
+            state,
+            1,
+            1,
+            SAFE_X - 12 + playIndex * 4,
+            SAFE_Y
+        )
+
         if not ok then
-            base.evolution = oldEvolution
-            return false, "Evolution test could not play Zombie " .. tostring(playIndex), data
+            restore()
+            return false, "Evolution test could not play normal Zombie " .. tostring(playIndex), data
         end
 
         local entity = newestZombie()
         progressSequence[#progressSequence + 1] = state.players[1].evolutionProgress or -1
+        normalCostOk = normalCostOk and math.abs(state.players[1].emeralds - 7) <= EPSILON
 
-        if playIndex < 3 then
-            normalPlays = normalPlays
-                and entity ~= nil
-                and entity.isEvolution ~= true
-                and math.abs((entity.damage or 0) - 80) <= EPSILON
-        else
-            evolvedThird = entity ~= nil
-                and entity.isEvolution == true
-                and entity.name == "Evolved Zombie"
-                and math.abs((entity.damage or 0) - 120) <= EPSILON
-                and state.players[1].evolutionProgress == 0
-        end
+        normalPlays = normalPlays
+            and entity ~= nil
+            and entity.isEvolution ~= true
+            and math.abs((entity.damage or 0) - 80) <= EPSILON
+    end
+
+    -- Evolution is ready here and costs 4E. A 3E attempt must fail without
+    -- consuming charge or Emeralds.
+    state.players[1].hand[1] = "zombie"
+    state.players[1].emeralds = 3
+    local rejectedForCost = not Game.playCardFromSlot(
+        state,
+        1,
+        1,
+        SAFE_X,
+        SAFE_Y
+    )
+    local preservedReadyCharge = state.players[1].evolutionProgress == 3
+        and math.abs(state.players[1].emeralds - 3) <= EPSILON
+
+    state.players[1].hand[1] = "zombie"
+    state.players[1].emeralds = 10
+    local evolvedOk = Game.playCardFromSlot(
+        state,
+        1,
+        1,
+        SAFE_X + 10,
+        SAFE_Y
+    )
+    local evolved = newestZombie()
+    progressSequence[#progressSequence + 1] = state.players[1].evolutionProgress or -1
+
+    if evolvedOk and evolved then
+        evolvedFourth = evolved.isEvolution == true
+            and evolved.name == "Evolved Zombie"
+            and math.abs((evolved.damage or 0) - 120) <= EPSILON
+            and math.abs((evolved.maxHp or 0) - 575.3) <= EPSILON
+            and math.abs(state.players[1].emeralds - 6) <= EPSILON
+            and state.players[1].evolutionProgress == 0
+
+        abilitiesApplied = evolved.canAttackAir == true
+            and evolved.onHitSlow ~= nil
+            and math.abs((evolved.onHitSlow.factor or 0) - 0.75) <= EPSILON
+            and math.abs((evolved.onHitSlow.duration or 0) - 2.0) <= EPSILON
     end
 
     local telemetry = state.stats.players[1].evolutionPlays == 1
         and state.stats.players[1].cards.zombie
         and state.stats.players[1].cards.zombie.evolutionPlays == 1
+        and math.abs((state.stats.players[1].cards.zombie.emeraldSpent or 0) - 13) <= EPSILON
 
     addData(data, "eligible_selected", selected)
     addData(data, "non_evolution_rejected", rejectedNonEvo)
+    addData(data, "configured_normal_plays", configuredCycles)
+    addData(data, "configured_evo_cost", configuredEvoCost)
     addData(data, "progress_after_play_1", progressSequence[1])
     addData(data, "progress_after_play_2", progressSequence[2])
     addData(data, "progress_after_play_3", progressSequence[3])
-    addData(data, "first_two_normal", normalPlays)
-    addData(data, "third_play_evolved", evolvedThird)
+    addData(data, "progress_after_evolution", progressSequence[4])
+    addData(data, "normal_cost_ok", normalCostOk)
+    addData(data, "insufficient_evo_cost_rejected", rejectedForCost)
+    addData(data, "ready_charge_preserved_on_failed_play", preservedReadyCharge)
+    addData(data, "first_three_normal", normalPlays)
+    addData(data, "fourth_play_evolved", evolvedFourth)
+    addData(data, "evolution_abilities_applied", abilitiesApplied)
     addData(data, "evolution_telemetry", telemetry)
 
-    base.evolution = oldEvolution
+    restore()
 
     return selected
         and rejectedNonEvo
+        and configuredCycles == 3
+        and math.abs((configuredEvoCost or 0) - 4) <= EPSILON
         and normalPlays
-        and evolvedThird
+        and normalCostOk
+        and rejectedForCost
+        and preservedReadyCharge
+        and evolvedFourth
+        and abilitiesApplied
         and progressSequence[1] == 1
         and progressSequence[2] == 2
-        and progressSequence[3] == 0
+        and progressSequence[3] == 3
+        and progressSequence[4] == 0
         and telemetry,
-        "Only eligible deck cards may use the Evolution Slot; two normal plays charge it and the third evolves.",
+        "Each Evolution may define its own charge count, Emerald cost, stats and existing engine abilities.",
         data
 end)
 
