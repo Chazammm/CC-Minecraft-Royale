@@ -7,7 +7,7 @@ local args = { ... }
 
 local resultPath = "balance_results.txt"
 local nativePrint = print
-local liveHandle = fs and fs.open(resultPath, "w") or nil
+local liveHandle = nil
 
 local function reportPrint(...)
     local parts = {}
@@ -24,6 +24,7 @@ local function reportPrint(...)
         if liveHandle.flush then liveHandle.flush() end
     end
 end
+
 local function printUsage()
     nativePrint("Usage: simulate <100-1000> [mixed|fixed] [seed]")
     nativePrint("Examples:")
@@ -60,6 +61,11 @@ if mode ~= "mixed" and mode ~= "fixed" then
 end
 
 local seed = math.floor(tonumber(args[3]) or 1337)
+
+-- Only replace the previous report after all command-line arguments have
+-- passed validation. "simulate help" and invalid commands must preserve it.
+liveHandle = fs and fs.open(resultPath, "w") or nil
+
 local rngState = seed % 2147483647
 if rngState <= 0 then rngState = 1 end
 
