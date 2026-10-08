@@ -552,9 +552,24 @@ local function clampOwnPlacement(playerId, x, y)
     return x, y
 end
 
+local function guardianWaterPlacement(laneX)
+    local left = (laneX or 50) < config.ARENA.width / 2
+    local center = left
+        and config.ARENA.bridgeCenters[1]
+        or config.ARENA.bridgeCenters[#config.ARENA.bridgeCenters]
+    local offset = (config.ARENA.bridgeHalfWidth or 7) + 3
+    local x = left and (center + offset) or (center - offset)
+    local y = (config.ARENA.riverTop + config.ARENA.riverBottom) / 2
+    return x, y
+end
+
 local function defensivePlacement(bot, card, threat)
     local playerId = bot.playerId
     local back = backDirection(playerId)
+
+    if card.id == "guardian" then
+        return guardianWaterPlacement(threat and threat.x or 50)
+    end
 
     if card.id == "cannon"
         or card.id == "pillager_outpost"
@@ -657,6 +672,10 @@ local function offensivePlacement(bot, state, card)
         end
     end
 
+    if card.id == "guardian" then
+        return guardianWaterPlacement(laneX)
+    end
+
     if card.id == "villager" then
         local y = playerId == 1 and 142 or 18
         local x = (bot.decisionCount % 2 == 0) and 38 or 62
@@ -702,6 +721,7 @@ local function shouldSaveForPowerCard(bot, state, ctx, arrowScore)
 
     local priority = {
         iron_golem = 9,
+        guardian = 8.5,
         villager = lateGame and -math.huge or 8,
         witch = 7,
         enderman = 6,
@@ -819,7 +839,20 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
             return -math.huge
         end
 
-        if card.id == "cannon" and not threat.flying then
+        if card.id == "guardian" then
+            local hp = threat.maxHp or threat.hp or 0
+            if hp >= 900 then
+                score = score + 9
+            elseif hp >= 500 then
+                score = score + 6
+            else
+                score = score + 2
+            end
+
+            if threat.targetMode == "buildings" or threat.name == "Iron Golem" then
+                score = score + 4
+            end
+        elseif card.id == "cannon" and not threat.flying then
             score = score + 4
             if threat.targetMode == "buildings" or threat.name == "Iron Golem" then score = score + 5 end
         elseif card.id == "pillager_outpost" then
@@ -868,6 +901,7 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
             cannon = 1,
             pillager_outpost = 1.3,
             nether_portal = 5.0,
+            guardian = 1.4,
         }
         score = offense[card.id] or 2
         if lateGame and card.id ~= "cannon" and card.id ~= "villager" then
