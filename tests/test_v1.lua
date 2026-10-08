@@ -929,12 +929,19 @@ assertTrue(
 
 overtimeEconomyState.players[1].feedback = nil
 overtimeEconomyState.players[2].feedback = nil
+overtimeEconomyState.players[1].emeralds = 0
+overtimeEconomyState.players[2].emeralds = 0
 overtimeEconomyState.timeLeft = 30.10
 Game.update(overtimeEconomyState, 0.20)
 assertEq(
     overtimeEconomyState.players[1].feedback,
     "FINAL 30 - 3X EMERALDS",
     "Crossing thirty seconds in overtime must announce the 3x boost"
+)
+local expectedBoundaryGain = config.MATCH.emeraldPerSecond * (0.10 * 2 + 0.10 * 3)
+assertTrue(
+    math.abs(overtimeEconomyState.players[1].emeralds - expectedBoundaryGain) < 0.000001,
+    "A tick crossing 0:30 must split Emerald generation exactly between 2x and 3x"
 )
 
 local tiebreakState = Game.new()
