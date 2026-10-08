@@ -1,26 +1,33 @@
 CC-MINECRAFT-ROYALE MECHANICS REPORT
-FORMAT_VERSION|4
-GENERATED_EPOCH_MS|1791459034038
+FORMAT_VERSION|5
+GENERATED_EPOCH_MS|1791459898701
 OS_VERSION|CraftOS 1.9
 CARD_COUNT|21
 HARNESS|condition_waits=true|dt=0.050|safe_x=50.0|safe_y=110.0
 CONFIG|tick=0.100|normal=150|overtime=150|emerald_rate=0.357143|building_decay=1.150
 BALANCE_SNAPSHOT|skeleton_range=15.00|skeleton_retreat=0.85|bat_damage=17.00
-SUMMARY|pass=12|fail=0|error=0|total=12|runtime_cpu_s=0.0000
+SUMMARY|pass=12|fail=0|error=0|total=12|runtime_cpu_s=0.0500
 
 RESULT|boot_deck|PASS|Lobby boots with empty human decks|Human players should build/load/randomize an 8-card deck before READY.
 DATA|boot_deck|p1_deck_cards=0.0000
 DATA|boot_deck|p2_deck_cards=0.0000
 DATA|boot_deck|empty_deck_is_valid=false
 
-RESULT|evolution_cycle|PASS|Evolution Slot charges twice and evolves third play|Only eligible deck cards may use the Evolution Slot; two normal plays charge it and the third evolves.
+RESULT|evolution_cycle|PASS|Evolution timing, cost, stats and abilities|Each Evolution may define its own charge count, Emerald cost, stats and existing engine abilities.
 DATA|evolution_cycle|eligible_selected=true
 DATA|evolution_cycle|non_evolution_rejected=true
+DATA|evolution_cycle|configured_normal_plays=3.0000
+DATA|evolution_cycle|configured_evo_cost=4.0000
 DATA|evolution_cycle|progress_after_play_1=1.0000
 DATA|evolution_cycle|progress_after_play_2=2.0000
-DATA|evolution_cycle|progress_after_play_3=0.0000
-DATA|evolution_cycle|first_two_normal=true
-DATA|evolution_cycle|third_play_evolved=true
+DATA|evolution_cycle|progress_after_play_3=3.0000
+DATA|evolution_cycle|progress_after_evolution=0.0000
+DATA|evolution_cycle|normal_cost_ok=true
+DATA|evolution_cycle|insufficient_evo_cost_rejected=true
+DATA|evolution_cycle|ready_charge_preserved_on_failed_play=true
+DATA|evolution_cycle|first_three_normal=true
+DATA|evolution_cycle|fourth_play_evolved=true
+DATA|evolution_cycle|evolution_abilities_applied=true
 DATA|evolution_cycle|evolution_telemetry=true
 
 RESULT|target_lock|PASS|Pull before attack, lock after attack|Golem must remain pullable before commitment; attacked targets must stay locked until death.
