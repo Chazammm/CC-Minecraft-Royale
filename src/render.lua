@@ -259,7 +259,11 @@ local function drawStatus(buffer, state, playerId)
 
     local phaseText
     if state.phase == "battle" then
-        phaseText = state.overtime and ("OT " .. util.formatTime(state.timeLeft)) or util.formatTime(state.timeLeft)
+        if state.tiebreaker then
+            phaseText = "TIEBREAK"
+        else
+            phaseText = state.overtime and ("OT " .. util.formatTime(state.timeLeft)) or util.formatTime(state.timeLeft)
+        end
     elseif state.phase == "countdown" then
         phaseText = "STARTING"
     else
@@ -343,6 +347,25 @@ end
 
 local function drawBattle(buffer, state, playerId, layout)
     drawStatus(buffer, state, playerId)
+
+    if state.tiebreaker then
+        fill(
+            buffer,
+            layout.hand.x1,
+            layout.hand.y1,
+            layout.hand.x2,
+            layout.hand.y2,
+            colors.black
+        )
+        centered(
+            buffer,
+            math.floor((layout.hand.y1 + layout.hand.y2) / 2),
+            "TIEBREAKER - CARDS LOCKED",
+            colors.yellow,
+            colors.black
+        )
+        return
+    end
 
     local player = state.players[playerId]
     for slot = 1, 4 do
