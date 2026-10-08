@@ -1,13 +1,13 @@
 CC-MINECRAFT-ROYALE MECHANICS REPORT
-FORMAT_VERSION|11
-GENERATED_EPOCH_MS|1791472279315
+FORMAT_VERSION|12
+GENERATED_EPOCH_MS|1791472603197
 OS_VERSION|CraftOS 1.9
 CARD_COUNT|22
 HARNESS|condition_waits=true|dt=0.050|safe_x=50.0|safe_y=110.0
 CONFIG|tick=0.100|normal=150|overtime=150|emerald_rate=0.357143|building_decay=1.150
 BALANCE_SNAPSHOT|skeleton_range=15.00|skeleton_retreat=0.85|bat_damage=17.00
 EVOLUTION_SNAPSHOT|creeper_cycles=2|portal_cycles=2|mite_cycles=4|guardian_cycles=2|villager_cycles=3|golem_cycles=2|ghast_damage=130.0|ghast_range=24.0
-SUMMARY|pass=21|fail=1|error=0|total=22|runtime_cpu_s=0.0000
+SUMMARY|pass=22|fail=0|error=0|total=22|runtime_cpu_s=0.0500
 
 RESULT|boot_deck|PASS|Lobby boots with empty human decks|Human players should build/load/randomize an 8-card deck before READY.
 DATA|boot_deck|p1_deck_cards=0.0000
@@ -130,7 +130,7 @@ DATA|evo_charged_creeper|far_target_distance=10.0000
 DATA|evo_charged_creeper|far_target_damage=580.0000
 DATA|evo_charged_creeper|charged_effect_visible=true
 
-RESULT|evo_ghast_portal|FAIL|Ghast Portal spawns exactly two artillery Ghasts|Ghast Portal must emit exactly two fragile long-range Ghasts; their 130-damage splash fireballs two-hit Blaze and slow only the primary target.
+RESULT|evo_ghast_portal|PASS|Ghast Portal spawns exactly two artillery Ghasts|Ghast Portal must emit exactly two fragile long-range Ghasts; their 130-damage splash fireballs two-hit Blaze and slow only the primary target.
 DATA|evo_ghast_portal|configured_cycles=2.0000
 DATA|evo_ghast_portal|portal_visual_variant=ghast_portal
 DATA|evo_ghast_portal|first_ghast_spawn_s=2.5500
@@ -143,7 +143,7 @@ DATA|evo_ghast_portal|ghast_cooldown=2.8000
 DATA|evo_ghast_portal|first_hit_time_s=0.3000
 DATA|evo_ghast_portal|blaze_hp_after_first_hit=127.0000
 DATA|evo_ghast_portal|splash_zombie_damage_first_hit=130.0000
-DATA|evo_ghast_portal|primary_target_slowed=false
+DATA|evo_ghast_portal|primary_target_slowed=true
 DATA|evo_ghast_portal|splash_target_not_slowed=true
 DATA|evo_ghast_portal|blaze_killed_by_second_hit=true
 DATA|evo_ghast_portal|second_hit_time_s=0.3000
