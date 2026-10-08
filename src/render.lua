@@ -396,7 +396,7 @@ end
 
 local function drawCard(buffer, zone, card, selected, affordable, evolutionInfo)
     local evolutionReady = evolutionInfo and evolutionInfo.ready
-    local bg = evolutionReady and colors.purple or (selected and colors.orange or colors.gray)
+    local bg = evolutionReady and colors.blue or (selected and colors.orange or colors.gray)
     if not affordable then bg = colors.black end
     fill(buffer, zone.x1, zone.y1, zone.x2, zone.y2, bg)
 
@@ -571,7 +571,7 @@ local function contrastTextColor(bg)
 end
 
 local function drawCollectionCard(buffer, zone, card, selected, evolutionSelected, evolutionSelecting)
-    local bg = evolutionSelected and colors.purple or (selected and colors.blue or colors.gray)
+    local bg = evolutionSelected and colors.blue or (selected and colors.black or colors.gray)
     local accent = card.color or colors.white
     local accentText = contrastTextColor(accent)
     fill(buffer, zone.x1, zone.y1, zone.x2, zone.y2, bg)
@@ -635,7 +635,7 @@ local function drawDeckSlot(buffer, zone, slot, card, evolutionSelected, evoluti
     local eligible = card and cards.hasEvolution(card)
     local bg
     if evolutionSelected then
-        bg = colors.purple
+        bg = colors.blue
     elseif evolutionSelecting and eligible then
         bg = colors.blue
     else
@@ -648,7 +648,7 @@ local function drawDeckSlot(buffer, zone, slot, card, evolutionSelected, evoluti
     if evolutionSelected then
         label = "EVO > " .. label
     elseif eligible then
-        label = "E " .. label
+        label = "EVO " .. label
     end
     writeText(
         buffer,
@@ -694,7 +694,7 @@ local function drawEvolutionSlot(buffer, zone, player, enabled)
     if not enabled then
         bg = colors.gray
     else
-        bg = selected and colors.purple or (selecting and colors.blue or colors.black)
+        bg = selected and colors.blue or (selecting and colors.black or colors.black)
     end
 
     fill(buffer, zone.x1, zone.y1, zone.x2, zone.y2, bg)
@@ -1355,7 +1355,7 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
             layout.deckSlots[slot],
             slot,
             cardId and cards.get(cardId) or nil,
-            player.evolutionCardId == cardId,
+            cardId ~= nil and player.evolutionCardId == cardId,
             player.evolutionSelecting == true
         )
     end
