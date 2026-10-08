@@ -188,7 +188,11 @@ end
 local function ownedVillagerCount(state, playerId)
     local count = 0
     for _, entity in ipairs(state.entities) do
-        if entity.alive and entity.owner == playerId and entity.name == "Villager" then
+        if entity.alive
+            and entity.owner == playerId
+            and entity.sourceCardId == "villager"
+            and entity.emeraldBoost
+        then
             count = count + 1
         end
     end
@@ -242,9 +246,9 @@ local function threatScore(state, playerId, entity)
         score = score + math.max(0, (65 - towerDistance) / 10)
     end
 
-    if entity.name == "Iron Golem" then score = score + 4 end
-    if entity.name == "Creeper" then score = score + 3.5 end
-    if entity.name == "Enderman" then score = score + 2.5 end
+    if entity.sourceCardId == "iron_golem" then score = score + 4 end
+    if entity.sourceCardId == "creeper" then score = score + 3.5 end
+    if entity.sourceCardId == "enderman" then score = score + 2.5 end
     if entity.flying then score = score + 1 end
 
     return score
@@ -288,7 +292,7 @@ local function bestArrowTarget(state, playerId)
                     local dx = center.x - target.x
                     local dy = center.y - target.y
                     if math.sqrt(dx * dx + dy * dy) <= radius then
-                        if target.name == "Villager" then
+                        if target.sourceCardId == "villager" and target.emeraldBoost then
                             score = score + 9
                         elseif target.name == "Bat Swarm" then
                             score = score + 1.4
@@ -361,6 +365,7 @@ local function predictedAnvilPosition(state, entity, delay)
     if entity.slowRemaining and entity.slowRemaining > 0 then
         speed = speed * (entity.slowFactor or 1)
     end
+    speed = speed * (entity.globalMoveSpeedFactor or 1)
 
     local target = botEntityById(state, entity.targetId)
     if not target then
@@ -497,7 +502,7 @@ local function bestAnvilTarget(state, playerId)
                                 if (target.hp or 0) <= hitDamage then
                                     score = score + 2.5
                                 end
-                                if target.name == "Villager" then
+                                if target.sourceCardId == "villager" and target.emeraldBoost then
                                     score = score + 4
                                 end
                                 if target.kind == "building" or target.passive then
