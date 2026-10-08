@@ -1,4 +1,5 @@
 CC-Minecraft Royale controlled Evolution impact analysis
+Tick: 0.10s
 Contexts/evolution: 50   Evolutions: 6   Total matches: 1200   Seed: 2608
 Each context compares the exact same subject deck and opponent deck with side swapping.
 BASE disables all Evolution Slots. EVO enables only the tested card's Evolution Slot.
@@ -14,11 +15,11 @@ RUN 1/6: Iron Golem -> Diamond Golem
 
 EVOLUTION|iron_golem|base=Iron Golem|evolved=Diamond Golem
 RULE|cycles=2|evolves_on_play=3|base_cost=5.0|evo_cost=5.0
-SCORE|BASE=16.50%|EVO=19.00%|DELTA_EVO_MINUS_BASE=+2.50pp
-PAIRED_95CI|mean=+2.50pp|low=-3.80pp|high=+8.80pp|signal=NO CLEAR IMPACT
-CONTEXT_EDGE|BASE=4|EVO=7|TIE=39
-BASE_CARD|plays/match=4.45|unit/E=8.09|tower/E=5.10|kills/match=0.52|avg_match=274.9s
-EVO_CARD|plays/match=4.60|evo/match=1.18|evo_share=25.7%|reached=87.0%|unit/E=17.26|tower/E=5.17|kills/match=0.74|avg_match=277.3s
+SCORE|BASE=27.00%|EVO=35.00%|DELTA_EVO_MINUS_BASE=+8.00pp
+PAIRED_95CI|mean=+8.00pp|low=+2.87pp|high=+13.13pp|signal=CLEAR BOOST
+CONTEXT_EDGE|BASE=0|EVO=8|TIE=42
+BASE_CARD|plays/match=4.63|unit/E=11.15|tower/E=4.42|kills/match=0.58|avg_match=271.7s
+EVO_CARD|plays/match=4.74|evo/match=1.21|evo_share=25.5%|reached=88.0%|unit/E=17.72|tower/E=5.01|kills/match=0.79|avg_match=277.3s
 SUBJECT_SLOTS|1:12,2:5,3:8,4:9,5:3,6:6,7:5,8:2
 
 RUN 2/6: Creeper -> Charged Creeper
@@ -30,11 +31,11 @@ RUN 2/6: Creeper -> Charged Creeper
 
 EVOLUTION|creeper|base=Creeper|evolved=Charged Creeper
 RULE|cycles=2|evolves_on_play=3|base_cost=4.0|evo_cost=4.0
-SCORE|BASE=37.50%|EVO=38.50%|DELTA_EVO_MINUS_BASE=+1.00pp
-PAIRED_95CI|mean=+1.00pp|low=-2.42pp|high=+4.42pp|signal=NO CLEAR IMPACT
-CONTEXT_EDGE|BASE=1|EVO=2|TIE=47
-BASE_CARD|plays/match=3.92|unit/E=77.29|tower/E=0.37|kills/match=5.19|avg_match=275.4s
-EVO_CARD|plays/match=4.01|evo/match=1.01|evo_share=25.2%|reached=58.0%|unit/E=78.57|tower/E=0.36|kills/match=5.42|avg_match=276.2s
+SCORE|BASE=46.00%|EVO=47.00%|DELTA_EVO_MINUS_BASE=+1.00pp
+PAIRED_95CI|mean=+1.00pp|low=-3.42pp|high=+5.42pp|signal=NO CLEAR IMPACT
+CONTEXT_EDGE|BASE=1|EVO=1|TIE=48
+BASE_CARD|plays/match=4.02|unit/E=80.65|tower/E=0.72|kills/match=5.81|avg_match=277.6s
+EVO_CARD|plays/match=3.96|evo/match=1.05|evo_share=26.5%|reached=65.0%|unit/E=86.48|tower/E=0.73|kills/match=6.38|avg_match=277.8s
 SUBJECT_SLOTS|1:6,2:3,3:5,4:10,5:7,6:6,7:7,8:6
 
 RUN 3/6: Villager -> Emerald Bank
@@ -46,13 +47,13 @@ RUN 3/6: Villager -> Emerald Bank
 
 EVOLUTION|villager|base=Villager|evolved=Emerald Bank
 RULE|cycles=3|evolves_on_play=4|base_cost=7.0|evo_cost=7.0
-SCORE|BASE=54.50%|EVO=54.50%|DELTA_EVO_MINUS_BASE=+0.00pp
+SCORE|BASE=51.50%|EVO=51.50%|DELTA_EVO_MINUS_BASE=+0.00pp
 PAIRED_95CI|mean=+0.00pp|low=+0.00pp|high=+0.00pp|signal=NO CLEAR IMPACT
 CONTEXT_EDGE|BASE=0|EVO=0|TIE=50
-BASE_CARD|plays/match=0.52|unit/E=0.00|tower/E=0.00|kills/match=0.00|avg_match=280.0s
-EVO_CARD|plays/match=0.52|evo/match=0.00|evo_share=0.0%|reached=0.0%|unit/E=0.00|tower/E=0.00|kills/match=0.00|avg_match=280.0s
-UTILITY_BASE|bonus/match=3.38|slow/play=0.00|hits/play=0.00
-UTILITY_EVO|bonus/match=3.38|slow/play=0.00|hits/play=0.00
+BASE_CARD|plays/match=0.51|unit/E=0.00|tower/E=0.00|kills/match=0.00|avg_match=273.7s
+EVO_CARD|plays/match=0.51|evo/match=0.00|evo_share=0.0%|reached=0.0%|unit/E=0.00|tower/E=0.00|kills/match=0.00|avg_match=273.7s
+UTILITY_BASE|bonus/match=3.15|slow/play=0.00|hits/play=0.00
+UTILITY_EVO|bonus/match=3.15|slow/play=0.00|hits/play=0.00
 SUBJECT_SLOTS|1:8,2:5,3:2,4:9,5:8,6:6,7:3,8:9
 
 RUN 4/6: Endermite -> Mega Mite
@@ -64,11 +65,11 @@ RUN 4/6: Endermite -> Mega Mite
 
 EVOLUTION|endermite|base=Endermite|evolved=Mega Mite
 RULE|cycles=4|evolves_on_play=5|base_cost=1.0|evo_cost=1.0
-SCORE|BASE=46.00%|EVO=45.50%|DELTA_EVO_MINUS_BASE=-0.50pp
-PAIRED_95CI|mean=-0.50pp|low=-7.71pp|high=+6.71pp|signal=NO CLEAR IMPACT
-CONTEXT_EDGE|BASE=5|EVO=6|TIE=39
-BASE_CARD|plays/match=10.25|unit/E=40.66|tower/E=0.53|kills/match=1.04|avg_match=278.6s
-EVO_CARD|plays/match=10.13|evo/match=1.65|evo_share=16.3%|reached=95.0%|unit/E=49.64|tower/E=1.31|kills/match=1.35|avg_match=274.9s
+SCORE|BASE=47.00%|EVO=46.50%|DELTA_EVO_MINUS_BASE=-0.50pp
+PAIRED_95CI|mean=-0.50pp|low=-6.84pp|high=+5.84pp|signal=NO CLEAR IMPACT
+CONTEXT_EDGE|BASE=6|EVO=5|TIE=39
+BASE_CARD|plays/match=10.38|unit/E=43.47|tower/E=0.61|kills/match=1.14|avg_match=281.0s
+EVO_CARD|plays/match=10.37|evo/match=1.74|evo_share=16.8%|reached=98.0%|unit/E=53.63|tower/E=1.25|kills/match=1.34|avg_match=281.6s
 SUBJECT_SLOTS|1:7,2:9,3:7,4:11,5:1,6:5,7:4,8:6
 
 RUN 5/6: Guardian -> Elder Guardian
@@ -80,11 +81,11 @@ RUN 5/6: Guardian -> Elder Guardian
 
 EVOLUTION|guardian|base=Guardian|evolved=Elder Guardian
 RULE|cycles=2|evolves_on_play=3|base_cost=6.0|evo_cost=6.0
-SCORE|BASE=53.00%|EVO=53.00%|DELTA_EVO_MINUS_BASE=+0.00pp
+SCORE|BASE=50.00%|EVO=50.00%|DELTA_EVO_MINUS_BASE=+0.00pp
 PAIRED_95CI|mean=+0.00pp|low=+0.00pp|high=+0.00pp|signal=NO CLEAR IMPACT
 CONTEXT_EDGE|BASE=0|EVO=0|TIE=50
-BASE_CARD|plays/match=0.75|unit/E=114.37|tower/E=0.00|kills/match=1.16|avg_match=275.0s
-EVO_CARD|plays/match=0.72|evo/match=0.10|evo_share=13.9%|reached=10.0%|unit/E=122.08|tower/E=0.00|kills/match=1.24|avg_match=275.0s
+BASE_CARD|plays/match=0.73|unit/E=233.83|tower/E=0.00|kills/match=3.15|avg_match=282.3s
+EVO_CARD|plays/match=0.72|evo/match=0.08|evo_share=11.1%|reached=8.0%|unit/E=233.44|tower/E=0.00|kills/match=3.17|avg_match=282.6s
 SUBJECT_SLOTS|1:5,2:6,3:6,4:5,5:7,6:6,7:7,8:8
 
 RUN 6/6: Nether Portal -> Ghast Portal
@@ -96,13 +97,13 @@ RUN 6/6: Nether Portal -> Ghast Portal
 
 EVOLUTION|nether_portal|base=Nether Portal|evolved=Ghast Portal
 RULE|cycles=2|evolves_on_play=3|base_cost=3.0|evo_cost=3.0
-SCORE|BASE=44.00%|EVO=60.50%|DELTA_EVO_MINUS_BASE=+16.50pp
-PAIRED_95CI|mean=+16.50pp|low=+8.26pp|high=+24.74pp|signal=CLEAR LARGE BOOST
-CONTEXT_EDGE|BASE=2|EVO=17|TIE=31
-BASE_CARD|plays/match=6.39|unit/E=84.94|tower/E=0.49|kills/match=7.34|avg_match=281.7s
-EVO_CARD|plays/match=6.40|evo/match=1.82|evo_share=28.4%|reached=90.0%|unit/E=144.43|tower/E=11.64|kills/match=13.77|avg_match=272.9s
+SCORE|BASE=44.50%|EVO=65.00%|DELTA_EVO_MINUS_BASE=+20.50pp
+PAIRED_95CI|mean=+20.50pp|low=+10.83pp|high=+30.17pp|signal=CLEAR LARGE BOOST
+CONTEXT_EDGE|BASE=2|EVO=19|TIE=29
+BASE_CARD|plays/match=6.57|unit/E=89.90|tower/E=0.86|kills/match=8.18|avg_match=277.8s
+EVO_CARD|plays/match=6.25|evo/match=1.70|evo_share=27.2%|reached=89.0%|unit/E=154.91|tower/E=13.80|kills/match=13.96|avg_match=267.9s
 UTILITY_BASE|bonus/match=0.00|slow/play=0.00|hits/play=0.00
-UTILITY_EVO|bonus/match=0.00|slow/play=1.54|hits/play=0.00
+UTILITY_EVO|bonus/match=0.00|slow/play=1.11|hits/play=0.00
 SUBJECT_SLOTS|1:1,2:3,3:12,4:8,5:4,6:7,7:8,8:7
 
 HOW TO READ
