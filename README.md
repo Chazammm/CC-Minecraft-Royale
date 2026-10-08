@@ -89,6 +89,25 @@ Nether Portal summons the internal-only Piglin unit; Piglin is not directly sele
 - **Enderman**: teleporting melee attacker
 - **Snow Golem**: ranged slow support without kiting
 
+## Evolution Slot
+
+The Evolution Slot duplicates one card that is already part of the normal 8-card deck; it does not replace or remove that card.
+
+Only cards with an explicit `card.evolution` definition in `src/cards.lua` are eligible. Cards without an evolution cannot be placed in the slot.
+
+For the standard two-cycle evolution:
+
+1. First play is normal and charges the tracker to 1/2.
+2. Second play is normal and charges the tracker to READY.
+3. Third play uses the evolved card definition.
+4. The tracker resets to 0/2 and repeats.
+
+The battle UI shows the Evolution charge persistently in the status area and directly on the evolved card whenever it is in hand. Evolution use is battle-only; the admin sandbox does not consume or trigger Evolution cycles.
+
+Evolution definitions are data-driven and can apply numeric multipliers or direct overrides to unit, building, spell, or top-level card data. No gameplay Evolution is enabled in the shipped card pool until a specific card Evolution is designed and added.
+
+VS BOT automatically selects the first evolution-capable card in its deck when one exists.
+
 ## Game modes
 
 ### PVP
@@ -110,12 +129,14 @@ The lobby includes:
 
 - 21-card paginated collection
 - 8-card deck builder
-- 3 persistent deck presets per player
+- 1 extra **Evolution Slot** below the normal deck
 - Random 8-card deck button
 - Unit Info / card database
 - PVP / VS BOT mode toggle
 - Bot difficulty control
 - Ready synchronization
+
+The old 3-slot deck preset/loadout implementation is still kept in the codebase, but its controls are currently hidden from the normal lobby UI to free space for Evolutions.
 
 ## Admin sandbox
 
@@ -245,7 +266,7 @@ Then run:
 ## Architecture
 
 - `config.lua` - match, arena and music tuning
-- `src/cards.lua` - cards and internal summoned units
+- `src/cards.lua` - cards, Evolution definitions and internal summoned units
 - `src/arena.lua` - placement, terrain and bridge navigation
 - `src/game.lua` - match lifecycle, combat, targeting, spells and tiebreaker
 - `src/bot.lua` - bot decisions and card usage
