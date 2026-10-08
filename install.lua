@@ -21,6 +21,7 @@ local files = {
   "src/admin_render.lua",
   "diagnose.lua",
   "simulate.lua",
+  "compare.lua",
   "mechanics_test.lua",
 }
 
@@ -91,4 +92,5 @@ print("Then: main")
 print("Admin sandbox: admin")
 print("Mechanics diagnostics: mechanics_test")
 print("Balance benchmark: simulate <100-1000> [mixed|fixed]")
+print("Controlled replacements: compare <10-100> [all|cardA cardB] [seed]")
 print("Battle music: streamed + shuffled from GitHub during matches")
