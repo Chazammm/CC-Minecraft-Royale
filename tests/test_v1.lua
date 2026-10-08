@@ -1865,6 +1865,36 @@ assertEq(miteEvo.unit.attackCooldown, cards.get("endermite").unit.attackCooldown
 assertEq(miteEvo.unit.visualVariant, "mega_mite", "Mega Mite needs its larger visual variant")
 end
 
+-- Simulation/Bot Evolution integration: simulation entry points use Bot.prepare,
+-- so the bot must actually occupy the single Evolution Slot when its deck
+-- contains eligible cards.
+do
+local simState = Game.new()
+local simDeck = {
+    "zombie",
+    "skeleton",
+    "creeper",
+    "nether_portal",
+    "endermite",
+    "cannon",
+    "arrows",
+    "wolf",
+}
+local simBot = Bot.new(1, simDeck)
+Bot.prepare(simBot, simState)
+
+assertEq(
+    simState.players[1].evolutionCardId,
+    "creeper",
+    "Bot.prepare must select the first eligible Evolution card for normal simulations"
+)
+assertEq(
+    simState.players[1].evolutionProgress,
+    0,
+    "Simulation Evolution charge must start at zero"
+)
+end
+
 assertEq(#musicManifest.tracks, 34, "Battle music playlist must expose 34 shuffled tracks")
 assertEq(musicManifest.sourceRate, 48000, "Battle music pack must use native 48 kHz DFPWM")
 assertEq(musicManifest.outputRate, 48000, "Speaker output must stay at native 48 kHz")
