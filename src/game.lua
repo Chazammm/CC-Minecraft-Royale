@@ -955,6 +955,15 @@ local function updatePeriodicSpawn(state, entity, dt)
     end
 
     local count = spec.count or 1
+    if spec.maxTotal then
+        count = math.min(
+            count,
+            math.max(0, spec.maxTotal - (entity.periodicSpawnTotal or 0))
+        )
+    end
+
+    if count <= 0 then return end
+
     local radius = spec.radius or 2
 
     for i = 1, count do
