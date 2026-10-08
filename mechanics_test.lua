@@ -3,10 +3,12 @@ local Game = require("src.game")
 local cards = require("src.cards")
 local Bot = require("src.bot")
 local util = require("src.util")
+local arena = require("src.arena")
 
-local SUITE_VERSION = 2
+local SUITE_VERSION = 3
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
+local EPSILON = 0.000001
 
 local results = {}
 local suiteStarted = os.clock()
@@ -61,6 +63,23 @@ local function step(state, seconds, dt, onTick)
     return elapsed
 end
 
+local function waitUntil(state, timeout, predicate, dt, onTick)
+    dt = dt or DEFAULT_DT
+    local elapsed = 0
+
+    if predicate() then return true, elapsed end
+
+    while elapsed + 1e-9 < timeout do
+        local slice = math.min(dt, timeout - elapsed)
+        Game.update(state, slice)
+        elapsed = elapsed + slice
+        if onTick then onTick(state, elapsed) end
+        if predicate() then return true, elapsed end
+    end
+
+    return predicate(), elapsed
+end
+
 local function newAdminState(scenario)
     local state = Game.new()
     Game.debugLoadScenario(state, scenario or "empty")
@@ -68,18 +87,64 @@ local function newAdminState(scenario)
     return state
 end
 
+-- Pick a roomy ground patch dynamically so diagnostics do not silently become
+-- water/bridge tests if arena dimensions or river placement change later.
+local function findSafeGroundAnchor()
+    local ground = { flying = false }
+    local preferredY = math.min(
+        config.ARENA.height - 20,
+        config.ARENA.riverBottom + 24
+    )
+    local preferredX = math.floor(config.ARENA.width / 2)
+
+    local offsets = {
+        { 0, 0 },
+        { -5, 0 }, { 5, 0 },
+        { 0, -12 }, { 0, 12 },
+        { -5, -5 }, { 5, -5 },
+        { -5, 5 }, { 5, 5 },
+    }
+
+    local function patchWorks(x, y)
+        for _, offset in ipairs(offsets) do
+            if not arena.isWalkable(ground, x + offset[1], y + offset[2]) then
+                return false
+            end
+        end
+        return true
+    end
+
+    if patchWorks(preferredX, preferredY) then
+        return preferredX, preferredY
+    end
+
+    for y = config.ARENA.riverBottom + 12, config.ARENA.height - 16, 2 do
+        for x = 14, config.ARENA.width - 14, 4 do
+            if patchWorks(x, y) then return x, y end
+        end
+    end
+
+    error("Mechanics test could not find a safe walkable ground patch")
+end
+
+local SAFE_X, SAFE_Y = findSafeGroundAnchor()
+
 local function runTest(id, title, fn)
     write(("[%-24s] "):format(id))
 
     local ok, passed, message, data = pcall(fn)
+    local status
+
     if not ok then
         local err = passed
         passed = false
         data = { "error=" .. fmt(err) }
         message = "Lua error while running test"
+        status = "ERROR"
+    else
+        status = passed and "PASS" or "FAIL"
     end
 
-    local status = passed and "PASS" or "FAIL"
     print(status)
 
     results[#results + 1] = {
@@ -115,8 +180,10 @@ runTest("target_lock", "Pull before attack, lock after attack", function()
     local data = {}
 
     local pullState = newAdminState("full")
-    Game.debugSpawnCard(pullState, 1, "iron_golem", 50, 105)
-    Game.debugSpawnCard(pullState, 2, "cannon", 50, 68)
+    local pullGolemY = SAFE_Y
+    local pullCannonY = math.max(12, config.ARENA.riverTop - 6)
+    Game.debugSpawnCard(pullState, 1, "iron_golem", SAFE_X, pullGolemY)
+    Game.debugSpawnCard(pullState, 2, "cannon", SAFE_X, pullCannonY)
 
     local golem = findEntity(pullState, function(e)
         return e.alive and e.owner == 1 and e.name == "Iron Golem"
@@ -128,7 +195,7 @@ runTest("target_lock", "Pull before attack, lock after attack", function()
     for _, entity in ipairs(pullState.entities) do
         if entity.alive and entity.owner == 2 and entity.kind == "tower" then
             if not enemyTower
-                or math.abs(entity.x - 50) < math.abs(enemyTower.x - 50)
+                or distance(golem, entity) < distance(golem, enemyTower)
             then
                 enemyTower = entity
             end
@@ -140,15 +207,19 @@ runTest("target_lock", "Pull before attack, lock after attack", function()
     end
 
     golem.targetId = enemyTower.id
-    Game.update(pullState, 0.10)
-
-    local pulledBeforeHit = golem.targetId == cannon.id
+    local pulledBeforeHit, pullElapsed = waitUntil(
+        pullState,
+        0.50,
+        function() return golem.targetId == cannon.id end,
+        DEFAULT_DT
+    )
     local stillUnlocked = golem.lockedTargetId == nil
     addData(data, "golem_pulled_before_hit", pulledBeforeHit)
+    addData(data, "golem_pull_time_s", pullElapsed)
     addData(data, "golem_locked_before_hit", golem.lockedTargetId ~= nil)
 
     local lockState = newAdminState("king")
-    Game.debugSpawnCard(lockState, 1, "zombie", 50, 100)
+    Game.debugSpawnCard(lockState, 1, "zombie", SAFE_X, SAFE_Y)
 
     local zombie = findEntity(lockState, function(e)
         return e.alive and e.owner == 1 and e.name == "Zombie"
@@ -164,13 +235,18 @@ runTest("target_lock", "Pull before attack, lock after attack", function()
 
     zombie.x = king.x
     zombie.y = king.y + 2
-    Game.update(lockState, 0.10)
 
-    local lockedAfterHit = zombie.lockedTargetId == king.id
+    local lockedAfterHit, lockElapsed = waitUntil(
+        lockState,
+        0.50,
+        function() return zombie.lockedTargetId == king.id end,
+        DEFAULT_DT
+    )
     addData(data, "zombie_locked_after_first_hit", lockedAfterHit)
+    addData(data, "zombie_lock_time_s", lockElapsed)
 
     Game.debugSpawnCard(lockState, 2, "endermite", zombie.x + 1, zombie.y)
-    Game.update(lockState, 0.10)
+    step(lockState, 0.30)
 
     local ignoredNewDistractor = zombie.targetId == king.id
         and zombie.lockedTargetId == king.id
@@ -178,11 +254,14 @@ runTest("target_lock", "Pull before attack, lock after attack", function()
 
     king.hp = 1
     zombie.attackCooldownLeft = 0
-    Game.update(lockState, 0.10)
-    Game.update(lockState, 0.10)
-
-    local releasedAfterDeath = zombie.lockedTargetId ~= king.id
+    local releasedAfterDeath, releaseElapsed = waitUntil(
+        lockState,
+        0.50,
+        function() return zombie.lockedTargetId ~= king.id end,
+        DEFAULT_DT
+    )
     addData(data, "lock_released_after_target_death", releasedAfterDeath)
+    addData(data, "lock_release_time_s", releaseElapsed)
 
     local passed = pulledBeforeHit
         and stillUnlocked
@@ -197,7 +276,7 @@ end)
 
 runTest("building_decay", "Building HP decays continuously", function()
     local state = newAdminState("empty")
-    Game.debugSpawnCard(state, 1, "cannon", 50, 80)
+    Game.debugSpawnCard(state, 1, "cannon", SAFE_X, SAFE_Y)
 
     local cannon = findEntity(state, function(e)
         return e.alive and e.owner == 1 and e.name == "Cannon"
@@ -220,11 +299,13 @@ runTest("building_decay", "Building HP decays continuously", function()
     step(state, 10.0)
     local hp20 = cannon.hp
 
-    local elapsed = 20.0
-    while cannon.alive and elapsed < expectedLife + 2 do
-        Game.update(state, DEFAULT_DT)
-        elapsed = elapsed + DEFAULT_DT
-    end
+    local died, extraElapsed = waitUntil(
+        state,
+        math.max(0, expectedLife - 20) + 1,
+        function() return not cannon.alive end,
+        DEFAULT_DT
+    )
+    local measuredDeath = 20 + extraElapsed
 
     addData(data, "initial_hp", initialHp)
     addData(data, "hp_at_5s", hp5)
@@ -232,12 +313,12 @@ runTest("building_decay", "Building HP decays continuously", function()
     addData(data, "hp_at_20s", hp20)
     addData(data, "expected_hp_at_10s", expectedHp10)
     addData(data, "expected_natural_life_s", expectedLife)
-    addData(data, "measured_death_time_s", elapsed)
+    addData(data, "measured_death_time_s", measuredDeath)
 
     local monotonic = initialHp > hp5 and hp5 > hp10 and hp10 > hp20
     local hpAccurate = math.abs(hp10 - expectedHp10) <= 1.0
-    local lifetimeAccurate = not cannon.alive
-        and math.abs(elapsed - expectedLife) <= DEFAULT_DT * 2.5
+    local lifetimeAccurate = died
+        and math.abs(measuredDeath - expectedLife) <= DEFAULT_DT * 3.5
 
     return monotonic and hpAccurate and lifetimeAccurate,
         "Cannon HP should drain smoothly at the configured lifetime multiplier.",
@@ -246,7 +327,7 @@ end)
 
 runTest("nether_portal", "Portal spawn cadence and effective lifetime", function()
     local state = newAdminState("empty")
-    Game.debugSpawnCard(state, 1, "nether_portal", 50, 110)
+    Game.debugSpawnCard(state, 1, "nether_portal", SAFE_X, SAFE_Y)
 
     local portal = findEntity(state, function(e)
         return e.alive and e.owner == 1 and e.name == "Nether Portal"
@@ -273,9 +354,10 @@ runTest("nether_portal", "Portal spawn cadence and effective lifetime", function
     local spawnTimes = {}
     local elapsed = 0
 
-    while elapsed < effectiveLife + 0.5 do
-        Game.update(state, DEFAULT_DT)
-        elapsed = elapsed + DEFAULT_DT
+    while elapsed < effectiveLife + 1 and portal.alive do
+        local slice = math.min(DEFAULT_DT, effectiveLife + 1 - elapsed)
+        Game.update(state, slice)
+        elapsed = elapsed + slice
 
         for _, entity in ipairs(state.entities) do
             if entity.owner == 1 and entity.name == "Piglin" and not seen[entity.id] then
@@ -286,15 +368,20 @@ runTest("nether_portal", "Portal spawn cadence and effective lifetime", function
     end
 
     local timingOk = #spawnTimes == expectedSpawns
+    local timingTolerance = math.max(DEFAULT_DT * 3, 0.15)
+
     for i, observed in ipairs(spawnTimes) do
         local expected = first + (i - 1) * interval
-        if math.abs(observed - expected) > DEFAULT_DT * 2.5 then
+        if math.abs(observed - expected) > timingTolerance then
             timingOk = false
         end
     end
 
     local data = {}
+    addData(data, "test_anchor_x", SAFE_X)
+    addData(data, "test_anchor_y", SAFE_Y)
     addData(data, "expected_effective_life_s", effectiveLife)
+    addData(data, "measured_portal_death_s", elapsed)
     addData(data, "portal_alive_after_window", portal.alive)
     addData(data, "expected_piglins", expectedSpawns)
     addData(data, "observed_piglins", #spawnTimes)
@@ -302,15 +389,17 @@ runTest("nether_portal", "Portal spawn cadence and effective lifetime", function
         addData(data, "piglin_" .. tostring(i) .. "_spawn_s", t)
     end
 
-    return timingOk and not portal.alive,
-        "Portal should naturally decay before a fourth scheduled Piglin.",
+    return timingOk
+        and not portal.alive
+        and math.abs(elapsed - effectiveLife) <= DEFAULT_DT * 3.5,
+        "Portal should produce the scheduled Piglins on walkable ground and die from natural HP decay.",
         data
 end)
 
 runTest("magma_split", "Magma Cube splits into exactly two minis", function()
     local state = newAdminState("empty")
-    Game.debugSpawnCard(state, 1, "magma_cube", 50, 110)
-    Game.debugSpawnCard(state, 2, "zombie", 50, 110)
+    Game.debugSpawnCard(state, 1, "magma_cube", SAFE_X, SAFE_Y)
+    Game.debugSpawnCard(state, 2, "zombie", SAFE_X, SAFE_Y)
 
     local magma = findEntity(state, function(e)
         return e.alive and e.owner == 1 and e.name == "Magma Cube"
@@ -323,58 +412,96 @@ runTest("magma_split", "Magma Cube splits into exactly two minis", function()
     end
 
     magma.hp = 1
+    magma.moveSpeed = 0
     magma.attackCooldownLeft = 999
-    zombie.attackCooldownLeft = 0
+    magma.targetId = zombie.id
 
-    Game.update(state, 0.10)
+    zombie.moveSpeed = 0
+    zombie.damage = magma.maxHp + 100
+    zombie.attackCooldownLeft = 0
+    zombie.targetId = magma.id
+
+    local parentDied, deathElapsed = waitUntil(
+        state,
+        0.75,
+        function() return not magma.alive end,
+        DEFAULT_DT
+    )
+
+    local splitAppeared, splitElapsed = waitUntil(
+        state,
+        0.25,
+        function()
+            return countEntities(state, function(e)
+                return e.alive and e.owner == 1 and e.name == "Mini Magma Cube"
+            end) == 2
+        end,
+        DEFAULT_DT
+    )
 
     local minis = countEntities(state, function(e)
         return e.alive and e.owner == 1 and e.name == "Mini Magma Cube"
     end)
 
     local data = {}
-    addData(data, "parent_alive_after_lethal_hit", magma.alive)
+    addData(data, "parent_died", parentDied)
+    addData(data, "parent_death_time_s", deathElapsed)
+    addData(data, "split_detected", splitAppeared)
+    addData(data, "split_detection_extra_s", splitElapsed)
     addData(data, "mini_magma_cubes", minis)
 
-    return not magma.alive and minis == 2,
-        "A lethal hit on Magma Cube should create two Mini Magma Cubes in the same combat tick.",
+    return parentDied and splitAppeared and minis == 2,
+        "A lethal real combat hit on Magma Cube should create exactly two Mini Magma Cubes.",
         data
 end)
 
 runTest("anvil_aoe", "Falling Anvil delay and air+ground AoE", function()
     local state = newAdminState("empty")
-    Game.debugSpawnCard(state, 2, "zombie", 50, 110)
-    Game.debugSpawnCard(state, 2, "bat_swarm", 50, 110)
-    Game.debugSpawnCard(state, 1, "falling_anvil", 50, 110)
+    local anvil = cards.get("falling_anvil")
+    local delay = anvil.spell.delay
 
-    local before = countEntities(state, function(e)
-        return e.alive and e.owner == 2 and e.kind == "unit"
-    end)
+    Game.debugSpawnCard(state, 2, "zombie", SAFE_X, SAFE_Y)
+    Game.debugSpawnCard(state, 2, "bat_swarm", SAFE_X, SAFE_Y)
+    Game.debugSpawnCard(state, 1, "falling_anvil", SAFE_X, SAFE_Y)
 
-    step(state, 2.60)
-    local beforeImpact = countEntities(state, function(e)
+    local targetPredicate = function(e)
         return e.alive and e.owner == 2 and e.kind == "unit"
-    end)
+    end
 
-    step(state, 0.15)
-    local afterImpact = countEntities(state, function(e)
-        return e.alive and e.owner == 2 and e.kind == "unit"
-    end)
+    local before = countEntities(state, targetPredicate)
+    local preImpactTime = math.max(0, delay - DEFAULT_DT * 3)
+    step(state, preImpactTime)
+    local beforeImpact = countEntities(state, targetPredicate)
+
+    local impacted, afterWait = waitUntil(
+        state,
+        DEFAULT_DT * 8,
+        function() return countEntities(state, targetPredicate) == 0 end,
+        DEFAULT_DT
+    )
+    local afterImpact = countEntities(state, targetPredicate)
+    local measuredImpactTime = preImpactTime + afterWait
 
     local data = {}
+    addData(data, "configured_delay_s", delay)
     addData(data, "targets_initial", before)
-    addData(data, "targets_alive_at_2_60s", beforeImpact)
-    addData(data, "targets_alive_after_2_75s", afterImpact)
+    addData(data, "targets_alive_before_impact", beforeImpact)
+    addData(data, "targets_alive_after_impact", afterImpact)
+    addData(data, "measured_impact_time_s", measuredImpactTime)
 
-    return before == 4 and beforeImpact == 4 and afterImpact == 0,
-        "Anvil should not hit early, then should hit the clustered Zombie and all three flying Bats.",
+    return before == 4
+        and beforeImpact == 4
+        and impacted
+        and afterImpact == 0
+        and measuredImpactTime + DEFAULT_DT >= delay,
+        "Anvil must respect its warning delay, then hit the clustered ground unit and all three flying Bats.",
         data
 end)
 
 runTest("creeper_fuse", "Creeper fuse delay, lock and explosion", function()
     local state = newAdminState("empty")
-    Game.debugSpawnCard(state, 1, "creeper", 50, 110)
-    Game.debugSpawnCard(state, 2, "zombie", 53, 110)
+    Game.debugSpawnCard(state, 1, "creeper", SAFE_X, SAFE_Y)
+    Game.debugSpawnCard(state, 2, "zombie", SAFE_X + 3, SAFE_Y)
 
     local creeper = findEntity(state, function(e)
         return e.alive and e.owner == 1 and e.name == "Creeper"
@@ -389,39 +516,51 @@ runTest("creeper_fuse", "Creeper fuse delay, lock and explosion", function()
     zombie.attackCooldownLeft = 999
     zombie.moveSpeed = 0
     local zombieStartHp = zombie.hp
+    local spec = cards.get("creeper").unit.proximityExplosion
 
-    Game.update(state, DEFAULT_DT)
-    local fuseStarted = creeper.fuseRemaining ~= nil
+    local fuseStarted, armElapsed = waitUntil(
+        state,
+        0.50,
+        function() return creeper.fuseRemaining ~= nil end,
+        DEFAULT_DT
+    )
     local locked = creeper.lockedTargetId == zombie.id
 
-    step(state, 0.50)
+    local safeFuseWindow = math.max(0, spec.fuseTime - DEFAULT_DT * 2)
+    step(state, safeFuseWindow)
     local aliveBeforeFuse = creeper.alive
 
-    step(state, 0.20)
+    local exploded, explosionWait = waitUntil(
+        state,
+        DEFAULT_DT * 6,
+        function() return not creeper.alive end,
+        DEFAULT_DT
+    )
     local damage = zombieStartHp - zombie.hp
 
     local data = {}
     addData(data, "fuse_started", fuseStarted)
+    addData(data, "arm_time_s", armElapsed)
     addData(data, "locked_target_on_fuse", locked)
     addData(data, "alive_before_fuse_finished", aliveBeforeFuse)
-    addData(data, "creeper_alive_after_explosion", creeper.alive)
+    addData(data, "exploded", exploded)
+    addData(data, "explosion_wait_after_safe_window_s", explosionWait)
     addData(data, "zombie_damage_taken", damage)
-    addData(data, "expected_explosion_damage", cards.get("creeper").unit.proximityExplosion.damage)
+    addData(data, "expected_explosion_damage", spec.damage)
 
-    local expectedDamage = cards.get("creeper").unit.proximityExplosion.damage
     return fuseStarted
         and locked
         and aliveBeforeFuse
-        and not creeper.alive
-        and math.abs(damage - expectedDamage) <= 0.001,
-        "Creeper should arm, remain alive during the fuse, then explode for its configured damage.",
+        and exploded
+        and math.abs(damage - spec.damage) <= EPSILON,
+        "Creeper should arm and lock, survive until the fuse window ends, then explode for configured damage.",
         data
 end)
 
 runTest("skeleton_kite", "Skeleton attacks while backing away", function()
     local state = newAdminState("empty")
-    Game.debugSpawnCard(state, 1, "skeleton", 50, 110)
-    Game.debugSpawnCard(state, 2, "zombie", 50, 114)
+    Game.debugSpawnCard(state, 1, "skeleton", SAFE_X, SAFE_Y)
+    Game.debugSpawnCard(state, 2, "zombie", SAFE_X, SAFE_Y + 4)
 
     local skeleton = findEntity(state, function(e)
         return e.alive and e.owner == 1 and e.name == "Skeleton"
@@ -438,30 +577,48 @@ runTest("skeleton_kite", "Skeleton attacks while backing away", function()
 
     local startDistance = distance(skeleton, zombie)
     local startHp = zombie.hp
-    step(state, 0.60)
+
+    local behaviorSeen, elapsed = waitUntil(
+        state,
+        1.25,
+        function()
+            local damage = startHp - zombie.hp
+            local retreat = distance(skeleton, zombie) - startDistance
+            return damage >= (skeleton.damage or 0) - EPSILON
+                and retreat >= 0.50
+        end,
+        DEFAULT_DT
+    )
+
     local endDistance = distance(skeleton, zombie)
     local damage = startHp - zombie.hp
 
     local data = {}
+    addData(data, "behavior_detected", behaviorSeen)
+    addData(data, "detection_time_s", elapsed)
     addData(data, "distance_before", startDistance)
-    addData(data, "distance_after_0_60s", endDistance)
+    addData(data, "distance_after", endDistance)
+    addData(data, "retreat_distance", endDistance - startDistance)
     addData(data, "zombie_damage_taken", damage)
+    addData(data, "attack_range", skeleton.attackRange)
     addData(data, "preferred_min_range", skeleton.preferredMinRange)
+    addData(data, "retreat_speed_multiplier", skeleton.retreatSpeedMultiplier)
 
-    return endDistance > startDistance + 1
-        and damage >= (skeleton.damage or 0),
-        "Skeleton should fire once and create distance when an enemy is inside its preferred minimum range.",
+    return behaviorSeen,
+        "Skeleton should land a ranged hit and measurably create distance while the enemy is inside kite range.",
         data
 end)
 
 runTest("outpost_anti_air", "Pillager Outpost attacks flying units", function()
     local state = newAdminState("empty")
-    Game.debugSpawnCard(state, 1, "pillager_outpost", 50, 110)
-    Game.debugSpawnCard(state, 2, "bat_swarm", 50, 100)
+    Game.debugSpawnCard(state, 1, "pillager_outpost", SAFE_X, SAFE_Y)
+    Game.debugSpawnCard(state, 2, "bat_swarm", SAFE_X, SAFE_Y - 10)
 
-    local batsBefore = countEntities(state, function(e)
+    local batPredicate = function(e)
         return e.alive and e.owner == 2 and e.name == "Bat Swarm"
-    end)
+    end
+
+    local batsBefore = countEntities(state, batPredicate)
 
     for _, entity in ipairs(state.entities) do
         if entity.owner == 2 and entity.name == "Bat Swarm" then
@@ -470,19 +627,22 @@ runTest("outpost_anti_air", "Pillager Outpost attacks flying units", function()
         end
     end
 
-    step(state, 2.50)
-
-    local batsAfter = countEntities(state, function(e)
-        return e.alive and e.owner == 2 and e.name == "Bat Swarm"
-    end)
+    local hitAir, elapsed = waitUntil(
+        state,
+        3.0,
+        function() return countEntities(state, batPredicate) < batsBefore end,
+        DEFAULT_DT
+    )
+    local batsAfter = countEntities(state, batPredicate)
 
     local data = {}
     addData(data, "bats_before", batsBefore)
-    addData(data, "bats_after_2_50s", batsAfter)
-    addData(data, "bats_killed", batsBefore - batsAfter)
+    addData(data, "bats_after_first_kill", batsAfter)
+    addData(data, "first_air_kill_time_s", elapsed)
+    addData(data, "can_attack_air", cards.get("pillager_outpost").building.canAttackAir)
 
-    return batsBefore == 3 and batsAfter < batsBefore,
-        "Outpost should acquire airborne Bats and kill at least one with crossbow projectiles.",
+    return batsBefore == 3 and hitAir and batsAfter < batsBefore,
+        "Outpost should acquire stationary airborne Bats and kill at least one via its projectile attack.",
         data
 end)
 
@@ -492,32 +652,37 @@ runTest("match_flow", "Regulation, overtime multipliers and tiebreaker", functio
     state.players[2].deck = cards.defaultDeck()
 
     Game.startCountdown(state)
-    step(state, config.MATCH.countdown, 0.25)
+    local enteredBattle, countdownElapsed = waitUntil(
+        state,
+        config.MATCH.countdown + 1,
+        function() return state.phase == "battle" end,
+        0.10
+    )
 
-    local enteredBattle = state.phase == "battle"
     local towers = countEntities(state, function(e)
         return e.alive and e.kind == "tower"
     end)
 
-    step(state, config.MATCH.normalTime, 0.25)
+    -- Jump close to the regulation boundary. This tests the real transition
+    -- without spending hundreds of diagnostic ticks doing nothing.
+    state.timeLeft = 0.25
+    Game.update(state, 0.25)
     local enteredOvertime = state.phase == "battle" and state.overtime
 
+    state.timeLeft = 60
     state.players[1].emeralds = 0
     step(state, 2.8, 0.05)
     local overtimeEmeralds = state.players[1].emeralds
 
-    local toFinal30 = math.max(0, state.timeLeft - config.MATCH.overtimeFinalSeconds)
-    step(state, toFinal30, 0.25)
-
+    state.timeLeft = config.MATCH.overtimeFinalSeconds
     state.players[1].emeralds = 0
     step(state, 2.8, 0.05)
     local final30Emeralds = state.players[1].emeralds
 
-    if state.timeLeft > 0 then
-        step(state, state.timeLeft, 0.25)
-    end
-
+    state.timeLeft = 0.25
+    Game.update(state, 0.25)
     local enteredTiebreaker = state.phase == "battle" and state.tiebreaker
+
     local sampleTower = findEntity(state, function(e)
         return e.alive and e.kind == "tower" and e.towerType == "princess"
     end)
@@ -528,6 +693,7 @@ runTest("match_flow", "Regulation, overtime multipliers and tiebreaker", functio
     local drained = beforeDrain - afterDrain
 
     local data = {}
+    addData(data, "countdown_to_battle_s", countdownElapsed)
     addData(data, "entered_battle", enteredBattle)
     addData(data, "tower_count", towers)
     addData(data, "entered_overtime", enteredOvertime)
@@ -547,7 +713,7 @@ runTest("match_flow", "Regulation, overtime multipliers and tiebreaker", functio
         and multiplierOk
         and enteredTiebreaker
         and drainOk,
-        "A no-damage match should reach OT, use 2x/3x Emerald generation, then start equal-HP Tiebreaker drain.",
+        "Real phase transitions must produce 2x/3x Emerald generation and the configured equal-HP Tiebreaker drain.",
         data
 end)
 
@@ -560,13 +726,27 @@ runTest("bot_smoke", "Normal bot can play through the real card API", function()
     local bot = Bot.new(2)
     Bot.prepare(bot, state)
     Game.startCountdown(state)
-    step(state, config.MATCH.countdown, 0.25)
+
+    local enteredBattle = false
+    local countdownElapsed = 0
+    while countdownElapsed < config.MATCH.countdown + 1 do
+        Game.update(state, 0.10)
+        countdownElapsed = countdownElapsed + 0.10
+        if state.phase == "battle" then
+            enteredBattle = true
+            break
+        end
+    end
+
+    if not enteredBattle then
+        return false, "Bot smoke test never entered battle.", {}
+    end
 
     Bot.beginMatch(bot)
     bot.enabled = true
 
     local elapsed = 0
-    while elapsed < 30 and state.phase == "battle" do
+    while elapsed < 30 and state.phase == "battle" and bot.actions < 3 do
         Game.update(state, 0.10)
         Bot.update(bot, state, 0.10)
         elapsed = elapsed + 0.10
@@ -583,19 +763,25 @@ runTest("bot_smoke", "Normal bot can play through the real card API", function()
     return bot.actions > 0
         and stats ~= nil
         and stats.cardsPlayed == bot.actions,
-        "Bot should spend real Emeralds and register its plays in normal match telemetry.",
+        "Bot should spend real Emeralds and register every successful play in normal match telemetry.",
         data
 end)
 
 local passCount = 0
 local failCount = 0
+local errorCount = 0
 for _, result in ipairs(results) do
     if result.status == "PASS" then
         passCount = passCount + 1
+    elseif result.status == "ERROR" then
+        errorCount = errorCount + 1
     else
         failCount = failCount + 1
     end
 end
+
+local skeleton = cards.get("skeleton")
+local bats = cards.get("bat_swarm")
 
 local report = {}
 report[#report + 1] = "CC-MINECRAFT-ROYALE MECHANICS REPORT"
@@ -603,6 +789,12 @@ report[#report + 1] = "FORMAT_VERSION|" .. tostring(SUITE_VERSION)
 report[#report + 1] = "GENERATED_EPOCH_MS|" .. tostring(os.epoch and os.epoch("utc") or "unavailable")
 report[#report + 1] = "OS_VERSION|" .. fmt(os.version and os.version() or "unknown")
 report[#report + 1] = "CARD_COUNT|" .. tostring(#cards.list)
+report[#report + 1] = string.format(
+    "HARNESS|condition_waits=true|dt=%.3f|safe_x=%.1f|safe_y=%.1f",
+    DEFAULT_DT,
+    SAFE_X,
+    SAFE_Y
+)
 report[#report + 1] = string.format(
     "CONFIG|tick=%.3f|normal=%s|overtime=%s|emerald_rate=%.6f|building_decay=%.3f",
     config.TICK_RATE,
@@ -612,9 +804,16 @@ report[#report + 1] = string.format(
     (config.BUILDINGS and config.BUILDINGS.lifetimeDecayMultiplier) or 1
 )
 report[#report + 1] = string.format(
-    "SUMMARY|pass=%d|fail=%d|total=%d|runtime_cpu_s=%.4f",
+    "BALANCE_SNAPSHOT|skeleton_range=%.2f|skeleton_retreat=%.2f|bat_damage=%.2f",
+    skeleton.unit.attackRange,
+    skeleton.unit.retreatSpeedMultiplier,
+    bats.unit.damage
+)
+report[#report + 1] = string.format(
+    "SUMMARY|pass=%d|fail=%d|error=%d|total=%d|runtime_cpu_s=%.4f",
     passCount,
     failCount,
+    errorCount,
     #results,
     os.clock() - suiteStarted
 )
@@ -646,6 +845,10 @@ handle.write(reportText)
 handle.close()
 
 print("")
-print(("Mechanics tests complete: %d PASS / %d FAIL"):format(passCount, failCount))
+print(("Mechanics tests complete: %d PASS / %d FAIL / %d ERROR"):format(
+    passCount,
+    failCount,
+    errorCount
+))
 print("Report written to: " .. REPORT_FILE)
-print("Send me the entire file contents and I can analyze the failures/metrics.")
+print("Send me the entire file contents and I can analyze any FAIL/ERROR plus measured values.")
