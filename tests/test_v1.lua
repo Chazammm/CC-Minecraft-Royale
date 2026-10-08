@@ -1884,7 +1884,7 @@ assertEq(cards.evolutionCost("creeper"), 4, "Charged Creeper must keep the base 
 assertEq(creeperEvo.name, "Charged Creeper", "Creeper Evolution must use Charged Creeper form")
 assertEq(creeperEvo.unit.visualVariant, "charged_creeper", "Charged Creeper needs its blue visual variant")
 assertEq(creeperEvo.unit.proximityExplosion.radius, 12, "Charged Creeper gameplay blast must be larger")
-assertEq(creeperEvo.unit.proximityExplosion.damage, 290, "Charged Creeper blast damage must stay unchanged for initial testing")
+assertEq(creeperEvo.unit.proximityExplosion.damage, 580, "Charged Creeper blast damage must be exactly double the base Creeper")
 assertEq(creeperEvo.unit.proximityExplosion.effectKind, "charged_explosion", "Charged Creeper must use the enhanced explosion effect")
 assertTrue(
     creeperEvo.unit.proximityExplosion.visualRadius > creeperEvo.unit.proximityExplosion.radius,
