@@ -908,6 +908,32 @@ function cards.evolutionCards()
     return out
 end
 
+function cards.adminSpawnCards()
+    local out = {}
+
+    for _, card in ipairs(cards.list) do
+        out[#out + 1] = {
+            key = card.id,
+            card = card,
+            isEvolution = false,
+        }
+    end
+
+    for _, card in ipairs(cards.evolutionCards()) do
+        local evolved = cards.evolvedCopy(card)
+        if evolved then
+            out[#out + 1] = {
+                key = "evo:" .. card.id,
+                card = evolved,
+                baseId = card.id,
+                isEvolution = true,
+            }
+        end
+    end
+
+    return out
+end
+
 function cards.getInternalUnit(id)
     local unit = cards.internalUnits[id]
     if not unit then return nil end
