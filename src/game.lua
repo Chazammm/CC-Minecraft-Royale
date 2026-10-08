@@ -772,26 +772,42 @@ local function updateCombatEntity(state, entity, dt)
         target = nil
     end
 
-    -- Normal troops must be able to get "pulled" off a distant tower.
-    -- Previously a troop could lock a tower while far away and keep that
-    -- target forever, causing two enemy troops to walk past each other at
-    -- the bridge. Building-only troops (e.g. Iron Golem) intentionally keep
-    -- their building/tower targeting rules.
-    if target
-        and entity.kind == "unit"
-        and entity.targetMode ~= "buildings"
-    then
-        local localTarget, localDistance = findNearest(state, entity, nil, entity.aggroRange)
+    -- Units marching toward a tower may be pulled by a closer valid target.
+    -- Normal troops can be distracted by nearby enemies. Building-only troops
+    -- such as the Iron Golem may only be pulled by actual buildings, which
+    -- allows defensive Cannons to kite them toward the middle of the arena.
+    if target and entity.kind == "unit" and target.kind == "tower" then
+        local pullTarget, pullDistance
 
-        if localTarget and localTarget.id ~= target.id then
-            local currentDistance = util.distance(entity.x, entity.y, target.x, target.y)
+        if entity.targetMode == "buildings" then
+            pullTarget, pullDistance = findNearest(
+                state,
+                entity,
+                function(candidate)
+                    return candidate.kind == "building"
+                end,
+                entity.aggroRange
+            )
+        else
+            pullTarget, pullDistance = findNearest(
+                state,
+                entity,
+                nil,
+                entity.aggroRange
+            )
+        end
 
-            -- Retarget when marching toward a tower and a closer valid enemy
-            -- enters aggro range. Once fighting a unit/building, keep the lock
-            -- to avoid jitter between several nearby targets.
-            if target.kind == "tower" and localDistance < currentDistance then
-                target = localTarget
-                entity.targetId = localTarget.id
+        if pullTarget and pullTarget.id ~= target.id then
+            local currentDistance = util.distance(
+                entity.x,
+                entity.y,
+                target.x,
+                target.y
+            )
+
+            if pullDistance < currentDistance then
+                target = pullTarget
+                entity.targetId = pullTarget.id
             end
         end
     end
