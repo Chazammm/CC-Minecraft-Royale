@@ -163,6 +163,7 @@ assertTrue(
     "Piglin axe hit should be stronger than its crossbow shot"
 )
 
+do
 local witherSkeletonCard = cards.get("wither_skeleton")
 assertEq(witherSkeletonCard.cost, 3, "Wither Skeleton must cost three Emeralds")
 assertTrue(
@@ -206,6 +207,7 @@ assertEq(outpostCard.building.lifetime, cannonCard.building.lifetime, "Pillager 
 assertEq(outpostCard.building.maxHp, cannonCard.building.maxHp * 0.75, "Pillager Outpost must have exactly 25 percent less HP")
 assertEq(outpostCard.building.damage, cannonCard.building.damage * 0.75, "Pillager Outpost must have exactly 25 percent less damage")
 assertTrue(outpostCard.building.canAttackAir, "Pillager Outpost must attack flying units")
+end
 
 local config = require("config")
 assertEq(config.MATCH.normalTime, 150, "Regulation must last two minutes thirty")
@@ -353,6 +355,8 @@ assertTrue(
     "Even combat ticks must reverse update order instead of permanently favoring earlier entities"
 )
 
+do
+local outpostCard = cards.get("pillager_outpost")
 local buildingDecayState = Game.new()
 Game.debugLoadScenario(buildingDecayState, "empty")
 Game.debugSpawnCard(buildingDecayState, 1, "cannon", 50, 100)
@@ -596,6 +600,7 @@ assertEq(
     lockedTower.id,
     "Iron Golem must remain locked to the tower until it dies"
 )
+end
 
 local creeperState = Game.new()
 Game.debugLoadScenario(creeperState, "empty")
@@ -1692,6 +1697,7 @@ assertTrue(musicManifest.packs[1].size < 25000000, "Music pack 1 must stay below
 assertTrue(musicManifest.packs[2].size < 25000000, "Music pack 2 must stay below GitHub's 25 MB web limit")
 
 -- Unit Info must fit useful mechanics on the real 57x52 target monitor.
+do
 local oldToBlit = colors.toBlit
 colors.toBlit = function() return "0" end
 
@@ -1765,6 +1771,7 @@ assertTrue(
 )
 
 colors.toBlit = oldToBlit
+end
 
 local packOffsets = { [1] = 0, [2] = 0 }
 local totalMusicBytes = 0
