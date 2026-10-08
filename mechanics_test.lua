@@ -366,6 +366,16 @@ runTest("evo_charged_creeper", "Charged Creeper has larger blue blast", function
         return false, "Could not start Charged Creeper evolution scenario.", {}
     end
 
+    -- Isolate Creeper blast damage from normal Crown Tower fire. Without
+    -- this, the farther control target can receive 80-damage Princess Tower
+    -- shots while the fuse is running and produce a false FAIL.
+    for _, entity in ipairs(state.entities) do
+        if entity.kind == "tower" then
+            entity.damage = 0
+            entity.attackCooldownLeft = 999
+        end
+    end
+
     state.players[1].evolutionProgress = 2
     state.players[1].hand[1] = "creeper"
     state.players[1].emeralds = 10
