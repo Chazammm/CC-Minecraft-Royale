@@ -19,10 +19,12 @@ local files = {
   "src/music_manifest.lua",
   "src/render.lua",
   "src/admin_render.lua",
+  "src/report_sync.lua",
   "diagnose.lua",
   "simulate.lua",
   "compare.lua",
   "mechanics_test.lua",
+  "report_sync.lua",
 }
 
 local base = ("https://raw.githubusercontent.com/%s/%s/%s/"):format(OWNER, REPO, BRANCH)
@@ -93,4 +95,5 @@ print("Admin sandbox: admin")
 print("Mechanics diagnostics: mechanics_test")
 print("Balance benchmark: simulate <100-1000> [mixed|fixed]")
 print("Controlled replacements: compare <10-100> [all|cardA cardB] [seed]")
+print("GitHub reports: report_sync setup   (one-time)")
 print("Battle music: streamed + shuffled from GitHub during matches")
