@@ -451,6 +451,13 @@ runTest("admin_evolution_spawn", "Admin directly spawns Evolution forms", functi
         SAFE_X + 18,
         SAFE_Y
     )
+    local diamondOk = Game.debugSpawnCard(
+        state,
+        1,
+        "evo:iron_golem",
+        SAFE_X - 18,
+        SAFE_Y
+    )
 
     local charged = findEntity(state, function(e)
         return e.alive and e.name == "Charged Creeper"
@@ -467,6 +474,9 @@ runTest("admin_evolution_spawn", "Admin directly spawns Evolution forms", functi
     local bank = findEntity(state, function(e)
         return e.alive and e.name == "Emerald Bank"
     end)
+    local diamond = findEntity(state, function(e)
+        return e.alive and e.name == "Diamond Golem"
+    end)
 
     local catalog = cards.adminSpawnCards()
     local evoEntries = 0
@@ -482,13 +492,15 @@ runTest("admin_evolution_spawn", "Admin directly spawns Evolution forms", functi
     addData(data, "mega_mite_spawned", mite ~= nil)
     addData(data, "elder_guardian_spawned", elder ~= nil)
     addData(data, "emerald_bank_spawned", bank ~= nil)
+    addData(data, "diamond_golem_spawned", diamond ~= nil)
     addData(data, "all_marked_evolution",
-        charged and portal and mite and elder and bank
+        charged and portal and mite and elder and bank and diamond
         and charged.isEvolution == true
         and portal.isEvolution == true
         and mite.isEvolution == true
         and elder.isEvolution == true
         and bank.isEvolution == true
+        and diamond.isEvolution == true
     )
 
     return chargedOk
@@ -496,17 +508,20 @@ runTest("admin_evolution_spawn", "Admin directly spawns Evolution forms", functi
         and miteOk
         and elderOk
         and bankOk
+        and diamondOk
         and evoEntries == #cards.evolutionCards()
         and charged ~= nil
         and portal ~= nil
         and mite ~= nil
         and elder ~= nil
         and bank ~= nil
+        and diamond ~= nil
         and charged.isEvolution == true
         and portal.isEvolution == true
         and mite.isEvolution == true
         and elder.isEvolution == true
-        and bank.isEvolution == true,
+        and bank.isEvolution == true
+        and diamond.isEvolution == true,
         "Admin card pages must include every Evolution as a direct sandbox spawn, bypassing cycles and Emerald cost.",
         data
 end)
