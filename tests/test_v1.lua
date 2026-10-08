@@ -122,6 +122,9 @@ assertTrue(
 local config = require("config")
 assertEq(config.MATCH.normalTime, 150, "Regulation must last two minutes thirty")
 assertEq(config.MATCH.overtimeTime, 150, "Overtime must last two minutes thirty")
+assertEq(config.MATCH.overtimeMultiplier, 2, "Most of overtime must use double Emerald generation")
+assertEq(config.MATCH.overtimeFinalSeconds, 30, "Final overtime boost must begin with thirty seconds left")
+assertEq(config.MATCH.overtimeFinalMultiplier, 3, "Final thirty seconds must use triple Emerald generation")
 assertEq(config.MATCH.tiebreakerDamagePerSecond, 300, "Tiebreaker drain rate must stay deterministic")
 local riverMid = (config.ARENA.riverTop + config.ARENA.riverBottom) / 2
 
@@ -895,6 +898,44 @@ for _, entity in ipairs(featureBattle.entities) do
     end
 end
 assertTrue(sawPrincess and sawKing, "Feature battle must contain both tower types")
+
+local overtimeEconomyState = Game.new()
+overtimeEconomyState.players[1].ready = true
+overtimeEconomyState.players[2].ready = true
+Game.startCountdown(overtimeEconomyState)
+for _ = 1, 13 do Game.update(overtimeEconomyState, 0.25) end
+assertEq(overtimeEconomyState.phase, "battle", "Overtime economy test must enter battle")
+
+overtimeEconomyState.overtime = true
+overtimeEconomyState.players[1].emeralds = 0
+overtimeEconomyState.players[2].emeralds = 0
+overtimeEconomyState.timeLeft = 60
+Game.update(overtimeEconomyState, 0.25)
+local expectedDoubleGain = config.MATCH.emeraldPerSecond * 2 * 0.25
+assertTrue(
+    math.abs(overtimeEconomyState.players[1].emeralds - expectedDoubleGain) < 0.000001,
+    "Overtime before the final thirty seconds must generate Emeralds at 2x"
+)
+
+overtimeEconomyState.players[1].emeralds = 0
+overtimeEconomyState.players[2].emeralds = 0
+overtimeEconomyState.timeLeft = 30
+Game.update(overtimeEconomyState, 0.25)
+local expectedTripleGain = config.MATCH.emeraldPerSecond * 3 * 0.25
+assertTrue(
+    math.abs(overtimeEconomyState.players[1].emeralds - expectedTripleGain) < 0.000001,
+    "Final thirty seconds of overtime must generate Emeralds at 3x"
+)
+
+overtimeEconomyState.players[1].feedback = nil
+overtimeEconomyState.players[2].feedback = nil
+overtimeEconomyState.timeLeft = 30.10
+Game.update(overtimeEconomyState, 0.20)
+assertEq(
+    overtimeEconomyState.players[1].feedback,
+    "FINAL 30 - 3X EMERALDS",
+    "Crossing thirty seconds in overtime must announce the 3x boost"
+)
 
 local tiebreakState = Game.new()
 tiebreakState.players[1].ready = true
