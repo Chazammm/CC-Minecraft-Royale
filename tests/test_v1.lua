@@ -1686,6 +1686,101 @@ featureBattle.players[1].emeralds = 10
 assertTrue(Game.playCardFromSlot(featureBattle, 1, 1, 25, 112), "Playing a troop must succeed")
 assertTrue(#featureBattle.effects > effectsBefore, "Deploying a troop must create combat feedback")
 
+-- Evolution framework: only explicitly evolved cards may occupy the extra
+-- slot. Two normal plays charge it, the third play uses the evolved copy, and
+-- the counter then resets. The shipped card pool may define zero evolutions;
+-- this synthetic definition tests the generic engine without forcing a design.
+do
+local zombieEvolutionBefore = cards.get("zombie").evolution
+cards.get("zombie").evolution = {
+    cycles = 2,
+    name = "Evolved Zombie",
+    unit = {
+        multipliers = {
+            maxHp = 1.10,
+            damage = 1.50,
+        },
+    },
+}
+
+assertTrue(cards.hasEvolution("zombie"), "Synthetic Zombie evolution must be discoverable")
+assertEq(cards.evolutionCycles("zombie"), 2, "Evolution should default to a two-cycle charge")
+assertTrue(not cards.hasEvolution("skeleton"), "Cards without definitions must not be evolution eligible")
+
+local evolvedCopy = cards.evolvedCopy("zombie")
+assertTrue(evolvedCopy ~= nil and evolvedCopy.isEvolution, "Evolution must create an evolved card copy")
+assertEq(evolvedCopy.unit.damage, 120, "Evolution multipliers must apply to unit damage")
+assertTrue(math.abs(evolvedCopy.unit.maxHp - 575.3) < 0.000001, "Evolution HP multiplier must apply exactly")
+
+local evoState = Game.new()
+evoState.players[1].deck = cards.defaultDeck()
+evoState.players[2].deck = cards.defaultDeck()
+
+assertTrue(
+    not Game.setEvolutionCard(evoState, 1, "skeleton"),
+    "A card without an evolution must be rejected by the Evolution Slot"
+)
+assertTrue(
+    Game.setEvolutionCard(evoState, 1, "zombie"),
+    "An eligible card already in deck must enter the Evolution Slot"
+)
+assertEq(evoState.players[1].evolutionCardId, "zombie", "Evolution Slot must duplicate the deck card, not remove it")
+
+Game.startCountdown(evoState)
+for _ = 1, 13 do Game.update(evoState, 0.25) end
+assertEq(evoState.phase, "battle", "Evolution cycle test must enter battle")
+assertEq(evoState.players[1].evolutionCardId, "zombie", "Valid Evolution Slot selection must survive match reset")
+assertEq(evoState.players[1].evolutionProgress, 0, "Evolution progress must start at zero")
+
+local function newestSourceEntity(state, owner, cardId)
+    local newest = nil
+    for _, entity in ipairs(state.entities) do
+        if entity.owner == owner and entity.sourceCardId == cardId then
+            if not newest or entity.id > newest.id then newest = entity end
+        end
+    end
+    return newest
+end
+
+for playIndex = 1, 3 do
+    evoState.players[1].hand[1] = "zombie"
+    evoState.players[1].emeralds = 10
+
+    assertTrue(
+        Game.playCardFromSlot(evoState, 1, 1, 25, 112),
+        "Evolution cycle play " .. tostring(playIndex) .. " must succeed"
+    )
+
+    local spawned = newestSourceEntity(evoState, 1, "zombie")
+    assertTrue(spawned ~= nil, "Evolution cycle play must spawn the source card")
+
+    if playIndex < 3 then
+        assertTrue(spawned.isEvolution ~= true, "First two plays must remain normal")
+        assertEq(spawned.damage, 80, "Normal charge plays must retain base stats")
+        assertEq(
+            evoState.players[1].evolutionProgress,
+            playIndex,
+            "Normal evolution play must advance the charge counter"
+        )
+    else
+        assertTrue(spawned.isEvolution == true, "Third play must deploy the evolution")
+        assertEq(spawned.name, "Evolved Zombie", "Evolved entity must use evolution display name")
+        assertEq(spawned.damage, 120, "Third play must use evolved stats")
+        assertEq(evoState.players[1].evolutionProgress, 0, "Evolution use must reset the counter")
+        assertEq(evoState.stats.players[1].evolutionPlays, 1, "Evolution telemetry must count evolved plays")
+        assertEq(evoState.stats.players[1].cards.zombie.evolutionPlays, 1, "Card telemetry must attribute evolved play")
+    end
+end
+
+local lobbyClearState = Game.new()
+lobbyClearState.players[1].deck = cards.defaultDeck()
+assertTrue(Game.setEvolutionCard(lobbyClearState, 1, "zombie"), "Evolution clear test must select Zombie")
+assertTrue(Game.toggleDeckCard(lobbyClearState, 1, "zombie"), "Removing selected evolution card must still remove deck card")
+assertEq(lobbyClearState.players[1].evolutionCardId, nil, "Removing the deck card must clear the Evolution Slot")
+
+cards.get("zombie").evolution = zombieEvolutionBefore
+end
+
 assertEq(#musicManifest.tracks, 34, "Battle music playlist must expose 34 shuffled tracks")
 assertEq(musicManifest.sourceRate, 48000, "Battle music pack must use native 48 kHz DFPWM")
 assertEq(musicManifest.outputRate, 48000, "Speaker output must stay at native 48 kHz")
@@ -1768,6 +1863,36 @@ local magmaInfoScreen = renderInfoCard("magma_cube")
 assertTrue(
     magmaInfoScreen:find("ON DEATH: splits into 2x Mini Magma Cube", 1, true) ~= nil,
     "Magma Cube info must visibly show its own Mini Magma Cube split"
+)
+
+local function renderLobbyState(lobbyState)
+    local rows = {}
+    local cursorY = 1
+    local monitor = {
+        getSize = function() return 57, 52 end,
+        setCursorPos = function(_, y) cursorY = y end,
+        blit = function(chars)
+            rows[cursorY] = chars
+        end,
+    }
+    render.draw(monitor, lobbyState, 1, "test_monitor")
+    return table.concat(rows, "\n")
+end
+
+local lobbyScreen = renderLobbyState(Game.new())
+assertTrue(
+    lobbyScreen:find("EVOLUTION SLOT", 1, true) ~= nil,
+    "Lobby must visibly expose the Evolution Slot below the eight deck slots"
+)
+assertTrue(
+    lobbyScreen:find("RANDOM 8", 1, true) ~= nil,
+    "Random deck action should remain visible beside the Evolution Slot"
+)
+assertTrue(
+    lobbyScreen:find("PRESET", 1, true) == nil
+        and lobbyScreen:find("SAVE", 1, true) == nil
+        and lobbyScreen:find("LOAD", 1, true) == nil,
+    "Preset/loadout controls must remain hidden from the normal lobby GUI"
 )
 
 colors.toBlit = oldToBlit
