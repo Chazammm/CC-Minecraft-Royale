@@ -168,7 +168,17 @@ function render.draw(monitor, state, viewerId, ui)
         string.upper(state.adminScenario or "full"),
         botStatus
     )
-    centered(b, 2, util.truncate(status, w), colors.white, colors.black)
+    if ui.notice then
+        centered(
+            b,
+            2,
+            util.truncate("! " .. ui.notice, w),
+            colors.red,
+            colors.black
+        )
+    else
+        centered(b, 2, util.truncate(status, w), colors.white, colors.black)
+    end
 
     for i, z in ipairs(layout.scenarios) do
         drawButton(b, z, scenarioLabels[i], state.adminScenario == scenarioIds[i], colors.lightBlue)
