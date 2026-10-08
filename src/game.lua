@@ -1789,7 +1789,15 @@ function Game.update(state, dt)
     if isBattle then
         if state.stats then state.stats.elapsed = state.stats.elapsed + dt end
 
-        local multiplier = state.overtime and config.MATCH.overtimeMultiplier or 1
+        local multiplier = 1
+        if state.overtime then
+            local finalSeconds = config.MATCH.overtimeFinalSeconds or 30
+            if state.timeLeft <= finalSeconds then
+                multiplier = config.MATCH.overtimeFinalMultiplier or 3
+            else
+                multiplier = config.MATCH.overtimeMultiplier or 2
+            end
+        end
         local emeraldRate = config.MATCH.emeraldPerSecond * multiplier
 
         for playerId = 1, 2 do
@@ -1860,7 +1868,18 @@ function Game.update(state, dt)
             return
         end
 
+        local previousTimeLeft = state.timeLeft
         state.timeLeft = state.timeLeft - dt
+
+        if state.overtime then
+            local finalSeconds = config.MATCH.overtimeFinalSeconds or 30
+            if previousTimeLeft > finalSeconds and state.timeLeft <= finalSeconds then
+                setFeedback(state.players[1], "FINAL 30 - 3X EMERALDS", 2)
+                setFeedback(state.players[2], "FINAL 30 - 3X EMERALDS", 2)
+                emitSound(state, "minecraft:block.beacon.power_select", 0.9, 1.35)
+            end
+        end
+
         if state.timeLeft <= 0 then
             if not state.overtime then
                 local score1 = state.players[1].towersDestroyed
@@ -1874,8 +1893,8 @@ function Game.update(state, dt)
                     state.overtime = true
                     state.timeLeft = config.MATCH.overtimeTime
                     emitSound(state, "minecraft:block.beacon.activate", 0.9, 1.2)
-                    setFeedback(state.players[1], "OVERTIME - 3X EMERALDS", 2)
-                    setFeedback(state.players[2], "OVERTIME - 3X EMERALDS", 2)
+                    setFeedback(state.players[1], "OVERTIME - 2X EMERALDS", 2)
+                    setFeedback(state.players[2], "OVERTIME - 2X EMERALDS", 2)
                 end
             else
                 startTiebreaker(state)
