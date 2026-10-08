@@ -17,6 +17,38 @@ function arena.isRiver(y)
     return y >= A.riverTop and y <= A.riverBottom
 end
 
+-- Minimum straight-line distance from an open-water point to terrain a normal
+-- ground unit may stand on: either river bank or one of the bridge rectangles.
+-- This lets targeting reject water units that a ground attacker could never
+-- bring inside its actual attack/trigger range.
+function arena.distanceToGroundReach(x, y)
+    if not arena.isRiver(y) then return 0 end
+    if inBridge(x) then return 0 end
+
+    local distance = math.min(
+        math.abs(y - A.riverTop),
+        math.abs(A.riverBottom - y)
+    )
+
+    for _, center in ipairs(A.bridgeCenters) do
+        local left = center - A.bridgeHalfWidth
+        local right = center + A.bridgeHalfWidth
+
+        local horizontal
+        if x < left then
+            horizontal = left - x
+        elseif x > right then
+            horizontal = x - right
+        else
+            horizontal = 0
+        end
+
+        distance = math.min(distance, horizontal)
+    end
+
+    return math.max(0, distance)
+end
+
 function arena.isBridge(x, y)
     return arena.isRiver(y) and inBridge(x)
 end
