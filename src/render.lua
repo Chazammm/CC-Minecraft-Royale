@@ -454,9 +454,26 @@ local function drawCollectionPager(buffer, player, layout)
     drawButton(buffer, layout.collectionPageButtons.next, "NEXT >", false)
 end
 
+local function contrastTextColor(bg)
+    if bg == colors.white
+        or bg == colors.lightGray
+        or bg == colors.yellow
+        or bg == colors.orange
+        or bg == colors.lime
+        or bg == colors.lightBlue
+        or bg == colors.cyan
+        or bg == colors.magenta
+    then
+        return colors.black
+    end
+
+    return colors.white
+end
+
 local function drawCollectionCard(buffer, zone, card, selected)
     local bg = selected and colors.blue or colors.gray
-    local fg = selected and colors.white or (card.color or colors.white)
+    local accent = card.color or colors.white
+    local accentText = contrastTextColor(accent)
     fill(buffer, zone.x1, zone.y1, zone.x2, zone.y2, bg)
 
     local width = zone.x2 - zone.x1 + 1
@@ -464,13 +481,16 @@ local function drawCollectionCard(buffer, zone, card, selected)
     local nameLines = compactNameLines(card.name, width)
     local stateText = selected and "IN DECK" or "TAP TO ADD"
 
+    -- Always show the actual card colour as a full-width accent strip.
+    -- This avoids gray/brown cards disappearing into the neutral tile bg.
+    fill(buffer, zone.x1, zone.y1, zone.x2, zone.y1, accent)
     writeText(
         buffer,
         zone.x1 + math.max(0, math.floor((width - #top) / 2)),
         zone.y1,
         top,
-        fg,
-        bg
+        accentText,
+        accent
     )
     local nameY = #nameLines > 1 and (zone.y1 + 1) or (zone.y1 + 2)
     for i, line in ipairs(nameLines) do
