@@ -821,7 +821,8 @@ local function updateCombatEntity(state, entity, dt)
             local elapsed = math.min(dt, math.max(0, entity.remainingLifetime))
             entity.remainingLifetime = math.max(0, entity.remainingLifetime - dt)
 
-            local decayPerSecond = entity.maxHp / entity.lifetime
+            local decayMultiplier = (config.BUILDINGS and config.BUILDINGS.lifetimeDecayMultiplier) or 1
+            local decayPerSecond = (entity.maxHp / entity.lifetime) * decayMultiplier
             entity.hp = entity.hp - decayPerSecond * elapsed
 
             if entity.hp <= 0 or entity.remainingLifetime <= 0 then
