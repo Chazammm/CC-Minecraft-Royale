@@ -564,18 +564,34 @@ local function infoStatLines(card)
         if u.targetMode == "none" then targets = "NONE" end
 
         table.insert(lines, movement .. " UNIT  |  TARGETS " .. targets)
-        table.insert(lines, string.format(
-            "HP %s  |  DMG %s  |  DPS %.1f",
-            numberText(u.maxHp),
-            numberText(u.damage),
-            dps
-        ))
-        table.insert(lines, string.format(
-            "RANGE %s  |  SPEED %s  |  HIT CD %ss",
-            numberText(u.attackRange, 1),
-            numberText(u.moveSpeed, 1),
-            numberText(u.attackCooldown, 2)
-        ))
+
+        if u.passive or u.targetMode == "none" then
+            table.insert(lines, string.format(
+                "HP %s  |  LIFE %ss",
+                numberText(u.maxHp),
+                numberText(u.lifetime, 0)
+            ))
+        elseif u.proximityExplosion then
+            table.insert(lines, string.format(
+                "HP %s  |  SPEED %s  |  AGGRO %s",
+                numberText(u.maxHp),
+                numberText(u.moveSpeed, 1),
+                numberText(u.aggroRange, 1)
+            ))
+        else
+            table.insert(lines, string.format(
+                "HP %s  |  DMG %s  |  DPS %.1f",
+                numberText(u.maxHp),
+                numberText(u.damage),
+                dps
+            ))
+            table.insert(lines, string.format(
+                "RANGE %s  |  SPEED %s  |  HIT CD %ss",
+                numberText(u.attackRange, 1),
+                numberText(u.moveSpeed, 1),
+                numberText(u.attackCooldown, 2)
+            ))
+        end
 
         if card.spawnCount then
             table.insert(lines, string.format("DEPLOY: %d units at once", card.spawnCount))
@@ -631,11 +647,10 @@ local function infoStatLines(card)
 
         if u.emeraldBoost then
             table.insert(lines, string.format(
-                "ECONOMY: +%d%% Emerald generation  |  LIFE %ss",
-                math.floor(u.emeraldBoost * 100 + 0.5),
-                numberText(u.lifetime, 0)
+                "ECONOMY: +%d%% Emerald generation while alive",
+                math.floor(u.emeraldBoost * 100 + 0.5)
             ))
-        elseif u.lifetime then
+        elseif u.lifetime and not u.passive then
             table.insert(lines, "LIFETIME: " .. numberText(u.lifetime, 1) .. "s")
         end
 
@@ -653,19 +668,29 @@ local function infoStatLines(card)
             and "NONE"
             or (b.canAttackAir and "AIR + GROUND" or "GROUND")
 
-        table.insert(lines, "BUILDING  |  TARGETS " .. buildingTargets)
-        table.insert(lines, string.format(
-            "HP %s  |  DMG %s  |  DPS %.1f",
-            numberText(b.maxHp),
-            numberText(b.damage),
-            dps
-        ))
-        table.insert(lines, string.format(
-            "RANGE %s  |  HIT CD %ss  |  LIFE %ss",
-            numberText(b.attackRange, 1),
-            numberText(b.attackCooldown, 2),
-            numberText(b.lifetime, 0)
-        ))
+        table.insert(lines, (b.passive and "PASSIVE BUILDING" or "BUILDING")
+            .. "  |  TARGETS " .. buildingTargets)
+
+        if b.passive or b.targetMode == "none" then
+            table.insert(lines, string.format(
+                "HP %s  |  LIFE %ss",
+                numberText(b.maxHp),
+                numberText(b.lifetime, 0)
+            ))
+        else
+            table.insert(lines, string.format(
+                "HP %s  |  DMG %s  |  DPS %.1f",
+                numberText(b.maxHp),
+                numberText(b.damage),
+                dps
+            ))
+            table.insert(lines, string.format(
+                "RANGE %s  |  HIT CD %ss  |  LIFE %ss",
+                numberText(b.attackRange, 1),
+                numberText(b.attackCooldown, 2),
+                numberText(b.lifetime, 0)
+            ))
+        end
 
         if b.periodicSpawn then
             local spawned = cards.getInternalUnit(b.periodicSpawn.template)
