@@ -164,7 +164,7 @@ function Bot.prepare(bot, state)
 
     if not Game.validateEvolutionSelection(state, bot.playerId) then
         for _, cardId in ipairs(player.deck) do
-            if cards.hasEvolution(cardId) then
+            if cards.isSelectable(cardId) and cards.hasEvolution(cardId) then
                 player.evolutionCardId = cardId
                 break
             end
