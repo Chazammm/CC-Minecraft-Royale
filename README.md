@@ -71,7 +71,7 @@ Nether Portal summons the internal-only Piglin unit; Piglin is not directly sele
 
 ## Important special mechanics
 
-- **Falling Anvil**: delayed 3-second AoE, can hit multiple ground and flying targets
+- **Falling Anvil**: delayed 2.7-second AoE, can hit multiple ground and flying targets
 - **Nether Portal**: periodic Piglin spawner
 - **Piglin**: crossbow only versus flying targets, axe versus grounded targets
 - **Creeper**: proximity fuse; being killed before the fuse completes does not trigger the explosion
