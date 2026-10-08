@@ -83,11 +83,21 @@ assertTrue(
     "Snow Golem must not kite like Skeleton"
 )
 
+local ironGolemCard = cards.get("iron_golem")
+local cannonCard = cards.get("cannon")
+local blazeCard = cards.get("blaze")
+assertEq(ironGolemCard.cost, 5, "Iron Golem must cost five Emeralds")
+assertEq(cannonCard.building.maxHp, 618, "Cannon HP must reflect the five-percent nerf")
+assertEq(cannonCard.building.damage, 64, "Cannon damage must reflect the two-percent nerf")
+assertEq(blazeCard.unit.maxHp, 276, "Blaze HP must reflect the five-percent nerf")
+
 local anvilCard = cards.get("falling_anvil")
 assertTrue(anvilCard and anvilCard.kind == "spell", "Falling Anvil must be a selectable spell")
 assertEq(anvilCard.cost, 3, "Falling Anvil must cost three Emeralds")
 assertEq(anvilCard.spell.delay, 3.0, "Falling Anvil must have a three-second delay")
 assertEq(anvilCard.spell.damage, 549, "Falling Anvil must leave a full-health Zombie at exactly one HP")
+assertEq(anvilCard.spell.radius, 6.05, "Falling Anvil radius must be ten percent larger")
+assertTrue(anvilCard.spell.groundOnly == false, "Falling Anvil must hit flying and grounded units")
 
 local portalCard = cards.get("nether_portal")
 assertTrue(portalCard and portalCard.kind == "building", "Nether Portal must be a selectable building")
@@ -403,22 +413,45 @@ Game.update(anvilState, 0.25)
 assertEq(anvilZombie.hp, 1, "Falling Anvil direct hit must leave Zombie at exactly one HP")
 assertEq(#anvilState.pendingSpells, 0, "Falling Anvil must resolve after its delay")
 
-local anvilAirState = Game.new()
-Game.debugLoadScenario(anvilAirState, "empty")
-Game.debugSpawnCard(anvilAirState, 2, "bat_swarm", 50, 80)
-local batHpBefore = {}
-for _, entity in ipairs(anvilAirState.entities) do
-    if entity.name == "Bat Swarm" then batHpBefore[entity.id] = entity.hp end
-end
-assertTrue(next(batHpBefore) ~= nil, "Anvil air-immunity test must spawn bats")
-assertTrue(Game.debugSpawnCard(anvilAirState, 1, "falling_anvil", 50, 80), "Anvil must cast under flying units")
-Game.debugSetPaused(anvilAirState, false)
-for _ = 1, 12 do Game.update(anvilAirState, 0.25) end
-for _, entity in ipairs(anvilAirState.entities) do
-    if entity.name == "Bat Swarm" and batHpBefore[entity.id] then
-        assertEq(entity.hp, batHpBefore[entity.id], "Falling Anvil must not damage flying units")
+local anvilMultiState = Game.new()
+Game.debugLoadScenario(anvilMultiState, "empty")
+Game.debugSpawnCard(anvilMultiState, 2, "zombie", 47, 80)
+Game.debugSpawnCard(anvilMultiState, 2, "zombie", 53, 80)
+Game.debugSpawnCard(anvilMultiState, 2, "bat_swarm", 50, 82)
+
+local anvilVictims = {}
+for _, entity in ipairs(anvilMultiState.entities) do
+    if entity.owner == 2 and (entity.name == "Zombie" or entity.name == "Bat Swarm") then
+        entity.moveSpeed = 0
+        entity.targetMode = "none"
+        entity.passive = true
+        anvilVictims[#anvilVictims + 1] = entity
     end
 end
+
+assertTrue(#anvilVictims >= 5, "Anvil multi-hit test must include multiple ground and flying units")
+assertTrue(
+    Game.debugSpawnCard(anvilMultiState, 1, "falling_anvil", 50, 80),
+    "Anvil must cast over mixed ground and flying units"
+)
+
+Game.debugSetPaused(anvilMultiState, false)
+for _ = 1, 12 do Game.update(anvilMultiState, 0.25) end
+
+local groundHits, airHits = 0, 0
+for _, entity in ipairs(anvilVictims) do
+    assertTrue(
+        not entity.alive or entity.hp < entity.maxHp,
+        "One Falling Anvil must damage every enemy inside its radius"
+    )
+    if entity.flying then
+        airHits = airHits + 1
+    else
+        groundHits = groundHits + 1
+    end
+end
+assertTrue(groundHits >= 2, "Falling Anvil must hit multiple grounded units at once")
+assertTrue(airHits >= 1, "Falling Anvil must hit flying units too")
 
 local portalState = Game.new()
 Game.debugLoadScenario(portalState, "empty")
