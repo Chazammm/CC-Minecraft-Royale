@@ -126,15 +126,17 @@ Regulation is currently 2:30. Temporarily lower config.MATCH.normalTime for a fa
 
 Pass condition: the player with more destroyed side towers wins at the end of regulation.
 
-## 15. Overtime and 3x Emerald generation
+## 15. Overtime staged Emerald generation
 
 For this test, temporarily lower normal/overtime times.
 
 - Let normal time expire at an equal tower score.
 - Measure/observe Emerald regeneration before and after overtime.
+- Confirm most of overtime runs at approximately 2x generation.
+- Confirm the final 30 seconds switch to approximately 3x generation and show the FINAL 30 notification.
 - Destroy one side tower during overtime.
 
-Pass condition: overtime begins only on a tie, Emerald generation is approximately three times faster, and the next destroyed tower ends the match immediately.
+Pass condition: overtime begins only on a tie, uses 2x Emerald generation until 0:30, then 3x for the final 30 seconds, and the next destroyed tower ends the match immediately.
 
 ## 16. King Tower instant win
 
