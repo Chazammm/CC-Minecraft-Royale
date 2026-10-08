@@ -20,7 +20,7 @@ If exactly two monitors are visible they are assigned in sorted peripheral-name 
 - Base generation: 1 Emerald every 2.8 seconds
 - **2:30 regulation**
 - **2:30 overtime** on an equal side-tower score
-- Overtime uses **3x Emerald generation**
+- Overtime uses **2x Emerald generation**, increasing to **3x for the final 30 seconds**
 - Overtime is sudden death: the next destroyed side tower wins
 - Destroying the King Tower always wins immediately
 - If overtime expires without a winner, a visible **Tiebreaker** starts
