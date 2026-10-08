@@ -5,7 +5,7 @@ local Bot = require("src.bot")
 local util = require("src.util")
 local arena = require("src.arena")
 
-local SUITE_VERSION = 8
+local SUITE_VERSION = 9
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 local EPSILON = 0.000001
@@ -508,6 +508,86 @@ runTest("admin_evolution_spawn", "Admin directly spawns Evolution forms", functi
         and elder.isEvolution == true
         and bank.isEvolution == true,
         "Admin card pages must include every Evolution as a direct sandbox spawn, bypassing cycles and Emerald cost.",
+        data
+end)
+
+runTest("guardian_targeting", "Unreachable ground troops ignore water Guardian", function()
+    local riverY = (config.ARENA.riverTop + config.ARENA.riverBottom) / 2
+    local state = newAdminState("empty")
+
+    local landOk, landReason = Game.debugSpawnCard(
+        state,
+        1,
+        "guardian",
+        SAFE_X,
+        SAFE_Y
+    )
+    local bridgeOk = Game.debugSpawnCard(
+        state,
+        1,
+        "evo:guardian",
+        config.ARENA.bridgeCenters[1],
+        riverY
+    )
+    local waterOk = Game.debugSpawnCard(
+        state,
+        1,
+        "guardian",
+        50,
+        riverY
+    )
+
+    local guardian = findEntity(state, function(e)
+        return e.alive and e.owner == 1 and e.name == "Guardian"
+    end)
+
+    if not waterOk or not guardian then
+        return false, "Could not create open-water Guardian targeting scenario.", {}
+    end
+
+    -- Prevent the Guardian itself from deleting test attackers.
+    guardian.passive = true
+    guardian.targetMode = "none"
+
+    local attackerY = config.ARENA.riverTop - 6
+    local zombieOk = Game.debugSpawnCard(state, 2, "zombie", 50, attackerY)
+    Game.update(state, 0.10)
+
+    local zombie = findEntity(state, function(e)
+        return e.alive and e.owner == 2 and e.name == "Zombie"
+    end)
+    local zombieIgnored = zombie and zombie.targetId == nil
+
+    local skeletonOk = Game.debugSpawnCard(state, 2, "skeleton", 50, attackerY)
+    Game.update(state, 0.10)
+
+    local skeleton = findEntity(state, function(e)
+        return e.alive and e.owner == 2 and e.name == "Skeleton"
+    end)
+    local skeletonTargets = skeleton and skeleton.targetId == guardian.id
+
+    local requiredReach = arena.distanceToGroundReach(guardian.x, guardian.y)
+
+    local data = {}
+    addData(data, "admin_land_spawn_rejected", not landOk)
+    addData(data, "admin_land_rejection_reason", landReason)
+    addData(data, "admin_bridge_spawn_rejected", not bridgeOk)
+    addData(data, "admin_open_water_spawn_allowed", waterOk)
+    addData(data, "guardian_distance_to_ground_reach", requiredReach)
+    addData(data, "zombie_attack_range", cards.get("zombie").unit.attackRange)
+    addData(data, "zombie_ignored_guardian", zombieIgnored)
+    addData(data, "skeleton_attack_range", cards.get("skeleton").unit.attackRange)
+    addData(data, "skeleton_targeted_guardian", skeletonTargets)
+
+    return not landOk
+        and landReason == "WATER ONLY - PLACE IN OPEN RIVER"
+        and not bridgeOk
+        and waterOk
+        and zombieOk
+        and zombieIgnored
+        and skeletonOk
+        and skeletonTargets,
+        "Admin must preserve Guardian water placement; ground attackers only aggro it when their real attack reach can touch water.",
         data
 end)
 
