@@ -5,7 +5,7 @@ local Bot = require("src.bot")
 local util = require("src.util")
 local arena = require("src.arena")
 
-local SUITE_VERSION = 3
+local SUITE_VERSION = 4
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 local EPSILON = 0.000001
