@@ -132,6 +132,7 @@ local function cardReport(cardId)
             emeraldBonus = 0,
             slowSeconds = 0,
             targetsHit = 0,
+            evolutionPlays = 0,
         }
         report.cards[cardId] = out
     end
@@ -167,6 +168,7 @@ local function addDeckResult(deck, owner, state)
             out.emeraldBonus = out.emeraldBonus + (stat.emeraldBonus or 0)
             out.slowSeconds = out.slowSeconds + (stat.slowSeconds or 0)
             out.targetsHit = out.targetsHit + (stat.targetsHit or 0)
+            out.evolutionPlays = out.evolutionPlays + (stat.evolutionPlays or 0)
         end
     end
 end
@@ -322,6 +324,7 @@ for _, card in ipairs(cards.list) do
         slowSeconds = stat.slowSeconds,
         targetsHit = stat.targetsHit,
         totalPlays = stat.plays,
+        evolutionPlays = stat.evolutionPlays,
         flag = flag,
     })
 end
@@ -361,6 +364,31 @@ for _, row in ipairs(rows) do
             bonusPerMatch,
             slowPerPlay,
             hitsPerPlay
+        ))
+    end
+end
+
+reportPrint("")
+reportPrint("EVOLUTIONS")
+reportPrint("Card             Evo/M  Evo%  Cycles  EvoCost")
+for _, row in ipairs(rows) do
+    if cards.hasEvolution(row.id) then
+        local deckMatches = report.cards[row.id].deckMatches
+        local evoPerMatch = deckMatches > 0
+            and (row.evolutionPlays or 0) / deckMatches
+            or 0
+        local evoShare = row.totalPlays > 0
+            and (row.evolutionPlays or 0) / row.totalPlays * 100
+            or 0
+        local cycles = cards.evolutionCycles(row.id) or 0
+        local evoCost = cards.evolutionCost(row.id) or cards.get(row.id).cost
+
+        reportPrint(("%-16s %5.2f %5.1f %7d %8.1f"):format(
+            row.name,
+            evoPerMatch,
+            evoShare,
+            cycles,
+            evoCost
         ))
     end
 end
