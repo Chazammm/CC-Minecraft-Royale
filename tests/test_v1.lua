@@ -120,6 +120,9 @@ assertTrue(
 )
 
 local config = require("config")
+assertEq(config.MATCH.normalTime, 150, "Regulation must last two minutes thirty")
+assertEq(config.MATCH.overtimeTime, 150, "Overtime must last two minutes thirty")
+assertEq(config.MATCH.tiebreakerDamagePerSecond, 300, "Tiebreaker drain rate must stay deterministic")
 local riverMid = (config.ARENA.riverTop + config.ARENA.riverBottom) / 2
 
 assertTrue(not arena.placementAllowed(1, 50, 20, nil), "P1 must not deploy troops on enemy half")
@@ -846,6 +849,69 @@ for _, entity in ipairs(featureBattle.entities) do
     end
 end
 assertTrue(sawPrincess and sawKing, "Feature battle must contain both tower types")
+
+local tiebreakState = Game.new()
+tiebreakState.players[1].ready = true
+tiebreakState.players[2].ready = true
+Game.startCountdown(tiebreakState)
+for _ = 1, 13 do Game.update(tiebreakState, 0.25) end
+assertEq(tiebreakState.phase, "battle", "Tiebreaker test must enter battle")
+
+local p1LowTower, p2LowTower
+for _, entity in ipairs(tiebreakState.entities) do
+    if entity.kind == "tower" and entity.towerType == "princess" then
+        if entity.owner == 1 and not p1LowTower then p1LowTower = entity end
+        if entity.owner == 2 and not p2LowTower then p2LowTower = entity end
+    end
+end
+assertTrue(p1LowTower and p2LowTower, "Tiebreaker test needs one side tower per player")
+
+p1LowTower.hp = 100
+p2LowTower.hp = 200
+tiebreakState.overtime = true
+tiebreakState.timeLeft = 0.10
+Game.update(tiebreakState, 0.10)
+
+assertTrue(tiebreakState.tiebreaker, "Expired overtime must start the tiebreaker")
+assertEq(tiebreakState.phase, "battle", "Tiebreaker must remain visible as a battle phase")
+
+tiebreakState.players[1].emeralds = 10
+local tiePlayOk = Game.playCardFromSlot(tiebreakState, 1, 1, 25, 120)
+assertTrue(not tiePlayOk, "Cards must be locked during the tiebreaker")
+
+for _ = 1, 8 do
+    if tiebreakState.phase == "result" then break end
+    Game.update(tiebreakState, 0.25)
+end
+assertEq(tiebreakState.phase, "result", "Tiebreaker must resolve the match")
+assertEq(tiebreakState.winner, 2, "Player with the healthier lowest tower must win the tiebreaker")
+assertEq(tiebreakState.resultReason, "TIEBREAKER", "Tiebreaker win must use a clear result reason")
+
+local exactTieState = Game.new()
+exactTieState.players[1].ready = true
+exactTieState.players[2].ready = true
+Game.startCountdown(exactTieState)
+for _ = 1, 13 do Game.update(exactTieState, 0.25) end
+
+local tieP1Tower, tieP2Tower
+for _, entity in ipairs(exactTieState.entities) do
+    if entity.kind == "tower" and entity.towerType == "princess" then
+        if entity.owner == 1 and not tieP1Tower then tieP1Tower = entity end
+        if entity.owner == 2 and not tieP2Tower then tieP2Tower = entity end
+    end
+end
+tieP1Tower.hp = 100
+tieP2Tower.hp = 100
+exactTieState.overtime = true
+exactTieState.timeLeft = 0.10
+Game.update(exactTieState, 0.10)
+
+for _ = 1, 8 do
+    if exactTieState.phase == "result" then break end
+    Game.update(exactTieState, 0.25)
+end
+assertEq(exactTieState.winner, nil, "Exactly equal lowest tower HP must remain a true draw")
+assertEq(exactTieState.resultReason, "TIEBREAKER DRAW", "Exact tiebreak must be labelled as a draw")
 
 local effectsBefore = #featureBattle.effects
 featureBattle.players[1].emeralds = 10
