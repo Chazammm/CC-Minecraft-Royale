@@ -262,7 +262,15 @@ local function drawStatus(buffer, state, playerId)
         if state.tiebreaker then
             phaseText = "TIEBREAK"
         else
-            phaseText = state.overtime and ("OT " .. util.formatTime(state.timeLeft)) or util.formatTime(state.timeLeft)
+            if state.overtime then
+                local finalSeconds = config.MATCH.overtimeFinalSeconds or 30
+                local multiplier = state.timeLeft <= finalSeconds
+                    and (config.MATCH.overtimeFinalMultiplier or 3)
+                    or (config.MATCH.overtimeMultiplier or 2)
+                phaseText = "OT " .. util.formatTime(state.timeLeft) .. " x" .. tostring(multiplier)
+            else
+                phaseText = util.formatTime(state.timeLeft)
+            end
         end
     elseif state.phase == "countdown" then
         phaseText = "STARTING"
