@@ -263,7 +263,6 @@ cards.list = {
             damage = 26,
             moveSpeed = 5.8,
             attackRange = 18,
-            preferredMinRange = 7,
             attackCooldown = 1.05,
             aggroRange = 30,
             canAttackAir = true,
