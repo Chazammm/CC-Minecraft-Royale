@@ -542,7 +542,10 @@ local function defensivePlacement(bot, card, threat)
     local playerId = bot.playerId
     local back = backDirection(playerId)
 
-    if card.id == "cannon" or card.id == "endermite" then
+    if card.id == "cannon"
+        or card.id == "pillager_outpost"
+        or card.id == "endermite"
+    then
         return clampOwnPlacement(playerId, 50, threat.y + back * 10)
     end
 
@@ -796,6 +799,11 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
         if card.id == "cannon" and not threat.flying then
             score = score + 4
             if threat.targetMode == "buildings" or threat.name == "Iron Golem" then score = score + 5 end
+        elseif card.id == "pillager_outpost" then
+            score = score + (threat.flying and 5.0 or 3.2)
+            if threat.targetMode == "buildings" or threat.name == "Iron Golem" then
+                score = score + 3.0
+            end
         elseif card.id == "endermite" and not threat.flying then
             score = score + 3
             if threat.name == "Iron Golem" or threat.name == "Creeper" then score = score + 4 end
@@ -825,7 +833,9 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
             enderman = 5.5,
             blaze = 5,
             zombie = 4.5,
+            wither_skeleton = 4.7,
             slime = 4.5,
+            magma_cube = 4.7,
             spider = 4,
             wolf = 4,
             snow_golem = 3.5,
@@ -833,6 +843,7 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
             bat_swarm = 4,
             endermite = 2,
             cannon = 1,
+            pillager_outpost = 1.3,
             nether_portal = 5.0,
         }
         score = offense[card.id] or 2
