@@ -29,8 +29,8 @@ cards.list = {
         kind = "unit",
         color = colors.white,
         unit = {
-            maxHp = 190,
-            damage = 36,
+            maxHp = 181,
+            damage = 30,
             moveSpeed = 7.5,
             attackRange = 15,
             preferredMinRange = 7,
@@ -185,7 +185,7 @@ cards.list = {
         id = "witch",
         name = "Witch",
         icon = "W",
-        cost = 4,
+        cost = 5,
         kind = "unit",
         color = colors.purple,
         unit = {
@@ -271,7 +271,7 @@ cards.list = {
             projectileVisual = "snowball",
             onHitSlow = {
                 factor = 0.80,
-                duration = 0.80,
+                duration = 1.00,
             },
         },
     },
@@ -344,7 +344,7 @@ cards.list = {
             radius = 6.05,
             damage = 549,
             towerMultiplier = 0.35,
-            delay = 3.0,
+            delay = 2.7,
             groundOnly = false,
             visual = "anvil",
         },
