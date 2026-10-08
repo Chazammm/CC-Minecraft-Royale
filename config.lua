@@ -21,7 +21,7 @@ config.ARENA = {
 
 config.MUSIC = {
     enabled = true,
-    volume = 0.28,
+    volume = 0.36,
 }
 
 config.MATCH = {
