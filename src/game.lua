@@ -1792,10 +1792,22 @@ function Game.update(state, dt)
         local multiplier = 1
         if state.overtime then
             local finalSeconds = config.MATCH.overtimeFinalSeconds or 30
+            local baseMultiplier = config.MATCH.overtimeMultiplier or 2
+            local finalMultiplier = config.MATCH.overtimeFinalMultiplier or 3
+
             if state.timeLeft <= finalSeconds then
-                multiplier = config.MATCH.overtimeFinalMultiplier or 3
+                multiplier = finalMultiplier
+            elseif state.timeLeft - dt >= finalSeconds then
+                multiplier = baseMultiplier
             else
-                multiplier = config.MATCH.overtimeMultiplier or 2
+                -- Split a tick that crosses the 0:30 boundary so the boost is
+                -- exactly 2x before it and 3x after it, even under a long tick.
+                local baseDuration = math.max(0, state.timeLeft - finalSeconds)
+                local finalDuration = math.max(0, dt - baseDuration)
+                multiplier = (
+                    baseDuration * baseMultiplier
+                    + finalDuration * finalMultiplier
+                ) / math.max(dt, 0.000001)
             end
         end
         local emeraldRate = config.MATCH.emeraldPerSecond * multiplier
