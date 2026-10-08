@@ -27,6 +27,7 @@ local Game = require("src.game")
 local pixelArena = require("src.pixel_arena")
 local Bot = require("src.bot")
 local render = require("src.render")
+local adminRender = require("src.admin_render")
 local musicManifest = require("src.music_manifest")
 
 local function assertEq(actual, expected, message)
@@ -1895,6 +1896,134 @@ assertEq(
 )
 end
 
+-- Shared match Ruleset: Evolutions can be disabled without losing the saved
+-- Evolution Slot selection. While disabled, no charge, evolved cost or evolved
+-- form may leak into gameplay.
+do
+local rulesState = Game.new()
+assertTrue(Game.rulesetEnabled(rulesState, "evolutions"), "Evolutions must default ON")
+
+rulesState.players[1].deck = {
+    "zombie",
+    "skeleton",
+    "iron_golem",
+    "bat_swarm",
+    "cannon",
+    "arrows",
+    "creeper",
+    "endermite",
+}
+rulesState.players[2].deck = cards.defaultDeck()
+
+assertTrue(Game.setEvolutionCard(rulesState, 1, "creeper"), "Ruleset test must save Creeper in the Evolution Slot")
+rulesState.players[1].ready = true
+rulesState.players[2].ready = true
+
+assertTrue(
+    Game.setRulesetRule(rulesState, "evolutions", false, 1),
+    "Lobby must allow Evolutions to be disabled"
+)
+assertTrue(not Game.rulesetEnabled(rulesState, "evolutions"), "Ruleset must report Evolutions OFF")
+assertTrue(
+    not rulesState.players[1].ready and not rulesState.players[2].ready,
+    "Changing a shared Ruleset option must unready both players"
+)
+assertEq(
+    rulesState.players[1].evolutionCardId,
+    "creeper",
+    "Disabling Evolutions must preserve the saved Evolution Slot card"
+)
+assertEq(rulesState.players[1].evolutionProgress, 0, "Disabling Evolutions must reset its charge")
+
+rulesState.players[1].ready = true
+rulesState.players[2].ready = true
+Game.startCountdown(rulesState)
+for _ = 1, 13 do Game.update(rulesState, 0.25) end
+assertEq(rulesState.phase, "battle", "Ruleset Evolution test must enter battle")
+
+rulesState.players[1].evolutionProgress = 2
+rulesState.players[1].hand[1] = "creeper"
+rulesState.players[1].emeralds = 10
+
+local offCost = Game.getCardPlayCost(rulesState, 1, "creeper")
+assertEq(offCost, cards.get("creeper").cost, "Evolution OFF must always expose base Emerald cost")
+assertTrue(
+    Game.playCardFromSlot(rulesState, 1, 1, 25, 112),
+    "Base Creeper must still play while Evolutions are disabled"
+)
+
+local spawnedBaseCreeper
+for _, entity in ipairs(rulesState.entities) do
+    if entity.owner == 1 and entity.sourceCardId == "creeper" then
+        if not spawnedBaseCreeper or entity.id > spawnedBaseCreeper.id then
+            spawnedBaseCreeper = entity
+        end
+    end
+end
+
+assertTrue(spawnedBaseCreeper ~= nil, "Evolution OFF test must spawn Creeper")
+assertEq(spawnedBaseCreeper.name, "Creeper", "Evolution OFF must spawn the base form")
+assertTrue(spawnedBaseCreeper.isEvolution ~= true, "Evolution OFF must never mark the entity evolved")
+assertEq(
+    rulesState.players[1].evolutionProgress,
+    2,
+    "Evolution OFF must not charge or consume the saved Evolution counter during battle"
+)
+assertEq(
+    rulesState.stats.players[1].evolutionPlays,
+    0,
+    "Evolution OFF must record zero evolved plays"
+)
+end
+
+-- Admin spawn catalog exposes base cards plus direct Evolution forms. These
+-- bypass charge/cost because the sandbox is for isolated mechanic testing.
+do
+local adminCatalog = cards.adminSpawnCards()
+assertEq(
+    #adminCatalog,
+    #cards.list + #cards.evolutionCards(),
+    "Admin spawn catalog must contain every base card plus every Evolution form"
+)
+
+local adminKeys = {}
+for _, entry in ipairs(adminCatalog) do
+    adminKeys[entry.key] = entry
+end
+
+assertTrue(adminKeys["evo:creeper"] ~= nil, "Admin catalog must expose Charged Creeper")
+assertTrue(adminKeys["evo:nether_portal"] ~= nil, "Admin catalog must expose Ghast Portal")
+assertTrue(adminKeys["evo:endermite"] ~= nil, "Admin catalog must expose Mega Mite")
+
+local adminEvoState = Game.new()
+Game.debugLoadScenario(adminEvoState, "empty")
+
+assertTrue(
+    Game.debugSpawnCard(adminEvoState, 1, "evo:creeper", 30, 110),
+    "Admin must directly spawn Charged Creeper"
+)
+assertTrue(
+    Game.debugSpawnCard(adminEvoState, 1, "evo:nether_portal", 50, 110),
+    "Admin must directly spawn Ghast Portal"
+)
+assertTrue(
+    Game.debugSpawnCard(adminEvoState, 1, "evo:endermite", 70, 110),
+    "Admin must directly spawn Mega Mite"
+)
+
+local foundCharged, foundPortal, foundMega = false, false, false
+for _, entity in ipairs(adminEvoState.entities) do
+    if entity.name == "Charged Creeper" and entity.isEvolution then foundCharged = true end
+    if entity.name == "Ghast Portal" and entity.isEvolution then foundPortal = true end
+    if entity.name == "Mega Mite" and entity.isEvolution then foundMega = true end
+end
+assertTrue(foundCharged, "Direct admin spawn must create evolved Charged Creeper entity")
+assertTrue(foundPortal, "Direct admin spawn must create evolved Ghast Portal entity")
+assertTrue(foundMega, "Direct admin spawn must create evolved Mega Mite entity")
+
+assertTrue(type(adminRender.draw) == "function", "Admin renderer with Evolution catalog must load")
+end
+
 assertEq(#musicManifest.tracks, 34, "Battle music playlist must expose 34 shuffled tracks")
 assertEq(musicManifest.sourceRate, 48000, "Battle music pack must use native 48 kHz DFPWM")
 assertEq(musicManifest.outputRate, 48000, "Speaker output must stay at native 48 kHz")
@@ -2001,6 +2130,26 @@ assertTrue(
 assertTrue(
     lobbyScreen:find("RANDOM 8", 1, true) ~= nil,
     "Random deck action should remain visible beside the Evolution Slot"
+)
+assertTrue(
+    lobbyScreen:find("RULESET: EVO ON", 1, true) ~= nil,
+    "Lobby must visibly expose the shared Ruleset button"
+)
+
+local rulesetRenderState = Game.new()
+rulesetRenderState.players[1].rulesetOpen = true
+local rulesetScreen = renderLobbyState(rulesetRenderState)
+assertTrue(
+    rulesetScreen:find("MATCH RULESET", 1, true) ~= nil
+        and rulesetScreen:find("EVOLUTIONS: ON", 1, true) ~= nil,
+    "Ruleset screen must visibly expose the Evolution ON/OFF rule"
+)
+
+Game.setRulesetRule(rulesetRenderState, "evolutions", false, 1)
+rulesetScreen = renderLobbyState(rulesetRenderState)
+assertTrue(
+    rulesetScreen:find("EVOLUTIONS: OFF", 1, true) ~= nil,
+    "Ruleset screen must visibly reflect Evolutions OFF"
 )
 assertTrue(
     lobbyScreen:find("PRESET", 1, true) == nil
