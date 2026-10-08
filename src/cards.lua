@@ -516,8 +516,8 @@ cards.info = {
         description = "Quick melee fighter with strong attack speed. Useful for punishing ranged troops and applying lane pressure.",
     },
     falling_anvil = {
-        role = "Delayed burst spell",
-        description = "Marks an area for 3 seconds, then an anvil crashes down. A direct hit leaves a full-health Zombie at exactly 1 HP, so timing matters.",
+        role = "Delayed area burst",
+        description = "Marks a wide area for 3 seconds, then an anvil crashes down and hits every enemy inside, including flying units. A full-health Zombie survives a direct hit on exactly 1 HP.",
     },
     nether_portal = {
         role = "Spawner building",
