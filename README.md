@@ -36,7 +36,10 @@ Each monitor shows its own side at the bottom through a mirrored 180-degree view
 - Flying units cross the river directly
 - Troops and buildings can normally be deployed only on the player's half
 - Global spells can target anywhere
-- Units use aggro, retargeting and distraction logic
+- Units use lane-aware Crown Tower objectives plus aggro, retargeting and distraction logic
+- A troop attacks its lane's Princess Tower first; after that tower falls it advances toward the King Tower instead of crossing to the opposite Princess Tower
+- Destroying a Princess Tower unlocks a limited deployment pocket in that lane on the enemy side
+- Crown Towers can attack both enemy units and enemy buildings in range
 - Defensive buildings can pull building-targeting troops such as Iron Golem
 - Skeleton can kite; Snow Golem intentionally does not
 - Projectiles, slows, summons, teleports, explosions and delayed spells are supported
