@@ -529,6 +529,8 @@ local function acquireTarget(state, entity)
     return findNearest(state, entity, nil, nil)
 end
 
+local updateGroundPulse
+
 local function currentMoveSpeed(entity)
     local speed = entity.moveSpeed or 0
     if entity.slowRemaining and entity.slowRemaining > 0 then
@@ -560,41 +562,64 @@ local function updateGlobalMovementAuras(state)
     end
 end
 
-local function moveToward(entity, tx, ty, dt)
+local function advanceMovementPulse(state, entity, oldX, oldY, dt, effectiveSpeed)
+    if not entity.groundPulse or not updateGroundPulse then return end
+
+    local moved = util.distance(oldX, oldY, entity.x, entity.y)
+    if moved <= 0.0001 then return end
+
+    local speed = math.max(0.0001, effectiveSpeed or currentMoveSpeed(entity))
+    local movementTime = math.min(dt, moved / speed)
+    updateGroundPulse(state, entity, movementTime)
+end
+
+local function moveToward(state, entity, tx, ty, dt)
     local dx = tx - entity.x
     local dy = ty - entity.y
     local length = math.sqrt(dx * dx + dy * dy)
-    if length < 0.001 then return end
+    if length < 0.001 then return false end
 
-    local step = math.min(length, currentMoveSpeed(entity) * dt)
+    local speed = currentMoveSpeed(entity)
+    if speed <= 0 then return false end
+
+    local oldX, oldY = entity.x, entity.y
+    local step = math.min(length, speed * dt)
     local nx = entity.x + dx / length * step
     local ny = entity.y + dy / length * step
 
     if arena.isWalkable(entity, nx, ny) then
         entity.x = nx
         entity.y = ny
-        return
-    end
-
-    if arena.isWalkable(entity, nx, entity.y) then
+    elseif arena.isWalkable(entity, nx, entity.y) then
         entity.x = nx
     elseif arena.isWalkable(entity, entity.x, ny) then
         entity.y = ny
     end
+
+    local moved = util.distance(oldX, oldY, entity.x, entity.y)
+    if moved > 0.0001 then
+        advanceMovementPulse(state, entity, oldX, oldY, dt, speed)
+        return true
+    end
+    return false
 end
 
-local function moveAway(entity, target, dt)
+local function moveAway(state, entity, target, dt)
     local dx = entity.x - target.x
     local dy = entity.y - target.y
     local length = math.sqrt(dx * dx + dy * dy)
     if length < 0.001 then
-        dx = entity.owner == 1 and 0 or 0
+        dx = 0
         dy = entity.owner == 1 and 1 or -1
         length = 1
     end
 
     local retreatMultiplier = entity.retreatSpeedMultiplier or 1
-    local step = currentMoveSpeed(entity) * retreatMultiplier * dt
+    local speed = currentMoveSpeed(entity) * retreatMultiplier
+    if speed <= 0 then return false end
+
+    local oldX, oldY = entity.x, entity.y
+    local step = speed * dt
     local nx = entity.x + dx / length * step
     local ny = entity.y + dy / length * step
 
@@ -602,6 +627,13 @@ local function moveAway(entity, target, dt)
         entity.x = nx
         entity.y = ny
     end
+
+    local moved = util.distance(oldX, oldY, entity.x, entity.y)
+    if moved > 0.0001 then
+        advanceMovementPulse(state, entity, oldX, oldY, dt, speed)
+        return true
+    end
+    return false
 end
 
 local damageEntity
@@ -965,7 +997,7 @@ local function updatePeriodicSpawn(state, entity, dt)
     entity.periodicSpawnTimer = spec.interval or 8
 end
 
-local function updateGroundPulse(state, entity, dt)
+updateGroundPulse = function(state, entity, dt)
     local spec = entity.groundPulse
     if not spec then return end
 
@@ -1128,7 +1160,6 @@ local function updateCombatEntity(state, entity, dt)
     end
 
     updatePeriodicSpawn(state, entity, dt)
-    updateGroundPulse(state, entity, dt)
 
     if entity.emeraldBoost then
         entity.emeraldPulseTimer = (entity.emeraldPulseTimer or 0) - dt
@@ -1337,7 +1368,7 @@ local function updateCombatEntity(state, entity, dt)
         end
 
         local tx, ty = arena.navigationPoint(entity, target)
-        moveToward(entity, tx, ty, dt)
+        moveToward(state, entity, tx, ty, dt)
         return
     end
 
@@ -1350,7 +1381,7 @@ local function updateCombatEntity(state, entity, dt)
             entity.lockedTargetId = target.id
             performAttack(state, entity, target)
         end
-        moveAway(entity, target, dt)
+        moveAway(state, entity, target, dt)
         return
     end
 
@@ -1370,7 +1401,7 @@ local function updateCombatEntity(state, entity, dt)
     end
 
     local tx, ty = arena.navigationPoint(entity, target)
-    moveToward(entity, tx, ty, dt)
+    moveToward(state, entity, tx, ty, dt)
 end
 
 local function updateProjectiles(state, dt)
