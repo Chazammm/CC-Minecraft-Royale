@@ -618,16 +618,32 @@ end
 
 -- Evolution definitions are intentionally data-driven and live on the base
 -- card as card.evolution. Cards without that table cannot enter the Evolution
--- Slot. A definition can override/multiply the card, unit, building or spell
--- data without requiring Game.lua to know card-specific evolution rules.
+-- Slot.
 --
--- Example schema for a future card:
+-- Every card may independently configure:
+--   cycles        Number of normal successful plays before the evolved play.
+--                 0 = every play is evolved, 1 = every second play, etc.
+--   cost          Exact evolved Emerald cost, or a table with set/multiplier/
+--                 delta. Shorthands costMultiplier and costDelta also work.
+--   card/unit/... Numeric multipliers and direct overrides (legacy + explicit).
+--   stats         Exact stat overrides on the active unit/building/spell data.
+--   statMultipliers Numeric multipliers on active unit/building/spell stats.
+--   abilities     Deep-merged ability data on unit/building/spell. This can
+--                 add or replace any mechanic already understood by Game.lua
+--                 (teleport, slow, split, proximity explosion, summons, etc.).
+--   patch         Deep-merged into the whole evolved card for advanced cases.
+--
+-- Example:
 -- evolution = {
---     cycles = 2, -- two normal plays, third play evolves
+--     cycles = 3,                 -- fourth successful play evolves
+--     cost = { delta = 1 },       -- 3E base -> 4E evolved play
 --     name = "Evolved Zombie",
---     unit = {
---         multipliers = { maxHp = 1.15, damage = 1.10 },
---         overrides = { canAttackAir = false },
+--     statMultipliers = {
+--         maxHp = 1.15,
+--         damage = 1.10,
+--     },
+--     abilities = {
+--         onHitSlow = { factor = 0.8, duration = 1.5 },
 --     },
 -- }
 local function evolutionCard(cardOrId)
@@ -643,7 +659,30 @@ end
 function cards.evolutionCycles(cardOrId)
     local card = evolutionCard(cardOrId)
     if not card or type(card.evolution) ~= "table" then return nil end
-    return math.max(1, math.floor(tonumber(card.evolution.cycles) or 2))
+
+    local value = card.evolution.cycles
+    if value == nil then value = card.evolution.normalPlays end
+    if value == nil then value = 2 end
+
+    return math.max(0, math.floor(tonumber(value) or 2))
+end
+
+function cards.evolutionPlayNumber(cardOrId)
+    local cycles = cards.evolutionCycles(cardOrId)
+    if cycles == nil then return nil end
+    return cycles + 1
+end
+
+local function deepMerge(target, patch)
+    if type(target) ~= "table" or type(patch) ~= "table" then return end
+
+    for key, value in pairs(patch) do
+        if type(value) == "table" and type(target[key]) == "table" then
+            deepMerge(target[key], value)
+        else
+            target[key] = util.deepcopy(value)
+        end
+    end
 end
 
 local function applyEvolutionBlock(target, spec)
@@ -664,6 +703,79 @@ local function applyEvolutionBlock(target, spec)
     end
 end
 
+local function activePayload(card)
+    if not card then return nil end
+    if card.kind == "unit" then return card.unit end
+    if card.kind == "building" then return card.building end
+    if card.kind == "spell" then return card.spell end
+    return nil
+end
+
+local function applyNumericMultipliers(target, multipliers)
+    if type(target) ~= "table" or type(multipliers) ~= "table" then return end
+
+    for key, multiplier in pairs(multipliers) do
+        if type(target[key]) == "number" and type(multiplier) == "number" then
+            target[key] = target[key] * multiplier
+        end
+    end
+end
+
+local function applyExactStats(target, stats)
+    if type(target) ~= "table" or type(stats) ~= "table" then return end
+
+    for key, value in pairs(stats) do
+        target[key] = util.deepcopy(value)
+    end
+end
+
+local function resolveEvolutionCost(baseCost, evo, fallbackCost)
+    local cost = tonumber(fallbackCost) or tonumber(baseCost) or 0
+    local hasExplicitCostRule = false
+
+    if type(evo.costMultiplier) == "number" then
+        cost = (tonumber(baseCost) or cost) * evo.costMultiplier
+        hasExplicitCostRule = true
+    end
+
+    if type(evo.costDelta) == "number" then
+        if not hasExplicitCostRule then cost = tonumber(baseCost) or cost end
+        cost = cost + evo.costDelta
+        hasExplicitCostRule = true
+    end
+
+    if type(evo.cost) == "number" then
+        cost = evo.cost
+        hasExplicitCostRule = true
+    elseif type(evo.cost) == "table" then
+        local spec = evo.cost
+        local base = tonumber(baseCost) or cost
+
+        if type(spec.multiplier) == "number" then
+            cost = base * spec.multiplier
+            hasExplicitCostRule = true
+        else
+            cost = base
+        end
+
+        if type(spec.delta) == "number" then
+            cost = cost + spec.delta
+            hasExplicitCostRule = true
+        end
+
+        if type(spec.set) == "number" then
+            cost = spec.set
+            hasExplicitCostRule = true
+        end
+    end
+
+    if not hasExplicitCostRule then
+        cost = tonumber(fallbackCost) or tonumber(baseCost) or 0
+    end
+
+    return math.max(0, cost)
+end
+
 function cards.evolvedCopy(cardOrId)
     local card = evolutionCard(cardOrId)
     if not card or type(card.evolution) ~= "table" then return nil end
@@ -677,16 +789,41 @@ function cards.evolvedCopy(cardOrId)
     evolved.icon = evo.icon or card.icon
     evolved.color = evo.color or card.color
 
+    -- Existing per-section format remains supported.
     applyEvolutionBlock(evolved, evo.card)
     applyEvolutionBlock(evolved.unit, evo.unit)
     applyEvolutionBlock(evolved.building, evo.building)
     applyEvolutionBlock(evolved.spell, evo.spell)
+
+    -- New concise format applies to whichever payload this card actually uses.
+    local payload = activePayload(evolved)
+    applyNumericMultipliers(payload, evo.statMultipliers)
+    applyExactStats(payload, evo.stats)
+
+    -- Ability data is deep-merged, so an evolution can add a complete existing
+    -- mechanic or change only one property of an inherited mechanic.
+    if payload and type(evo.abilities) == "table" then
+        deepMerge(payload, evo.abilities)
+    end
+
+    -- Advanced whole-card patch supports spawnCount, placement, nested custom
+    -- data and future mechanics without changing this evolution helper.
+    if type(evo.patch) == "table" then
+        deepMerge(evolved, evo.patch)
+    end
+
+    evolved.cost = resolveEvolutionCost(card.cost, evo, evolved.cost)
 
     if evolved.unit then evolved.unit.isEvolution = true end
     if evolved.building then evolved.building.isEvolution = true end
     if evolved.spell then evolved.spell.isEvolution = true end
 
     return evolved
+end
+
+function cards.evolutionCost(cardOrId)
+    local evolved = cards.evolvedCopy(cardOrId)
+    return evolved and evolved.cost or nil
 end
 
 function cards.evolutionCards()
