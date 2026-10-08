@@ -131,10 +131,13 @@ local function enemyCardDefinitelyCycling(bot, cardId)
     return since >= 0 and since < 4
 end
 
-local function enemyCanAfford(bot, cardId)
+local function enemyCanAfford(bot, state, cardId)
     local card = cards.get(cardId)
     if not card then return false end
-    return (bot.memory and bot.memory.enemyEmeralds or 0) + 0.25 >= card.cost
+
+    local enemyId = otherPlayer(bot.playerId)
+    local cost = Game.getCardPlayCost(state, enemyId, cardId) or card.cost
+    return (bot.memory and bot.memory.enemyEmeralds or 0) + 0.25 >= cost
 end
 
 function Bot.defaultDeck()
@@ -708,18 +711,26 @@ local function shouldSaveForPowerCard(bot, state, ctx, arrowScore)
 
     for slot = 1, 4 do
         local card = cards.get(player.hand[slot])
-        if card and player.emeralds < card.cost then
-            local gap = card.cost - player.emeralds
-            local p = priority[card.id] or 0
+        if card then
+            local playCost = Game.getCardPlayCost(
+                state,
+                bot.playerId,
+                card.id
+            ) or card.cost
 
-            if card.id == "villager" and ownedVillagerCount(state, bot.playerId) > 0 then
-                p = -math.huge
-            end
+            if player.emeralds < playCost then
+                local gap = playCost - player.emeralds
+                local p = priority[card.id] or 0
 
-            -- Only wait a short time; never sit forever on a distant expensive card.
-            if gap <= 2.25 and p > bestPriority then
-                bestPriority = p
-                bestCost = card.cost
+                if card.id == "villager" and ownedVillagerCount(state, bot.playerId) > 0 then
+                    p = -math.huge
+                end
+
+                -- Only wait a short time; never sit forever on a distant expensive card.
+                if gap <= 2.25 and p > bestPriority then
+                    bestPriority = p
+                    bestCost = playCost
+                end
             end
         end
     end
@@ -746,7 +757,8 @@ end
 
 local function scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
     local player = state.players[bot.playerId]
-    if player.emeralds + 0.0001 < card.cost then return -math.huge end
+    local playCost = Game.getCardPlayCost(state, bot.playerId, card.id) or card.cost
+    if player.emeralds + 0.0001 < playCost then return -math.huge end
 
     local cfg = difficultyConfig(bot)
     local score = 0
@@ -870,7 +882,7 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
             if enemyCardDefinitelyCycling(bot, "arrows") then
                 score = score + 3.0
             elseif enemyCardLikelyReady(bot, "arrows")
-                and enemyCanAfford(bot, "arrows")
+                and enemyCanAfford(bot, state, "arrows")
             then
                 score = score - 3.5
             end
@@ -878,7 +890,7 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
             if enemyCardDefinitelyCycling(bot, "cannon") then
                 score = score + 2.2
             elseif enemyCardLikelyReady(bot, "cannon")
-                and enemyCanAfford(bot, "cannon")
+                and enemyCanAfford(bot, state, "cannon")
             then
                 score = score - 2.0
             end
@@ -888,13 +900,13 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
         -- throwing away the best cheap pull before it appears.
         if (card.id == "cannon" or card.id == "endermite")
             and enemyCardLikelyReady(bot, "iron_golem")
-            and enemyCanAfford(bot, "iron_golem")
+            and enemyCanAfford(bot, state, "iron_golem")
         then
             score = score - 2.8
         end
     end
 
-    score = score - card.cost * 0.12
+    score = score - playCost * 0.12
     score = score + (((bot.decisionCount * 7 + slot * 3 + bot.playerId) % 5) * 0.08)
     return score
 end
