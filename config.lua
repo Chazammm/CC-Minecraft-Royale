@@ -32,6 +32,11 @@ config.MUSIC = {
     volume = 0.45,
 }
 
+config.BUILDINGS = {
+    -- Natural lifetime HP loss. 1.15 = 15% faster than linear lifetime decay.
+    lifetimeDecayMultiplier = 1.15,
+}
+
 config.MATCH = {
     normalTime = 150,
     overtimeTime = 150,
