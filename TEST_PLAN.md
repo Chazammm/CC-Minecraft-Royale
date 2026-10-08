@@ -68,12 +68,16 @@ Pass condition: ground units never walk through water and consistently choose/re
 
 Pass condition: arrows/projectiles travel to the target and the Skeleton tries to create distance when an enemy gets too close.
 
-## 8. Iron Golem target preference
+## 8. Lane targeting and Iron Golem pulls
 
-- Place an enemy troop near the Iron Golem.
-- Place/leave an enemy Cannon or tower farther away.
+- Send a normal troop down the left lane with both enemy Princess Towers alive.
+- Confirm it chooses the left Princess Tower rather than the opposite lane.
+- Destroy that left Princess Tower while the match continues.
+- Confirm surviving/new left-lane troops now advance toward the King Tower rather than crossing to the right Princess Tower.
+- Place an enemy troop near an Iron Golem and confirm it ignores the troop.
+- Place a defensive Cannon inside the Iron Golem's aggro range and confirm the Cannon can pull it away from its tower path.
 
-Pass condition: the Iron Golem ignores normal troops and continues toward buildings/towers.
+Pass condition: Crown Tower objectives stay lane-correct, a destroyed lane leads toward the King Tower, and defensive buildings still provide intentional kiting/distraction.
 
 ## 9. Bat Swarm flying
 
@@ -84,6 +88,16 @@ Pass condition: the Iron Golem ignores normal troops and continues toward buildi
 - Let a Princess Tower shoot one Bat.
 
 Pass condition: three units spawn, fly directly over water, are ignored by the ground-only Cannon, and each Bat is fragile enough to die to one Princess Tower hit.
+
+## 9b. Post-tower deployment pocket
+
+- Before destroying a Princess Tower, try to deploy a troop just across the river on that enemy lane.
+- Destroy the enemy left Princess Tower.
+- Try the same placement again in the unlocked left-side pocket.
+- Try placing on the still-protected right lane and in the centre near the King Tower.
+- Place a building in a valid unlocked pocket position that is inside King Tower range.
+
+Pass condition: only the destroyed lane gains the extra deployment area, the opposite lane/centre remain locked, and Crown Towers can shoot enemy pocket buildings.
 
 ## 10. Cannon building behavior
 
