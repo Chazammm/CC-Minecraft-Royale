@@ -827,7 +827,11 @@ local function infoStatLines(card)
         local u = card.unit
         local dps = (u.damage or 0) / math.max(0.01, u.attackCooldown or 1)
         local movement = u.flying and "FLYING" or "GROUND"
-        if u.passive then movement = "STATIONARY" end
+        if u.waterOnly then
+            movement = "STATIONARY WATER"
+        elseif u.passive then
+            movement = "STATIONARY"
+        end
 
         local targets = u.canAttackAir and "AIR + GROUND" or "GROUND"
         if u.targetMode == "buildings" then targets = "BUILDINGS + CROWN TOWERS" end
@@ -835,7 +839,19 @@ local function infoStatLines(card)
 
         table.insert(lines, movement .. " UNIT  |  TARGETS " .. targets)
 
-        if u.passive or u.targetMode == "none" then
+        if u.beam then
+            table.insert(lines, string.format(
+                "HP %s  |  RANGE %s  |  WATER ONLY",
+                numberText(u.maxHp),
+                numberText(u.attackRange, 1)
+            ))
+            table.insert(lines, string.format(
+                "BEAM DPS %s -> %s over %ss",
+                numberText(u.beam.baseDps, 0),
+                numberText(u.beam.maxDps, 0),
+                numberText(u.beam.rampSeconds, 1)
+            ))
+        elseif u.passive or u.targetMode == "none" then
             table.insert(lines, string.format(
                 "HP %s  |  LIFE %ss",
                 numberText(u.maxHp),
@@ -879,6 +895,27 @@ local function infoStatLines(card)
                 "PRIMES inside %s range; cancels past %s",
                 numberText(e.triggerRange, 1),
                 numberText(e.cancelRange, 1)
+            ))
+        end
+
+        if u.beam then
+            table.insert(lines, string.format(
+                "ON DAMAGE: beam charge keeps %d%%",
+                math.floor((1 - (u.beam.chargeLossOnHit or 0.20)) * 100 + 0.5)
+            ))
+        end
+
+        if u.spikeReflectFlying then
+            table.insert(lines, string.format(
+                "SPIKES: flying attackers take %.0f%% reflected damage",
+                u.spikeReflectFlying * 100
+            ))
+        end
+
+        if u.globalEnemyMoveSlow then
+            table.insert(lines, string.format(
+                "GLOBAL: enemy unit movement -%d%% while alive",
+                math.floor(u.globalEnemyMoveSlow * 100 + 0.5)
             ))
         end
 
