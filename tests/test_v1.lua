@@ -364,17 +364,20 @@ assertTrue(decayCannon ~= nil, "Building decay test must spawn a Cannon")
 assertEq(decayCannon.hp, cannonCard.building.maxHp, "Building must spawn at full HP")
 
 Game.debugSetPaused(buildingDecayState, false)
+local buildingDecayMultiplier = config.BUILDINGS.lifetimeDecayMultiplier
 for _ = 1, 70 do Game.update(buildingDecayState, 0.25) end
-assertTrue(decayCannon.alive, "Cannon must still be alive halfway through its lifetime")
+assertTrue(decayCannon.alive, "Cannon must still be alive halfway through its nominal lifetime")
+local expectedHalfNominalHp = cannonCard.building.maxHp * (1 - 0.5 * buildingDecayMultiplier)
 assertTrue(
-    math.abs(decayCannon.hp - cannonCard.building.maxHp * 0.5) < 0.01,
-    "Building HP must visibly decay to half at half lifetime"
+    math.abs(decayCannon.hp - expectedHalfNominalHp) < 0.01,
+    "Building HP must use the configured faster lifetime decay"
 )
 
-for _ = 1, 69 do Game.update(buildingDecayState, 0.25) end
-assertTrue(decayCannon.alive, "Cannon must survive until just before its configured lifetime")
+-- 35s / 1.15 ~= 30.43s effective natural lifetime.
+for _ = 1, 51 do Game.update(buildingDecayState, 0.25) end
+assertTrue(decayCannon.alive, "Cannon must survive just before its faster natural decay endpoint")
 Game.update(buildingDecayState, 0.25)
-assertTrue(not decayCannon.alive, "Cannon must die from HP decay at the end of its lifetime")
+assertTrue(not decayCannon.alive, "Cannon must die around nominal lifetime / decay multiplier")
 
 local outpostDecayState = Game.new()
 Game.debugLoadScenario(outpostDecayState, "empty")
@@ -386,9 +389,10 @@ for _, entity in ipairs(outpostDecayState.entities) do
     if entity.name == "Pillager Outpost" then decayOutpost = entity end
 end
 for _ = 1, 70 do Game.update(outpostDecayState, 0.25) end
+local expectedOutpostHalfHp = outpostCard.building.maxHp * (1 - 0.5 * buildingDecayMultiplier)
 assertTrue(
-    math.abs(decayOutpost.hp - outpostCard.building.maxHp * 0.5) < 0.01,
-    "Pillager Outpost must use the same lifetime HP-decay system"
+    math.abs(decayOutpost.hp - expectedOutpostHalfHp) < 0.01,
+    "Pillager Outpost must use the same faster lifetime HP-decay system"
 )
 
 local outpostAirState = Game.new()
@@ -439,7 +443,8 @@ end
 assertTrue(skeleton and zombie, "Retarget test units must exist")
 assertTrue(enemyKingForSkeleton and enemyKingForZombie, "Retarget test kings must exist")
 
--- Reproduce the old bug: both troops were already locked onto distant towers.
+-- A target assignment is not yet a combat lock. Before either troop attacks,
+-- a nearer enemy may still distract it away from the distant tower.
 skeleton.targetId = enemyKingForSkeleton.id
 zombie.targetId = enemyKingForZombie.id
 
@@ -471,8 +476,8 @@ end
 
 assertTrue(pullGolem and pullCannon and distantEnemyTower, "Iron Golem pull test entities must exist")
 
--- Reproduce the problematic case: the Golem already committed to a tower,
--- then a defensive Cannon is placed inside its sight range.
+-- The Golem is marching toward a tower but has not attacked it yet. A Cannon
+-- placed inside aggro range must still be able to pull it before lock-on.
 pullGolem.targetId = distantEnemyTower.id
 Game.debugSetPaused(golemPullState, false)
 Game.update(golemPullState, 0.10)
@@ -480,7 +485,115 @@ Game.update(golemPullState, 0.10)
 assertEq(
     pullGolem.targetId,
     pullCannon.id,
-    "Iron Golem must retarget from a tower to a closer Cannon"
+    "Iron Golem must retarget from a tower to a closer Cannon before lock-on"
+)
+assertTrue(
+    pullGolem.lockedTargetId == nil,
+    "Being pulled while approaching must not count as an attack lock"
+)
+
+-- Normal troop: once the first tower attack starts, a newly spawned troop
+-- beside it must not steal aggro.
+local troopLockState = Game.new()
+Game.debugLoadScenario(troopLockState, "king")
+Game.debugSpawnCard(troopLockState, 1, "zombie", 50, 100)
+
+local lockZombie, lockEnemyKing
+for _, entity in ipairs(troopLockState.entities) do
+    if entity.name == "Zombie" and entity.owner == 1 then lockZombie = entity end
+    if entity.kind == "tower" and entity.towerType == "king" and entity.owner == 2 then
+        lockEnemyKing = entity
+    end
+end
+assertTrue(lockZombie and lockEnemyKing, "Troop lock test needs Zombie and enemy King")
+
+lockZombie.x = lockEnemyKing.x
+lockZombie.y = lockEnemyKing.y + 2
+Game.debugSetPaused(troopLockState, false)
+Game.update(troopLockState, 0.10)
+
+assertEq(lockZombie.targetId, lockEnemyKing.id, "Zombie must attack the nearby King Tower")
+assertEq(
+    lockZombie.lockedTargetId,
+    lockEnemyKing.id,
+    "First attack must lock the Zombie onto its target"
+)
+
+Game.debugSpawnCard(
+    troopLockState,
+    2,
+    "endermite",
+    lockZombie.x + 1,
+    lockZombie.y
+)
+Game.update(troopLockState, 0.10)
+
+assertEq(
+    lockZombie.targetId,
+    lockEnemyKing.id,
+    "Newly spawned troop must not pull a Zombie off a tower after lock-on"
+)
+assertEq(
+    lockZombie.lockedTargetId,
+    lockEnemyKing.id,
+    "Zombie tower lock must persist while the tower remains alive"
+)
+
+-- Killing the locked target must release the lock and permit retargeting.
+lockEnemyKing.hp = 1
+lockZombie.attackCooldownLeft = 0
+Game.update(troopLockState, 0.10)
+Game.update(troopLockState, 0.10)
+assertTrue(
+    lockZombie.lockedTargetId ~= lockEnemyKing.id,
+    "Target death must release the old combat lock"
+)
+
+-- Building-targeting unit: Cannon can pull before the first hit, but not after
+-- the Golem has actually connected with the tower.
+local golemLockState = Game.new()
+Game.debugLoadScenario(golemLockState, "full")
+Game.debugSpawnCard(golemLockState, 1, "iron_golem", 50, 100)
+
+local lockedGolem, lockedTower
+for _, entity in ipairs(golemLockState.entities) do
+    if entity.name == "Iron Golem" and entity.owner == 1 then lockedGolem = entity end
+    if entity.kind == "tower" and entity.owner == 2 then
+        if not lockedTower or entity.y > lockedTower.y then
+            lockedTower = entity
+        end
+    end
+end
+assertTrue(lockedGolem and lockedTower, "Golem lock test needs Golem and enemy tower")
+
+lockedGolem.x = lockedTower.x
+lockedGolem.y = lockedTower.y + 2
+Game.debugSetPaused(golemLockState, false)
+Game.update(golemLockState, 0.10)
+assertEq(
+    lockedGolem.lockedTargetId,
+    lockedTower.id,
+    "Iron Golem must lock the tower after its first hit"
+)
+
+Game.debugSpawnCard(
+    golemLockState,
+    2,
+    "cannon",
+    lockedGolem.x + 1,
+    lockedGolem.y + 1
+)
+Game.update(golemLockState, 0.10)
+
+assertEq(
+    lockedGolem.targetId,
+    lockedTower.id,
+    "Cannon spawned after tower lock must not pull the Iron Golem"
+)
+assertEq(
+    lockedGolem.lockedTargetId,
+    lockedTower.id,
+    "Iron Golem must remain locked to the tower until it dies"
 )
 
 local creeperState = Game.new()
@@ -503,6 +616,11 @@ Game.update(creeperState, 0.1)
 assertTrue(testCreeper.alive, "Creeper must not deal an instant melee hit")
 assertEq(testZombie.hp, zombieHpBeforeFuse, "Creeper must deal no melee damage")
 assertTrue(testCreeper.fuseRemaining ~= nil, "Creeper must start its fuse in proximity")
+assertEq(
+    testCreeper.lockedTargetId,
+    testZombie.id,
+    "Starting the Creeper fuse must count as attack commitment and lock its target"
+)
 assertTrue(
     math.abs(testCreeper.fuseRemaining - 0.65) < 0.000001,
     "Creeper must start with the new 0.65-second fuse"
