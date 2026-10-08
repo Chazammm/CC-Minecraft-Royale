@@ -851,4 +851,19 @@ print(("Mechanics tests complete: %d PASS / %d FAIL / %d ERROR"):format(
     errorCount
 ))
 print("Report written to: " .. REPORT_FILE)
-print("Send me the entire file contents and I can analyze any FAIL/ERROR plus measured values.")
+
+local syncLoaded, ReportSync = pcall(require, "src.report_sync")
+if syncLoaded and ReportSync.isConfigured() then
+    print("Syncing mechanics report to GitHub...")
+    local synced, syncResult = ReportSync.autoUpload("mechanics", REPORT_FILE)
+    if synced then
+        print("GitHub sync OK: " .. syncResult.latestPath)
+    else
+        print("GitHub sync FAILED: " .. tostring(syncResult))
+        print("Local report is still safe at: " .. REPORT_FILE)
+    end
+elseif syncLoaded then
+    print("GitHub auto-sync not configured. Run once: report_sync setup")
+else
+    print("GitHub auto-sync unavailable: " .. tostring(ReportSync))
+end
