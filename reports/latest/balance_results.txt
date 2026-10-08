@@ -55,41 +55,48 @@ The unused cards change every shuffle; pairs are replayed with sides swapped.
   1000 / 1000
 
 GLOBAL
-P1 wins: 495 (49.5%)
-P2 wins: 500 (50.0%)
-Draws:   5 (0.5%)
-Avg match: 273.6s
+P1 wins: 483 (48.3%)
+P2 wins: 514 (51.4%)
+Draws:   3 (0.3%)
+Avg match: 264.0s
 
 CARD BALANCE
 Card             Score  P/M   U/E   T/E   Flag
-Skeleton          62.9  7.6  97.0   3.7 WATCH+
-Zombie            61.8  8.4 127.3   5.8 WATCH+
-Bat Swarm         61.5  9.9 144.1   2.1 WATCH+
-Blaze             59.9  5.2 114.7  13.0 WATCH+
-Wither Skeleton   59.0  8.1 119.5   5.4 WATCH+
-Villager          52.9  0.4   0.0   0.0 OK    
-Witch             52.7  4.7  76.4   5.5 OK    
-Enderman          52.3  3.3  84.9  14.0 OK    
-Magma Cube        50.8  8.1  83.6   3.3 OK    
-Slime             49.9  8.3  86.4   3.1 OK    
-Nether Portal     49.1  6.4  93.2   0.4 OK    
-Wolf              48.7  7.5 108.8   3.1 OK    
-Spider            47.6  9.8  82.4   1.7 OK    
-Endermite         47.3 10.2  45.3   1.0 OK    
-Arrow Volley      46.7  2.9  90.8   0.3 OK    
-Falling Anvil     45.0  9.0  99.8   1.6 OK    
-Creeper           43.2  3.0  78.7   0.3 WATCH-
-Cannon            43.0  3.1 112.4   0.0 WATCH-
-Pillager Outpost  42.5  3.5  86.2   0.0 WATCH-
-Snow Golem        41.5  8.2  61.7   1.8 WATCH-
-Iron Golem        31.1  4.1   9.7   5.0 WATCH-
+Nether Portal     63.8  6.2 140.3  11.1 WATCH+
+Skeleton          59.8  7.3  92.3   3.9 WATCH+
+Bat Swarm         59.4  9.4 139.0   2.1 WATCH+
+Zombie            58.5  7.9 125.7   6.2 WATCH+
+Blaze             58.5  4.9 108.1  13.2 WATCH+
+Wither Skeleton   58.1  7.6 117.5   5.9 WATCH+
+Wolf              51.9  7.1 107.6   3.6 OK    
+Magma Cube        50.5  7.6  83.0   3.6 OK    
+Villager          50.4  0.4   0.0   0.0 OK    
+Slime             50.1  7.9  84.4   3.1 OK    
+Witch             49.7  4.5  73.8   5.8 OK    
+Enderman          49.6  3.1  84.4  15.3 OK    
+Endermite         47.3  9.7  51.0   1.6 OK    
+Falling Anvil     46.3  8.5  98.1   2.0 OK    
+Spider            45.7  9.2  81.4   1.9 OK    
+Cannon            45.6  2.9 111.7   0.0 OK    
+Arrow Volley      44.9  2.6  88.9   0.4 OK    
+Pillager Outpost  43.2  3.2  85.4   0.0 WATCH-
+Snow Golem        42.8  7.8  59.2   2.1 WATCH-
+Creeper           40.7  2.9  80.0   0.4 WATCH-
+Iron Golem        32.3  4.0   9.2   5.9 WATCH-
 
 UTILITY
 Card             BonusE  Slow/s  Hits/Play
-Villager           2.53    0.00      0.00
-Arrow Volley       0.00    0.00      3.60
-Falling Anvil      0.00    0.00      1.52
-Snow Golem         0.00    6.67      0.00
+Nether Portal      0.00    1.28      0.00
+Villager           2.52    0.00      0.00
+Falling Anvil      0.00    0.00      1.48
+Arrow Volley       0.00    0.00      3.53
+Snow Golem         0.00    6.43      0.00
+
+EVOLUTIONS
+Card             Slot% Evo/SM  Evo% Cycles EvoCost
+Nether Portal     72.3   1.66  27.3      2     3.0
+Endermite         69.6   2.14  21.6      3     1.0
+Creeper           68.4   0.70  23.8      2     4.0
 
 HOW TO READ
 Score = deck win rate with draws worth half a win.
