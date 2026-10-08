@@ -132,6 +132,7 @@ local function validateEvolutionCard(player)
 
     local valid = player.evolutionCardId
         and deckHasCard(player.deck, player.evolutionCardId)
+        and cards.isSelectable(player.evolutionCardId)
         and cards.hasEvolution(player.evolutionCardId)
 
     if not valid then
@@ -2063,6 +2064,10 @@ function Game.toggleDeckCard(state, playerId, cardId)
     local player = state.players[playerId]
     local card = cards.get(cardId)
     if not player or not card then return false end
+    if not cards.isSelectable(card) then
+        setFeedback(player, "DEV CARD - ADMIN ONLY", 1.1)
+        return false
+    end
 
     local pos = deckPosition(player.deck, cardId)
     player.ready = false
@@ -2108,6 +2113,11 @@ function Game.setEvolutionCard(state, playerId, cardId)
         return false
     end
 
+    if not cards.isSelectable(card) then
+        setFeedback(player, "DEV EVOLUTION - ADMIN ONLY", 1.2)
+        return false
+    end
+
     if not deckHasCard(player.deck, cardId) then
         setFeedback(player, "ADD CARD TO DECK FIRST", 1.2)
         return false
@@ -2133,7 +2143,7 @@ function Game.beginEvolutionSelection(state, playerId)
 
     local eligible = false
     for _, cardId in ipairs(player.deck) do
-        if cards.hasEvolution(cardId) then
+        if cards.isSelectable(cardId) and cards.hasEvolution(cardId) then
             eligible = true
             break
         end
