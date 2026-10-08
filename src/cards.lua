@@ -766,7 +766,7 @@ cards.info = {
     },
     guardian = {
         role = "Water tank melter",
-        description = "Stationary river-only Inferno beam with 18 range. Damage ramps while locked; incoming hits reduce charge by 20%.",
+        description = "River-only Inferno beam with 18 range. Damage ramps while locked; hits reduce charge by 20%."
         goodAgainst = "Iron Golem, high-HP tanks, slow expensive pushes",
         badAgainst = "Arrows, Skeleton, long-range focus fire",
     },
