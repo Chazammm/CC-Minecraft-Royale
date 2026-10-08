@@ -41,7 +41,9 @@ local function assertTrue(value, message)
     if not value then error(message or "assertTrue failed") end
 end
 
-assertEq(#cards.list, 22, "Card pool must contain twenty-two selectable cards")
+assertEq(#cards.list, 21, "Card pool must contain twenty-one selectable cards while Guardian is benched")
+assertEq(#cards.all, 22, "Card registry must retain Guardian for dev/admin use")
+assertTrue(not cards.isSelectable("guardian"), "Guardian must be DEV ONLY and absent from normal card selection")
 assertEq(#cards.defaultDeck(), 8, "Default deck must contain eight cards")
 assertTrue(cards.isValidDeck(cards.defaultDeck()), "Default deck must be valid")
 assertEq(cards.get("arrows").spell.cast, "arrows", "Arrow Volley must declare its explicit spell handler")
@@ -123,7 +125,8 @@ assertEq(diamondGolem.unit.groundPulse.radius, 8.0, "Diamond Golem stomp must us
 assertEq(diamondGolem.unit.visualVariant, "diamond_golem", "Diamond Golem needs its cyan visual variant")
 
 local guardianCard = cards.get("guardian")
-assertTrue(guardianCard ~= nil and guardianCard.kind == "unit", "Guardian must be a selectable unit")
+assertTrue(guardianCard ~= nil and guardianCard.kind == "unit", "Guardian must remain registered as a dev-only unit")
+assertTrue(guardianCard.devOnly == true, "Guardian must be marked devOnly")
 assertEq(guardianCard.cost, 6, "Guardian must cost six Emeralds")
 assertEq(guardianCard.placement, "water", "Guardian must be water-only")
 assertEq(guardianCard.unit.maxHp, 90, "Guardian must die to exactly three 30-damage Skeleton arrows")
@@ -147,6 +150,22 @@ assertEq(elderEvo.unit.maxHp, 180, "Elder Guardian must have exactly double Guar
 assertEq(elderEvo.unit.attackRange, 18.0, "Elder Guardian must inherit Guardian's improved range")
 assertEq(elderEvo.unit.aggroRange, 18.0, "Elder Guardian must inherit Guardian's improved aggro range")
 assertTrue(elderEvo.unit.waterOnly, "Elder Guardian must preserve Guardian water-only targetability")
+
+local benchedDeck = cards.defaultDeck()
+benchedDeck[8] = "guardian"
+assertTrue(not cards.isValidDeck(benchedDeck), "A normal deck containing Guardian must be invalid while it is benched")
+
+local benchedState = Game.new()
+benchedState.players[1].deck = cards.defaultDeck()
+assertTrue(
+    not Game.toggleDeckCard(benchedState, 1, "guardian"),
+    "Normal deck API must reject dev-only Guardian"
+)
+benchedState.players[1].deck[8] = "guardian"
+assertTrue(
+    not Game.setEvolutionCard(benchedState, 1, "guardian"),
+    "Normal Evolution Slot API must reject dev-only Elder Guardian"
+)
 assertEq(elderEvo.unit.globalEnemyMoveSlow, 0.05, "Elder Guardian must globally slow enemy movement by five percent")
 assertEq(elderEvo.unit.beam.maxDps, guardianCard.unit.beam.maxDps, "Elder Guardian beam must otherwise stay identical")
 assertEq(elderEvo.unit.spikeReflectFlying, guardianCard.unit.spikeReflectFlying, "Elder Guardian spikes must stay identical")
@@ -1431,17 +1450,15 @@ assertEq(infoState.players[1].infoCardId, cards.list[2].id, "Tapping a card in U
 Game.handleTouch(infoState, 1, 36, 12, infoLayout)
 assertEq(infoState.players[1].collectionPage, 2, "Card browser NEXT must open page two")
 Game.handleTouch(infoState, 1, 1, 10, infoLayout)
-assertEq(infoState.players[1].infoCardId, "wolf", "Page-two first slot must expose Wolf after Guardian joins page one")
+assertEq(infoState.players[1].infoCardId, "falling_anvil", "Page-two first slot must expose Falling Anvil with Guardian benched")
 Game.handleTouch(infoState, 1, 2, 10, infoLayout)
-assertEq(infoState.players[1].infoCardId, "falling_anvil", "Page-two second slot must expose Falling Anvil")
+assertEq(infoState.players[1].infoCardId, "nether_portal", "Page-two second slot must expose Nether Portal")
 Game.handleTouch(infoState, 1, 3, 10, infoLayout)
-assertEq(infoState.players[1].infoCardId, "nether_portal", "Page-two third slot must expose Nether Portal")
+assertEq(infoState.players[1].infoCardId, "wither_skeleton", "Page-two third slot must expose Wither Skeleton")
 Game.handleTouch(infoState, 1, 4, 10, infoLayout)
-assertEq(infoState.players[1].infoCardId, "wither_skeleton", "Page-two fourth slot must expose Wither Skeleton")
+assertEq(infoState.players[1].infoCardId, "magma_cube", "Page-two fourth slot must expose Magma Cube")
 Game.handleTouch(infoState, 1, 5, 10, infoLayout)
-assertEq(infoState.players[1].infoCardId, "magma_cube", "Page-two fifth slot must expose Magma Cube")
-Game.handleTouch(infoState, 1, 6, 10, infoLayout)
-assertEq(infoState.players[1].infoCardId, "pillager_outpost", "Page-two sixth slot must expose Pillager Outpost")
+assertEq(infoState.players[1].infoCardId, "pillager_outpost", "Page-two fifth slot must expose Pillager Outpost")
 
 Game.handleTouch(infoState, 1, 2, 21, infoLayout)
 assertTrue(not infoState.players[1].infoOpen, "BACK TO DECK must close Unit Info")
@@ -2104,9 +2121,11 @@ do
 local adminCatalog = cards.adminSpawnCards()
 assertEq(
     #adminCatalog,
-    #cards.list + #cards.evolutionCards(),
-    "Admin spawn catalog must contain every base card plus every Evolution form"
+    #cards.all + #cards.evolutionCards(true),
+    "Admin spawn catalog must include production and dev-only base/Evolution forms"
 )
+assertEq(#cards.evolutionCards(), 5, "Normal Evolution selection must expose five production Evolutions")
+assertEq(#cards.evolutionCards(true), 6, "Dev/admin Evolution registry must retain Elder Guardian")
 
 local adminKeys = {}
 for _, entry in ipairs(adminCatalog) do
