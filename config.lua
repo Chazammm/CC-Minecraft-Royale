@@ -50,6 +50,12 @@ config.MATCH = {
     countdown = 3,
 }
 
+-- Shared lobby rules. Game.new() copies these defaults into state.ruleset so
+-- future match-wide toggles can be added without hard-coding them into the UI.
+config.RULESET_DEFAULTS = {
+    evolutions = true,
+}
+
 config.DEBUG = false
 
 return config
