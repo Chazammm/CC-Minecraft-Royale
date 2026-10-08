@@ -239,6 +239,30 @@ local SPRITES = {
             "..W.W..",
         },
     },
+    guardian = {
+        rows = {
+            "..C.C..",
+            ".CCCCC.",
+            "CCAKACC",
+            "CAACCAA",
+            "CCAKACC",
+            ".CCCCC.",
+            "..C.C..",
+        },
+    },
+    elder_guardian = {
+        rows = {
+            "...S.S...",
+            "..SSSSS..",
+            ".SSYWYSS.",
+            "SSYYKYYSS",
+            "SYYSSSYY S":gsub(" ", ""),
+            "SSYYKYYSS",
+            ".SSYWYSS.",
+            "..SSSSS..",
+            "...S.S...",
+        },
+    },
     villager = {
         -- 6x12. Large square head, distinct nose and long brown robe.
         rows = {
@@ -254,6 +278,20 @@ local SPRITES = {
             ".NNNN.",
             ".NNNN.",
             ".N..N.",
+        },
+    },
+    emerald_bank = {
+        rows = {
+            "..LLLLL..",
+            ".LGGGGGL.",
+            "LGGLLLGGL",
+            "LGLLKLLGL",
+            "LGGLLLGGL",
+            "LGGGGGGGL",
+            "LDDDDDDDL",
+            "LDDLLLDDL",
+            "LDDLLLDDL",
+            "LLLLLLLLL",
         },
     },
     endermite = {
@@ -381,7 +419,10 @@ local NAME_TO_SPRITE = {
     ["Enderman"] = "enderman",
     ["Spider"] = "spider",
     ["Snow Golem"] = "snow_golem",
+    ["Guardian"] = "guardian",
+    ["Elder Guardian"] = "elder_guardian",
     ["Villager"] = "villager",
+    ["Emerald Bank"] = "emerald_bank",
     ["Endermite"] = "endermite",
     ["Mega Mite"] = "mega_mite",
     ["Wolf"] = "wolf",
@@ -812,6 +853,31 @@ local function drawAnvilImpact(box, playerId, effect)
     drawLine(box, cx - 5, cy + 3, cx + 5, cy + 3, colors.brown)
 end
 
+local function drawGuardianBeam(box, playerId, effect)
+    local x1, y1 = worldToPixel(box, playerId, effect.x, effect.y)
+    local x2, y2 = worldToPixel(box, playerId, effect.x2 or effect.x, effect.y2 or effect.y)
+    local charge = math.max(0, math.min(1, effect.charge or 0))
+
+    local beamColor
+    if charge < 0.35 then
+        beamColor = colors.cyan
+    elseif charge < 0.70 then
+        beamColor = colors.lightBlue
+    else
+        beamColor = colors.white
+    end
+
+    drawLine(box, x1, y1, x2, y2, beamColor)
+
+    if charge >= 0.55 then
+        drawLine(box, x1 + 1, y1, x2 + 1, y2, colors.cyan)
+    end
+    if charge >= 0.85 then
+        put(box, x2, y2, colors.yellow)
+        put(box, x2 + 1, y2, colors.white)
+    end
+end
+
 local function drawEffect(box, playerId, effect)
     if effect.kind == "arrows" then
         drawArrowVolley(box, playerId, effect)
@@ -842,6 +908,10 @@ local function drawEffect(box, playerId, effect)
         drawRingEffect(box, playerId, effect, team)
     elseif effect.kind == "death" then
         drawRingEffect(box, playerId, effect, colors.lightGray)
+    elseif effect.kind == "guardian_beam" then
+        drawGuardianBeam(box, playerId, effect)
+    elseif effect.kind == "guardian_spike" then
+        drawSparkle(box, playerId, effect, colors.cyan)
     elseif effect.kind == "slow" then
         drawRingEffect(box, playerId, effect, colors.cyan)
     elseif effect.kind == "emerald" then
