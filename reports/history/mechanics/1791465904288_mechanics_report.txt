@@ -1,0 +1,238 @@
+CC-MINECRAFT-ROYALE MECHANICS REPORT
+FORMAT_VERSION|9
+GENERATED_EPOCH_MS|1791465904286
+OS_VERSION|CraftOS 1.9
+CARD_COUNT|22
+HARNESS|condition_waits=true|dt=0.050|safe_x=50.0|safe_y=110.0
+CONFIG|tick=0.100|normal=150|overtime=150|emerald_rate=0.357143|building_decay=1.150
+BALANCE_SNAPSHOT|skeleton_range=15.00|skeleton_retreat=0.85|bat_damage=17.00
+EVOLUTION_SNAPSHOT|creeper_cycles=2|portal_cycles=2|mite_cycles=4|guardian_cycles=2|villager_cycles=3|ghast_damage=130.0|ghast_range=24.0
+SUMMARY|pass=21|fail=0|error=0|total=21|runtime_cpu_s=0.0500
+
+RESULT|boot_deck|PASS|Lobby boots with empty human decks|Human players should build/load/randomize an 8-card deck before READY.
+DATA|boot_deck|p1_deck_cards=0.0000
+DATA|boot_deck|p2_deck_cards=0.0000
+DATA|boot_deck|empty_deck_is_valid=false
+
+RESULT|evolution_cycle|PASS|Evolution timing, cost, stats and abilities|Each Evolution may define its own charge count, Emerald cost, stats and existing engine abilities.
+DATA|evolution_cycle|eligible_selected=true
+DATA|evolution_cycle|non_evolution_rejected=true
+DATA|evolution_cycle|configured_normal_plays=3.0000
+DATA|evolution_cycle|configured_evo_cost=4.0000
+DATA|evolution_cycle|progress_after_play_1=1.0000
+DATA|evolution_cycle|progress_after_play_2=2.0000
+DATA|evolution_cycle|progress_after_play_3=3.0000
+DATA|evolution_cycle|progress_after_evolution=0.0000
+DATA|evolution_cycle|normal_cost_ok=true
+DATA|evolution_cycle|insufficient_evo_cost_rejected=true
+DATA|evolution_cycle|ready_charge_preserved_on_failed_play=true
+DATA|evolution_cycle|first_three_normal=true
+DATA|evolution_cycle|fourth_play_evolved=true
+DATA|evolution_cycle|evolution_abilities_applied=true
+DATA|evolution_cycle|evolution_telemetry=true
+
+RESULT|evolution_ruleset|PASS|Ruleset OFF fully disables Evolution gameplay|Ruleset OFF must preserve the selected Evo card but make every battle play use the untouched base form.
+DATA|evolution_ruleset|ruleset_evolutions_enabled=false
+DATA|evolution_ruleset|saved_evolution_card=creeper
+DATA|evolution_ruleset|play_cost=4.0000
+DATA|evolution_ruleset|spawned_name=Creeper
+DATA|evolution_ruleset|spawned_is_evolution=false
+DATA|evolution_ruleset|progress_after_play=2.0000
+DATA|evolution_ruleset|telemetry_evolution_plays=0.0000
+
+RESULT|admin_evolution_spawn|PASS|Admin directly spawns Evolution forms|Admin card pages must include every Evolution as a direct sandbox spawn, bypassing cycles and Emerald cost.
+DATA|admin_evolution_spawn|admin_catalog_entries=27.0000
+DATA|admin_evolution_spawn|admin_evolution_entries=5.0000
+DATA|admin_evolution_spawn|charged_creeper_spawned=true
+DATA|admin_evolution_spawn|ghast_portal_spawned=true
+DATA|admin_evolution_spawn|mega_mite_spawned=true
+DATA|admin_evolution_spawn|elder_guardian_spawned=true
+DATA|admin_evolution_spawn|emerald_bank_spawned=true
+DATA|admin_evolution_spawn|all_marked_evolution=true
+
+RESULT|guardian_targeting|PASS|Unreachable ground troops ignore water Guardian|Admin must preserve Guardian water placement; ground attackers only aggro it when their real attack reach can touch water.
+DATA|guardian_targeting|admin_land_spawn_rejected=true
+DATA|guardian_targeting|admin_land_rejection_reason=WATER ONLY - PLACE IN OPEN RIVER
+DATA|guardian_targeting|admin_bridge_spawn_rejected=true
+DATA|guardian_targeting|admin_open_water_spawn_allowed=true
+DATA|guardian_targeting|guardian_distance_to_ground_reach=6.0000
+DATA|guardian_targeting|zombie_attack_range=2.5000
+DATA|guardian_targeting|zombie_ignored_guardian=true
+DATA|guardian_targeting|skeleton_attack_range=15.0000
+DATA|guardian_targeting|skeleton_targeted_guardian=true
+
+RESULT|guardian_beam|PASS|Guardian water beam ramps and resists disruption|Guardian must live only in open river water, ramp its locked beam, keep 80% charge when hit and reflect 5% of flying attack damage.
+DATA|guardian_beam|water_allowed=true
+DATA|guardian_beam|land_rejected=true
+DATA|guardian_beam|bridge_rejected=true
+DATA|guardian_beam|guardian_hp=90.0000
+DATA|guardian_beam|skeleton_arrow_damage=30.0000
+DATA|guardian_beam|beam_base_dps=35.0000
+DATA|guardian_beam|beam_max_dps=350.0000
+DATA|guardian_beam|damage_first_second=68.4688
+DATA|guardian_beam|damage_second_second=147.2188
+DATA|guardian_beam|charge_before_skeleton_spawn=0.5000
+DATA|guardian_beam|disruption_detected=true
+DATA|guardian_beam|disruption_time_s=0.2000
+DATA|guardian_beam|charge_before_hit=0.5500
+DATA|guardian_beam|charge_after_hit=0.4400
+DATA|guardian_beam|beam_visible=true
+DATA|guardian_beam|spike_hit_detected=true
+DATA|guardian_beam|spike_hit_time_s=0.3500
+DATA|guardian_beam|flying_damage_reflected=3.2000
+
+RESULT|evo_elder_guardian|PASS|Elder Guardian doubles HP and globally slows movement|Elder Guardian must keep Guardian combat mechanics, double HP and apply a battlefield-wide non-permanent 5% enemy movement slow.
+DATA|evo_elder_guardian|configured_cycles=2.0000
+DATA|evo_elder_guardian|base_hp=90.0000
+DATA|evo_elder_guardian|elder_hp=180.0000
+DATA|evo_elder_guardian|global_slow=0.0500
+DATA|evo_elder_guardian|enemy_move_factor_with_elder=0.9500
+DATA|evo_elder_guardian|enemy_move_factor_after_elder_death=1.0000
+DATA|evo_elder_guardian|beam_max_dps_same=true
+DATA|evo_elder_guardian|spike_reflect_same=true
+
+RESULT|evo_emerald_bank|PASS|Emerald Bank keeps production and lasts 20s longer|Emerald Bank must preserve Villager economy output while gaining 5% HP and exactly 20 seconds of lifetime.
+DATA|evo_emerald_bank|configured_cycles=3.0000
+DATA|evo_emerald_bank|bank_hp=194.2500
+DATA|evo_emerald_bank|base_villager_hp=185.0000
+DATA|evo_emerald_bank|bank_lifetime_s=70.0000
+DATA|evo_emerald_bank|base_villager_lifetime_s=50.0000
+DATA|evo_emerald_bank|bank_emerald_boost=0.6160
+DATA|evo_emerald_bank|expected_emerald_gain_0_25s=0.1443
+DATA|evo_emerald_bank|realized_emerald_gain_0_25s=0.1443
+
+RESULT|evo_charged_creeper|PASS|Charged Creeper has larger blue blast|Charged Creeper must keep normal damage but expand gameplay AoE from 8 to 12 and use the large blue explosion effect.
+DATA|evo_charged_creeper|configured_cycles=2.0000
+DATA|evo_charged_creeper|base_radius=8.0000
+DATA|evo_charged_creeper|charged_radius=12.0000
+DATA|evo_charged_creeper|charged_visual_radius=16.0000
+DATA|evo_charged_creeper|visual_variant=charged_creeper
+DATA|evo_charged_creeper|exploded=true
+DATA|evo_charged_creeper|explosion_time_s=0.7500
+DATA|evo_charged_creeper|near_target_damage=290.0000
+DATA|evo_charged_creeper|far_target_distance=10.0000
+DATA|evo_charged_creeper|far_target_damage=290.0000
+DATA|evo_charged_creeper|charged_effect_visible=true
+
+RESULT|evo_ghast_portal|PASS|Ghast Portal spawns exactly two artillery Ghasts|Ghast Portal must emit exactly two fragile long-range Ghasts; their 130-damage splash fireballs two-hit Blaze and slow only the primary target.
+DATA|evo_ghast_portal|configured_cycles=2.0000
+DATA|evo_ghast_portal|portal_visual_variant=ghast_portal
+DATA|evo_ghast_portal|first_ghast_spawn_s=2.5500
+DATA|evo_ghast_portal|portal_spawn_total=2.0000
+DATA|evo_ghast_portal|unique_ghasts_seen=2.0000
+DATA|evo_ghast_portal|ghast_hp=220.0000
+DATA|evo_ghast_portal|ghast_damage=130.0000
+DATA|evo_ghast_portal|ghast_range=24.0000
+DATA|evo_ghast_portal|ghast_cooldown=2.8000
+DATA|evo_ghast_portal|first_hit_time_s=0.3000
+DATA|evo_ghast_portal|blaze_hp_after_first_hit=127.0000
+DATA|evo_ghast_portal|splash_zombie_damage_first_hit=130.0000
+DATA|evo_ghast_portal|primary_target_slowed=true
+DATA|evo_ghast_portal|splash_target_not_slowed=true
+DATA|evo_ghast_portal|blaze_killed_by_second_hit=true
+DATA|evo_ghast_portal|second_hit_time_s=0.3000
+
+RESULT|evo_mega_mite|PASS|Mega Mite keeps all stats except five-times HP|Mega Mite must cost the normal 1E and preserve every Endermite combat stat except max HP, which is exactly 5x.
+DATA|evo_mega_mite|configured_cycles=4.0000
+DATA|evo_mega_mite|base_hp=105.0000
+DATA|evo_mega_mite|mega_hp=525.0000
+DATA|evo_mega_mite|base_damage=18.0000
+DATA|evo_mega_mite|mega_damage=18.0000
+DATA|evo_mega_mite|base_speed=9.2000
+DATA|evo_mega_mite|mega_speed=9.2000
+DATA|evo_mega_mite|base_cooldown=0.8500
+DATA|evo_mega_mite|mega_cooldown=0.8500
+DATA|evo_mega_mite|visual_variant=mega_mite
+DATA|evo_mega_mite|emeralds_after_play=9.0000
+
+RESULT|target_lock|PASS|Pull before attack, lock after attack|Golem must remain pullable before commitment; attacked targets must stay locked until death.
+DATA|target_lock|golem_pulled_before_hit=true
+DATA|target_lock|golem_pull_time_s=0.0500
+DATA|target_lock|golem_locked_before_hit=false
+DATA|target_lock|zombie_locked_after_first_hit=true
+DATA|target_lock|zombie_lock_time_s=0.0500
+DATA|target_lock|new_unit_failed_to_steal_aggro=true
+DATA|target_lock|lock_released_after_target_death=true
+DATA|target_lock|lock_release_time_s=0.1000
+
+RESULT|building_decay|PASS|Building HP decays continuously|Cannon HP should drain smoothly at the configured lifetime multiplier.
+DATA|building_decay|initial_hp=618.0000
+DATA|building_decay|hp_at_5s=516.4714
+DATA|building_decay|hp_at_10s=414.9429
+DATA|building_decay|hp_at_20s=211.8857
+DATA|building_decay|expected_hp_at_10s=414.9429
+DATA|building_decay|expected_natural_life_s=30.4348
+DATA|building_decay|measured_death_time_s=30.4500
+
+RESULT|nether_portal|PASS|Portal spawn cadence and effective lifetime|Portal should produce the scheduled Piglins on walkable ground and die from natural HP decay.
+DATA|nether_portal|test_anchor_x=50.0000
+DATA|nether_portal|test_anchor_y=110.0000
+DATA|nether_portal|expected_effective_life_s=20.0000
+DATA|nether_portal|measured_portal_death_s=20.0000
+DATA|nether_portal|portal_alive_after_window=false
+DATA|nether_portal|expected_piglins=3.0000
+DATA|nether_portal|observed_piglins=3.0000
+DATA|nether_portal|piglin_1_spawn_s=2.0000
+DATA|nether_portal|piglin_2_spawn_s=9.0500
+DATA|nether_portal|piglin_3_spawn_s=16.1000
+
+RESULT|magma_split|PASS|Magma Cube splits into exactly two minis|A lethal real combat hit on Magma Cube should create exactly two Mini Magma Cubes.
+DATA|magma_split|parent_died=true
+DATA|magma_split|parent_death_time_s=0.0500
+DATA|magma_split|split_detected=true
+DATA|magma_split|split_detection_extra_s=0.0000
+DATA|magma_split|mini_magma_cubes=2.0000
+
+RESULT|anvil_aoe|PASS|Falling Anvil delay and air+ground AoE|Anvil must respect its warning delay, then hit the clustered ground unit and all three flying Bats.
+DATA|anvil_aoe|configured_delay_s=2.7000
+DATA|anvil_aoe|targets_initial=4.0000
+DATA|anvil_aoe|targets_alive_before_impact=4.0000
+DATA|anvil_aoe|targets_alive_after_impact=0.0000
+DATA|anvil_aoe|measured_impact_time_s=2.7500
+
+RESULT|creeper_fuse|PASS|Creeper fuse delay, lock and explosion|Creeper should arm and lock, survive until the fuse window ends, then explode for configured damage.
+DATA|creeper_fuse|fuse_started=true
+DATA|creeper_fuse|arm_time_s=0.0500
+DATA|creeper_fuse|locked_target_on_fuse=true
+DATA|creeper_fuse|alive_before_fuse_finished=true
+DATA|creeper_fuse|exploded=true
+DATA|creeper_fuse|explosion_wait_after_safe_window_s=0.1500
+DATA|creeper_fuse|zombie_damage_taken=290.0000
+DATA|creeper_fuse|expected_explosion_damage=290.0000
+
+RESULT|skeleton_kite|PASS|Skeleton attacks while backing away|Skeleton should land a ranged hit and measurably create distance while the enemy is inside kite range.
+DATA|skeleton_kite|behavior_detected=true
+DATA|skeleton_kite|detection_time_s=0.1000
+DATA|skeleton_kite|distance_before=4.0000
+DATA|skeleton_kite|distance_after=4.6375
+DATA|skeleton_kite|retreat_distance=0.6375
+DATA|skeleton_kite|zombie_damage_taken=30.0000
+DATA|skeleton_kite|attack_range=15.0000
+DATA|skeleton_kite|preferred_min_range=7.0000
+DATA|skeleton_kite|retreat_speed_multiplier=0.8500
+
+RESULT|outpost_anti_air|PASS|Pillager Outpost attacks flying units|Outpost should acquire stationary airborne Bats and kill at least one via its projectile attack.
+DATA|outpost_anti_air|bats_before=3.0000
+DATA|outpost_anti_air|bats_after_first_kill=2.0000
+DATA|outpost_anti_air|first_air_kill_time_s=0.1500
+DATA|outpost_anti_air|can_attack_air=true
+
+RESULT|match_flow|PASS|Regulation, overtime multipliers and tiebreaker|Real phase transitions must produce 2x/3x Emerald generation and the configured equal-HP Tiebreaker drain.
+DATA|match_flow|countdown_to_battle_s=3.0000
+DATA|match_flow|entered_battle=true
+DATA|match_flow|tower_count=6.0000
+DATA|match_flow|entered_overtime=true
+DATA|match_flow|emeralds_after_2_8s_at_2x=2.0000
+DATA|match_flow|emeralds_after_2_8s_at_3x=3.0000
+DATA|match_flow|entered_tiebreaker=true
+DATA|match_flow|tower_hp_drain_in_1s=300.0000
+DATA|match_flow|expected_tiebreaker_drain=300.0000
+
+RESULT|bot_smoke|PASS|Normal bot can play through the real card API|Bot should spend real Emeralds and register every successful play in normal match telemetry.
+DATA|bot_smoke|simulated_seconds=20.0000
+DATA|bot_smoke|bot_actions=3.0000
+DATA|bot_smoke|bot_last_action=Snow Golem
+DATA|bot_smoke|recorded_cards_played=3.0000
+DATA|bot_smoke|bot_emeralds=1.1429
+
+END_OF_REPORT
