@@ -237,7 +237,7 @@ The admin sandbox can:
 - browse the paginated card pool
 
 
-Evolution forms are also listed directly in the admin card pages. They are marked **EVO** and can be spawned immediately without charging cycles or paying Emeralds. Current direct admin forms are Charged Creeper, Ghast Portal and Mega Mite.
+Evolution forms are also listed directly in the admin card pages. They are marked **EVO** and can be spawned immediately without charging cycles or paying Emeralds. Current direct admin forms are Charged Creeper, Ghast Portal, Mega Mite, Elder Guardian and Emerald Bank.
 ## Balance simulator
 
 Run any whole-number match count from **100 to 1000**:
