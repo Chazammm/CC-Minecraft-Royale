@@ -154,6 +154,9 @@ function Bot.prepare(bot, state)
     player.ready = false
     player.rematch = false
     player.emeralds = config.MATCH.emeraldStart
+    player.evolutionProgress = 0
+    player.evolutionSelecting = false
+    Game.validateEvolutionSelection(state, bot.playerId)
 
     bot.thinkTimer = 0.75
     bot.decisionCount = 0
