@@ -4,7 +4,7 @@ local cards = require("src.cards")
 local Bot = require("src.bot")
 local util = require("src.util")
 
-local SUITE_VERSION = 1
+local SUITE_VERSION = 2
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 
@@ -246,7 +246,7 @@ end)
 
 runTest("nether_portal", "Portal spawn cadence and effective lifetime", function()
     local state = newAdminState("empty")
-    Game.debugSpawnCard(state, 1, "nether_portal", 50, 80)
+    Game.debugSpawnCard(state, 1, "nether_portal", 50, 110)
 
     local portal = findEntity(state, function(e)
         return e.alive and e.owner == 1 and e.name == "Nether Portal"
@@ -309,8 +309,8 @@ end)
 
 runTest("magma_split", "Magma Cube splits into exactly two minis", function()
     local state = newAdminState("empty")
-    Game.debugSpawnCard(state, 1, "magma_cube", 50, 80)
-    Game.debugSpawnCard(state, 2, "zombie", 50, 80)
+    Game.debugSpawnCard(state, 1, "magma_cube", 50, 110)
+    Game.debugSpawnCard(state, 2, "zombie", 50, 110)
 
     local magma = findEntity(state, function(e)
         return e.alive and e.owner == 1 and e.name == "Magma Cube"
@@ -343,9 +343,9 @@ end)
 
 runTest("anvil_aoe", "Falling Anvil delay and air+ground AoE", function()
     local state = newAdminState("empty")
-    Game.debugSpawnCard(state, 2, "zombie", 50, 80)
-    Game.debugSpawnCard(state, 2, "bat_swarm", 50, 80)
-    Game.debugSpawnCard(state, 1, "falling_anvil", 50, 80)
+    Game.debugSpawnCard(state, 2, "zombie", 50, 110)
+    Game.debugSpawnCard(state, 2, "bat_swarm", 50, 110)
+    Game.debugSpawnCard(state, 1, "falling_anvil", 50, 110)
 
     local before = countEntities(state, function(e)
         return e.alive and e.owner == 2 and e.kind == "unit"
@@ -373,8 +373,8 @@ end)
 
 runTest("creeper_fuse", "Creeper fuse delay, lock and explosion", function()
     local state = newAdminState("empty")
-    Game.debugSpawnCard(state, 1, "creeper", 50, 80)
-    Game.debugSpawnCard(state, 2, "zombie", 53, 80)
+    Game.debugSpawnCard(state, 1, "creeper", 50, 110)
+    Game.debugSpawnCard(state, 2, "zombie", 53, 110)
 
     local creeper = findEntity(state, function(e)
         return e.alive and e.owner == 1 and e.name == "Creeper"
@@ -420,8 +420,8 @@ end)
 
 runTest("skeleton_kite", "Skeleton attacks while backing away", function()
     local state = newAdminState("empty")
-    Game.debugSpawnCard(state, 1, "skeleton", 50, 80)
-    Game.debugSpawnCard(state, 2, "zombie", 50, 84)
+    Game.debugSpawnCard(state, 1, "skeleton", 50, 110)
+    Game.debugSpawnCard(state, 2, "zombie", 50, 114)
 
     local skeleton = findEntity(state, function(e)
         return e.alive and e.owner == 1 and e.name == "Skeleton"
@@ -456,8 +456,8 @@ end)
 
 runTest("outpost_anti_air", "Pillager Outpost attacks flying units", function()
     local state = newAdminState("empty")
-    Game.debugSpawnCard(state, 1, "pillager_outpost", 50, 80)
-    Game.debugSpawnCard(state, 2, "bat_swarm", 50, 70)
+    Game.debugSpawnCard(state, 1, "pillager_outpost", 50, 110)
+    Game.debugSpawnCard(state, 2, "bat_swarm", 50, 100)
 
     local batsBefore = countEntities(state, function(e)
         return e.alive and e.owner == 2 and e.name == "Bat Swarm"
