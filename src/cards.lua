@@ -60,6 +60,24 @@ cards.list = {
             canAttackAir = false,
             targetMode = "buildings",
         },
+        evolution = {
+            cycles = 2,
+            name = "Diamond Golem",
+            color = colors.cyan,
+            description = "5% more HP. Every 2s it stomps for 20 damage to nearby grounded enemy units.",
+            statMultipliers = {
+                maxHp = 1.05,
+            },
+            abilities = {
+                visualVariant = "diamond_golem",
+                groundPulse = {
+                    interval = 2.0,
+                    damage = 20,
+                    radius = 8.0,
+                    effect = "diamond_quake",
+                },
+            },
+        },
     },
     {
         id = "bat_swarm",
