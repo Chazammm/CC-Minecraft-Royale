@@ -67,6 +67,9 @@ assertTrue(villagerCard.unit.passive, "Villager must be passive")
 assertEq(villagerCard.unit.lifetime, 50, "Villager must last fifty seconds")
 assertEq(villagerCard.unit.emeraldBoost, 0.616, "Villager boost must target four-Emerald net value")
 
+local zombieCard = cards.get("zombie")
+assertEq(zombieCard.unit.maxHp, 523, "Zombie HP must reflect the latest five-percent nerf")
+
 local endermiteCard = cards.get("endermite")
 assertEq(endermiteCard.cost, 1, "Endermite must cost one Emerald")
 assertTrue(endermiteCard.unit.maxHp < 150, "Endermite should have low HP")
@@ -80,7 +83,7 @@ assertTrue(batCard.unit.maxHp < 80, "Princess Tower must one-shot each Bat")
 local skeletonCard = cards.get("skeleton")
 local snowGolemCard = cards.get("snow_golem")
 local witchCard = cards.get("witch")
-assertEq(skeletonCard.unit.maxHp, 177, "Skeleton HP must reflect the additional two-percent nerf")
+assertEq(skeletonCard.unit.maxHp, 168, "Skeleton HP must reflect the latest five-percent nerf")
 assertEq(skeletonCard.unit.damage, 30, "Skeleton damage must stay at thirty")
 assertEq(skeletonCard.unit.attackRange, 16.5, "Skeleton range must be increased by ten percent")
 assertEq(skeletonCard.unit.retreatSpeedMultiplier, 0.95, "Skeleton retreat must be five percent slower")
@@ -103,7 +106,7 @@ assertEq(ironGolemCard.cost, 5, "Iron Golem must cost five Emeralds")
 assertEq(ironGolemCard.unit.maxHp, 1377, "Iron Golem HP must include the two-percent buff")
 assertEq(cannonCard.building.maxHp, 618, "Cannon HP must reflect the five-percent nerf")
 assertEq(cannonCard.building.damage, 64, "Cannon damage must reflect the two-percent nerf")
-assertEq(blazeCard.unit.maxHp, 270, "Blaze HP must reflect the additional two-percent nerf")
+assertEq(blazeCard.unit.maxHp, 257, "Blaze HP must reflect the latest five-percent nerf")
 assertEq(creeperCard.unit.maxHp, 404, "Creeper HP must include the one-percent buff")
 assertEq(creeperCard.unit.proximityExplosion.fuseTime, 0.65, "Creeper fuse must be very short")
 
@@ -111,7 +114,7 @@ local anvilCard = cards.get("falling_anvil")
 assertTrue(anvilCard and anvilCard.kind == "spell", "Falling Anvil must be a selectable spell")
 assertEq(anvilCard.cost, 3, "Falling Anvil must cost three Emeralds")
 assertEq(anvilCard.spell.delay, 2.7, "Falling Anvil must have a 2.7-second delay")
-assertEq(anvilCard.spell.damage, 549, "Falling Anvil must leave a full-health Zombie at exactly one HP")
+assertEq(anvilCard.spell.damage, 549, "Falling Anvil damage must stay at 549")
 assertEq(anvilCard.spell.radius, 6.05, "Falling Anvil radius must be ten percent larger")
 assertTrue(anvilCard.spell.groundOnly == false, "Falling Anvil must hit flying and grounded units")
 
@@ -120,6 +123,7 @@ assertTrue(portalCard and portalCard.kind == "building", "Nether Portal must be 
 assertEq(portalCard.cost, 3, "Nether Portal must cost three Emeralds")
 assertTrue(portalCard.building.periodicSpawn ~= nil, "Nether Portal must periodically spawn Piglins")
 assertEq(portalCard.building.periodicSpawn.template, "piglin", "Nether Portal must spawn the internal Piglin")
+assertEq(portalCard.building.lifetime, 23, "Nether Portal must expire before its fourth scheduled Piglin spawn")
 
 local piglinTemplate = cards.getInternalUnit("piglin")
 assertTrue(piglinTemplate ~= nil, "Piglin must exist as an internal unit")
@@ -497,15 +501,15 @@ for _, entity in ipairs(anvilState.entities) do
 end
 assertTrue(anvilZombie ~= nil, "Anvil test Zombie must exist")
 assertTrue(Game.debugSpawnCard(anvilState, 1, "falling_anvil", 50, 80), "Admin must cast Falling Anvil")
-assertEq(anvilZombie.hp, 550, "Falling Anvil must not deal instant damage")
+assertEq(anvilZombie.hp, 523, "Falling Anvil must not deal instant damage")
 assertEq(#anvilState.pendingSpells, 1, "Falling Anvil must wait as a pending spell")
 
 Game.debugSetPaused(anvilState, false)
 for _ = 1, 10 do Game.update(anvilState, 0.25) end
 Game.update(anvilState, 0.19)
-assertEq(anvilZombie.hp, 550, "Falling Anvil must still be harmless before 2.7 seconds")
+assertEq(anvilZombie.hp, 523, "Falling Anvil must still be harmless before 2.7 seconds")
 Game.update(anvilState, 0.02)
-assertEq(anvilZombie.hp, 1, "Falling Anvil direct hit must leave Zombie at exactly one HP")
+assertTrue(not anvilZombie.alive, "Falling Anvil must now one-shot the lower-HP Zombie")
 assertEq(#anvilState.pendingSpells, 0, "Falling Anvil must resolve after its 2.7-second delay")
 
 local anvilMultiState = Game.new()
@@ -628,6 +632,29 @@ for _, entity in ipairs(portalState.entities) do
     if entity.id == firstPiglinId and entity.alive then firstPiglinStillAlive = true end
 end
 assertTrue(not firstPiglinStillAlive, "Piglin must disappear after its ten-second lifetime")
+
+local portalLifetimeState = Game.new()
+Game.debugLoadScenario(portalLifetimeState, "empty")
+Game.debugSpawnCard(portalLifetimeState, 1, "nether_portal", 25, 100)
+Game.debugSetPaused(portalLifetimeState, false)
+
+local seenPiglins = {}
+for _ = 1, 100 do
+    Game.update(portalLifetimeState, 0.25)
+    for _, entity in ipairs(portalLifetimeState.entities) do
+        if entity.name == "Piglin" then
+            seenPiglins[entity.id] = true
+        end
+    end
+end
+
+local totalPortalPiglins = 0
+for _ in pairs(seenPiglins) do totalPortalPiglins = totalPortalPiglins + 1 end
+assertEq(
+    totalPortalPiglins,
+    3,
+    "A 23-second Nether Portal must spawn exactly three Piglins instead of four"
+)
 
 local rangedPiglinState = Game.new()
 Game.debugLoadScenario(rangedPiglinState, "empty")
