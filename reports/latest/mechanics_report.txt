@@ -1,13 +1,13 @@
 CC-MINECRAFT-ROYALE MECHANICS REPORT
-FORMAT_VERSION|8
-GENERATED_EPOCH_MS|1791465139062
+FORMAT_VERSION|9
+GENERATED_EPOCH_MS|1791465904286
 OS_VERSION|CraftOS 1.9
 CARD_COUNT|22
 HARNESS|condition_waits=true|dt=0.050|safe_x=50.0|safe_y=110.0
 CONFIG|tick=0.100|normal=150|overtime=150|emerald_rate=0.357143|building_decay=1.150
 BALANCE_SNAPSHOT|skeleton_range=15.00|skeleton_retreat=0.85|bat_damage=17.00
 EVOLUTION_SNAPSHOT|creeper_cycles=2|portal_cycles=2|mite_cycles=4|guardian_cycles=2|villager_cycles=3|ghast_damage=130.0|ghast_range=24.0
-SUMMARY|pass=20|fail=0|error=0|total=20|runtime_cpu_s=0.0500
+SUMMARY|pass=21|fail=0|error=0|total=21|runtime_cpu_s=0.0500
 
 RESULT|boot_deck|PASS|Lobby boots with empty human decks|Human players should build/load/randomize an 8-card deck before READY.
 DATA|boot_deck|p1_deck_cards=0.0000
@@ -49,6 +49,17 @@ DATA|admin_evolution_spawn|mega_mite_spawned=true
 DATA|admin_evolution_spawn|elder_guardian_spawned=true
 DATA|admin_evolution_spawn|emerald_bank_spawned=true
 DATA|admin_evolution_spawn|all_marked_evolution=true
+
+RESULT|guardian_targeting|PASS|Unreachable ground troops ignore water Guardian|Admin must preserve Guardian water placement; ground attackers only aggro it when their real attack reach can touch water.
+DATA|guardian_targeting|admin_land_spawn_rejected=true
+DATA|guardian_targeting|admin_land_rejection_reason=WATER ONLY - PLACE IN OPEN RIVER
+DATA|guardian_targeting|admin_bridge_spawn_rejected=true
+DATA|guardian_targeting|admin_open_water_spawn_allowed=true
+DATA|guardian_targeting|guardian_distance_to_ground_reach=6.0000
+DATA|guardian_targeting|zombie_attack_range=2.5000
+DATA|guardian_targeting|zombie_ignored_guardian=true
+DATA|guardian_targeting|skeleton_attack_range=15.0000
+DATA|guardian_targeting|skeleton_targeted_guardian=true
 
 RESULT|guardian_beam|PASS|Guardian water beam ramps and resists disruption|Guardian must live only in open river water, ramp its locked beam, keep 80% charge when hit and reflect 5% of flying attack damage.
 DATA|guardian_beam|water_allowed=true
