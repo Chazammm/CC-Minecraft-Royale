@@ -652,6 +652,8 @@ local function infoStatLines(card)
         end
         if s.groundOnly then
             table.insert(lines, "TARGETS: GROUND / BUILDINGS / TOWERS")
+        elseif card.id == "falling_anvil" then
+            table.insert(lines, "TARGETS: AIR + GROUND / BUILDINGS / TOWERS")
         end
     end
 
