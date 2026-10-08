@@ -351,19 +351,19 @@ local function drawStatus(buffer, state, playerId)
         if cycles == nil then cycles = 2 end
         local progress = math.min(cycles, player.evolutionProgress or 0)
         local evoState = progress >= cycles and "READY" or (tostring(progress) .. "/" .. tostring(cycles))
-        rightText = "EVO " .. (evoCard.icon or "?") .. " " .. evoState
+        rightText = "EVO " .. evoCard.name .. " " .. evoState
         rightColor = progress >= cycles and colors.magenta or colors.lightBlue
 
         if player.queue and player.queue[1] then
             local nextCard = cards.get(player.queue[1])
             if nextCard then
-                rightText = rightText .. " | NEXT " .. (nextCard.icon or "?")
+                rightText = rightText .. " | NEXT " .. nextCard.name
             end
         end
     elseif player.queue and player.queue[1] then
         local nextCard = cards.get(player.queue[1])
         if nextCard then
-            rightText = "NEXT: " .. (nextCard.icon or "?") .. " " .. nextCard.name
+            rightText = "NEXT: " .. nextCard.name
             rightColor = nextCard.color or colors.lightGray
         end
     end
@@ -401,7 +401,6 @@ local function drawCard(buffer, zone, card, selected, affordable, evolutionInfo)
     fill(buffer, zone.x1, zone.y1, zone.x2, zone.y2, bg)
 
     local width = zone.x2 - zone.x1 + 1
-    local label = selected and ("> " .. (card.icon or "?") .. " <") or (card.icon or "?")
     local nameLines = compactNameLines(card.name, width)
     local displayCost = evolutionInfo and evolutionInfo.cost or card.cost
     local cost = formatEmeraldCost(displayCost)
@@ -420,16 +419,9 @@ local function drawCard(buffer, zone, card, selected, affordable, evolutionInfo)
         )
     end
 
-    writeText(
-        buffer,
-        zone.x1 + math.max(0, math.floor((width - #label) / 2)),
-        zone.y1 + 1,
-        label,
-        selected and colors.black or (card.color or colors.white),
-        bg
-    )
-
-    local nameY = math.min(zone.y2 - 3, zone.y1 + 3)
+    local nameY = evolutionInfo
+        and math.min(zone.y2 - 3, zone.y1 + 2)
+        or math.min(zone.y2 - 3, zone.y1 + 1)
     for i, line in ipairs(nameLines) do
         writeText(
             buffer,
@@ -586,12 +578,9 @@ local function drawCollectionCard(buffer, zone, card, selected, evolutionSelecte
 
     local width = zone.x2 - zone.x1 + 1
     local evoAvailable = cards.hasEvolution(card)
-    local top = string.format(
-        "%s%s  %dE",
-        evoAvailable and "E " or "",
-        card.icon or "?",
-        card.cost
-    )
+    local top = evoAvailable
+        and string.format("EVO  %dE", card.cost)
+        or string.format("%dE", card.cost)
     local nameLines = compactNameLines(card.name, width)
     local stateText
 
@@ -672,14 +661,7 @@ local function drawDeckSlot(buffer, zone, slot, card, evolutionSelected, evoluti
 
     if card then
         local fullName = tostring(card.name or "")
-        local withIcon = string.format("%s %s", card.icon or "?", fullName)
-        local nameLines
-
-        if #withIcon <= width then
-            nameLines = { withIcon }
-        else
-            nameLines = compactNameLines(fullName, width)
-        end
+        local nameLines = compactNameLines(fullName, width)
 
         local nameY = #nameLines > 1 and (zone.y1 + 1) or (zone.y1 + 2)
         for i, line in ipairs(nameLines) do
@@ -736,7 +718,7 @@ local function drawEvolutionSlot(buffer, zone, player, enabled)
     local line
     if not enabled then
         if selected and cards.hasEvolution(selected) then
-            line = "SAVED: " .. (selected.icon or "?") .. " " .. selected.name
+            line = "SAVED: " .. selected.name
         else
             line = "EVOLUTIONS DISABLED FOR THIS MATCH"
         end
@@ -747,15 +729,13 @@ local function drawEvolutionSlot(buffer, zone, player, enabled)
 
         if cycles == 0 then
             line = string.format(
-                "%s %s | EVERY PLAY EVO | %s",
-                selected.icon or "?",
+                "%s | EVERY PLAY EVO | %s",
                 selected.name,
                 formatEmeraldCost(evoCost)
             )
         else
             line = string.format(
-                "%s %s | %d NORMAL -> EVO | %s",
-                selected.icon or "?",
+                "%s | %d NORMAL -> EVO | %s",
                 selected.name,
                 cycles,
                 formatEmeraldCost(evoCost)
@@ -1084,35 +1064,6 @@ local function infoStatLines(card)
         end
     end
 
-    if cards.hasEvolution(card) then
-        local cycles = cards.evolutionCycles(card)
-        if cycles == nil then cycles = 2 end
-        local evoCost = cards.evolutionCost(card) or card.cost
-
-        if cycles == 0 then
-            table.insert(lines, "EVOLUTION: every play evolves")
-        else
-            table.insert(lines, string.format(
-                "EVOLUTION: %d normal plays; play %d evolves",
-                cycles,
-                cycles + 1
-            ))
-        end
-
-        table.insert(lines, string.format(
-            "EVO COST: %s  |  BASE COST: %s",
-            formatEmeraldCost(evoCost),
-            formatEmeraldCost(card.cost)
-        ))
-
-        local evo = card.evolution
-        if evo and evo.name then
-            table.insert(lines, "EVO FORM: " .. tostring(evo.name))
-        end
-        if evo and evo.description then
-            table.insert(lines, tostring(evo.description))
-        end
-    end
 
     return lines
 end
@@ -1122,7 +1073,9 @@ local function drawInfoCollectionCard(buffer, zone, card, selected)
     fill(buffer, zone.x1, zone.y1, zone.x2, zone.y2, bg)
 
     local width = zone.x2 - zone.x1 + 1
-    local top = string.format("%s %dE", card.icon or "?", card.cost)
+    local top = cards.hasEvolution(card)
+        and string.format("EVO %dE", card.cost)
+        or string.format("%dE", card.cost)
     local nameLines = compactNameLines(card.name, width)
     local accent = card.color or colors.white
     local accentText = contrastTextColor(accent)
@@ -1203,7 +1156,69 @@ local function drawCardInfoScreen(buffer, state, playerId, layout)
             end
         end
 
-        local statsHeaderY = math.max(31, descriptionEndY + 1)
+        local tacticalY = math.max(31, descriptionEndY + 1)
+
+        if info then
+            local good = "GOOD VS: " .. tostring(info.goodAgainst or "-")
+            local bad = "WEAK VS: " .. tostring(info.badAgainst or "-")
+            writeText(
+                buffer,
+                3,
+                tacticalY,
+                util.truncate(good, buffer.width - 4),
+                colors.lime,
+                colors.black
+            )
+            tacticalY = tacticalY + 1
+            writeText(
+                buffer,
+                3,
+                tacticalY,
+                util.truncate(bad, buffer.width - 4),
+                colors.red,
+                colors.black
+            )
+            tacticalY = tacticalY + 1
+        end
+
+        if cards.hasEvolution(selected) then
+            local evo = selected.evolution or {}
+            local playNumber = cards.evolutionPlayNumber(selected) or 1
+            local evoName = evo.name or ("Evolved " .. selected.name)
+            local evoCost = cards.evolutionCost(selected) or selected.cost
+
+            writeText(
+                buffer,
+                3,
+                tacticalY,
+                string.format(
+                    "EVO: %s | PLAY %d | %s",
+                    evoName,
+                    playNumber,
+                    formatEmeraldCost(evoCost)
+                ),
+                colors.magenta,
+                colors.black
+            )
+            tacticalY = tacticalY + 1
+
+            if evo.description then
+                local evoLines = wrapWords(evo.description, buffer.width - 4)
+                for i = 1, math.min(2, #evoLines) do
+                    writeText(
+                        buffer,
+                        3,
+                        tacticalY,
+                        evoLines[i],
+                        colors.lightBlue,
+                        colors.black
+                    )
+                    tacticalY = tacticalY + 1
+                end
+            end
+        end
+
+        local statsHeaderY = tacticalY
         writeText(
             buffer,
             3,
