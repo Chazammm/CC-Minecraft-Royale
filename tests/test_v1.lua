@@ -229,6 +229,44 @@ assertEq(#debugState.entities, 1, "Admin spawn must create the selected unit")
 Game.debugSetPaused(debugState, false)
 assertTrue(not debugState.adminPaused, "Admin pause control must resume simulation")
 
+local forwardOrderState = Game.new()
+Game.debugLoadScenario(forwardOrderState, "empty")
+Game.debugSpawnCard(forwardOrderState, 1, "zombie", 50, 80)
+Game.debugSpawnCard(forwardOrderState, 2, "zombie", 50, 80)
+for _, entity in ipairs(forwardOrderState.entities) do entity.hp = 30 end
+Game.debugSetPaused(forwardOrderState, false)
+forwardOrderState.combatTick = 0
+Game.update(forwardOrderState, 0.10)
+
+local forwardP1Alive, forwardP2Alive = false, false
+for _, entity in ipairs(forwardOrderState.entities) do
+    if entity.owner == 1 and entity.alive then forwardP1Alive = true end
+    if entity.owner == 2 and entity.alive then forwardP2Alive = true end
+end
+assertTrue(
+    forwardP1Alive and not forwardP2Alive,
+    "Odd combat ticks must process the forward entity order"
+)
+
+local reverseOrderState = Game.new()
+Game.debugLoadScenario(reverseOrderState, "empty")
+Game.debugSpawnCard(reverseOrderState, 1, "zombie", 50, 80)
+Game.debugSpawnCard(reverseOrderState, 2, "zombie", 50, 80)
+for _, entity in ipairs(reverseOrderState.entities) do entity.hp = 30 end
+Game.debugSetPaused(reverseOrderState, false)
+reverseOrderState.combatTick = 1
+Game.update(reverseOrderState, 0.10)
+
+local reverseP1Alive, reverseP2Alive = false, false
+for _, entity in ipairs(reverseOrderState.entities) do
+    if entity.owner == 1 and entity.alive then reverseP1Alive = true end
+    if entity.owner == 2 and entity.alive then reverseP2Alive = true end
+end
+assertTrue(
+    reverseP2Alive and not reverseP1Alive,
+    "Even combat ticks must reverse update order instead of permanently favoring earlier entities"
+)
+
 local retargetState = Game.new()
 Game.debugLoadScenario(retargetState, "king")
 Game.debugSpawnCard(retargetState, 1, "skeleton", 50, 92)
@@ -523,6 +561,23 @@ end
 assertTrue(spawnedPiglin ~= nil, "Nether Portal must spawn a Piglin")
 assertTrue(spawnedPiglin.remainingLifetime <= 10 and spawnedPiglin.remainingLifetime > 0, "Spawned Piglin must have a ten-second lifetime")
 assertTrue(spawnedPiglin.hybridAttack ~= nil, "Spawned Piglin must retain hybrid axe/crossbow combat")
+
+local snapshotSpawnState = Game.new()
+Game.debugLoadScenario(snapshotSpawnState, "empty")
+Game.debugSpawnCard(snapshotSpawnState, 1, "nether_portal", 25, 100)
+Game.debugSetPaused(snapshotSpawnState, false)
+for _ = 1, 8 do Game.update(snapshotSpawnState, 0.25) end
+
+local freshPiglin
+for _, entity in ipairs(snapshotSpawnState.entities) do
+    if entity.name == "Piglin" then freshPiglin = entity end
+end
+assertTrue(freshPiglin ~= nil, "Snapshot test must spawn a Piglin at two seconds")
+assertEq(
+    freshPiglin.remainingLifetime,
+    10.0,
+    "A summon created during a combat tick must not lose lifetime or act until the next tick"
+)
 
 local costApiState = Game.new()
 costApiState.players[1].ready = true
@@ -953,6 +1008,28 @@ end
 
 assertTrue(Game.randomizeDeck(presetState, 1), "Random deck button must work")
 assertTrue(cards.isValidDeck(presetState.players[1].deck), "Random deck must contain eight unique valid cards")
+
+local oldFsForPreset = fs
+local oldTextutilsForPreset = textutils
+fs = {
+    open = function() return nil end,
+}
+textutils = {
+    serialize = function() return "{}" end,
+}
+local presetFailureState = Game.new()
+local oldSlot2 = presetFailureState.deckPresets[1][2]
+assertTrue(
+    not Game.saveDeckPreset(presetFailureState, 1, 2),
+    "A real filesystem write failure must be reported instead of pretending the preset was saved"
+)
+assertEq(
+    presetFailureState.deckPresets[1][2],
+    oldSlot2,
+    "Failed preset persistence must restore the previous in-memory slot"
+)
+fs = oldFsForPreset
+textutils = oldTextutilsForPreset
 
 -- Lane objectives must stay Clash-like: same-lane Princess first, then King.
 local laneState = Game.new()
