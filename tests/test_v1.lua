@@ -1687,30 +1687,46 @@ assertTrue(Game.playCardFromSlot(featureBattle, 1, 1, 25, 112), "Playing a troop
 assertTrue(#featureBattle.effects > effectsBefore, "Deploying a troop must create combat feedback")
 
 -- Evolution framework: only explicitly evolved cards may occupy the extra
--- slot. Two normal plays charge it, the third play uses the evolved copy, and
--- the counter then resets. The shipped card pool may define zero evolutions;
--- this synthetic definition tests the generic engine without forcing a design.
+-- slot. Timing, evolved Emerald cost, stats and existing engine abilities are
+-- all configured per card.
 do
 local zombieEvolutionBefore = cards.get("zombie").evolution
 cards.get("zombie").evolution = {
-    cycles = 2,
+    cycles = 3, -- three normal plays, fourth play evolves
+    cost = { delta = 1 }, -- 3E base -> 4E evolved play
     name = "Evolved Zombie",
-    unit = {
-        multipliers = {
-            maxHp = 1.10,
-            damage = 1.50,
+    statMultipliers = {
+        maxHp = 1.10,
+        damage = 1.50,
+    },
+    abilities = {
+        canAttackAir = true,
+        onHitSlow = {
+            factor = 0.75,
+            duration = 2.0,
         },
     },
 }
 
 assertTrue(cards.hasEvolution("zombie"), "Synthetic Zombie evolution must be discoverable")
-assertEq(cards.evolutionCycles("zombie"), 2, "Evolution should default to a two-cycle charge")
+assertEq(cards.evolutionCycles("zombie"), 3, "Evolution timing must be configurable per card")
+assertEq(cards.evolutionPlayNumber("zombie"), 4, "Three charge plays must make the fourth play evolve")
+assertEq(cards.evolutionCost("zombie"), 4, "Evolution Emerald cost delta must be applied")
+assertEq(
+    cards.evolutionCycles({ evolution = { cycles = 0 } }),
+    0,
+    "Zero-cycle evolution must be supported for cards that evolve every play"
+)
 assertTrue(not cards.hasEvolution("skeleton"), "Cards without definitions must not be evolution eligible")
 
 local evolvedCopy = cards.evolvedCopy("zombie")
 assertTrue(evolvedCopy ~= nil and evolvedCopy.isEvolution, "Evolution must create an evolved card copy")
-assertEq(evolvedCopy.unit.damage, 120, "Evolution multipliers must apply to unit damage")
+assertEq(evolvedCopy.unit.damage, 120, "Evolution stat multipliers must apply to unit damage")
 assertTrue(math.abs(evolvedCopy.unit.maxHp - 575.3) < 0.000001, "Evolution HP multiplier must apply exactly")
+assertTrue(evolvedCopy.unit.canAttackAir, "Evolution abilities must be able to add air targeting")
+assertTrue(evolvedCopy.unit.onHitSlow ~= nil, "Evolution abilities must be deep-merged into unit data")
+assertEq(evolvedCopy.unit.onHitSlow.factor, 0.75, "Evolution ability data must preserve configured values")
+assertEq(evolvedCopy.unit.onHitSlow.duration, 2.0, "Evolution ability duration must be configurable")
 
 local evoState = Game.new()
 evoState.players[1].deck = cards.defaultDeck()
@@ -1748,29 +1764,48 @@ for playIndex = 1, 3 do
 
     assertTrue(
         Game.playCardFromSlot(evoState, 1, 1, 25, 112),
-        "Evolution cycle play " .. tostring(playIndex) .. " must succeed"
+        "Evolution charge play " .. tostring(playIndex) .. " must succeed"
     )
 
     local spawned = newestSourceEntity(evoState, 1, "zombie")
-    assertTrue(spawned ~= nil, "Evolution cycle play must spawn the source card")
-
-    if playIndex < 3 then
-        assertTrue(spawned.isEvolution ~= true, "First two plays must remain normal")
-        assertEq(spawned.damage, 80, "Normal charge plays must retain base stats")
-        assertEq(
-            evoState.players[1].evolutionProgress,
-            playIndex,
-            "Normal evolution play must advance the charge counter"
-        )
-    else
-        assertTrue(spawned.isEvolution == true, "Third play must deploy the evolution")
-        assertEq(spawned.name, "Evolved Zombie", "Evolved entity must use evolution display name")
-        assertEq(spawned.damage, 120, "Third play must use evolved stats")
-        assertEq(evoState.players[1].evolutionProgress, 0, "Evolution use must reset the counter")
-        assertEq(evoState.stats.players[1].evolutionPlays, 1, "Evolution telemetry must count evolved plays")
-        assertEq(evoState.stats.players[1].cards.zombie.evolutionPlays, 1, "Card telemetry must attribute evolved play")
-    end
+    assertTrue(spawned ~= nil, "Evolution charge play must spawn the source card")
+    assertTrue(spawned.isEvolution ~= true, "Configured charge plays must remain normal")
+    assertEq(spawned.damage, 80, "Normal charge plays must retain base stats")
+    assertEq(evoState.players[1].emeralds, 7, "Normal charge play must spend the base 3E cost")
+    assertEq(
+        evoState.players[1].evolutionProgress,
+        playIndex,
+        "Normal evolution play must advance the configured charge counter"
+    )
 end
+
+-- A ready evolution with a higher configured cost must not deploy or consume
+-- its charge until the player can actually afford the evolved card.
+evoState.players[1].hand[1] = "zombie"
+evoState.players[1].emeralds = 3
+local rejectedForCost = not Game.playCardFromSlot(evoState, 1, 1, 25, 112)
+assertTrue(rejectedForCost, "Ready 4E evolution must reject a player holding only 3E")
+assertEq(evoState.players[1].evolutionProgress, 3, "Failed evolved play must not consume evolution charge")
+assertEq(evoState.players[1].emeralds, 3, "Failed evolved play must not spend Emeralds")
+
+evoState.players[1].hand[1] = "zombie"
+evoState.players[1].emeralds = 10
+assertTrue(
+    Game.playCardFromSlot(evoState, 1, 1, 25, 112),
+    "Configured fourth-play evolution must succeed with enough Emeralds"
+)
+
+local evolvedEntity = newestSourceEntity(evoState, 1, "zombie")
+assertTrue(evolvedEntity ~= nil and evolvedEntity.isEvolution == true, "Fourth play must deploy the evolution")
+assertEq(evolvedEntity.name, "Evolved Zombie", "Evolved entity must use evolution display name")
+assertEq(evolvedEntity.damage, 120, "Evolved play must use configured stat multipliers")
+assertTrue(evolvedEntity.canAttackAir, "Evolved entity must receive configured ability flags")
+assertEq(evolvedEntity.onHitSlow.factor, 0.75, "Evolved entity must receive configured ability data")
+assertEq(evoState.players[1].emeralds, 6, "Evolved play must deduct its configured 4E cost")
+assertEq(evoState.players[1].evolutionProgress, 0, "Evolution use must reset the counter")
+assertEq(evoState.stats.players[1].evolutionPlays, 1, "Evolution telemetry must count evolved plays")
+assertEq(evoState.stats.players[1].cards.zombie.evolutionPlays, 1, "Card telemetry must attribute evolved play")
+assertEq(evoState.stats.players[1].cards.zombie.emeraldSpent, 13, "Telemetry must count 3+3+3+4 evolved Emerald spending")
 
 local lobbyClearState = Game.new()
 lobbyClearState.players[1].deck = cards.defaultDeck()
