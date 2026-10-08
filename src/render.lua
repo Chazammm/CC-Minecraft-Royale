@@ -118,8 +118,14 @@ function render.layoutFor(monitor)
             y2 = height - 11,
         },
         modeButton = {
-            x1 = math.floor(width * 0.25),
-            x2 = math.ceil(width * 0.75),
+            x1 = 1,
+            x2 = math.floor(width * 0.50),
+            y1 = height - 10,
+            y2 = height - 8,
+        },
+        rulesetButton = {
+            x1 = math.floor(width * 0.50) + 1,
+            x2 = width,
             y1 = height - 10,
             y2 = height - 8,
         },
@@ -128,6 +134,18 @@ function render.layoutFor(monitor)
             x2 = math.ceil(width * 0.75),
             y1 = height - 7,
             y2 = height - 5,
+        },
+        rulesetEvolutionButton = {
+            x1 = math.floor(width * 0.18),
+            x2 = math.ceil(width * 0.82),
+            y1 = 10,
+            y2 = 14,
+        },
+        rulesetBackButton = {
+            x1 = math.floor(width * 0.25),
+            x2 = math.ceil(width * 0.75),
+            y1 = height - 4,
+            y2 = height - 2,
         },
         readyButton = {
             x1 = math.floor(width * 0.25),
@@ -265,6 +283,14 @@ local function drawButton(buffer, zone, label, active)
     writeText(buffer, x, y, text, fg, bg)
 end
 
+local function evolutionsEnabled(state)
+    return not (
+        state
+        and type(state.ruleset) == "table"
+        and state.ruleset.evolutions == false
+    )
+end
+
 local function drawStatus(buffer, state, playerId)
     local player = state.players[playerId]
     local opponent = state.players[playerId == 1 and 2 or 1]
@@ -316,7 +342,10 @@ local function drawStatus(buffer, state, playerId)
     if player.feedback then
         rightText = util.truncate(player.feedback, math.floor(buffer.width * 0.50))
         rightColor = colors.yellow
-    elseif player.evolutionCardId and cards.hasEvolution(player.evolutionCardId) then
+    elseif evolutionsEnabled(state)
+        and player.evolutionCardId
+        and cards.hasEvolution(player.evolutionCardId)
+    then
         local evoCard = cards.get(player.evolutionCardId)
         local cycles = cards.evolutionCycles(evoCard)
         if cycles == nil then cycles = 2 end
@@ -451,7 +480,10 @@ local function drawBattle(buffer, state, playerId, layout)
             local evolutionInfo = nil
             local effectiveCost = card.cost
 
-            if player.evolutionCardId == card.id and cards.hasEvolution(card.id) then
+            if evolutionsEnabled(state)
+                and player.evolutionCardId == card.id
+                and cards.hasEvolution(card.id)
+            then
                 local cycles = cards.evolutionCycles(card.id)
                 if cycles == nil then cycles = 2 end
                 local progress = math.min(cycles, player.evolutionProgress or 0)
@@ -673,15 +705,25 @@ local function drawDeckSlot(buffer, zone, slot, card, evolutionSelected, evoluti
     end
 end
 
-local function drawEvolutionSlot(buffer, zone, player)
+local function drawEvolutionSlot(buffer, zone, player, enabled)
     local selected = player.evolutionCardId and cards.get(player.evolutionCardId) or nil
     local selecting = player.evolutionSelecting == true
-    local bg = selected and colors.purple or (selecting and colors.blue or colors.black)
+    local bg
+    if not enabled then
+        bg = colors.gray
+    else
+        bg = selected and colors.purple or (selecting and colors.blue or colors.black)
+    end
 
     fill(buffer, zone.x1, zone.y1, zone.x2, zone.y2, bg)
 
     local width = zone.x2 - zone.x1 + 1
-    local header = selecting and "EVOLUTION SLOT - SELECTING" or "EVOLUTION SLOT"
+    local header
+    if not enabled then
+        header = "EVOLUTION SLOT - RULESET OFF"
+    else
+        header = selecting and "EVOLUTION SLOT - SELECTING" or "EVOLUTION SLOT"
+    end
     writeText(
         buffer,
         zone.x1 + math.max(0, math.floor((width - #header) / 2)),
@@ -692,7 +734,13 @@ local function drawEvolutionSlot(buffer, zone, player)
     )
 
     local line
-    if selected and cards.hasEvolution(selected) then
+    if not enabled then
+        if selected and cards.hasEvolution(selected) then
+            line = "SAVED: " .. (selected.icon or "?") .. " " .. selected.name
+        else
+            line = "EVOLUTIONS DISABLED FOR THIS MATCH"
+        end
+    elseif selected and cards.hasEvolution(selected) then
         local cycles = cards.evolutionCycles(selected)
         if cycles == nil then cycles = 2 end
         local evoCost = cards.evolutionCost(selected) or selected.cost
@@ -730,7 +778,12 @@ local function drawEvolutionSlot(buffer, zone, player)
         bg
     )
 
-    local footer = selected and "TAP TO CLEAR" or "E-CARDS ARE MARKED WITH E"
+    local footer
+    if not enabled then
+        footer = "CHANGE IN RULESET - SELECTION IS PRESERVED"
+    else
+        footer = selected and "TAP TO CLEAR" or "E-CARDS ARE MARKED WITH E"
+    end
     writeText(
         buffer,
         zone.x1 + math.max(0, math.floor((width - #footer) / 2)),
@@ -1147,6 +1200,51 @@ local function drawCardInfoScreen(buffer, state, playerId, layout)
     drawButton(buffer, layout.readyButton, "BACK TO DECK", false)
 end
 
+local function drawRulesetScreen(buffer, state, playerId, layout)
+    fill(buffer, 1, 1, buffer.width, buffer.height, colors.black)
+
+    centered(buffer, 1, "CC-MINECRAFT ROYALE", colors.lime, colors.black)
+    centered(buffer, 3, "MATCH RULESET", colors.yellow, colors.black)
+    centered(
+        buffer,
+        5,
+        "SHARED MATCH RULES - CHANGES UNREADY BOTH PLAYERS",
+        colors.lightGray,
+        colors.black
+    )
+
+    local evoEnabled = evolutionsEnabled(state)
+    drawButton(
+        buffer,
+        layout.rulesetEvolutionButton,
+        "EVOLUTIONS: " .. (evoEnabled and "ON" or "OFF"),
+        evoEnabled,
+        evoEnabled and colors.lime or colors.red
+    )
+
+    local explanation = evoEnabled
+        and "Evolution Slots charge and activate normally."
+        or "Evolution selections stay saved, but all cards play as BASE forms."
+
+    centered(
+        buffer,
+        17,
+        util.truncate(explanation, buffer.width - 2),
+        evoEnabled and colors.lightBlue or colors.orange,
+        colors.black
+    )
+
+    centered(
+        buffer,
+        21,
+        "MORE RULES CAN BE ADDED HERE LATER",
+        colors.gray,
+        colors.black
+    )
+
+    drawButton(buffer, layout.rulesetBackButton, "BACK TO DECK", false)
+end
+
 local function drawLobby(buffer, state, playerId, layout, monitorName)
     fill(buffer, 1, 1, buffer.width, buffer.height, colors.black)
 
@@ -1210,7 +1308,12 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
         )
     end
 
-    drawEvolutionSlot(buffer, layout.evolutionSlot, player)
+    drawEvolutionSlot(
+        buffer,
+        layout.evolutionSlot,
+        player,
+        evolutionsEnabled(state)
+    )
 
     if not (state.gameMode == "bot" and playerId == state.botPlayerId) then
         drawButton(buffer, layout.randomButton, "RANDOM 8", false)
@@ -1232,6 +1335,15 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
         layout.modeButton,
         modeLabel,
         state.gameMode == "bot"
+    )
+
+    local evoRuleEnabled = evolutionsEnabled(state)
+    drawButton(
+        buffer,
+        layout.rulesetButton,
+        "RULESET: EVO " .. (evoRuleEnabled and "ON" or "OFF"),
+        not evoRuleEnabled,
+        evoRuleEnabled and colors.lightBlue or colors.red
     )
 
     if state.gameMode == "bot" then
@@ -1373,7 +1485,9 @@ function render.draw(monitor, state, playerId, monitorName)
     local layout = render.layoutFor(monitor)
 
     if state.phase == "lobby" then
-        if state.players[playerId].infoOpen then
+        if state.players[playerId].rulesetOpen then
+            drawRulesetScreen(buffer, state, playerId, layout)
+        elseif state.players[playerId].infoOpen then
             drawCardInfoScreen(buffer, state, playerId, layout)
         else
             drawLobby(buffer, state, playerId, layout, monitorName or "")
