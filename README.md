@@ -279,6 +279,39 @@ The runner writes a shareable machine-readable report to:
 
 The report contains PASS/FAIL status plus measured values (spawn times, HP decay, Emerald generation, tower drain, bot actions, etc.) so failures can be analyzed without reproducing the match manually.
 
+## Evolution balance testing
+
+Normal balance simulations already execute real Evolution gameplay. `Bot.prepare()` assigns the single Evolution Slot to the first eligible card in that bot's deck, and every play still goes through the normal `Game.playCardFromSlot()` path. This means cycles, changed Emerald cost, evolved stats, summons, splash, slow and other abilities are part of `simulate` and ordinary `compare` matches.
+
+The mixed simulator reports an additional **EVOLUTIONS** table:
+
+- `Slot%` - how often that card actually occupied the one Evolution Slot when it was present in a deck
+- `Evo/SM` - evolved plays per match where it owned the slot
+- `Evo%` - share of that card's plays that were evolved while selected
+- `Cycles` and `EvoCost` - configured rule/cost
+
+For a clean Evolution-only measurement use:
+
+    evo_compare 30 all
+    evo_compare 100 creeper
+    evo_compare 100 nether_portal
+    evo_compare 100 endermite
+
+`evo_compare` builds identical 8-card subject decks and identical opponents for BASE and EVO. BASE disables every Evolution Slot; EVO enables only the tested card. Each context is played from both sides, and corresponding BASE/EVO matches use the same gameplay RNG seed.
+
+With the current three Evolutions, `evo_compare 30 all` runs 360 matches.
+
+The report is written to:
+
+    evolution_results.txt
+
+and, when report sync is configured, automatically uploaded to:
+
+    reports/latest/evolution_results.txt
+    reports/history/evolution/
+
+This isolates the **raw power added by the Evolution Slot**. It does not measure the opportunity cost of choosing that Evolution instead of another one, so follow it with `simulate 1000 mixed` for the actual one-slot meta.
+
 ## GitHub report sync
 
 Reports can be uploaded directly from the arena computer into this repository so the newest diagnostics are always available without screenshots.
@@ -298,12 +331,14 @@ After setup, `mechanics_test`, `simulate`, and `compare` automatically upload th
     reports/latest/mechanics_report.txt
     reports/latest/balance_results.txt
     reports/latest/comparison_results.txt
+    reports/latest/evolution_results.txt
 
 and timestamped history copies under:
 
     reports/history/mechanics/
     reports/history/balance/
     reports/history/comparison/
+    reports/history/evolution/
 
 Manual commands:
 
