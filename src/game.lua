@@ -259,6 +259,7 @@ local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color, 
     entity.periodicSpawnTimer = entity.periodicSpawn
         and (entity.periodicSpawn.initialDelay or entity.periodicSpawn.interval or 8)
         or nil
+    entity.periodicSpawnTotal = 0
     entity.emeraldPulseTimer = entity.emeraldBoost and 0.25 or nil
 
     table.insert(state.entities, entity)
@@ -303,6 +304,7 @@ local function spawnBuilding(state, owner, card, x, y)
     entity.periodicSpawnTimer = entity.periodicSpawn
         and (entity.periodicSpawn.initialDelay or entity.periodicSpawn.interval or 8)
         or nil
+    entity.periodicSpawnTotal = 0
 
     table.insert(state.entities, entity)
     return entity
@@ -539,7 +541,9 @@ local function spawnProjectile(state, attacker, target, damageOverride, visualOv
             or (attacker.kind == "tower" and "tower_shot")
             or "shot",
         splashRadius = attacker.projectileSplashRadius,
+        splashEffect = attacker.projectileSplashEffect,
         onHitSlow = attacker.onHitSlow and util.deepcopy(attacker.onHitSlow) or nil,
+        slowPrimaryOnly = attacker.projectileSlowPrimaryOnly == true,
         alive = true,
     })
 end
@@ -589,8 +593,21 @@ local function explodeProximityUnit(state, entity)
     local spec = entity.proximityExplosion
     if not spec or not entity.alive then return end
 
-    addEffect(state, "explosion", entity.x, entity.y, spec.radius or 8, 0.55, entity.owner)
-    emitSound(state, "minecraft:entity.generic.explode", 0.9, 1.0)
+    addEffect(
+        state,
+        spec.effectKind or "explosion",
+        entity.x,
+        entity.y,
+        spec.visualRadius or spec.radius or 8,
+        spec.visualTtl or 0.55,
+        entity.owner
+    )
+    emitSound(
+        state,
+        spec.sound or "minecraft:entity.generic.explode",
+        spec.soundVolume or 0.9,
+        spec.soundPitch or 1.0
+    )
 
     local victims = {}
     for _, candidate in ipairs(state.entities) do
@@ -721,6 +738,12 @@ local function updatePeriodicSpawn(state, entity, dt)
     local spec = entity.periodicSpawn
     if not spec then return end
 
+    if spec.maxTotal
+        and (entity.periodicSpawnTotal or 0) >= spec.maxTotal
+    then
+        return
+    end
+
     entity.periodicSpawnTimer = (entity.periodicSpawnTimer or spec.interval or 8) - dt
     if entity.periodicSpawnTimer > 0 then return end
 
@@ -765,6 +788,7 @@ local function updatePeriodicSpawn(state, entity, dt)
                 entity.sourceCardId
             )
             summoned.summonerId = entity.id
+            entity.periodicSpawnTotal = (entity.periodicSpawnTotal or 0) + 1
         end
     end
 
@@ -1109,14 +1133,28 @@ local function updateProjectiles(state, dt)
                                 end
                             end
                         end
-                        addEffect(state, "splash", target.x, target.y, projectile.splashRadius, 0.30, projectile.owner)
+                        addEffect(
+                            state,
+                            projectile.splashEffect or "splash",
+                            target.x,
+                            target.y,
+                            projectile.splashRadius,
+                            0.30,
+                            projectile.owner
+                        )
                     else
                         table.insert(victims, target)
                     end
 
                     for _, victim in ipairs(victims) do
                         damageEntity(state, victim, projectile.damage, projectile.owner, projectile.sourceCardId)
-                        if victim.alive and projectile.onHitSlow then
+                        local shouldSlow = victim.alive
+                            and projectile.onHitSlow
+                            and (
+                                not projectile.slowPrimaryOnly
+                                or victim.id == target.id
+                            )
+                        if shouldSlow then
                             local oldRemaining = victim.slowRemaining or 0
                             local newRemaining = math.max(
                                 oldRemaining,
