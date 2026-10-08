@@ -509,8 +509,12 @@ reportPrint("A large boost is not automatically overpowered: Evolution Slots are
 reportPrint("Use mixed simulation afterward to judge the resulting card/deck meta.")
 reportPrint("")
 reportPrint("Recommended:")
-reportPrint("  evo_compare 30 all             -- 360-match first pass with 3 current Evolutions")
-reportPrint("  evo_compare 100 creeper        -- confirm one Evolution")
+reportPrint(string.format(
+    "  evo_compare 30 all             -- %d-match first pass with %d current Evolutions",
+    #cards.evolutionCards() * 30 * 4,
+    #cards.evolutionCards()
+))
+reportPrint("  evo_compare 100 <card_id>      -- confirm one Evolution")
 reportPrint("  simulate 1000 mixed            -- overall meta after Evolutions")
 reportPrint("")
 reportPrint("Saved report: " .. RESULT_PATH)
