@@ -6,6 +6,7 @@ local config = require("config")
 local args = { ... }
 
 local resultPath = "balance_results.txt"
+local SIM_DT = config.TICK_RATE or 0.10
 local nativePrint = print
 local liveHandle = nil
 
@@ -205,19 +206,19 @@ local function runMatch(deck1, deck2)
         + config.MATCH.normalTime
         + config.MATCH.overtimeTime
         + 30
-    local maxTicks = math.ceil(maxSimulationSeconds / 0.25)
+    local maxTicks = math.ceil(maxSimulationSeconds / SIM_DT)
 
     while state.phase ~= "result" and ticks < maxTicks do
-        Game.update(state, 0.25)
+        Game.update(state, SIM_DT)
 
         -- Alternate which bot thinks first. The benchmark should measure card
         -- balance, not gain a systematic P1 advantage from a fixed call order.
         if ticks % 2 == 0 then
-            Bot.update(bot1, state, 0.25)
-            Bot.update(bot2, state, 0.25)
+            Bot.update(bot1, state, SIM_DT)
+            Bot.update(bot2, state, SIM_DT)
         else
-            Bot.update(bot2, state, 0.25)
-            Bot.update(bot1, state, 0.25)
+            Bot.update(bot2, state, SIM_DT)
+            Bot.update(bot1, state, SIM_DT)
         end
 
         ticks = ticks + 1
@@ -254,7 +255,12 @@ local function mixedDeckPair()
 end
 
 reportPrint("CC-Minecraft Royale balance benchmark")
-reportPrint(("Mode: %s   Matches: %d   Seed: %d"):format(string.upper(mode), matchCount, seed))
+reportPrint(("Mode: %s   Matches: %d   Seed: %d   Tick: %.2fs"):format(
+    string.upper(mode),
+    matchCount,
+    seed,
+    SIM_DT
+))
 if mode == "mixed" then
     reportPrint(("%d-card pool: 16 are sampled into two disjoint 8-card decks each pair."):format(#ALL_CARDS))
     reportPrint("The unused cards change every shuffle; pairs are replayed with sides swapped.")
