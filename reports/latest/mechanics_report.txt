@@ -1,13 +1,13 @@
 CC-MINECRAFT-ROYALE MECHANICS REPORT
-FORMAT_VERSION|12
-GENERATED_EPOCH_MS|1791472603197
+FORMAT_VERSION|13
+GENERATED_EPOCH_MS|1791474923860
 OS_VERSION|CraftOS 1.9
 CARD_COUNT|22
 HARNESS|condition_waits=true|dt=0.050|safe_x=50.0|safe_y=110.0
 CONFIG|tick=0.100|normal=150|overtime=150|emerald_rate=0.357143|building_decay=1.150
 BALANCE_SNAPSHOT|skeleton_range=15.00|skeleton_retreat=0.85|bat_damage=17.00
 EVOLUTION_SNAPSHOT|creeper_cycles=2|portal_cycles=2|mite_cycles=4|guardian_cycles=2|villager_cycles=3|golem_cycles=2|ghast_damage=130.0|ghast_range=24.0
-SUMMARY|pass=22|fail=0|error=0|total=22|runtime_cpu_s=0.0500
+SUMMARY|pass=21|fail=1|error=0|total=22|runtime_cpu_s=0.0000
 
 RESULT|boot_deck|PASS|Lobby boots with empty human decks|Human players should build/load/randomize an 8-card deck before READY.
 DATA|boot_deck|p1_deck_cards=0.0000
@@ -77,7 +77,7 @@ DATA|guardian_targeting|zombie_ignored_guardian=true
 DATA|guardian_targeting|skeleton_attack_range=15.0000
 DATA|guardian_targeting|skeleton_targeted_guardian=true
 
-RESULT|guardian_beam|PASS|Guardian water beam ramps and resists disruption|Guardian must live only in open river water, ramp its locked beam, keep 80% charge when hit and reflect 5% of flying attack damage.
+RESULT|guardian_beam|FAIL|Guardian water beam ramps and resists disruption|Guardian must live only in open river water, ramp its locked beam, keep 80% charge when hit and reflect 5% of flying attack damage.
 DATA|guardian_beam|water_allowed=true
 DATA|guardian_beam|land_rejected=true
 DATA|guardian_beam|bridge_rejected=true
@@ -95,17 +95,23 @@ DATA|guardian_beam|charge_after_hit=0.4400
 DATA|guardian_beam|beam_visible=true
 DATA|guardian_beam|spike_hit_detected=true
 DATA|guardian_beam|spike_hit_time_s=0.3500
-DATA|guardian_beam|flying_damage_reflected=3.2000
+DATA|guardian_beam|flying_damage_reflected=27.5906
 
-RESULT|evo_elder_guardian|PASS|Elder Guardian doubles HP and globally slows movement|Elder Guardian must keep Guardian combat mechanics, double HP and apply a battlefield-wide non-permanent 5% enemy movement slow.
+RESULT|evo_elder_guardian|PASS|Third Guardian play deploys a fully functional Elder Guardian|The real third Guardian play must become an 18-range Elder Guardian with double HP, working beam, one Evo telemetry play and a live 5% global enemy movement slow.
 DATA|evo_elder_guardian|configured_cycles=2.0000
-DATA|evo_elder_guardian|base_hp=90.0000
+DATA|evo_elder_guardian|normal_guardians_from_first_two_plays=2.0000
+DATA|evo_elder_guardian|third_play_name=Elder Guardian
+DATA|evo_elder_guardian|third_play_is_evolution=true
+DATA|evo_elder_guardian|progress_after_third_play=0.0000
+DATA|evo_elder_guardian|telemetry_evolution_plays=1.0000
+DATA|evo_elder_guardian|base_range=18.0000
+DATA|evo_elder_guardian|elder_range=18.0000
 DATA|evo_elder_guardian|elder_hp=180.0000
 DATA|evo_elder_guardian|global_slow=0.0500
 DATA|evo_elder_guardian|enemy_move_factor_with_elder=0.9500
+DATA|evo_elder_guardian|elder_acquired_target_at_17=true
+DATA|evo_elder_guardian|beam_damage_at_17=24.3906
 DATA|evo_elder_guardian|enemy_move_factor_after_elder_death=1.0000
-DATA|evo_elder_guardian|beam_max_dps_same=true
-DATA|evo_elder_guardian|spike_reflect_same=true
 
 RESULT|evo_emerald_bank|PASS|Emerald Bank keeps production and lasts 20s longer|Emerald Bank must preserve Villager economy output while gaining 5% HP and exactly 20 seconds of lifetime.
 DATA|evo_emerald_bank|configured_cycles=3.0000
