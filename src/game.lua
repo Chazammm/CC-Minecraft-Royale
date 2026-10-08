@@ -1128,6 +1128,7 @@ local function updateCombatEntity(state, entity, dt)
     end
 
     updatePeriodicSpawn(state, entity, dt)
+    updateGroundPulse(state, entity, dt)
 
     if entity.emeraldBoost then
         entity.emeraldPulseTimer = (entity.emeraldPulseTimer or 0) - dt
