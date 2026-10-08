@@ -282,7 +282,7 @@ local function spawnTower(state, blueprint)
         entity.icon = "T"
         entity.maxHp = 1501
         entity.damage = 80
-        entity.attackRange = 26
+        entity.attackRange = 30
         entity.attackCooldown = 0.95
     end
 
@@ -336,6 +336,44 @@ local function findNearest(state, entity, filter, maxRange)
     return best, bestDistance
 end
 
+local function preferredTowerObjective(state, entity)
+    local enemyId = otherPlayer(entity.owner)
+    local lane = arena.laneForX(entity.x)
+    local lanePrincess = nil
+    local kingTower = nil
+    local fallbackPrincess = nil
+    local fallbackDistance = math.huge
+
+    for _, candidate in ipairs(state.entities) do
+        if candidate.alive
+            and candidate.owner == enemyId
+            and candidate.kind == "tower"
+        then
+            if candidate.towerType == "king" then
+                kingTower = candidate
+            elseif candidate.towerType == "princess" then
+                local candidateLane = arena.laneForX(candidate.x)
+                if candidateLane == lane then
+                    lanePrincess = candidate
+                else
+                    local d = util.distance(entity.x, entity.y, candidate.x, candidate.y)
+                    if d < fallbackDistance then
+                        fallbackDistance = d
+                        fallbackPrincess = candidate
+                    end
+                end
+            end
+        end
+    end
+
+    -- Clash-style lane objective:
+    -- 1) attack the Princess Tower belonging to the current lane;
+    -- 2) once that tower is gone, continue into the King Tower;
+    -- 3) only use the opposite Princess Tower as a final fallback if no King
+    --    exists (mostly useful for admin/custom scenarios).
+    return lanePrincess or kingTower or fallbackPrincess
+end
+
 local function acquireTarget(state, entity)
     if entity.passive or entity.targetMode == "none" then
         return nil
@@ -348,18 +386,32 @@ local function acquireTarget(state, entity)
         return target
     end
 
-    local nearby = findNearest(state, entity, nil, entity.aggroRange)
-    if nearby then return nearby end
-
+    -- Troops/buildings may distract a marching unit, but towers do not take
+    -- part in generic aggro selection. Tower choice is lane-aware below.
+    local nearby
     if entity.targetMode == "buildings" then
-        return findNearest(state, entity, function(candidate)
-            return candidate.kind == "tower" or candidate.kind == "building"
-        end, nil)
+        nearby = findNearest(
+            state,
+            entity,
+            function(candidate)
+                return candidate.kind == "building"
+            end,
+            entity.aggroRange
+        )
+    else
+        nearby = findNearest(
+            state,
+            entity,
+            function(candidate)
+                return candidate.kind ~= "tower"
+            end,
+            entity.aggroRange
+        )
     end
 
-    local tower = findNearest(state, entity, function(candidate)
-        return candidate.kind == "tower"
-    end, nil)
+    if nearby then return nearby end
+
+    local tower = preferredTowerObjective(state, entity)
     if tower then return tower end
 
     return findNearest(state, entity, nil, nil)
@@ -585,6 +637,14 @@ killEntity = function(state, entity, sourceOwner, sourceCardId)
             Game.finish(state, winner, "KING TOWER DESTROYED")
         else
             state.players[winner].towersDestroyed = state.players[winner].towersDestroyed + 1
+
+            state.destroyedSideTowers = state.destroyedSideTowers or {
+                [1] = { left = false, right = false },
+                [2] = { left = false, right = false },
+            }
+            local lane = arena.laneForX(entity.x)
+            state.destroyedSideTowers[entity.owner][lane] = true
+
             if state.overtime then
                 Game.finish(state, winner, "OVERTIME SUDDEN DEATH")
             end
@@ -792,7 +852,9 @@ local function updateCombatEntity(state, entity, dt)
             pullTarget, pullDistance = findNearest(
                 state,
                 entity,
-                nil,
+                function(candidate)
+                    return candidate.kind ~= "tower"
+                end,
                 entity.aggroRange
             )
         end
@@ -1040,6 +1102,10 @@ function Game.new(soundCallback)
         timeLeft = config.MATCH.normalTime,
         overtime = false,
         tiebreaker = false,
+        destroyedSideTowers = {
+            [1] = { left = false, right = false },
+            [2] = { left = false, right = false },
+        },
         winner = nil,
         resultReason = nil,
         sound = soundCallback,
@@ -1068,6 +1134,10 @@ function Game.resetLobby(state)
     state.resultReason = nil
     state.overtime = false
     state.tiebreaker = false
+    state.destroyedSideTowers = {
+        [1] = { left = false, right = false },
+        [2] = { left = false, right = false },
+    }
     state.adminMode = false
     state.adminPaused = false
     state.adminScenario = nil
@@ -1100,6 +1170,10 @@ function Game.startCountdown(state)
     state.resultReason = nil
     state.overtime = false
     state.tiebreaker = false
+    state.destroyedSideTowers = {
+        [1] = { left = false, right = false },
+        [2] = { left = false, right = false },
+    }
     state.stats = newMatchStats()
     resetPlayersForMatch(state)
     emitSound(state, "minecraft:block.note_block.pling", 0.7, 1.2)
@@ -1347,7 +1421,7 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
         return false, "NOT ENOUGH EMERALDS"
     end
 
-    if not arena.placementAllowed(playerId, x, y, card.placement) then
+    if not arena.placementAllowed(playerId, x, y, card.placement, state) then
         setFeedback(player, "INVALID PLACEMENT")
         return false, "INVALID PLACEMENT"
     end
@@ -1969,6 +2043,10 @@ function Game.debugLoadScenario(state, scenario)
     state.resultReason = nil
     state.overtime = false
     state.tiebreaker = false
+    state.destroyedSideTowers = {
+        [1] = { left = false, right = false },
+        [2] = { left = false, right = false },
+    }
 
     for playerId = 1, 2 do
         state.players[playerId].emeralds = state.players[playerId].maxEmeralds
