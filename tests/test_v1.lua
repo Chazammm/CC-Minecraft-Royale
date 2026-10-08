@@ -89,7 +89,7 @@ local blazeCard = cards.get("blaze")
 assertEq(ironGolemCard.cost, 5, "Iron Golem must cost five Emeralds")
 assertEq(cannonCard.building.maxHp, 618, "Cannon HP must reflect the five-percent nerf")
 assertEq(cannonCard.building.damage, 64, "Cannon damage must reflect the two-percent nerf")
-assertEq(blazeCard.unit.maxHp, 276, "Blaze HP must reflect the five-percent nerf")
+assertEq(blazeCard.unit.maxHp, 270, "Blaze HP must reflect the additional two-percent nerf")
 
 local anvilCard = cards.get("falling_anvil")
 assertTrue(anvilCard and anvilCard.kind == "spell", "Falling Anvil must be a selectable spell")
@@ -833,7 +833,8 @@ assertTrue(featureBattle.players[1].queue[1] ~= nil, "Battle must expose a next 
 local sawPrincess, sawKing = false, false
 for _, entity in ipairs(featureBattle.entities) do
     if entity.kind == "tower" and entity.towerType == "princess" then
-        assertEq(entity.maxHp, 1580, "Princess Tower must use the additional five-percent HP nerf")
+        assertEq(entity.maxHp, 1501, "Princess Tower must use the latest five-percent HP nerf")
+        assertEq(entity.damage, 80, "Princess Tower must use the latest two-percent damage nerf")
         sawPrincess = true
     elseif entity.kind == "tower" and entity.towerType == "king" then
         assertEq(entity.maxHp, 2565, "King Tower must use five-percent HP nerf")
