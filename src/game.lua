@@ -800,19 +800,41 @@ local function updateCombatEntity(state, entity, dt)
     end
 
     if entity.remainingLifetime then
-        entity.remainingLifetime = entity.remainingLifetime - dt
-        if entity.remainingLifetime <= 0 then
-            entity.alive = false
-            addEffect(
-                state,
-                entity.emeraldBoost and "emerald" or "death",
-                entity.x,
-                entity.y,
-                entity.kind == "building" and 4.5 or 3.5,
-                entity.emeraldBoost and 0.55 or 0.30,
-                entity.owner
-            )
-            return
+        if entity.kind == "building"
+            and entity.lifetime
+            and entity.lifetime > 0
+        then
+            -- Clash-style building lifetime: buildings do not stay at full HP
+            -- and suddenly disappear. Their original max HP decays linearly
+            -- over the configured lifetime. Enemy damage stacks on top, so a
+            -- damaged building naturally dies earlier.
+            local elapsed = math.min(dt, math.max(0, entity.remainingLifetime))
+            entity.remainingLifetime = math.max(0, entity.remainingLifetime - dt)
+
+            local decayPerSecond = entity.maxHp / entity.lifetime
+            entity.hp = entity.hp - decayPerSecond * elapsed
+
+            if entity.hp <= 0 or entity.remainingLifetime <= 0 then
+                killEntity(state, entity, nil, nil)
+                return
+            end
+        else
+            -- Units with a lifetime (Piglin, Villager, etc.) keep their normal
+            -- timed despawn behavior. Only buildings use HP decay.
+            entity.remainingLifetime = entity.remainingLifetime - dt
+            if entity.remainingLifetime <= 0 then
+                entity.alive = false
+                addEffect(
+                    state,
+                    entity.emeraldBoost and "emerald" or "death",
+                    entity.x,
+                    entity.y,
+                    3.5,
+                    entity.emeraldBoost and 0.55 or 0.30,
+                    entity.owner
+                )
+                return
+            end
         end
     end
 
