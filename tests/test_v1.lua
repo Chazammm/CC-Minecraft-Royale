@@ -2084,6 +2084,7 @@ end
 do
 local waterAdmin = Game.new()
 Game.debugLoadScenario(waterAdmin, "empty")
+Game.debugSetPaused(waterAdmin, false)
 local riverY = (config.ARENA.riverTop + config.ARENA.riverBottom) / 2
 
 local landOk, landReason = Game.debugSpawnCard(waterAdmin, 1, "guardian", 50, 110)
