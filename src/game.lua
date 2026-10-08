@@ -123,7 +123,9 @@ local function newPlayer(playerId)
         rematch = false,
         emeralds = config.MATCH.emeraldStart,
         maxEmeralds = config.MATCH.emeraldMax,
-        deck = cards.defaultDeck(),
+        -- Lobby boot state is intentionally empty. Players build an 8-card
+        -- deck manually, load a preset, or use RANDOM before they can READY.
+        deck = {},
         hand = {},
         queue = {},
         selectedSlot = nil,
@@ -1164,8 +1166,9 @@ function Game.new(soundCallback)
         stats = newMatchStats(),
     }
 
-    resetDeck(state.players[1])
-    resetDeck(state.players[2])
+    -- Do not call resetDeck here: resetDeck intentionally has a safety
+    -- fallback to the default deck for match setup, while boot should show an
+    -- empty deckbuilder.
     return state
 end
 
