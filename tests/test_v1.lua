@@ -72,6 +72,10 @@ assertEq(endermiteCard.cost, 1, "Endermite must cost one Emerald")
 assertTrue(endermiteCard.unit.maxHp < 150, "Endermite should have low HP")
 assertTrue(endermiteCard.unit.damage < 25, "Endermite should have low DPS damage")
 
+local batCard = cards.get("bat_swarm")
+assertEq(batCard.unit.maxHp, 45, "Bat Swarm must be extremely fragile")
+assertTrue(batCard.unit.maxHp < 80, "Princess Tower must one-shot each Bat")
+
 local skeletonCard = cards.get("skeleton")
 local snowGolemCard = cards.get("snow_golem")
 assertTrue(
