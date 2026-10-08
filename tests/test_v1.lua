@@ -731,10 +731,10 @@ Game.debugSetPaused(kiteSlowState, false)
 Game.update(kiteSlowState, 0.20)
 
 local kiteDistance = math.abs(slowedSkeleton.y - kiteStartY)
-local expectedKiteDistance = 7.5 * 0.5 * 0.95 * 0.20
+local expectedKiteDistance = 7.5 * 0.5 * 0.85 * 0.20
 assertTrue(
     math.abs(kiteDistance - expectedKiteDistance) < 0.05,
-    "Skeleton retreat speed must combine active slow with its five-percent retreat penalty"
+    "Skeleton retreat speed must combine active slow with its fifteen-percent retreat penalty"
 )
 
 local teleportState = Game.new()
