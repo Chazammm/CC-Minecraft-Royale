@@ -1,53 +1,83 @@
 CC-Minecraft Royale controlled Evolution impact analysis
-Contexts/evolution: 30   Evolutions: 3   Total matches: 360   Seed: 2608
+Contexts/evolution: 30   Evolutions: 5   Total matches: 600   Seed: 2608
 Each context compares the exact same subject deck and opponent deck with side swapping.
 BASE disables all Evolution Slots. EVO enables only the tested card's Evolution Slot.
 Corresponding BASE/EVO matches are reseeded with the same gameplay RNG seed.
 This measures the raw contribution of that Evolution Slot, not its opportunity cost versus another Evolution.
 
-RUN 1/3: Creeper -> Charged Creeper
-  10/30 contexts  (40/360 total matches)
-  20/30 contexts  (80/360 total matches)
-  30/30 contexts  (120/360 total matches)
+RUN 1/5: Creeper -> Charged Creeper
+  10/30 contexts  (40/600 total matches)
+  20/30 contexts  (80/600 total matches)
+  30/30 contexts  (120/600 total matches)
 
 EVOLUTION|creeper|base=Creeper|evolved=Charged Creeper
 RULE|cycles=2|evolves_on_play=3|base_cost=4.0|evo_cost=4.0
-SCORE|BASE=50.00%|EVO=50.00%|DELTA_EVO_MINUS_BASE=+0.00pp
-PAIRED_95CI|mean=+0.00pp|low=-4.70pp|high=+4.70pp|signal=NO CLEAR IMPACT
-CONTEXT_EDGE|BASE=1|EVO=1|TIE=28
-BASE_CARD|plays/match=2.75|unit/E=73.62|tower/E=0.00|kills/match=3.32|avg_match=268.7s
-EVO_CARD|plays/match=2.87|evo/match=0.65|evo_share=22.7%|reached=46.7%|unit/E=74.52|tower/E=0.00|kills/match=3.53|avg_match=269.7s
-SUBJECT_SLOTS|1:3,2:5,3:5,4:4,5:7,6:2,7:3,8:1
+SCORE|BASE=45.83%|EVO=45.83%|DELTA_EVO_MINUS_BASE=+0.00pp
+PAIRED_95CI|mean=+0.00pp|low=+0.00pp|high=+0.00pp|signal=NO CLEAR IMPACT
+CONTEXT_EDGE|BASE=0|EVO=0|TIE=30
+BASE_CARD|plays/match=2.42|unit/E=77.78|tower/E=0.50|kills/match=3.20|avg_match=283.3s
+EVO_CARD|plays/match=2.48|evo/match=0.53|evo_share=21.5%|reached=41.7%|unit/E=74.90|tower/E=0.49|kills/match=3.37|avg_match=284.4s
+SUBJECT_SLOTS|1:6,2:3,3:5,4:8,5:0,6:3,7:4,8:1
 
-RUN 2/3: Endermite -> Mega Mite
-  10/30 contexts  (160/360 total matches)
-  20/30 contexts  (200/360 total matches)
-  30/30 contexts  (240/360 total matches)
+RUN 2/5: Villager -> Emerald Bank
+  10/30 contexts  (160/600 total matches)
+  20/30 contexts  (200/600 total matches)
+  30/30 contexts  (240/600 total matches)
+
+EVOLUTION|villager|base=Villager|evolved=Emerald Bank
+RULE|cycles=3|evolves_on_play=4|base_cost=7.0|evo_cost=7.0
+SCORE|BASE=47.50%|EVO=47.50%|DELTA_EVO_MINUS_BASE=+0.00pp
+PAIRED_95CI|mean=+0.00pp|low=+0.00pp|high=+0.00pp|signal=NO CLEAR IMPACT
+CONTEXT_EDGE|BASE=0|EVO=0|TIE=30
+BASE_CARD|plays/match=0.53|unit/E=0.00|tower/E=0.00|kills/match=0.00|avg_match=282.2s
+EVO_CARD|plays/match=0.53|evo/match=0.00|evo_share=0.0%|reached=0.0%|unit/E=0.00|tower/E=0.00|kills/match=0.00|avg_match=282.2s
+UTILITY_BASE|bonus/match=3.61|slow/play=0.00|hits/play=0.00
+UTILITY_EVO|bonus/match=3.61|slow/play=0.00|hits/play=0.00
+SUBJECT_SLOTS|1:7,2:4,3:4,4:3,5:4,6:4,7:3,8:1
+
+RUN 3/5: Endermite -> Mega Mite
+  10/30 contexts  (280/600 total matches)
+  20/30 contexts  (320/600 total matches)
+  30/30 contexts  (360/600 total matches)
 
 EVOLUTION|endermite|base=Endermite|evolved=Mega Mite
-RULE|cycles=3|evolves_on_play=4|base_cost=1.0|evo_cost=1.0
-SCORE|BASE=58.33%|EVO=61.67%|DELTA_EVO_MINUS_BASE=+3.33pp
-PAIRED_95CI|mean=+3.33pp|low=-8.11pp|high=+14.78pp|signal=LEAN BOOST
-CONTEXT_EDGE|BASE=4|EVO=5|TIE=21
-BASE_CARD|plays/match=10.63|unit/E=47.13|tower/E=1.44|kills/match=1.47|avg_match=279.7s
-EVO_CARD|plays/match=10.55|evo/match=2.32|evo_share=22.0%|reached=100.0%|unit/E=60.54|tower/E=1.96|kills/match=1.80|avg_match=277.9s
-SUBJECT_SLOTS|1:2,2:5,3:3,4:4,5:6,6:5,7:2,8:3
+RULE|cycles=4|evolves_on_play=5|base_cost=1.0|evo_cost=1.0
+SCORE|BASE=38.33%|EVO=37.50%|DELTA_EVO_MINUS_BASE=-0.83pp
+PAIRED_95CI|mean=-0.83pp|low=-9.13pp|high=+7.47pp|signal=NO CLEAR IMPACT
+CONTEXT_EDGE|BASE=4|EVO=3|TIE=23
+BASE_CARD|plays/match=9.83|unit/E=44.75|tower/E=0.46|kills/match=0.88|avg_match=267.0s
+EVO_CARD|plays/match=9.83|evo/match=1.57|evo_share=15.9%|reached=91.7%|unit/E=50.93|tower/E=0.85|kills/match=1.13|avg_match=267.4s
+SUBJECT_SLOTS|1:3,2:1,3:2,4:7,5:3,6:3,7:5,8:6
 
-RUN 3/3: Nether Portal -> Ghast Portal
-  10/30 contexts  (280/360 total matches)
-  20/30 contexts  (320/360 total matches)
-  30/30 contexts  (360/360 total matches)
+RUN 4/5: Guardian -> Elder Guardian
+  10/30 contexts  (400/600 total matches)
+  20/30 contexts  (440/600 total matches)
+  30/30 contexts  (480/600 total matches)
+
+EVOLUTION|guardian|base=Guardian|evolved=Elder Guardian
+RULE|cycles=2|evolves_on_play=3|base_cost=6.0|evo_cost=6.0
+SCORE|BASE=35.00%|EVO=35.00%|DELTA_EVO_MINUS_BASE=+0.00pp
+PAIRED_95CI|mean=+0.00pp|low=+0.00pp|high=+0.00pp|signal=NO CLEAR IMPACT
+CONTEXT_EDGE|BASE=0|EVO=0|TIE=30
+BASE_CARD|plays/match=1.12|unit/E=80.59|tower/E=0.00|kills/match=1.85|avg_match=277.1s
+EVO_CARD|plays/match=1.15|evo/match=0.20|evo_share=17.4%|reached=16.7%|unit/E=79.47|tower/E=0.00|kills/match=1.75|avg_match=277.8s
+SUBJECT_SLOTS|1:3,2:3,3:2,4:7,5:7,6:4,7:2,8:2
+
+RUN 5/5: Nether Portal -> Ghast Portal
+  10/30 contexts  (520/600 total matches)
+  20/30 contexts  (560/600 total matches)
+  30/30 contexts  (600/600 total matches)
 
 EVOLUTION|nether_portal|base=Nether Portal|evolved=Ghast Portal
 RULE|cycles=2|evolves_on_play=3|base_cost=3.0|evo_cost=3.0
-SCORE|BASE=35.83%|EVO=62.50%|DELTA_EVO_MINUS_BASE=+26.67pp
-PAIRED_95CI|mean=+26.67pp|low=+13.60pp|high=+39.73pp|signal=CLEAR LARGE BOOST
-CONTEXT_EDGE|BASE=1|EVO=14|TIE=15
-BASE_CARD|plays/match=6.00|unit/E=87.18|tower/E=0.54|kills/match=7.25|avg_match=272.6s
-EVO_CARD|plays/match=5.70|evo/match=1.53|evo_share=26.9%|reached=85.0%|unit/E=145.16|tower/E=10.27|kills/match=11.62|avg_match=263.9s
+SCORE|BASE=70.00%|EVO=85.00%|DELTA_EVO_MINUS_BASE=+15.00pp
+PAIRED_95CI|mean=+15.00pp|low=+3.35pp|high=+26.65pp|signal=CLEAR LARGE BOOST
+CONTEXT_EDGE|BASE=2|EVO=10|TIE=18
+BASE_CARD|plays/match=7.03|unit/E=101.34|tower/E=0.46|kills/match=8.83|avg_match=279.2s
+EVO_CARD|plays/match=6.60|evo/match=1.88|evo_share=28.5%|reached=95.0%|unit/E=162.69|tower/E=15.37|kills/match=13.85|avg_match=262.7s
 UTILITY_BASE|bonus/match=0.00|slow/play=0.00|hits/play=0.00
-UTILITY_EVO|bonus/match=0.00|slow/play=1.45|hits/play=0.00
-SUBJECT_SLOTS|1:3,2:2,3:3,4:2,5:3,6:6,7:6,8:5
+UTILITY_EVO|bonus/match=0.00|slow/play=1.92|hits/play=0.00
+SUBJECT_SLOTS|1:7,2:2,3:2,4:3,5:4,6:4,7:1,8:7
 
 HOW TO READ
 DELTA_EVO_MINUS_BASE isolates the tested Evolution against the same card/deck with no Evolution Slot.
@@ -59,8 +89,8 @@ A large boost is not automatically overpowered: Evolution Slots are supposed to 
 Use mixed simulation afterward to judge the resulting card/deck meta.
 
 Recommended:
-  evo_compare 30 all             -- 360-match first pass with 3 current Evolutions
-  evo_compare 100 creeper        -- confirm one Evolution
+  evo_compare 30 all             -- 600-match first pass with 5 current Evolutions
+  evo_compare 100 <card_id>      -- confirm one Evolution
   simulate 1000 mixed            -- overall meta after Evolutions
 
 Saved report: evolution_results.txt
