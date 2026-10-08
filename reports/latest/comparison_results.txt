@@ -1,0 +1,111 @@
+CC-Minecraft Royale controlled replacement analysis
+Contexts/comparison: 30   Comparisons: 6   Total matches: 720   Seed: 1337
+Each context uses the same 7-card shell, same opponent deck and same replacement slot.
+A and B each play once as P1 and once as P2. Compared cards are excluded from all other slots.
+
+RUN 1/6: Zombie vs Wither Skeleton
+  10/30 contexts  (40/720 total matches)
+  20/30 contexts  (80/720 total matches)
+  30/30 contexts  (120/720 total matches)
+
+COMPARISON|zombie_vs_wither|Zombie|Wither Skeleton
+NOTE|Direct 3E melee sidegrade
+COST|A=3|B=3
+SCORE|A=67.50%|B=55.00%|DELTA_B_MINUS_A=-12.50pp
+PAIRED_95CI|mean=-12.50pp|low=-23.20pp|high=-1.80pp|signal=CLEAR A++
+CONTEXT_EDGE|A=10|B=3|TIE=17
+A_CARD|plays/match=7.80|unit/E=128.52|tower/E=8.96|kills/match=11.07|avg_match=271.5s
+B_CARD|plays/match=8.07|unit/E=127.43|tower/E=5.88|kills/match=11.92|avg_match=277.1s
+REPLACEMENT_SLOTS|1:4,2:4,3:3,4:2,5:2,6:7,7:4,8:4
+
+RUN 2/6: Slime vs Magma Cube
+  10/30 contexts  (160/720 total matches)
+  20/30 contexts  (200/720 total matches)
+  30/30 contexts  (240/720 total matches)
+
+COMPARISON|slime_vs_magma|Slime|Magma Cube
+NOTE|Direct 3E split-melee sidegrade
+COST|A=3|B=3
+SCORE|A=55.00%|B=50.00%|DELTA_B_MINUS_A=-5.00pp
+PAIRED_95CI|mean=-5.00pp|low=-12.20pp|high=+2.20pp|signal=LEAN A
+CONTEXT_EDGE|A=4|B=1|TIE=25
+A_CARD|plays/match=8.62|unit/E=83.13|tower/E=3.64|kills/match=5.40|avg_match=278.9s
+B_CARD|plays/match=8.63|unit/E=81.67|tower/E=1.59|kills/match=5.20|avg_match=283.5s
+REPLACEMENT_SLOTS|1:2,2:3,3:4,4:6,5:4,6:5,7:5,8:1
+
+RUN 3/6: Cannon vs Pillager Outpost
+  10/30 contexts  (280/720 total matches)
+  20/30 contexts  (320/720 total matches)
+  30/30 contexts  (360/720 total matches)
+
+COMPARISON|cannon_vs_outpost|Cannon|Pillager Outpost
+NOTE|Direct 4E defensive-building sidegrade
+COST|A=4|B=4
+SCORE|A=43.33%|B=33.33%|DELTA_B_MINUS_A=-10.00pp
+PAIRED_95CI|mean=-10.00pp|low=-23.62pp|high=+3.62pp|signal=LEAN A
+CONTEXT_EDGE|A=8|B=4|TIE=18
+A_CARD|plays/match=3.32|unit/E=110.48|tower/E=0.00|kills/match=4.50|avg_match=270.5s
+B_CARD|plays/match=4.20|unit/E=86.60|tower/E=0.00|kills/match=6.27|avg_match=266.6s
+REPLACEMENT_SLOTS|1:5,2:1,3:4,4:6,5:1,6:2,7:8,8:3
+
+RUN 4/6: Iron Golem vs Enderman
+  10/30 contexts  (400/720 total matches)
+  20/30 contexts  (440/720 total matches)
+  30/30 contexts  (480/720 total matches)
+
+COMPARISON|golem_vs_enderman|Iron Golem|Enderman
+NOTE|Diagnostic: same-cost 5E control, not a direct role replacement
+COST|A=5|B=5
+SCORE|A=44.17%|B=51.67%|DELTA_B_MINUS_A=+7.50pp
+PAIRED_95CI|mean=+7.50pp|low=-8.11pp|high=+23.11pp|signal=LEAN B
+CONTEXT_EDGE|A=7|B=10|TIE=13
+A_CARD|plays/match=4.63|unit/E=12.22|tower/E=4.50|kills/match=0.67|avg_match=276.5s
+B_CARD|plays/match=4.60|unit/E=83.78|tower/E=10.27|kills/match=6.78|avg_match=296.3s
+REPLACEMENT_SLOTS|1:7,2:5,3:3,4:5,5:2,6:4,7:0,8:4
+
+RUN 5/6: Skeleton vs Snow Golem
+  10/30 contexts  (520/720 total matches)
+  20/30 contexts  (560/720 total matches)
+  30/30 contexts  (600/720 total matches)
+
+COMPARISON|skeleton_vs_snow|Skeleton|Snow Golem
+NOTE|Diagnostic: 3E ranged air/ground support comparison
+COST|A=3|B=3
+SCORE|A=63.33%|B=38.33%|DELTA_B_MINUS_A=-25.00pp
+PAIRED_95CI|mean=-25.00pp|low=-41.11pp|high=-8.89pp|signal=CLEAR A++
+CONTEXT_EDGE|A=15|B=4|TIE=11
+A_CARD|plays/match=8.05|unit/E=100.01|tower/E=3.78|kills/match=10.00|avg_match=282.4s
+B_CARD|plays/match=7.87|unit/E=62.36|tower/E=1.51|kills/match=5.90|avg_match=278.7s
+UTILITY_A|bonus/match=0.00|slow/play=0.00|hits/play=0.00
+UTILITY_B|bonus/match=0.00|slow/play=6.74|hits/play=0.00
+REPLACEMENT_SLOTS|1:1,2:2,3:0,4:12,5:4,6:3,7:7,8:1
+
+RUN 6/6: Bat Swarm vs Spider
+  10/30 contexts  (640/720 total matches)
+  20/30 contexts  (680/720 total matches)
+  30/30 contexts  (720/720 total matches)
+
+COMPARISON|bats_vs_spider|Bat Swarm|Spider
+NOTE|Diagnostic: 2E fast-pressure comparison
+COST|A=2|B=2
+SCORE|A=62.50%|B=48.33%|DELTA_B_MINUS_A=-14.17pp
+PAIRED_95CI|mean=-14.17pp|low=-29.69pp|high=+1.36pp|signal=LEAN A
+CONTEXT_EDGE|A=9|B=4|TIE=17
+A_CARD|plays/match=9.13|unit/E=140.41|tower/E=2.46|kills/match=7.68|avg_match=275.7s
+B_CARD|plays/match=9.28|unit/E=94.93|tower/E=0.99|kills/match=4.22|avg_match=273.9s
+REPLACEMENT_SLOTS|1:5,2:2,3:4,4:2,5:2,6:9,7:2,8:4
+
+HOW TO READ
+DELTA_B_MINUS_A: positive means B won more often in otherwise identical deck contexts.
+PAIRED_95CI: uncertainty from context-by-context A/B differences after side swapping.
+If the entire interval is above/below zero, the edge is much more convincing than a raw mixed win rate.
+NEAR-EVEN means the measured delta is under 3 percentage points and the interval crosses zero.
+LEAN means an observed edge whose interval still crosses zero; collect more contexts before balancing.
+CLEAR means the paired interval excludes zero. CLEAR ++ also has at least an 8pp measured edge.
+Diagnostic comparisons (Golem/Enderman etc.) compare impact, not identical tactical roles.
+
+Recommended:
+  compare 30 all        -- broad first pass
+  compare 100 A B       -- confirm one suspicious pair
+
+Saved report: comparison_results.txt
