@@ -50,6 +50,17 @@ local SPRITES = {
             ".W.W.",
         },
     },
+    wither_skeleton = {
+        rows = {
+            ".DDD.",
+            ".DKD.",
+            ".DDD.",
+            "..D..",
+            ".DDD.",
+            "D.D.D",
+            ".D.D.",
+        },
+    },
     iron_golem = {
         rows = {
             "..SSS..",
@@ -81,6 +92,18 @@ local SPRITES = {
             "K.....K",
         },
     },
+    pillager_outpost = {
+        rows = {
+            "..NNN..",
+            ".NNNNN.",
+            "NNDDDDD",
+            ".NDDDN.",
+            ".NNKNN.",
+            ".NNNNN.",
+            "NN...NN",
+            "NN...NN",
+        },
+    },
     creeper = {
         -- Oversized Minecraft head, narrow body and split feet.
         rows = {
@@ -109,6 +132,21 @@ local SPRITES = {
             "LLL",
             "LKL",
             "LLL",
+        },
+    },
+    magma_cube = {
+        rows = {
+            ".OOO.",
+            "ORORO",
+            "OKOKO",
+            "OOOOO",
+        },
+    },
+    mini_magma_cube = {
+        rows = {
+            "OOO",
+            "OKO",
+            "ORO",
         },
     },
     baby_zombie = {
@@ -277,12 +315,16 @@ local SPRITES = {
 local NAME_TO_SPRITE = {
     ["Zombie"] = "zombie",
     ["Skeleton"] = "skeleton",
+    ["Wither Skeleton"] = "wither_skeleton",
     ["Iron Golem"] = "iron_golem",
     ["Bat Swarm"] = "bat_swarm",
     ["Cannon"] = "cannon",
+    ["Pillager Outpost"] = "pillager_outpost",
     ["Creeper"] = "creeper",
     ["Slime"] = "slime",
     ["Mini Slime"] = "mini_slime",
+    ["Magma Cube"] = "magma_cube",
+    ["Mini Magma Cube"] = "mini_magma_cube",
     ["Baby Zombie"] = "baby_zombie",
     ["Blaze"] = "blaze",
     ["Witch"] = "witch",
