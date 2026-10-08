@@ -146,6 +146,7 @@ assertEq(elderEvo.name, "Elder Guardian", "Guardian Evolution must be Elder Guar
 assertEq(elderEvo.unit.maxHp, 180, "Elder Guardian must have exactly double Guardian HP")
 assertEq(elderEvo.unit.attackRange, 18.0, "Elder Guardian must inherit Guardian's improved range")
 assertEq(elderEvo.unit.aggroRange, 18.0, "Elder Guardian must inherit Guardian's improved aggro range")
+assertTrue(elderEvo.unit.waterOnly, "Elder Guardian must preserve Guardian water-only targetability")
 assertEq(elderEvo.unit.globalEnemyMoveSlow, 0.05, "Elder Guardian must globally slow enemy movement by five percent")
 assertEq(elderEvo.unit.beam.maxDps, guardianCard.unit.beam.maxDps, "Elder Guardian beam must otherwise stay identical")
 assertEq(elderEvo.unit.spikeReflectFlying, guardianCard.unit.spikeReflectFlying, "Elder Guardian spikes must stay identical")
