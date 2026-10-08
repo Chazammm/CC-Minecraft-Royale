@@ -190,6 +190,9 @@ local function makeBaseEntity(state, owner, kind, x, y)
         y = y,
         alive = true,
         targetId = nil,
+        -- targetId may change while approaching; lockedTargetId is set only
+        -- once a unit actually commits an attack to that target.
+        lockedTargetId = nil,
         attackCooldownLeft = 0,
     }
     state.nextEntityId = state.nextEntityId + 1
@@ -874,16 +877,36 @@ local function updateCombatEntity(state, entity, dt)
         return
     end
 
-    local target = getEntityById(state, entity.targetId)
+    local lockedTarget = nil
+    if entity.kind == "unit" and entity.lockedTargetId then
+        lockedTarget = getEntityById(state, entity.lockedTargetId)
+        if lockedTarget and targetAllowed(entity, lockedTarget) then
+            entity.targetId = lockedTarget.id
+        else
+            -- The committed target died or became invalid. Only then may the
+            -- unit acquire/lock something new.
+            entity.lockedTargetId = nil
+            lockedTarget = nil
+        end
+    end
+
+    local target = lockedTarget or getEntityById(state, entity.targetId)
     if target and not targetAllowed(entity, target) then
         target = nil
+        if entity.kind == "unit" then
+            entity.lockedTargetId = nil
+        end
     end
 
     -- Units marching toward a tower may be pulled by a closer valid target.
     -- Normal troops can be distracted by nearby enemies. Building-only troops
     -- such as the Iron Golem may only be pulled by actual buildings, which
     -- allows defensive Cannons to kite them toward the middle of the arena.
-    if target and entity.kind == "unit" and target.kind == "tower" then
+    if target
+        and entity.kind == "unit"
+        and not entity.lockedTargetId
+        and target.kind == "tower"
+    then
         local pullTarget, pullDistance
 
         if entity.targetMode == "buildings" then
@@ -984,6 +1007,7 @@ local function updateCombatEntity(state, entity, dt)
 
         if distance <= triggerRange then
             entity.fuseRemaining = spec.fuseTime or 1.5
+            entity.lockedTargetId = target.id
             emitSound(state, "minecraft:entity.creeper.primed", 0.7, 1.0)
             return
         end
@@ -999,6 +1023,7 @@ local function updateCombatEntity(state, entity, dt)
         and distance < entity.preferredMinRange
     then
         if distance <= attackRange and entity.attackCooldownLeft <= 0 then
+            entity.lockedTargetId = target.id
             performAttack(state, entity, target)
         end
         moveAway(entity, target, dt)
@@ -1007,6 +1032,9 @@ local function updateCombatEntity(state, entity, dt)
 
     if distance <= attackRange then
         if entity.attackCooldownLeft <= 0 then
+            if entity.kind == "unit" then
+                entity.lockedTargetId = target.id
+            end
             performAttack(state, entity, target)
         end
         return
