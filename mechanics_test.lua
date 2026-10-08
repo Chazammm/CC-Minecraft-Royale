@@ -5,7 +5,7 @@ local Bot = require("src.bot")
 local util = require("src.util")
 local arena = require("src.arena")
 
-local SUITE_VERSION = 6
+local SUITE_VERSION = 7
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 local EPSILON = 0.000001
@@ -345,6 +345,139 @@ runTest("evolution_cycle", "Evolution timing, cost, stats and abilities", functi
         and progressSequence[4] == 0
         and telemetry,
         "Each Evolution may define its own charge count, Emerald cost, stats and existing engine abilities.",
+        data
+end)
+
+runTest("evolution_ruleset", "Ruleset OFF fully disables Evolution gameplay", function()
+    local state = Game.new()
+    state.players[1].deck = {
+        "zombie",
+        "skeleton",
+        "iron_golem",
+        "bat_swarm",
+        "cannon",
+        "arrows",
+        "creeper",
+        "endermite",
+    }
+    state.players[2].deck = cards.defaultDeck()
+
+    local selected = Game.setEvolutionCard(state, 1, "creeper")
+    local disabled = Game.setRulesetRule(state, "evolutions", false, 1)
+
+    Game.startCountdown(state)
+    local enteredBattle = waitUntil(
+        state,
+        config.MATCH.countdown + 1,
+        function() return state.phase == "battle" end,
+        0.10
+    )
+
+    if not selected or not disabled or not enteredBattle then
+        return false, "Could not start Evolution-disabled Ruleset scenario.", {}
+    end
+
+    -- Deliberately inject a ready-looking counter. Ruleset OFF must still
+    -- force the base card and must not charge/consume this value.
+    state.players[1].evolutionProgress = 2
+    state.players[1].hand[1] = "creeper"
+    state.players[1].emeralds = 10
+
+    local cost = Game.getCardPlayCost(state, 1, "creeper")
+    local played = Game.playCardFromSlot(state, 1, 1, SAFE_X, SAFE_Y)
+    local spawned = findEntity(state, function(e)
+        return e.alive
+            and e.owner == 1
+            and e.sourceCardId == "creeper"
+    end)
+
+    local data = {}
+    addData(data, "ruleset_evolutions_enabled", Game.rulesetEnabled(state, "evolutions"))
+    addData(data, "saved_evolution_card", state.players[1].evolutionCardId)
+    addData(data, "play_cost", cost)
+    addData(data, "spawned_name", spawned and spawned.name)
+    addData(data, "spawned_is_evolution", spawned and spawned.isEvolution == true)
+    addData(data, "progress_after_play", state.players[1].evolutionProgress)
+    addData(data, "telemetry_evolution_plays", state.stats.players[1].evolutionPlays)
+
+    return played
+        and not Game.rulesetEnabled(state, "evolutions")
+        and state.players[1].evolutionCardId == "creeper"
+        and math.abs((cost or 0) - cards.get("creeper").cost) <= EPSILON
+        and spawned ~= nil
+        and spawned.name == "Creeper"
+        and spawned.isEvolution ~= true
+        and state.players[1].evolutionProgress == 2
+        and state.stats.players[1].evolutionPlays == 0,
+        "Ruleset OFF must preserve the selected Evo card but make every battle play use the untouched base form.",
+        data
+end)
+
+runTest("admin_evolution_spawn", "Admin directly spawns Evolution forms", function()
+    local state = newAdminState("empty")
+
+    local chargedOk = Game.debugSpawnCard(
+        state,
+        1,
+        "evo:creeper",
+        SAFE_X - 10,
+        SAFE_Y
+    )
+    local portalOk = Game.debugSpawnCard(
+        state,
+        1,
+        "evo:nether_portal",
+        SAFE_X,
+        SAFE_Y
+    )
+    local miteOk = Game.debugSpawnCard(
+        state,
+        1,
+        "evo:endermite",
+        SAFE_X + 10,
+        SAFE_Y
+    )
+
+    local charged = findEntity(state, function(e)
+        return e.alive and e.name == "Charged Creeper"
+    end)
+    local portal = findEntity(state, function(e)
+        return e.alive and e.name == "Ghast Portal"
+    end)
+    local mite = findEntity(state, function(e)
+        return e.alive and e.name == "Mega Mite"
+    end)
+
+    local catalog = cards.adminSpawnCards()
+    local evoEntries = 0
+    for _, entry in ipairs(catalog) do
+        if entry.isEvolution then evoEntries = evoEntries + 1 end
+    end
+
+    local data = {}
+    addData(data, "admin_catalog_entries", #catalog)
+    addData(data, "admin_evolution_entries", evoEntries)
+    addData(data, "charged_creeper_spawned", charged ~= nil)
+    addData(data, "ghast_portal_spawned", portal ~= nil)
+    addData(data, "mega_mite_spawned", mite ~= nil)
+    addData(data, "all_marked_evolution",
+        charged and portal and mite
+        and charged.isEvolution == true
+        and portal.isEvolution == true
+        and mite.isEvolution == true
+    )
+
+    return chargedOk
+        and portalOk
+        and miteOk
+        and evoEntries == #cards.evolutionCards()
+        and charged ~= nil
+        and portal ~= nil
+        and mite ~= nil
+        and charged.isEvolution == true
+        and portal.isEvolution == true
+        and mite.isEvolution == true,
+        "Admin card pages must include every Evolution as a direct sandbox spawn, bypassing cycles and Emerald cost.",
         data
 end)
 
