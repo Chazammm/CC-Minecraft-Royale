@@ -280,6 +280,9 @@ local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color, 
     entity.beamCharge = entity.beam and 0 or nil
     entity.beamTickTimer = entity.beam and 0 or nil
     entity.beamTargetId = nil
+    entity.groundPulseTimer = entity.groundPulse
+        and (entity.groundPulse.initialDelay or entity.groundPulse.interval or 2)
+        or nil
 
     table.insert(state.entities, entity)
     return entity
