@@ -117,6 +117,37 @@ local function drawButton(b, z, label, active, activeColor)
     writeText(b, x, y, text, fg, bg)
 end
 
+local function drawCardButton(b, z, card, active, activeColor)
+    local bg = active and (activeColor or colors.lime) or colors.gray
+    local fg = active and colors.black or colors.white
+    fill(b, z.x1, z.y1, z.x2, z.y2, bg)
+
+    local width = z.x2 - z.x1 + 1
+    local name = tostring(card.name or "")
+    local lines = {}
+
+    if #name <= math.max(1, width - 2) then
+        lines = { name }
+    else
+        local first, rest = name:match("^(%S+)%s+(.+)$")
+        if first and rest
+            and #first <= math.max(1, width - 2)
+            and #rest <= math.max(1, width - 2)
+        then
+            lines = { first, rest }
+        else
+            lines = { util.truncate(name, math.max(1, width - 2)) }
+        end
+    end
+
+    local centerY = math.floor((z.y1 + z.y2) / 2)
+    local startY = #lines > 1 and (centerY - 1) or centerY
+    for i, line in ipairs(lines) do
+        local x = z.x1 + math.max(0, math.floor((width - #line) / 2))
+        writeText(b, x, startY + i - 1, line, fg, bg)
+    end
+end
+
 local scenarioLabels = { "FULL", "TOWERS", "KING", "1V1 TOWER", "EMPTY" }
 local scenarioIds = { "full", "princess", "king", "single_tower", "empty" }
 
@@ -167,10 +198,7 @@ function render.draw(monitor, state, viewerId, ui)
         if card then
             local selected = ui.selectedCard == card.id
             local zone = layout.cards[slot]
-            local width = zone.x2 - zone.x1 + 1
-            local withIcon = (card.icon or "?") .. " " .. card.name
-            local label = #withIcon <= math.max(1, width - 2) and withIcon or card.name
-            drawButton(b, zone, label, selected, card.color or colors.orange)
+            drawCardButton(b, zone, card, selected, card.color or colors.orange)
         end
     end
 
