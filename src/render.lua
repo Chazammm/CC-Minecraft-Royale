@@ -315,6 +315,18 @@ local function drawStatus(buffer, state, playerId)
     end
 end
 
+local function compactNameLines(name, width)
+    name = tostring(name or "")
+    if #name <= width then return { name } end
+
+    local first, rest = name:match("^(%S+)%s+(.+)$")
+    if first and rest and #first <= width and #rest <= width then
+        return { first, rest }
+    end
+
+    return { util.truncate(name, math.max(1, width)) }
+end
+
 local function drawCard(buffer, zone, card, selected, affordable)
     local bg = selected and colors.orange or colors.gray
     if not affordable then bg = colors.black end
@@ -322,7 +334,7 @@ local function drawCard(buffer, zone, card, selected, affordable)
 
     local width = zone.x2 - zone.x1 + 1
     local label = selected and ("> " .. (card.icon or "?") .. " <") or (card.icon or "?")
-    local name = util.truncate(card.name, math.max(1, width))
+    local nameLines = compactNameLines(card.name, width)
     local cost = tostring(card.cost) .. "E"
 
     writeText(
@@ -334,14 +346,17 @@ local function drawCard(buffer, zone, card, selected, affordable)
         bg
     )
 
-    writeText(
-        buffer,
-        zone.x1 + math.max(0, math.floor((width - #name) / 2)),
-        math.min(zone.y2 - 2, zone.y1 + 3),
-        name,
-        colors.white,
-        bg
-    )
+    local nameY = math.min(zone.y2 - 3, zone.y1 + 3)
+    for i, line in ipairs(nameLines) do
+        writeText(
+            buffer,
+            zone.x1 + math.max(0, math.floor((width - #line) / 2)),
+            nameY + i - 1,
+            line,
+            colors.white,
+            bg
+        )
+    end
 
     writeText(
         buffer,
@@ -446,7 +461,7 @@ local function drawCollectionCard(buffer, zone, card, selected)
 
     local width = zone.x2 - zone.x1 + 1
     local top = string.format("%s  %dE", card.icon or "?", card.cost)
-    local name = util.truncate(card.name, math.max(1, width))
+    local nameLines = compactNameLines(card.name, width)
     local stateText = selected and "IN DECK" or "TAP TO ADD"
 
     writeText(
@@ -457,14 +472,17 @@ local function drawCollectionCard(buffer, zone, card, selected)
         fg,
         bg
     )
-    writeText(
-        buffer,
-        zone.x1 + math.max(0, math.floor((width - #name) / 2)),
-        zone.y1 + 2,
-        name,
-        colors.white,
-        bg
-    )
+    local nameY = #nameLines > 1 and (zone.y1 + 1) or (zone.y1 + 2)
+    for i, line in ipairs(nameLines) do
+        writeText(
+            buffer,
+            zone.x1 + math.max(0, math.floor((width - #line) / 2)),
+            nameY + i - 1,
+            line,
+            colors.white,
+            bg
+        )
+    end
     writeText(
         buffer,
         zone.x1 + math.max(0, math.floor((width - #stateText) / 2)),
@@ -493,24 +511,25 @@ local function drawDeckSlot(buffer, zone, slot, card)
     if card then
         local fullName = tostring(card.name or "")
         local withIcon = string.format("%s %s", card.icon or "?", fullName)
-        local line
+        local nameLines
 
         if #withIcon <= width then
-            line = withIcon
-        elseif #fullName <= width then
-            line = fullName
+            nameLines = { withIcon }
         else
-            line = util.truncate(fullName, width)
+            nameLines = compactNameLines(fullName, width)
         end
 
-        writeText(
-            buffer,
-            zone.x1 + math.max(0, math.floor((width - #line) / 2)),
-            zone.y1 + 2,
-            line,
-            card.color or colors.white,
-            bg
-        )
+        local nameY = #nameLines > 1 and (zone.y1 + 1) or (zone.y1 + 2)
+        for i, line in ipairs(nameLines) do
+            writeText(
+                buffer,
+                zone.x1 + math.max(0, math.floor((width - #line) / 2)),
+                nameY + i - 1,
+                line,
+                card.color or colors.white,
+                bg
+            )
+        end
     else
         local empty = "-- EMPTY --"
         writeText(
@@ -692,6 +711,13 @@ local function infoStatLines(card)
             ))
         end
 
+        if b.lifetime and b.lifetime > 0 then
+            table.insert(lines, string.format(
+                "LIFETIME DECAY: %.1f HP/s",
+                (b.maxHp or 0) / b.lifetime
+            ))
+        end
+
         if b.periodicSpawn then
             local spawned = cards.getInternalUnit(b.periodicSpawn.template)
             local totalSpawns = 0
@@ -771,24 +797,28 @@ local function drawInfoCollectionCard(buffer, zone, card, selected)
 
     local width = zone.x2 - zone.x1 + 1
     local top = string.format("%s %dE", card.icon or "?", card.cost)
-    local name = util.truncate(card.name, math.max(1, width))
+    local nameLines = compactNameLines(card.name, width)
 
     writeText(
         buffer,
         zone.x1 + math.max(0, math.floor((width - #top) / 2)),
-        zone.y1 + 1,
+        zone.y1,
         top,
         card.color or colors.white,
         bg
     )
-    writeText(
-        buffer,
-        zone.x1 + math.max(0, math.floor((width - #name) / 2)),
-        zone.y1 + 3,
-        name,
-        colors.white,
-        bg
-    )
+
+    local nameY = #nameLines > 1 and (zone.y1 + 2) or (zone.y1 + 3)
+    for i, line in ipairs(nameLines) do
+        writeText(
+            buffer,
+            zone.x1 + math.max(0, math.floor((width - #line) / 2)),
+            nameY + i - 1,
+            line,
+            colors.white,
+            bg
+        )
+    end
 end
 
 local function drawCardInfoScreen(buffer, state, playerId, layout)
