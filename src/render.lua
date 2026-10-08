@@ -762,7 +762,7 @@ local function drawEvolutionSlot(buffer, zone, player, enabled)
     if not enabled then
         footer = "CHANGE IN RULESET - SELECTION IS PRESERVED"
     else
-        footer = selected and "TAP TO CLEAR" or "E-CARDS ARE MARKED WITH E"
+        footer = selected and "TAP TO CLEAR" or "EVO CARDS ARE MARKED EVO"
     end
     writeText(
         buffer,
