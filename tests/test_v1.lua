@@ -2299,6 +2299,14 @@ assertTrue(
     lobbyScreen:find("RULESET: EVO ON", 1, true) ~= nil,
     "Lobby must visibly expose the shared Ruleset button"
 )
+assertTrue(
+    lobbyScreen:find("EVO > SLOT 1", 1, true) == nil,
+    "Empty deck slots must never be mistaken for the selected Evolution slot"
+)
+assertTrue(
+    lobbyScreen:find("E-CARDS ARE MARKED WITH E", 1, true) == nil,
+    "Lobby must not use legacy single-letter Evolution instructions"
+)
 
 local rulesetRenderState = Game.new()
 rulesetRenderState.players[1].rulesetOpen = true
