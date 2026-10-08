@@ -453,79 +453,78 @@ local DEFAULT_DECK = {
 
 cards.info = {
     zombie = {
-        role = "All-round melee",
-        description = "Reliable ground fighter with solid HP and damage. A simple baseline troop for pushes and defense.",
+        role = "Basic melee",
+        description = "Cheap ground fighter with solid HP and damage. Simple defense or lane pressure.",
     },
     skeleton = {
-        role = "Ranged kiter",
-        description = "Fragile ranged unit that attacks air and ground. Tries to keep distance while shooting.",
+        role = "Long-range kiter",
+        description = "Hits air and ground from long range. Fragile; backs away when enemies get too close.",
     },
     iron_golem = {
-        role = "Tower tank",
-        description = "Huge tank that ignores troops and targets only buildings and towers. Slow but very durable.",
+        role = "Building tank",
+        description = "Ignores troops. Only chases buildings and Crown Towers, so defensive buildings can pull it.",
     },
     bat_swarm = {
         role = "Flying swarm",
-        description = "Deploys three fast flying bats. Strong when the enemy cannot hit air, but each bat is fragile.",
+        description = "Spawns 3 fast flying Bats. Extremely fragile; each Bat dies to one Princess Tower hit.",
     },
     cannon = {
-        role = "Defensive building",
-        description = "Stationary ground-only defense with long range. Excellent for pulling and stopping ground pushes.",
+        role = "Ground defense",
+        description = "Stationary ground-only defense. Best for pulling tanks toward the center and stopping pushes.",
     },
     arrows = {
-        role = "Area spell",
-        description = "Damages every enemy in a target area anywhere on the arena. Deals reduced damage to towers.",
+        role = "Instant area spell",
+        description = "Hits every enemy in the target area anywhere on the arena. Reduced damage to Crown Towers.",
     },
     creeper = {
-        role = "Explosive attacker",
-        description = "Runs toward enemies, primes at close range and explodes after a short fuse. Can be killed before detonation.",
+        role = "Kamikaze burst",
+        description = "Runs into trigger range, primes for 0.65s, then explodes. Kill it before the fuse ends.",
     },
     slime = {
-        role = "Sticky melee",
-        description = "Medium melee troop that splits into two Mini Slimes when killed, forcing the enemy to deal with extra bodies.",
+        role = "Split melee",
+        description = "Medium ground fighter. On death it splits into 2 Mini Slimes that keep fighting.",
     },
     blaze = {
         role = "Flying ranged",
-        description = "Flying ranged attacker that can hit both air and ground. Good support damage but not very durable.",
+        description = "Long-range flying attacker that hits air and ground. Strong support damage but low HP.",
     },
     witch = {
         role = "Summoner support",
-        description = "Ranged support troop that periodically summons Baby Zombies. Becomes stronger the longer she survives.",
+        description = "Ranged air/ground support. Summons a Baby Zombie every 10s, up to 3 alive.",
     },
     enderman = {
         role = "Backline assassin",
-        description = "Melee attacker that teleports toward distant targets. Excellent at reaching vulnerable ranged units.",
+        description = "Teleports toward distant targets. Best for reaching vulnerable ranged and support units.",
     },
     spider = {
         role = "Fast melee",
-        description = "Cheap and very fast ground attacker. Useful for pressure, chasing ranged troops and quick defense.",
+        description = "Cheap, very fast ground fighter. Good for pressure and chasing fragile ranged units.",
     },
     snow_golem = {
         role = "Slow support",
-        description = "Fragile ranged support that throws snowballs. Hits briefly slow enemy movement and it can attack air.",
+        description = "Ranged air/ground support. Every hit slows enemy movement by 20% for 1 second.",
     },
     villager = {
-        role = "Economy support",
-        description = "Stationary non-building unit. Boosts Emerald generation while alive, but is intentionally easy to remove.",
+        role = "Emerald economy",
+        description = "Stationary support. Increases your Emerald generation by 61.6% while alive for up to 50s.",
     },
     endermite = {
-        role = "Cheap distraction",
-        description = "Extremely cheap, fast and fragile melee unit. Best used to pull, distract and kite expensive enemies.",
+        role = "1E distraction",
+        description = "Very cheap, fast and fragile. Use it to pull, distract and waste expensive enemy attacks.",
     },
     wolf = {
         role = "Fast fighter",
-        description = "Quick melee fighter with strong attack speed. Useful for punishing ranged troops and applying lane pressure.",
+        description = "Fast ground melee with high attack speed. Good for punishing fragile backline units.",
     },
     falling_anvil = {
         role = "Delayed area burst",
-        description = "Marks a wide area for 2.7 seconds, then an anvil crashes down and hits every enemy inside, including flying units. Its 549 damage now one-shots the lower-HP Zombie.",
+        description = "After a 2.7s warning, deals 549 AoE to every enemy in the radius, including flying units.",
     },
     nether_portal = {
-        role = "Spawner building",
-        description = "Opens a temporary Nether Portal that periodically sends out short-lived Piglins. Piglins use their crossbow only against flying enemies and their axe against ground targets.",
+        role = "Piglin spawner",
+        description = "Lasts 23s and spawns 3 Piglins. Piglins use crossbow vs air and axe vs ground.",
     },
 }
-
 function cards.getInfo(id)
     return cards.info[id]
 end
