@@ -37,6 +37,14 @@ config.BUILDINGS = {
     lifetimeDecayMultiplier = 1.15,
 }
 
+config.TOWERS = {
+    -- At 42.5, a lane Princess Tower starts covering a troop roughly two
+    -- arena units after it exits the bridge. King range stays intentionally
+    -- shorter so both Princess lanes are not covered from the centre.
+    princessRange = 42.5,
+    kingRange = 27,
+}
+
 config.MATCH = {
     normalTime = 150,
     overtimeTime = 150,
