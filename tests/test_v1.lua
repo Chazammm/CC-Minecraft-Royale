@@ -74,13 +74,16 @@ assertTrue(endermiteCard.unit.damage < 25, "Endermite should have low DPS damage
 
 local batCard = cards.get("bat_swarm")
 assertEq(batCard.unit.maxHp, 45, "Bat Swarm must be extremely fragile")
+assertEq(batCard.unit.damage, 20, "Bat Swarm damage must be reduced to twenty")
 assertTrue(batCard.unit.maxHp < 80, "Princess Tower must one-shot each Bat")
 
 local skeletonCard = cards.get("skeleton")
 local snowGolemCard = cards.get("snow_golem")
 local witchCard = cards.get("witch")
-assertEq(skeletonCard.unit.maxHp, 181, "Skeleton HP must reflect the five-percent nerf")
-assertEq(skeletonCard.unit.damage, 30, "Skeleton damage must be nerfed to thirty")
+assertEq(skeletonCard.unit.maxHp, 177, "Skeleton HP must reflect the additional two-percent nerf")
+assertEq(skeletonCard.unit.damage, 30, "Skeleton damage must stay at thirty")
+assertEq(skeletonCard.unit.attackRange, 16.5, "Skeleton range must be increased by ten percent")
+assertEq(skeletonCard.unit.retreatSpeedMultiplier, 0.95, "Skeleton retreat must be five percent slower")
 assertTrue(
     skeletonCard.unit.preferredMinRange ~= nil,
     "Skeleton must keep its kiting distance"
@@ -95,10 +98,14 @@ assertEq(witchCard.cost, 5, "Witch must cost five Emeralds")
 local ironGolemCard = cards.get("iron_golem")
 local cannonCard = cards.get("cannon")
 local blazeCard = cards.get("blaze")
+local creeperCard = cards.get("creeper")
 assertEq(ironGolemCard.cost, 5, "Iron Golem must cost five Emeralds")
+assertEq(ironGolemCard.unit.maxHp, 1377, "Iron Golem HP must include the two-percent buff")
 assertEq(cannonCard.building.maxHp, 618, "Cannon HP must reflect the five-percent nerf")
 assertEq(cannonCard.building.damage, 64, "Cannon damage must reflect the two-percent nerf")
 assertEq(blazeCard.unit.maxHp, 270, "Blaze HP must reflect the additional two-percent nerf")
+assertEq(creeperCard.unit.maxHp, 404, "Creeper HP must include the one-percent buff")
+assertEq(creeperCard.unit.proximityExplosion.fuseTime, 0.65, "Creeper fuse must be very short")
 
 local anvilCard = cards.get("falling_anvil")
 assertTrue(anvilCard and anvilCard.kind == "spell", "Falling Anvil must be a selectable spell")
@@ -304,12 +311,18 @@ Game.update(creeperState, 0.1)
 assertTrue(testCreeper.alive, "Creeper must not deal an instant melee hit")
 assertEq(testZombie.hp, zombieHpBeforeFuse, "Creeper must deal no melee damage")
 assertTrue(testCreeper.fuseRemaining ~= nil, "Creeper must start its fuse in proximity")
+assertTrue(
+    math.abs(testCreeper.fuseRemaining - 0.65) < 0.000001,
+    "Creeper must start with the new 0.65-second fuse"
+)
 
-for _ = 1, 7 do
-    Game.update(creeperState, 0.25)
-end
+Game.update(creeperState, 0.25)
+Game.update(creeperState, 0.25)
+Game.update(creeperState, 0.14)
+assertTrue(testCreeper.alive, "Creeper must still be alive just before the 0.65-second fuse ends")
+Game.update(creeperState, 0.02)
 
-assertTrue(not testCreeper.alive, "Creeper must self-destruct after its fuse")
+assertTrue(not testCreeper.alive, "Creeper must self-destruct after its short fuse")
 assertTrue(testZombie.hp < zombieHpBeforeFuse, "Creeper explosion must damage nearby enemies")
 
 local killedCreeperState = Game.new()
@@ -402,9 +415,10 @@ Game.debugSetPaused(kiteSlowState, false)
 Game.update(kiteSlowState, 0.20)
 
 local kiteDistance = math.abs(slowedSkeleton.y - kiteStartY)
+local expectedKiteDistance = 7.5 * 0.5 * 0.95 * 0.20
 assertTrue(
-    math.abs(kiteDistance - 0.75) < 0.05,
-    "Skeleton retreat speed must respect active movement slow"
+    math.abs(kiteDistance - expectedKiteDistance) < 0.05,
+    "Skeleton retreat speed must combine active slow with its five-percent retreat penalty"
 )
 
 local teleportState = Game.new()
