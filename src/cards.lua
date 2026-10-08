@@ -382,6 +382,7 @@ cards.list = {
     {
         id = "guardian",
         name = "Guardian",
+        devOnly = true,
         icon = "Q",
         cost = 6,
         kind = "unit",
@@ -656,10 +657,22 @@ cards.internalUnits = {
     },
 }
 
+-- Keep experimental/dev cards fully registered for admin and diagnostics,
+-- but expose only production-ready cards through cards.list. Normal lobby,
+-- random decks, bot/simulation pools and deck validation all consume cards.list.
+cards.all = cards.list
+cards.list = {}
 cards.byId = {}
-for i, card in ipairs(cards.list) do
-    card.collectionIndex = i
+
+for _, card in ipairs(cards.all) do
     cards.byId[card.id] = card
+
+    if not card.devOnly then
+        card.collectionIndex = #cards.list + 1
+        cards.list[#cards.list + 1] = card
+    else
+        card.collectionIndex = nil
+    end
 end
 
 local DEFAULT_DECK = {
@@ -813,6 +826,11 @@ end
 
 function cards.get(id)
     return cards.byId[id]
+end
+
+function cards.isSelectable(cardOrId)
+    local card = type(cardOrId) == "table" and cardOrId or cards.byId[cardOrId]
+    return card ~= nil and card.devOnly ~= true
 end
 
 -- Evolution definitions are intentionally data-driven and live on the base
@@ -1025,9 +1043,11 @@ function cards.evolutionCost(cardOrId)
     return evolved and evolved.cost or nil
 end
 
-function cards.evolutionCards()
+function cards.evolutionCards(includeDevOnly)
     local out = {}
-    for _, card in ipairs(cards.list) do
+    local source = includeDevOnly and cards.all or cards.list
+
+    for _, card in ipairs(source) do
         if cards.hasEvolution(card) then out[#out + 1] = card end
     end
     return out
@@ -1036,7 +1056,7 @@ end
 function cards.adminSpawnCards()
     local out = {}
 
-    for _, card in ipairs(cards.list) do
+    for _, card in ipairs(cards.all) do
         out[#out + 1] = {
             key = card.id,
             card = card,
@@ -1044,7 +1064,7 @@ function cards.adminSpawnCards()
         }
     end
 
-    for _, card in ipairs(cards.evolutionCards()) do
+    for _, card in ipairs(cards.evolutionCards(true)) do
         local evolved = cards.evolvedCopy(card)
         if evolved then
             out[#out + 1] = {
@@ -1074,7 +1094,7 @@ function cards.isValidDeck(deck)
 
     local seen = {}
     for _, id in ipairs(deck) do
-        if not cards.byId[id] or seen[id] then return false end
+        if not cards.isSelectable(id) or seen[id] then return false end
         seen[id] = true
     end
 
