@@ -238,6 +238,15 @@ local function runMatch(subjectDeck, opponentDeck, subjectCardId, subjectOwner)
     Bot.prepare(bot1, state)
     Bot.prepare(bot2, state)
 
+    -- This benchmark isolates base-card replacement impact. Evolutions are
+    -- deliberately disabled here; Evolution power has its own paired
+    -- evo_compare benchmark.
+    state.ruleset.evolutions = false
+    state.players[1].evolutionCardId = nil
+    state.players[1].evolutionProgress = 0
+    state.players[2].evolutionCardId = nil
+    state.players[2].evolutionProgress = 0
+
     state.players[1].ready = true
     state.players[2].ready = true
     Game.startCountdown(state)
@@ -355,6 +364,7 @@ reportPrint(("Contexts/comparison: %d   Comparisons: %d   Total matches: %d   Se
     seed
 ))
 reportPrint("Each context uses the same 7-card shell, same opponent deck and same replacement slot.")
+reportPrint("Evolutions are disabled so this remains a pure BASE-card replacement benchmark.")
 reportPrint("A and B each play once as P1 and once as P2. Compared cards are excluded from all other slots.")
 reportPrint("")
 
