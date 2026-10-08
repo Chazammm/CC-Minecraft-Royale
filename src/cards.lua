@@ -517,7 +517,7 @@ cards.info = {
     },
     falling_anvil = {
         role = "Delayed area burst",
-        description = "Marks a wide area for 3 seconds, then an anvil crashes down and hits every enemy inside, including flying units. A full-health Zombie survives a direct hit on exactly 1 HP.",
+        description = "Marks a wide area for 2.7 seconds, then an anvil crashes down and hits every enemy inside, including flying units. A full-health Zombie survives a direct hit on exactly 1 HP.",
     },
     nether_portal = {
         role = "Spawner building",
