@@ -26,6 +26,7 @@ local arena = require("src.arena")
 local Game = require("src.game")
 local pixelArena = require("src.pixel_arena")
 local Bot = require("src.bot")
+local render = require("src.render")
 local musicManifest = require("src.music_manifest")
 
 local function assertEq(actual, expected, message)
@@ -48,6 +49,30 @@ for _, card in ipairs(cards.list) do
     seen[card.id] = true
     assertTrue(card.cost > 0, "Card must have a positive cost: " .. tostring(card.id))
     assertTrue(card.kind == "unit" or card.kind == "building" or card.kind == "spell", "Unknown card kind")
+
+    local info = cards.getInfo(card.id)
+    assertTrue(info ~= nil, "Every selectable card must have Unit Info text: " .. tostring(card.id))
+    assertTrue(type(info.role) == "string" and #info.role > 0, "Every card needs a useful role label")
+    assertTrue(type(info.description) == "string" and #info.description > 0, "Every card needs a description")
+
+    -- The 57-wide monitor gives descriptions 53 columns. Keep copy short
+    -- enough to fit the two-line tactical description budget.
+    local width = 53
+    local lineLength, lineCount = 0, 1
+    for word in info.description:gmatch("%S+") do
+        if lineLength == 0 then
+            lineLength = #word
+        elseif lineLength + 1 + #word <= width then
+            lineLength = lineLength + 1 + #word
+        else
+            lineCount = lineCount + 1
+            lineLength = #word
+        end
+    end
+    assertTrue(
+        lineCount <= 2,
+        "Card description must fit two Unit Info lines: " .. tostring(card.id)
+    )
 end
 
 local deckState = Game.new()
@@ -1367,6 +1392,64 @@ assertEq(musicManifest.chunkBytes, 16384, "Music chunks should fill the speaker 
 assertEq(#musicManifest.packs, 2, "HQ battle music must be split into two GitHub-safe packs")
 assertTrue(musicManifest.packs[1].size < 25000000, "Music pack 1 must stay below GitHub's 25 MB web limit")
 assertTrue(musicManifest.packs[2].size < 25000000, "Music pack 2 must stay below GitHub's 25 MB web limit")
+
+-- Unit Info must fit useful mechanics on the real 57x52 target monitor.
+local oldToBlit = colors.toBlit
+colors.toBlit = function() return "0" end
+
+local function renderInfoCard(cardId)
+    local rows = {}
+    local cursorY = 1
+    local monitor = {
+        getSize = function() return 57, 52 end,
+        setCursorPos = function(_, y) cursorY = y end,
+        blit = function(chars)
+            rows[cursorY] = chars
+        end,
+    }
+
+    local infoState = Game.new()
+    infoState.players[1].infoOpen = true
+    infoState.players[1].infoCardId = cardId
+    render.draw(monitor, infoState, 1, "test_monitor")
+    return table.concat(rows, "\n")
+end
+
+local portalInfoScreen = renderInfoCard("nether_portal")
+assertTrue(
+    portalInfoScreen:find("SPAWN LIMIT BY LIFETIME: 3", 1, true) ~= nil,
+    "Nether Portal info must visibly show the real three-Piglin lifetime limit"
+)
+assertTrue(
+    portalInfoScreen:find("PIGLIN AIR: CROSSBOW 28", 1, true) ~= nil,
+    "Nether Portal info must visibly explain the Piglin air weapon"
+)
+assertTrue(
+    portalInfoScreen:find("DMG 0", 1, true) == nil,
+    "Passive Nether Portal info must not waste space on meaningless zero damage"
+)
+
+local villagerInfoScreen = renderInfoCard("villager")
+assertTrue(
+    villagerInfoScreen:find("ECONOMY: +62% Emerald generation while alive", 1, true) ~= nil,
+    "Villager info must visibly show its Emerald-generation mechanic"
+)
+assertTrue(
+    villagerInfoScreen:find("DMG 0", 1, true) == nil,
+    "Villager info must not waste space on meaningless zero damage"
+)
+
+local creeperInfoScreen = renderInfoCard("creeper")
+assertTrue(
+    creeperInfoScreen:find("BLAST 290 dmg", 1, true) ~= nil,
+    "Creeper info must visibly show explosion damage instead of generic zero DPS"
+)
+assertTrue(
+    creeperInfoScreen:find("DPS 0", 1, true) == nil,
+    "Creeper info must not show misleading zero DPS"
+)
+
+colors.toBlit = oldToBlit
 
 local packOffsets = { [1] = 0, [2] = 0 }
 local totalMusicBytes = 0
