@@ -750,6 +750,8 @@ local function drawCardInfoScreen(buffer, state, playerId, layout)
             colors.black
         )
 
+        local descriptionEndY = 28
+
         if info then
             centered(
                 buffer,
@@ -760,25 +762,42 @@ local function drawCardInfoScreen(buffer, state, playerId, layout)
             )
 
             local descriptionLines = wrapWords(info.description or "", buffer.width - 4)
-            local y = 30
-            for i = 1, math.min(3, #descriptionLines) do
+            local y = 29
+            for i = 1, math.min(2, #descriptionLines) do
                 writeText(buffer, 3, y, descriptionLines[i], colors.white, colors.black)
+                descriptionEndY = y
                 y = y + 1
             end
         end
 
-        local statY = 34
+        local statsHeaderY = math.max(31, descriptionEndY + 1)
+        writeText(
+            buffer,
+            3,
+            statsHeaderY,
+            "STATS / MECHANICS",
+            colors.yellow,
+            colors.black
+        )
+
+        local statY = statsHeaderY + 1
+        local statBottom = layout.readyButton.y1 - 2
+
         for _, line in ipairs(infoStatLines(selected)) do
-            if statY >= layout.readyButton.y1 - 1 then break end
-            writeText(
-                buffer,
-                3,
-                statY,
-                util.truncate(line, buffer.width - 4),
-                colors.lightGray,
-                colors.black
-            )
-            statY = statY + 2
+            local wrapped = wrapWords(line, buffer.width - 4)
+            for _, wrappedLine in ipairs(wrapped) do
+                if statY > statBottom then break end
+                writeText(
+                    buffer,
+                    3,
+                    statY,
+                    wrappedLine,
+                    colors.lightGray,
+                    colors.black
+                )
+                statY = statY + 1
+            end
+            if statY > statBottom then break end
         end
     end
 
