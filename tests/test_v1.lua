@@ -105,6 +105,21 @@ assertTrue(math.abs(bankEvo.unit.maxHp - 194.25) < 0.000001, "Emerald Bank must 
 assertEq(bankEvo.unit.lifetime, 70, "Emerald Bank must last twenty seconds longer")
 assertEq(bankEvo.unit.emeraldBoost, villagerCard.unit.emeraldBoost, "Emerald Bank must preserve Villager Emerald production")
 
+local ironGolemCard = cards.get("iron_golem")
+local diamondGolem = cards.evolvedCopy("iron_golem")
+assertTrue(diamondGolem ~= nil, "Iron Golem must expose Diamond Golem Evolution")
+assertEq(cards.evolutionCycles("iron_golem"), 2, "Diamond Golem must evolve on the third Iron Golem play")
+assertEq(cards.evolutionCost("iron_golem"), 5, "Diamond Golem must keep the base 5E cost")
+assertEq(diamondGolem.name, "Diamond Golem", "Iron Golem Evolution must be Diamond Golem")
+assertTrue(
+    math.abs(diamondGolem.unit.maxHp - ironGolemCard.unit.maxHp * 1.05) < 0.000001,
+    "Diamond Golem must have exactly five percent more HP"
+)
+assertEq(diamondGolem.unit.groundPulse.interval, 2.0, "Diamond Golem stomp must trigger every two seconds")
+assertEq(diamondGolem.unit.groundPulse.damage, 20, "Diamond Golem stomp must deal twenty damage")
+assertEq(diamondGolem.unit.groundPulse.radius, 8.0, "Diamond Golem stomp must use eight range")
+assertEq(diamondGolem.unit.visualVariant, "diamond_golem", "Diamond Golem needs its cyan visual variant")
+
 local guardianCard = cards.get("guardian")
 assertTrue(guardianCard ~= nil and guardianCard.kind == "unit", "Guardian must be a selectable unit")
 assertEq(guardianCard.cost, 6, "Guardian must cost six Emeralds")
