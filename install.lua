@@ -52,6 +52,15 @@ local function download(path)
     error(("Could not download %s\n%s\nIf the GitHub repo is private, raw.githubusercontent.com will reject the request."):format(url, tostring(err)), 0)
   end
 
+  if response.getResponseCode then
+    local code = response.getResponseCode()
+    if code ~= 200 then
+      response.close()
+      print("FAILED")
+      error(("GitHub returned HTTP %s while downloading %s"):format(tostring(code), path), 0)
+    end
+  end
+
   local body = response.readAll()
   response.close()
 
