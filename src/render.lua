@@ -556,100 +556,145 @@ local function infoStatLines(card)
     if card.kind == "unit" then
         local u = card.unit
         local dps = (u.damage or 0) / math.max(0.01, u.attackCooldown or 1)
-        local typeText = u.flying and "UNIT / FLYING" or "UNIT / GROUND"
-        if u.passive then typeText = "UNIT / STATIONARY" end
+        local movement = u.flying and "FLYING" or "GROUND"
+        if u.passive then movement = "STATIONARY" end
 
-        table.insert(lines, "TYPE: " .. typeText)
+        local targets = u.canAttackAir and "AIR + GROUND" or "GROUND"
+        if u.targetMode == "buildings" then targets = "BUILDINGS + CROWN TOWERS" end
+        if u.targetMode == "none" then targets = "NONE" end
+
+        table.insert(lines, movement .. " UNIT  |  TARGETS " .. targets)
         table.insert(lines, string.format(
-            "HP %s   DAMAGE %s   DPS %.1f",
+            "HP %s  |  DMG %s  |  DPS %.1f",
             numberText(u.maxHp),
             numberText(u.damage),
             dps
         ))
         table.insert(lines, string.format(
-            "RANGE %s   SPEED %s   ATTACK %ss",
+            "RANGE %s  |  SPEED %s  |  HIT CD %ss",
             numberText(u.attackRange, 1),
             numberText(u.moveSpeed, 1),
             numberText(u.attackCooldown, 2)
         ))
 
-        local targets = u.canAttackAir and "AIR + GROUND" or "GROUND"
-        if u.targetMode == "buildings" then targets = "BUILDINGS / TOWERS" end
-        if u.targetMode == "none" then targets = "NONE" end
-        table.insert(lines, "TARGETS: " .. targets)
-
         if card.spawnCount then
-            table.insert(lines, string.format("SPAWNS: %d units", card.spawnCount))
-        elseif u.proximityExplosion then
+            table.insert(lines, string.format("DEPLOY: %d units at once", card.spawnCount))
+        end
+
+        if u.proximityExplosion then
             local e = u.proximityExplosion
             table.insert(lines, string.format(
-                "EXPLOSION: %s dmg  radius %s  fuse %ss",
+                "BLAST %s dmg  |  RADIUS %s  |  FUSE %ss",
                 numberText(e.damage),
                 numberText(e.radius, 1),
                 numberText(e.fuseTime, 2)
             ))
-        elseif u.splitOnDeath then
-            table.insert(lines, string.format("ON DEATH: splits into %d Mini Slimes", u.splitOnDeath.count or 2))
-        elseif u.periodicSpawn then
             table.insert(lines, string.format(
-                "SUMMON: Baby Zombie every %ss  max %d",
+                "PRIMES inside %s range; cancels past %s",
+                numberText(e.triggerRange, 1),
+                numberText(e.cancelRange, 1)
+            ))
+        end
+
+        if u.splitOnDeath then
+            table.insert(lines, string.format(
+                "ON DEATH: splits into %d Mini Slimes",
+                u.splitOnDeath.count or 2
+            ))
+        end
+
+        if u.periodicSpawn then
+            table.insert(lines, string.format(
+                "SUMMON: first %ss, then every %ss, max %d alive",
+                numberText(u.periodicSpawn.initialDelay or u.periodicSpawn.interval, 1),
                 numberText(u.periodicSpawn.interval, 1),
                 u.periodicSpawn.maxAlive or 0
             ))
-        elseif u.teleport then
+        end
+
+        if u.teleport then
             table.insert(lines, string.format(
-                "TELEPORT: %s-%s range  %ss cooldown",
+                "TELEPORT: %s-%s range  |  CD %ss",
                 numberText(u.teleport.minRange, 1),
                 numberText(u.teleport.maxRange, 1),
                 numberText(u.teleport.cooldown, 1)
             ))
-        elseif u.onHitSlow then
+        end
+
+        if u.onHitSlow then
             table.insert(lines, string.format(
-                "SLOW: %d%% for %ss",
+                "ON HIT: slows movement %d%% for %ss",
                 math.floor((1 - u.onHitSlow.factor) * 100 + 0.5),
                 numberText(u.onHitSlow.duration, 1)
             ))
-        elseif u.emeraldBoost then
+        end
+
+        if u.emeraldBoost then
             table.insert(lines, string.format(
-                "ECONOMY: +%d%% Emeralds for %ss",
+                "ECONOMY: +%d%% Emerald generation  |  LIFE %ss",
                 math.floor(u.emeraldBoost * 100 + 0.5),
                 numberText(u.lifetime, 0)
             ))
-        elseif u.preferredMinRange then
-            table.insert(lines, "KITES when enemies get too close")
+        elseif u.lifetime then
+            table.insert(lines, "LIFETIME: " .. numberText(u.lifetime, 1) .. "s")
+        end
+
+        if u.preferredMinRange then
+            table.insert(lines, string.format(
+                "KITE: backs off below %s range at %d%% speed",
+                numberText(u.preferredMinRange, 1),
+                math.floor((u.retreatSpeedMultiplier or 1) * 100 + 0.5)
+            ))
         end
     elseif card.kind == "building" then
         local b = card.building
         local dps = (b.damage or 0) / math.max(0.01, b.attackCooldown or 1)
-        table.insert(lines, "TYPE: BUILDING")
+        local buildingTargets = b.targetMode == "none"
+            and "NONE"
+            or (b.canAttackAir and "AIR + GROUND" or "GROUND")
+
+        table.insert(lines, "BUILDING  |  TARGETS " .. buildingTargets)
         table.insert(lines, string.format(
-            "HP %s   DAMAGE %s   DPS %.1f",
+            "HP %s  |  DMG %s  |  DPS %.1f",
             numberText(b.maxHp),
             numberText(b.damage),
             dps
         ))
         table.insert(lines, string.format(
-            "RANGE %s   ATTACK %ss   LIFE %ss",
+            "RANGE %s  |  HIT CD %ss  |  LIFE %ss",
             numberText(b.attackRange, 1),
             numberText(b.attackCooldown, 2),
             numberText(b.lifetime, 0)
         ))
-        local buildingTargets = b.targetMode == "none"
-            and "NONE"
-            or (b.canAttackAir and "AIR + GROUND" or "GROUND")
-        table.insert(lines, "TARGETS: " .. buildingTargets)
 
         if b.periodicSpawn then
             local spawned = cards.getInternalUnit(b.periodicSpawn.template)
+            local totalSpawns = 0
+            local first = b.periodicSpawn.initialDelay
+                or b.periodicSpawn.interval
+                or 0
+            local interval = b.periodicSpawn.interval or 0
+
+            if b.lifetime and interval > 0 and first < b.lifetime then
+                totalSpawns = 1 + math.floor(
+                    math.max(0, b.lifetime - first - 0.000001) / interval
+                )
+            end
+
             table.insert(lines, string.format(
-                "SPAWNS: %s every %ss",
+                "SPAWN: %s  |  FIRST %ss  |  EVERY %ss",
                 spawned and spawned.name or tostring(b.periodicSpawn.template),
-                numberText(b.periodicSpawn.interval, 1)
+                numberText(first, 1),
+                numberText(interval, 1)
             ))
+
+            if totalSpawns > 0 then
+                table.insert(lines, "SPAWN LIMIT BY LIFETIME: " .. tostring(totalSpawns))
+            end
 
             if spawned then
                 table.insert(lines, string.format(
-                    "%s: HP %s  SPEED %s  LIFE %ss",
+                    "%s: HP %s  |  SPEED %s  |  LIFE %ss",
                     string.upper(spawned.name),
                     numberText(spawned.maxHp),
                     numberText(spawned.moveSpeed, 1),
@@ -658,7 +703,7 @@ local function infoStatLines(card)
 
                 if spawned.hybridAttack then
                     table.insert(lines, string.format(
-                        "AIR: CROSSBOW %s dmg / GROUND: AXE %s dmg",
+                        "PIGLIN AIR: CROSSBOW %s  |  GROUND: AXE %s",
                         numberText(spawned.hybridAttack.rangedDamage),
                         numberText(spawned.hybridAttack.meleeDamage)
                     ))
@@ -667,24 +712,28 @@ local function infoStatLines(card)
         end
     elseif card.kind == "spell" then
         local s = card.spell
-        table.insert(lines, "TYPE: SPELL / ANYWHERE")
+        table.insert(lines, "SPELL  |  PLACEMENT ANYWHERE")
         table.insert(lines, string.format(
-            "DAMAGE %s   RADIUS %s",
+            "DMG %s  |  RADIUS %s",
             numberText(s.damage),
             numberText(s.radius, 1)
         ))
         table.insert(lines, string.format(
-            "TOWER DAMAGE: %.1f (%d%%)",
+            "CROWN TOWER DMG %.1f  |  %d%% modifier",
             (s.damage or 0) * (s.towerMultiplier or 1),
             math.floor((s.towerMultiplier or 1) * 100 + 0.5)
         ))
+
         if s.delay then
-            table.insert(lines, string.format("IMPACT DELAY: %ss", numberText(s.delay, 1)))
+            table.insert(lines, "IMPACT DELAY: " .. numberText(s.delay, 1) .. "s")
         end
+
         if s.groundOnly then
-            table.insert(lines, "TARGETS: GROUND / BUILDINGS / TOWERS")
+            table.insert(lines, "TARGETS: GROUND + BUILDINGS + TOWERS")
         elseif card.id == "falling_anvil" then
-            table.insert(lines, "TARGETS: AIR + GROUND / BUILDINGS / TOWERS")
+            table.insert(lines, "TARGETS: AIR + GROUND + BUILDINGS + TOWERS")
+        else
+            table.insert(lines, "TARGETS: AIR + GROUND + BUILDINGS + TOWERS")
         end
     end
 
