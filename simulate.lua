@@ -133,6 +133,8 @@ local function cardReport(cardId)
             slowSeconds = 0,
             targetsHit = 0,
             evolutionPlays = 0,
+            evolutionSlotMatches = 0,
+            evolutionSelectedPlays = 0,
         }
         report.cards[cardId] = out
     end
@@ -157,9 +159,17 @@ local function addDeckResult(deck, owner, state)
         if won then out.wins = out.wins + 1 end
         if drew then out.draws = out.draws + 1 end
 
+        local selectedForEvolution = state.players[owner].evolutionCardId == cardId
+        if selectedForEvolution then
+            out.evolutionSlotMatches = out.evolutionSlotMatches + 1
+        end
+
         local stat = playerStats.cards[cardId]
         if stat then
             out.plays = out.plays + (stat.plays or 0)
+            if selectedForEvolution then
+                out.evolutionSelectedPlays = out.evolutionSelectedPlays + (stat.plays or 0)
+            end
             out.emeraldSpent = out.emeraldSpent + (stat.emeraldSpent or 0)
             out.unitDamage = out.unitDamage + (stat.unitDamage or 0)
             out.towerDamage = out.towerDamage + (stat.towerDamage or 0)
@@ -325,6 +335,8 @@ for _, card in ipairs(cards.list) do
         targetsHit = stat.targetsHit,
         totalPlays = stat.plays,
         evolutionPlays = stat.evolutionPlays,
+        evolutionSlotMatches = stat.evolutionSlotMatches,
+        evolutionSelectedPlays = stat.evolutionSelectedPlays,
         flag = flag,
     })
 end
@@ -370,22 +382,27 @@ end
 
 reportPrint("")
 reportPrint("EVOLUTIONS")
-reportPrint("Card             Evo/M  Evo%  Cycles  EvoCost")
+reportPrint("Card             Slot% Evo/SM  Evo% Cycles EvoCost")
 for _, row in ipairs(rows) do
     if cards.hasEvolution(row.id) then
-        local deckMatches = report.cards[row.id].deckMatches
-        local evoPerMatch = deckMatches > 0
-            and (row.evolutionPlays or 0) / deckMatches
+        local stat = report.cards[row.id]
+        local slotMatches = row.evolutionSlotMatches or 0
+        local slotShare = stat.deckMatches > 0
+            and slotMatches / stat.deckMatches * 100
             or 0
-        local evoShare = row.totalPlays > 0
-            and (row.evolutionPlays or 0) / row.totalPlays * 100
+        local evoPerSlotMatch = slotMatches > 0
+            and (row.evolutionPlays or 0) / slotMatches
+            or 0
+        local evoShare = (row.evolutionSelectedPlays or 0) > 0
+            and (row.evolutionPlays or 0) / row.evolutionSelectedPlays * 100
             or 0
         local cycles = cards.evolutionCycles(row.id) or 0
         local evoCost = cards.evolutionCost(row.id) or cards.get(row.id).cost
 
-        reportPrint(("%-16s %5.2f %5.1f %7d %8.1f"):format(
+        reportPrint(("%-16s %5.1f %6.2f %5.1f %6d %7.1f"):format(
             row.name,
-            evoPerMatch,
+            slotShare,
+            evoPerSlotMatch,
             evoShare,
             cycles,
             evoCost
