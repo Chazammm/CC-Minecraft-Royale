@@ -166,7 +166,12 @@ The battle UI shows the Evolution charge persistently in the status area and dir
 
 Evolution use is battle-only; the admin sandbox does not consume or trigger Evolution cycles.
 
-No gameplay Evolution is enabled in the shipped card pool until a specific card Evolution is designed and added.
+The first gameplay Evolutions are enabled:
+
+- **Charged Creeper** — Creeper, 2 cycles, same 4E cost. Keeps 290 damage but expands the real blast radius from 8 to 12 and uses a much larger blue/cyan charged explosion visual.
+- **Ghast Portal** — Nether Portal, 2 cycles, same 3E cost. Replaces the purple portal with a cyan/light-blue shimmer and summons exactly 2 Ghasts total.
+  - **Ghast** — 220 HP flying artillery, 130 damage, 24 range, 2.8s attack cooldown, 5.5 splash radius. Two full hits kill the current 257-HP Blaze. The primary target is slowed by 35% for 1.5s; splash victims take damage but are not slowed.
+- **Mega Mite** — Endermite, 3 cycles, same 1E cost. Keeps all normal Endermite combat stats except max HP, which is exactly 5x (525 HP), and uses a visibly larger sprite.
 
 VS BOT automatically selects the first evolution-capable card in its deck when one exists and respects the configured evolved Emerald cost.
 
