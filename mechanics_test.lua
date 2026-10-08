@@ -5,7 +5,7 @@ local Bot = require("src.bot")
 local util = require("src.util")
 local arena = require("src.arena")
 
-local SUITE_VERSION = 16
+local SUITE_VERSION = 17
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 local EPSILON = 0.000001
@@ -1452,6 +1452,81 @@ runTest("evo_mega_mite", "Mega Mite keeps all stats except five-times HP", funct
         and mega.visualVariant == "mega_mite"
         and math.abs(state.players[1].emeralds - 9) <= EPSILON,
         "Mega Mite must cost the normal 1E and preserve every Endermite combat stat except max HP, which is exactly 5x.",
+        data
+end)
+
+runTest("tower_bridge_range", "Princess Tower engages just after bridge exit", function()
+    local state = newAdminState("full")
+    local laneX = config.ARENA.bridgeCenters[1]
+    local tower = findEntity(state, function(e)
+        return e.alive
+            and e.owner == 2
+            and e.kind == "tower"
+            and e.towerType == "princess"
+            and e.x < config.ARENA.width / 2
+    end)
+
+    if not tower then
+        return false, "Could not find top-left Princess Tower.", {}
+    end
+
+    -- Isolate one Princess Tower so the test measures only its coverage.
+    for _, entity in ipairs(state.entities) do
+        if entity.kind == "tower" and entity.id ~= tower.id then
+            entity.passive = true
+            entity.targetMode = "none"
+        end
+    end
+
+    local bridgeExitY = config.ARENA.riverTop - 2
+    local engageY = config.ARENA.riverTop - 4
+
+    local zombieOk = Game.debugSpawnCard(
+        state,
+        1,
+        "zombie",
+        laneX,
+        bridgeExitY
+    )
+    local zombie = findEntity(state, function(e)
+        return e.alive and e.owner == 1 and e.name == "Zombie"
+    end)
+
+    if not zombieOk or not zombie then
+        return false, "Could not spawn bridge-range target.", {}
+    end
+
+    zombie.passive = true
+    zombie.targetMode = "none"
+    zombie.moveSpeed = 0
+
+    Game.update(state, 0.10)
+    local ignoredAtExit = tower.targetId == nil
+
+    zombie.y = engageY
+    tower.targetId = nil
+    tower.lockedTargetId = nil
+    Game.update(state, 0.10)
+    local acquiredJustPastBridge = tower.targetId == zombie.id
+
+    local exitDistance = util.distance(tower.x, tower.y, laneX, bridgeExitY)
+    local engageDistance = util.distance(tower.x, tower.y, laneX, engageY)
+
+    local data = {}
+    addData(data, "princess_range", tower.attackRange)
+    addData(data, "bridge_exit_y", bridgeExitY)
+    addData(data, "distance_at_bridge_exit", exitDistance)
+    addData(data, "ignored_at_bridge_exit", ignoredAtExit)
+    addData(data, "engage_y", engageY)
+    addData(data, "distance_just_past_bridge", engageDistance)
+    addData(data, "acquired_just_past_bridge", acquiredJustPastBridge)
+    addData(data, "king_range", config.TOWERS and config.TOWERS.kingRange)
+
+    return math.abs(tower.attackRange - 42.5) <= EPSILON
+        and ignoredAtExit
+        and acquiredJustPastBridge
+        and math.abs(((config.TOWERS and config.TOWERS.kingRange) or 0) - 27) <= EPSILON,
+        "Princess Tower should stay off while a troop is at the bridge exit, then acquire it roughly two arena units into its lane; King range stays unchanged.",
         data
 end)
 
