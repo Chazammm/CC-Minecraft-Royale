@@ -392,10 +392,17 @@ end
 
 for _ = 1, 12 do Game.update(outpostAirState, 0.10) end
 
-local outpostHitAir = false
+local survivingBatHp = {}
 for _, entity in ipairs(outpostAirState.entities) do
-    local before = outpostBatHp[entity.id]
-    if before and (not entity.alive or entity.hp < before) then
+    if entity.name == "Bat Swarm" then
+        survivingBatHp[entity.id] = entity.hp
+    end
+end
+
+local outpostHitAir = false
+for id, before in pairs(outpostBatHp) do
+    local after = survivingBatHp[id]
+    if after == nil or after < before then
         outpostHitAir = true
         break
     end
