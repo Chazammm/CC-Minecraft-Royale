@@ -5,7 +5,7 @@ local Bot = require("src.bot")
 local util = require("src.util")
 local arena = require("src.arena")
 
-local SUITE_VERSION = 7
+local SUITE_VERSION = 8
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 local EPSILON = 0.000001
@@ -437,6 +437,20 @@ runTest("admin_evolution_spawn", "Admin directly spawns Evolution forms", functi
         SAFE_X + 10,
         SAFE_Y
     )
+    local elderOk = Game.debugSpawnCard(
+        state,
+        1,
+        "evo:guardian",
+        50,
+        (config.ARENA.riverTop + config.ARENA.riverBottom) / 2
+    )
+    local bankOk = Game.debugSpawnCard(
+        state,
+        1,
+        "evo:villager",
+        SAFE_X + 18,
+        SAFE_Y
+    )
 
     local charged = findEntity(state, function(e)
         return e.alive and e.name == "Charged Creeper"
@@ -446,6 +460,12 @@ runTest("admin_evolution_spawn", "Admin directly spawns Evolution forms", functi
     end)
     local mite = findEntity(state, function(e)
         return e.alive and e.name == "Mega Mite"
+    end)
+    local elder = findEntity(state, function(e)
+        return e.alive and e.name == "Elder Guardian"
+    end)
+    local bank = findEntity(state, function(e)
+        return e.alive and e.name == "Emerald Bank"
     end)
 
     local catalog = cards.adminSpawnCards()
@@ -460,24 +480,287 @@ runTest("admin_evolution_spawn", "Admin directly spawns Evolution forms", functi
     addData(data, "charged_creeper_spawned", charged ~= nil)
     addData(data, "ghast_portal_spawned", portal ~= nil)
     addData(data, "mega_mite_spawned", mite ~= nil)
+    addData(data, "elder_guardian_spawned", elder ~= nil)
+    addData(data, "emerald_bank_spawned", bank ~= nil)
     addData(data, "all_marked_evolution",
-        charged and portal and mite
+        charged and portal and mite and elder and bank
         and charged.isEvolution == true
         and portal.isEvolution == true
         and mite.isEvolution == true
+        and elder.isEvolution == true
+        and bank.isEvolution == true
     )
 
     return chargedOk
         and portalOk
         and miteOk
+        and elderOk
+        and bankOk
         and evoEntries == #cards.evolutionCards()
         and charged ~= nil
         and portal ~= nil
         and mite ~= nil
+        and elder ~= nil
+        and bank ~= nil
         and charged.isEvolution == true
         and portal.isEvolution == true
-        and mite.isEvolution == true,
+        and mite.isEvolution == true
+        and elder.isEvolution == true
+        and bank.isEvolution == true,
         "Admin card pages must include every Evolution as a direct sandbox spawn, bypassing cycles and Emerald cost.",
+        data
+end)
+
+runTest("guardian_beam", "Guardian water beam ramps and resists disruption", function()
+    local riverY = (config.ARENA.riverTop + config.ARENA.riverBottom) / 2
+    local guardianX = config.ARENA.bridgeCenters[1]
+        + config.ARENA.bridgeHalfWidth
+        + 3
+    local bridgeX = config.ARENA.bridgeCenters[1] + 4
+
+    local state = newAdminState("empty")
+    local waterAllowed = arena.placementAllowed(1, guardianX, riverY, "water", state)
+    local landRejected = not arena.placementAllowed(1, SAFE_X, SAFE_Y, "water", state)
+    local bridgeRejected = not arena.placementAllowed(
+        1,
+        config.ARENA.bridgeCenters[1],
+        riverY,
+        "water",
+        state
+    )
+
+    local guardianOk = Game.debugSpawnCard(state, 1, "guardian", guardianX, riverY)
+    local golemOk = Game.debugSpawnCard(state, 2, "iron_golem", bridgeX, riverY)
+    local guardian = findEntity(state, function(e)
+        return e.alive and e.owner == 1 and e.name == "Guardian"
+    end)
+    local golem = findEntity(state, function(e)
+        return e.alive and e.owner == 2 and e.name == "Iron Golem"
+    end)
+
+    if not guardianOk or not golemOk or not guardian or not golem then
+        return false, "Could not create Guardian beam scenario.", {}
+    end
+
+    local hp0 = golem.hp
+    step(state, 1.0, DEFAULT_DT)
+    local damageFirstSecond = hp0 - golem.hp
+    local hp1 = golem.hp
+    step(state, 1.0, DEFAULT_DT)
+    local damageSecondSecond = hp1 - golem.hp
+    local chargeBeforeSkeleton = guardian.beamCharge or 0
+
+    local skeletonOk = Game.debugSpawnCard(
+        state,
+        2,
+        "skeleton",
+        config.ARENA.bridgeCenters[1],
+        riverY
+    )
+
+    local disrupted, disruptElapsed = waitUntil(
+        state,
+        1.5,
+        function()
+            return guardian.lastBeamChargeBeforeHit ~= nil
+        end,
+        DEFAULT_DT
+    )
+
+    local beforeHit = guardian.lastBeamChargeBeforeHit
+    local afterHit = guardian.lastBeamChargeAfterHit
+    local exactTwentyPercent = disrupted
+        and beforeHit
+        and afterHit
+        and beforeHit > 0
+        and math.abs(afterHit - beforeHit * 0.80) <= EPSILON
+        and afterHit > 0
+
+    local beamVisible = false
+    for _, effect in ipairs(state.effects) do
+        if effect.kind == "guardian_beam" then
+            beamVisible = true
+            break
+        end
+    end
+
+    local spikeState = newAdminState("empty")
+    Game.debugSpawnCard(spikeState, 1, "guardian", guardianX, riverY)
+    Game.debugSpawnCard(spikeState, 2, "blaze", guardianX, riverY - 15)
+
+    local spikeGuardian = findEntity(spikeState, function(e)
+        return e.alive and e.owner == 1 and e.name == "Guardian"
+    end)
+    local blaze = findEntity(spikeState, function(e)
+        return e.alive and e.owner == 2 and e.name == "Blaze"
+    end)
+
+    local blazeStartHp = blaze and blaze.hp or 0
+    local spikeHit, spikeElapsed = waitUntil(
+        spikeState,
+        1.5,
+        function()
+            return spikeGuardian and spikeGuardian.hp < spikeGuardian.maxHp
+        end,
+        DEFAULT_DT
+    )
+    local reflected = blaze and (blazeStartHp - blaze.hp) or 0
+
+    local card = cards.get("guardian")
+    local data = {}
+    addData(data, "water_allowed", waterAllowed)
+    addData(data, "land_rejected", landRejected)
+    addData(data, "bridge_rejected", bridgeRejected)
+    addData(data, "guardian_hp", card.unit.maxHp)
+    addData(data, "skeleton_arrow_damage", cards.get("skeleton").unit.damage)
+    addData(data, "beam_base_dps", card.unit.beam.baseDps)
+    addData(data, "beam_max_dps", card.unit.beam.maxDps)
+    addData(data, "damage_first_second", damageFirstSecond)
+    addData(data, "damage_second_second", damageSecondSecond)
+    addData(data, "charge_before_skeleton_spawn", chargeBeforeSkeleton)
+    addData(data, "disruption_detected", disrupted)
+    addData(data, "disruption_time_s", disruptElapsed)
+    addData(data, "charge_before_hit", beforeHit)
+    addData(data, "charge_after_hit", afterHit)
+    addData(data, "beam_visible", beamVisible)
+    addData(data, "spike_hit_detected", spikeHit)
+    addData(data, "spike_hit_time_s", spikeElapsed)
+    addData(data, "flying_damage_reflected", reflected)
+
+    return waterAllowed
+        and landRejected
+        and bridgeRejected
+        and card.cost == 6
+        and card.unit.maxHp == cards.get("skeleton").unit.damage * 3
+        and damageFirstSecond > 0
+        and damageSecondSecond > damageFirstSecond
+        and skeletonOk
+        and exactTwentyPercent
+        and beamVisible
+        and spikeHit
+        and math.abs(reflected - 64 * 0.05) <= 0.01,
+        "Guardian must live only in open river water, ramp its locked beam, keep 80% charge when hit and reflect 5% of flying attack damage.",
+        data
+end)
+
+runTest("evo_elder_guardian", "Elder Guardian doubles HP and globally slows movement", function()
+    local riverY = (config.ARENA.riverTop + config.ARENA.riverBottom) / 2
+    local guardianX = config.ARENA.bridgeCenters[1]
+        + config.ARENA.bridgeHalfWidth
+        + 3
+
+    local state = newAdminState("empty")
+    local elderOk = Game.debugSpawnCard(state, 1, "evo:guardian", guardianX, riverY)
+    local zombieOk = Game.debugSpawnCard(state, 2, "zombie", guardianX, config.ARENA.riverBottom + 12)
+
+    local elder = findEntity(state, function(e)
+        return e.alive and e.owner == 1 and e.name == "Elder Guardian"
+    end)
+    local zombie = findEntity(state, function(e)
+        return e.alive and e.owner == 2 and e.name == "Zombie"
+    end)
+
+    if not elderOk or not zombieOk or not elder or not zombie then
+        return false, "Could not create Elder Guardian global slow scenario.", {}
+    end
+
+    Game.update(state, DEFAULT_DT)
+    local slowedFactor = zombie.globalMoveSpeedFactor
+
+    elder.alive = false
+    Game.update(state, DEFAULT_DT)
+    local restoredFactor = zombie.globalMoveSpeedFactor
+
+    local base = cards.get("guardian")
+    local evolved = cards.evolvedCopy("guardian")
+    local data = {}
+    addData(data, "configured_cycles", cards.evolutionCycles("guardian"))
+    addData(data, "base_hp", base.unit.maxHp)
+    addData(data, "elder_hp", evolved and evolved.unit.maxHp)
+    addData(data, "global_slow", evolved and evolved.unit.globalEnemyMoveSlow)
+    addData(data, "enemy_move_factor_with_elder", slowedFactor)
+    addData(data, "enemy_move_factor_after_elder_death", restoredFactor)
+    addData(data, "beam_max_dps_same", evolved and evolved.unit.beam.maxDps == base.unit.beam.maxDps)
+    addData(data, "spike_reflect_same", evolved and evolved.unit.spikeReflectFlying == base.unit.spikeReflectFlying)
+
+    return cards.evolutionCycles("guardian") == 2
+        and evolved
+        and evolved.unit.maxHp == base.unit.maxHp * 2
+        and math.abs((slowedFactor or 0) - 0.95) <= EPSILON
+        and math.abs((restoredFactor or 0) - 1.0) <= EPSILON
+        and evolved.unit.beam.maxDps == base.unit.beam.maxDps
+        and evolved.unit.spikeReflectFlying == base.unit.spikeReflectFlying,
+        "Elder Guardian must keep Guardian combat mechanics, double HP and apply a battlefield-wide non-permanent 5% enemy movement slow.",
+        data
+end)
+
+runTest("evo_emerald_bank", "Emerald Bank keeps production and lasts 20s longer", function()
+    local state = Game.new()
+    state.players[1].deck = {
+        "zombie",
+        "skeleton",
+        "iron_golem",
+        "bat_swarm",
+        "cannon",
+        "arrows",
+        "villager",
+        "guardian",
+    }
+    state.players[2].deck = cards.defaultDeck()
+
+    local selected = Game.setEvolutionCard(state, 1, "villager")
+    Game.startCountdown(state)
+    local enteredBattle = waitUntil(
+        state,
+        config.MATCH.countdown + 1,
+        function() return state.phase == "battle" end,
+        0.10
+    )
+
+    if not selected or not enteredBattle then
+        return false, "Could not start Emerald Bank evolution scenario.", {}
+    end
+
+    state.players[1].evolutionProgress = 3
+    state.players[1].hand[1] = "villager"
+    state.players[1].emeralds = 10
+
+    local played = Game.playCardFromSlot(state, 1, 1, SAFE_X, SAFE_Y)
+    local bank = findEntity(state, function(e)
+        return e.alive and e.owner == 1 and e.name == "Emerald Bank"
+    end)
+
+    if not played or not bank then
+        return false, "Emerald Bank did not deploy on its ready play.", {}
+    end
+
+    local initialLifetime = bank.remainingLifetime
+    local initialHp = bank.maxHp
+    state.players[1].emeralds = 0
+    state.players[2].emeralds = 0
+
+    Game.update(state, 0.25)
+
+    local baseGain = config.MATCH.emeraldPerSecond * 0.25
+    local expectedGain = baseGain * (1 + cards.get("villager").unit.emeraldBoost)
+    local realizedGain = state.players[1].emeralds
+
+    local data = {}
+    addData(data, "configured_cycles", cards.evolutionCycles("villager"))
+    addData(data, "bank_hp", initialHp)
+    addData(data, "base_villager_hp", cards.get("villager").unit.maxHp)
+    addData(data, "bank_lifetime_s", initialLifetime)
+    addData(data, "base_villager_lifetime_s", cards.get("villager").unit.lifetime)
+    addData(data, "bank_emerald_boost", bank.emeraldBoost)
+    addData(data, "expected_emerald_gain_0_25s", expectedGain)
+    addData(data, "realized_emerald_gain_0_25s", realizedGain)
+
+    return cards.evolutionCycles("villager") == 3
+        and math.abs(initialHp - cards.get("villager").unit.maxHp * 1.05) <= EPSILON
+        and math.abs(initialLifetime - (cards.get("villager").unit.lifetime + 20)) <= EPSILON
+        and math.abs(bank.emeraldBoost - cards.get("villager").unit.emeraldBoost) <= EPSILON
+        and math.abs(realizedGain - expectedGain) <= 0.001,
+        "Emerald Bank must preserve Villager economy output while gaining 5% HP and exactly 20 seconds of lifetime.",
         data
 end)
 
@@ -810,7 +1093,7 @@ runTest("evo_mega_mite", "Mega Mite keeps all stats except five-times HP", funct
         return false, "Could not start Mega Mite evolution scenario.", {}
     end
 
-    state.players[1].evolutionProgress = 3
+    state.players[1].evolutionProgress = 4
     state.players[1].hand[1] = "endermite"
     state.players[1].emeralds = 10
 
@@ -835,7 +1118,7 @@ runTest("evo_mega_mite", "Mega Mite keeps all stats except five-times HP", funct
 
     return played
         and mega ~= nil
-        and cards.evolutionCycles("endermite") == 3
+        and cards.evolutionCycles("endermite") == 4
         and math.abs(mega.maxHp - base.maxHp * 5) <= EPSILON
         and math.abs(mega.damage - base.damage) <= EPSILON
         and math.abs(mega.moveSpeed - base.moveSpeed) <= EPSILON
@@ -1481,10 +1764,12 @@ report[#report + 1] = string.format(
     bats.unit.damage
 )
 report[#report + 1] = string.format(
-    "EVOLUTION_SNAPSHOT|creeper_cycles=%d|portal_cycles=%d|mite_cycles=%d|ghast_damage=%.1f|ghast_range=%.1f",
+    "EVOLUTION_SNAPSHOT|creeper_cycles=%d|portal_cycles=%d|mite_cycles=%d|guardian_cycles=%d|villager_cycles=%d|ghast_damage=%.1f|ghast_range=%.1f",
     cards.evolutionCycles("creeper") or -1,
     cards.evolutionCycles("nether_portal") or -1,
     cards.evolutionCycles("endermite") or -1,
+    cards.evolutionCycles("guardian") or -1,
+    cards.evolutionCycles("villager") or -1,
     (cards.getInternalUnit("ghast") or {}).damage or -1,
     (cards.getInternalUnit("ghast") or {}).attackRange or -1
 )
