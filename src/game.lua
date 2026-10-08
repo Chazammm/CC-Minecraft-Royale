@@ -652,8 +652,8 @@ local function spawnProjectile(state, attacker, target, damageOverride, visualOv
         speed = attacker.projectileSpeed or 50,
         visual = visualOverride
             or attacker.projectileVisual
-            or (attacker.name == "Skeleton" and "arrow")
-            or (attacker.name == "Cannon" and "cannonball")
+            or (attacker.sourceCardId == "skeleton" and "arrow")
+            or (attacker.sourceCardId == "cannon" and "cannonball")
             or (attacker.kind == "tower" and "tower_shot")
             or "shot",
         splashRadius = attacker.projectileSplashRadius,
