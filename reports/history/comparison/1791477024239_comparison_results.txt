@@ -1,0 +1,44 @@
+CC-Minecraft Royale controlled replacement analysis
+Tick: 0.10s
+Contexts/comparison: 100   Comparisons: 1   Total matches: 400   Seed: 1337
+Each context uses the same 7-card shell, same opponent deck and same replacement slot.
+Evolutions are disabled so this remains a pure BASE-card replacement benchmark.
+A and B each play once as P1 and once as P2. Compared cards are excluded from all other slots.
+
+RUN 1/1: Bat Swarm vs Spider
+  10/100 contexts  (40/400 total matches)
+  20/100 contexts  (80/400 total matches)
+  30/100 contexts  (120/400 total matches)
+  40/100 contexts  (160/400 total matches)
+  50/100 contexts  (200/400 total matches)
+  60/100 contexts  (240/400 total matches)
+  70/100 contexts  (280/400 total matches)
+  80/100 contexts  (320/400 total matches)
+  90/100 contexts  (360/400 total matches)
+  100/100 contexts  (400/400 total matches)
+
+COMPARISON|bat_swarm_vs_spider|Bat Swarm|Spider
+NOTE|Custom controlled replacement comparison
+COST|A=2|B=2
+SCORE|A=61.00%|B=48.50%|DELTA_B_MINUS_A=-12.50pp
+PAIRED_95CI|mean=-12.50pp|low=-19.85pp|high=-5.15pp|signal=CLEAR A++
+CONTEXT_EDGE|A=27|B=9|TIE=64
+A_CARD|plays/match=9.79|evo/match=0.00|evo_share=0.0%|unit/E=141.14|tower/E=2.08|kills/match=8.21|avg_match=284.6s
+B_CARD|plays/match=9.30|evo/match=0.00|evo_share=0.0%|unit/E=89.57|tower/E=2.02|kills/match=4.59|avg_match=275.9s
+REPLACEMENT_SLOTS|1:9,2:3,3:15,4:8,5:11,6:17,7:20,8:17
+
+HOW TO READ
+DELTA_B_MINUS_A: positive means B won more often in otherwise identical deck contexts.
+PAIRED_95CI: uncertainty from context-by-context A/B differences after side swapping.
+If the entire interval is above/below zero, the edge is much more convincing than a raw mixed win rate.
+NEAR-EVEN means the measured delta is under 3 percentage points and the interval crosses zero.
+LEAN means an observed edge whose interval still crosses zero; collect more contexts before balancing.
+CLEAR means the paired interval excludes zero. CLEAR ++ also has at least an 8pp measured edge.
+Diagnostic comparisons (Golem/Enderman etc.) compare impact, not identical tactical roles.
+evo/match and evo_share show how often the compared card actually reached its Evolution.
+
+Recommended:
+  compare 30 all        -- broad first pass
+  compare 100 A B       -- confirm one suspicious pair
+
+Saved report: comparison_results.txt
