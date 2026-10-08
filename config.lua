@@ -17,6 +17,14 @@ config.ARENA = {
     riverBottom = 86,
     bridgeCenters = { 27, 73 },
     bridgeHalfWidth = 7,
+
+    -- After a Princess Tower falls, only that lane unlocks on the enemy side.
+    -- The pocket extends slightly past the old tower line, while a centre gap
+    -- prevents dropping troops directly on top of the King Tower.
+    enemyPrincessYTop = 28,
+    enemyPrincessYBottom = 132,
+    pocketPastTower = 4,
+    pocketCenterGap = 6,
 }
 
 config.MUSIC = {
