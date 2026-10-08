@@ -81,8 +81,9 @@ Pass condition: the Iron Golem ignores normal troops and continues toward buildi
 - Observe all three Bats.
 - Let them cross the river.
 - Put a ground-only Cannon in their path.
+- Let a Princess Tower shoot one Bat.
 
-Pass condition: three units spawn, fly directly over water and are not targeted by the ground-only Cannon.
+Pass condition: three units spawn, fly directly over water, are ignored by the ground-only Cannon, and each Bat is fragile enough to die to one Princess Tower hit.
 
 ## 10. Cannon building behavior
 
@@ -101,12 +102,14 @@ Pass condition: Cannon is stationary, attacks ground troops, ignores flying troo
 
 Pass condition: multiple enemy units take damage once, the visible effect appears, and tower spell damage is reduced.
 
-## 12. Creeper death explosion
+## 12. Creeper proximity fuse
 
-- Put multiple enemy units around a Creeper.
-- Kill the Creeper.
+- Put an enemy unit inside the Creeper's trigger range.
+- Confirm the fuse starts instead of an instant melee hit.
+- Let the fuse finish once and observe the AoE.
+- Repeat, but kill the Creeper before the fuse completes.
 
-Pass condition: the Creeper's death creates an explosion and damages nearby enemies exactly once.
+Pass condition: the completed fuse explodes once and damages nearby enemies; a Creeper killed before detonation does not explode.
 
 ## 13. Slime split-on-death
 
@@ -115,13 +118,13 @@ Pass condition: the Creeper's death creates an explosion and damages nearby enem
 
 Pass condition: exactly two Mini Slimes appear and continue fighting as normal units.
 
-## 14. Tower scoring and normal match end
+## 14. Tower scoring and regulation end
 
-For this test, temporarily lower config.MATCH.normalTime if you do not want to wait three minutes.
+Regulation is currently 2:30. Temporarily lower config.MATCH.normalTime for a faster manual test if needed.
 
-- Destroy one side tower and let normal time expire.
+- Destroy one side tower and let regulation expire.
 
-Pass condition: the player with more destroyed side towers wins at the end of normal time.
+Pass condition: the player with more destroyed side towers wins at the end of regulation.
 
 ## 15. Overtime and 3x Emerald generation
 
@@ -139,14 +142,15 @@ Pass condition: overtime begins only on a tie, Emerald generation is approximate
 
 Pass condition: the match ends immediately regardless of side-tower score or remaining time.
 
-## 17. Overtime draw
+## 17. Tiebreaker
 
-Temporarily set short times.
+Temporarily set short regulation/overtime times.
 
-- Reach overtime with a tie.
+- Reach overtime with an equal side-tower score.
 - Destroy no tower before overtime expires.
+- Give one side a clearly lower surviving tower HP value.
 
-Pass condition: the result is DRAW.
+Pass condition: TIEBREAK appears, cards stop being playable, surviving towers visibly drain HP together, and the player whose weakest tower had more HP wins. Exact equal lowest HP may still produce a draw.
 
 ## 18. Simultaneous input stress test
 
