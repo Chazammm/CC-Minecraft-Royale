@@ -34,6 +34,9 @@ function arena.isWalkable(entity, x, y)
         return false
     end
     if entity and entity.flying then return true end
+    if entity and entity.waterOnly then
+        return arena.isRiver(y) and not inBridge(x)
+    end
     if arena.isRiver(y) then return inBridge(x) end
     return true
 end
@@ -128,6 +131,10 @@ function arena.placementAllowed(playerId, x, y, placement, state)
 
     if placement == "anywhere" then
         return true
+    end
+
+    if placement == "water" then
+        return arena.isRiver(y) and not inBridge(x)
     end
 
     if arena.isRiver(y) then return false end
