@@ -49,6 +49,10 @@ function hardware.init()
             error("Configured monitor is not present: " .. tostring(name))
         end
 
+        if peripheral.getType(name) ~= "monitor" then
+            error("Configured peripheral is not a monitor: " .. tostring(name))
+        end
+
         local monitor = peripheral.wrap(name)
         if not monitor then
             error("Could not wrap monitor: " .. tostring(name))
