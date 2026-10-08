@@ -498,6 +498,28 @@ local function currentMoveSpeed(entity)
     return speed
 end
 
+local function updateGlobalMovementAuras(state)
+    local slowByOwner = { [1] = 0, [2] = 0 }
+
+    for _, entity in ipairs(state.entities) do
+        if entity.alive and entity.globalEnemyMoveSlow then
+            slowByOwner[entity.owner] = math.max(
+                slowByOwner[entity.owner] or 0,
+                util.clamp(entity.globalEnemyMoveSlow, 0, 0.95)
+            )
+        end
+    end
+
+    for _, entity in ipairs(state.entities) do
+        if entity.kind == "unit" then
+            local enemyOwner = otherPlayer(entity.owner)
+            entity.globalMoveSpeedFactor = 1 - (slowByOwner[enemyOwner] or 0)
+        else
+            entity.globalMoveSpeedFactor = 1
+        end
+    end
+end
+
 local function moveToward(entity, tx, ty, dt)
     local dx = tx - entity.x
     local dy = ty - entity.y
@@ -1109,6 +1131,11 @@ local function updateCombatEntity(state, entity, dt)
 
     if not target then
         entity.fuseRemaining = nil
+        if entity.beam then
+            entity.beamCharge = 0
+            entity.beamTargetId = nil
+            entity.lockedTargetId = nil
+        end
         return
     end
 
@@ -1144,6 +1171,59 @@ local function updateCombatEntity(state, entity, dt)
                 distance = util.distance(entity.x, entity.y, target.x, target.y)
             end
         end
+    end
+
+    if entity.kind == "unit" and entity.beam then
+        local spec = entity.beam
+
+        if distance > attackRange then
+            -- Inferno-style lock: leaving beam range drops the current charge.
+            entity.beamCharge = 0
+            entity.beamTargetId = nil
+            entity.lockedTargetId = nil
+            entity.targetId = nil
+            return
+        end
+
+        if entity.beamTargetId ~= target.id then
+            entity.beamTargetId = target.id
+            entity.beamCharge = 0
+            entity.beamTickTimer = 0
+            emitSound(state, "minecraft:entity.guardian.attack", 0.35, 1.1)
+        end
+
+        entity.lockedTargetId = target.id
+        entity.targetId = target.id
+
+        local rampSeconds = math.max(0.05, spec.rampSeconds or 4)
+        entity.beamCharge = math.min(
+            1,
+            (entity.beamCharge or 0) + dt / rampSeconds
+        )
+
+        entity.beamTickTimer = (entity.beamTickTimer or 0) - dt
+        if entity.beamTickTimer <= 0 then
+            local tick = math.max(0.05, spec.tick or 0.25)
+            local baseDps = spec.baseDps or 30
+            local maxDps = math.max(baseDps, spec.maxDps or baseDps)
+            local dps = baseDps
+                + (maxDps - baseDps) * (entity.beamCharge or 0)
+
+            damageEntity(
+                state,
+                target,
+                dps * tick,
+                entity.owner,
+                entity.sourceCardId,
+                entity.id
+            )
+            addBeamEffect(state, entity, target)
+            entity.beamTickTimer = entity.beamTickTimer + tick
+        else
+            addBeamEffect(state, entity, target)
+        end
+
+        return
     end
 
     if entity.kind == "unit" and entity.proximityExplosion then
@@ -2519,6 +2599,7 @@ function Game.update(state, dt)
     end
 
     updatePendingSpells(state, dt)
+    updateGlobalMovementAuras(state)
 
     -- Freeze the entity count for this tick. Summons/splits created while
     -- updating combat begin acting next tick instead of receiving a hidden
