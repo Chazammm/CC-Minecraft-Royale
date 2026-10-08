@@ -215,6 +215,21 @@ local function addEffect(state, kind, x, y, radius, ttl, owner)
     })
 end
 
+local function addBeamEffect(state, source, target)
+    local lifetime = 0.12
+    table.insert(state.effects, {
+        kind = "guardian_beam",
+        x = source.x,
+        y = source.y,
+        x2 = target.x,
+        y2 = target.y,
+        charge = source.beamCharge or 0,
+        ttl = lifetime,
+        duration = lifetime,
+        owner = source.owner,
+    })
+end
+
 local function makeBaseEntity(state, owner, kind, x, y)
     local entity = {
         id = state.nextEntityId,
@@ -262,6 +277,9 @@ local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color, 
         or nil
     entity.periodicSpawnTotal = 0
     entity.emeraldPulseTimer = entity.emeraldBoost and 0.25 or nil
+    entity.beamCharge = entity.beam and 0 or nil
+    entity.beamTickTimer = entity.beam and 0 or nil
+    entity.beamTargetId = nil
 
     table.insert(state.entities, entity)
     return entity
@@ -476,6 +494,7 @@ local function currentMoveSpeed(entity)
     if entity.slowRemaining and entity.slowRemaining > 0 then
         speed = speed * (entity.slowFactor or 1)
     end
+    speed = speed * (entity.globalMoveSpeedFactor or 1)
     return speed
 end
 
@@ -533,6 +552,7 @@ local function spawnProjectile(state, attacker, target, damageOverride, visualOv
         targetId = target.id,
         owner = attacker.owner,
         sourceCardId = attacker.sourceCardId,
+        sourceEntityId = attacker.id,
         damage = damageOverride or attacker.damage,
         speed = attacker.projectileSpeed or 50,
         visual = visualOverride
@@ -549,14 +569,39 @@ local function spawnProjectile(state, attacker, target, damageOverride, visualOv
     })
 end
 
-damageEntity = function(state, target, damage, sourceOwner, sourceCardId)
+damageEntity = function(
+    state,
+    target,
+    damage,
+    sourceOwner,
+    sourceCardId,
+    sourceEntityId,
+    isReflected
+)
     if not target or not target.alive then return end
 
-    local actualDamage = math.min(math.max(0, damage or 0), math.max(0, target.hp or 0))
+    local actualDamage = math.min(
+        math.max(0, damage or 0),
+        math.max(0, target.hp or 0)
+    )
 
     if actualDamage > 0 then
         target.damageFlash = 0.18
         addEffect(state, "hit", target.x, target.y, 1.5, 0.16, sourceOwner)
+
+        -- Guardian-style beam charge is disrupted by damage but never hard
+        -- reset. "20%" means keep 80% of the current accumulated charge.
+        if target.beam then
+            local loss = util.clamp(
+                target.beam.chargeLossOnHit or 0.20,
+                0,
+                1
+            )
+            local before = target.beamCharge or 0
+            target.lastBeamChargeBeforeHit = before
+            target.beamCharge = before * (1 - loss)
+            target.lastBeamChargeAfterHit = target.beamCharge
+        end
 
         if state.phase == "battle" and sourceOwner and sourceCardId and state.stats then
             local playerStats = state.stats.players[sourceOwner]
@@ -574,6 +619,40 @@ damageEntity = function(state, target, damage, sourceOwner, sourceCardId)
 
     target.hp = target.hp - (damage or 0)
 
+    -- Guardian spikes only punish the flying entity which actually caused the
+    -- hit. Spells and Crown Towers have no flying source entity and therefore
+    -- do not trigger this reflection.
+    if actualDamage > 0
+        and not isReflected
+        and target.spikeReflectFlying
+        and sourceEntityId
+    then
+        local attacker = getEntityById(state, sourceEntityId)
+        if attacker and attacker.alive and attacker.flying then
+            local reflected = actualDamage * target.spikeReflectFlying
+            if reflected > 0 then
+                damageEntity(
+                    state,
+                    attacker,
+                    reflected,
+                    target.owner,
+                    target.sourceCardId,
+                    target.id,
+                    true
+                )
+                addEffect(
+                    state,
+                    "guardian_spike",
+                    target.x,
+                    target.y,
+                    3,
+                    0.22,
+                    target.owner
+                )
+            end
+        end
+    end
+
     if target.kind == "tower"
         and target.alive
         and not target.lowHpAlerted
@@ -589,7 +668,6 @@ damageEntity = function(state, target, damage, sourceOwner, sourceCardId)
         killEntity(state, target, sourceOwner, sourceCardId)
     end
 end
-
 local function explodeProximityUnit(state, entity)
     local spec = entity.proximityExplosion
     if not spec or not entity.alive then return end
@@ -627,7 +705,14 @@ local function explodeProximityUnit(state, entity)
     entity.fuseRemaining = nil
 
     for _, victim in ipairs(victims) do
-        damageEntity(state, victim, spec.damage or 0, entity.owner, entity.sourceCardId)
+        damageEntity(
+            state,
+            victim,
+            spec.damage or 0,
+            entity.owner,
+            entity.sourceCardId,
+            entity.id
+        )
     end
 end
 
@@ -646,7 +731,14 @@ local function handleDeathAbilities(state, entity)
         end
 
         for _, victim in ipairs(victims) do
-            damageEntity(state, victim, entity.deathDamage.damage, entity.owner, entity.sourceCardId)
+            damageEntity(
+                state,
+                victim,
+                entity.deathDamage.damage,
+                entity.owner,
+                entity.sourceCardId,
+                entity.id
+            )
         end
     end
 
@@ -834,7 +926,8 @@ local function performAttack(state, entity, target)
                 target,
                 spec.meleeDamage or entity.damage or 0,
                 entity.owner,
-                entity.sourceCardId
+                entity.sourceCardId,
+                entity.id
             )
             entity.attackCooldownLeft = spec.meleeCooldown or entity.attackCooldown or 1
             emitSound(state, "minecraft:entity.player.attack.sweep", 0.35, 1.25)
@@ -845,7 +938,14 @@ local function performAttack(state, entity, target)
     if entity.projectileSpeed then
         spawnProjectile(state, entity, target)
     else
-        damageEntity(state, target, entity.damage or 0, entity.owner, entity.sourceCardId)
+        damageEntity(
+            state,
+            target,
+            entity.damage or 0,
+            entity.owner,
+            entity.sourceCardId,
+            entity.id
+        )
     end
     entity.attackCooldownLeft = entity.attackCooldown or 1
 end
@@ -1148,7 +1248,14 @@ local function updateProjectiles(state, dt)
                     end
 
                     for _, victim in ipairs(victims) do
-                        damageEntity(state, victim, projectile.damage, projectile.owner, projectile.sourceCardId)
+                        damageEntity(
+                            state,
+                            victim,
+                            projectile.damage,
+                            projectile.owner,
+                            projectile.sourceCardId,
+                            projectile.sourceEntityId
+                        )
                         local shouldSlow = victim.alive
                             and projectile.onHitSlow
                             and (
