@@ -694,7 +694,7 @@ local function drawEvolutionSlot(buffer, zone, player, enabled)
     if not enabled then
         bg = colors.gray
     else
-        bg = selected and colors.blue or (selecting and colors.black or colors.black)
+        bg = selected and colors.blue or (selecting and colors.gray or colors.black)
     end
 
     fill(buffer, zone.x1, zone.y1, zone.x2, zone.y2, bg)
@@ -889,6 +889,15 @@ local function infoStatLines(card)
             table.insert(lines, string.format(
                 "SPIKES: flying attackers take %.0f%% reflected damage",
                 u.spikeReflectFlying * 100
+            ))
+        end
+
+        if u.groundPulse then
+            table.insert(lines, string.format(
+                "STOMP: %s ground dmg every %ss  |  RADIUS %s",
+                numberText(u.groundPulse.damage),
+                numberText(u.groundPulse.interval, 1),
+                numberText(u.groundPulse.radius, 1)
             ))
         end
 
