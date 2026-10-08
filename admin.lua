@@ -13,9 +13,12 @@ end)
 
 local bot = Bot.new(2)
 
+local initialSpawnCatalog = cards.adminSpawnCards()
+
 local ui = {
     owner = 1,
-    selectedCard = cards.list[1].id,
+    selectedCard = initialSpawnCatalog[1] and initialSpawnCatalog[1].key
+        or cards.list[1].id,
     cardPage = 1,
     bot = bot,
 }
@@ -78,7 +81,8 @@ local function handleTouch(monitorName, x, y)
     end
 
     local pageSize = 16
-    local pages = math.max(1, math.ceil(#cards.list / pageSize))
+    local spawnCatalog = cards.adminSpawnCards()
+    local pages = math.max(1, math.ceil(#spawnCatalog / pageSize))
 
     if hit(layout.cardPageButtons.prev, x, y) then
         ui.cardPage = (ui.cardPage or 1) - 1
@@ -94,8 +98,8 @@ local function handleTouch(monitorName, x, y)
 
     for slot, zone in ipairs(layout.cards) do
         if hit(zone, x, y) then
-            local card = cards.list[((ui.cardPage or 1) - 1) * pageSize + slot]
-            if card then ui.selectedCard = card.id end
+            local entry = spawnCatalog[((ui.cardPage or 1) - 1) * pageSize + slot]
+            if entry then ui.selectedCard = entry.key end
             redraw()
             return
         end
