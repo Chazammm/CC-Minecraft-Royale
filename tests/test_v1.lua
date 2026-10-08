@@ -1558,8 +1558,8 @@ assertTrue(
 
 local magmaInfoScreen = renderInfoCard("magma_cube")
 assertTrue(
-    magmaInfoScreen:find("ON DEATH: splits into 2 Mini Slimes", 1, true) == nil,
-    "Magma Cube info must not incorrectly claim that it splits into Mini Slimes"
+    magmaInfoScreen:find("ON DEATH: splits into 2x Mini Magma Cube", 1, true) ~= nil,
+    "Magma Cube info must visibly show its own Mini Magma Cube split"
 )
 
 colors.toBlit = oldToBlit
