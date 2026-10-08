@@ -77,6 +77,7 @@ local function newPlayerStats()
         towerDamage = 0,
         kills = 0,
         towersKilled = 0,
+        evolutionPlays = 0,
         cards = {},
     }
 end
@@ -106,6 +107,7 @@ local function getCardStats(state, playerId, cardId)
             emeraldBonus = 0,
             slowSeconds = 0,
             targetsHit = 0,
+            evolutionPlays = 0,
         }
         playerStats.cards[cardId] = stat
     end
@@ -114,6 +116,31 @@ end
 
 local function otherPlayer(playerId)
     return playerId == 1 and 2 or 1
+end
+
+local function deckHasCard(deck, cardId)
+    if not cardId then return false end
+    for _, id in ipairs(deck or {}) do
+        if id == cardId then return true end
+    end
+    return false
+end
+
+local function validateEvolutionCard(player)
+    if not player then return false end
+
+    local valid = player.evolutionCardId
+        and deckHasCard(player.deck, player.evolutionCardId)
+        and cards.hasEvolution(player.evolutionCardId)
+
+    if not valid then
+        player.evolutionCardId = nil
+        player.evolutionProgress = 0
+        player.evolutionSelecting = false
+        return false
+    end
+
+    return true
 end
 
 local function newPlayer(playerId)
@@ -129,6 +156,9 @@ local function newPlayer(playerId)
         hand = {},
         queue = {},
         selectedSlot = nil,
+        evolutionCardId = nil,
+        evolutionProgress = 0,
+        evolutionSelecting = false,
         infoOpen = false,
         infoCardId = cards.list[1] and cards.list[1].id or nil,
         collectionPage = 1,
@@ -155,6 +185,9 @@ local function resetDeck(player)
     end
 
     player.selectedSlot = nil
+    player.evolutionProgress = 0
+    player.evolutionSelecting = false
+    validateEvolutionCard(player)
 end
 
 local function setFeedback(player, text, duration)
@@ -1507,17 +1540,34 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
         return false, "INVALID PLACEMENT"
     end
 
-    if card.kind == "unit" then
-        spawnCardUnit(state, playerId, card, x, y)
-        addEffect(state, "spawn", x, y, card.spawnCount and 5 or 3.5, 0.30, playerId)
-    elseif card.kind == "building" then
-        spawnBuilding(state, playerId, card, x, y)
-        addEffect(state, "spawn", x, y, 5, 0.35, playerId)
-    elseif card.kind == "spell" then
-        if card.id == "falling_anvil" then
-            castFallingAnvil(state, playerId, card, x, y)
+    -- Evolutions are battle-only. Two successful normal plays charge the
+    -- selected Evolution Slot card; its third successful play is evolved.
+    local activeCard = card
+    local evolutionUsed = false
+    local evolutionCycles = nil
+
+    if state.phase == "battle"
+        and player.evolutionCardId == card.id
+        and cards.hasEvolution(card.id)
+    then
+        evolutionCycles = cards.evolutionCycles(card.id) or 2
+        if (player.evolutionProgress or 0) >= evolutionCycles then
+            activeCard = cards.evolvedCopy(card.id) or card
+            evolutionUsed = activeCard ~= card
+        end
+    end
+
+    if activeCard.kind == "unit" then
+        spawnCardUnit(state, playerId, activeCard, x, y)
+        addEffect(state, evolutionUsed and "evolution_spawn" or "spawn", x, y, activeCard.spawnCount and 5 or 3.5, 0.30, playerId)
+    elseif activeCard.kind == "building" then
+        spawnBuilding(state, playerId, activeCard, x, y)
+        addEffect(state, evolutionUsed and "evolution_spawn" or "spawn", x, y, 5, 0.35, playerId)
+    elseif activeCard.kind == "spell" then
+        if activeCard.id == "falling_anvil" then
+            castFallingAnvil(state, playerId, activeCard, x, y)
         else
-            castArrows(state, playerId, card, x, y)
+            castArrows(state, playerId, activeCard, x, y)
         end
     else
         setFeedback(player, "UNSUPPORTED CARD")
@@ -1533,12 +1583,49 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
         playerStats.emeraldSpent = playerStats.emeraldSpent + card.cost
         cardStats.plays = cardStats.plays + 1
         cardStats.emeraldSpent = cardStats.emeraldSpent + card.cost
+
+        if evolutionUsed then
+            playerStats.evolutionPlays = (playerStats.evolutionPlays or 0) + 1
+            cardStats.evolutionPlays = (cardStats.evolutionPlays or 0) + 1
+        end
+    end
+
+    local deploymentFeedback = card.name .. " DEPLOYED"
+
+    if state.phase == "battle"
+        and player.evolutionCardId == card.id
+        and cards.hasEvolution(card.id)
+    then
+        evolutionCycles = evolutionCycles or cards.evolutionCycles(card.id) or 2
+
+        if evolutionUsed then
+            player.evolutionProgress = 0
+            deploymentFeedback = "EVOLVED " .. card.name .. " DEPLOYED"
+            emitSound(state, "minecraft:block.amethyst_block.chime", 0.75, 1.65)
+        else
+            player.evolutionProgress = math.min(
+                evolutionCycles,
+                (player.evolutionProgress or 0) + 1
+            )
+
+            if player.evolutionProgress >= evolutionCycles then
+                deploymentFeedback = card.name .. " - EVOLUTION READY"
+                emitSound(state, "minecraft:block.amethyst_block.chime", 0.60, 1.35)
+            else
+                deploymentFeedback = string.format(
+                    "%s - EVO %d/%d",
+                    card.name,
+                    player.evolutionProgress,
+                    evolutionCycles
+                )
+            end
+        end
     end
 
     cycleHand(player, slot)
     player.selectedSlot = nil
-    setFeedback(player, card.name .. " DEPLOYED", 0.7)
-    emitSound(state, "minecraft:block.amethyst_block.hit", 0.45, 1.4)
+    setFeedback(player, deploymentFeedback, evolutionUsed and 1.1 or 0.8)
+    emitSound(state, "minecraft:block.amethyst_block.hit", 0.45, evolutionUsed and 1.8 or 1.4)
     return true
 end
 
@@ -1565,6 +1652,11 @@ function Game.toggleDeckCard(state, playerId, cardId)
 
     if pos then
         table.remove(player.deck, pos)
+        if player.evolutionCardId == cardId then
+            player.evolutionCardId = nil
+            player.evolutionProgress = 0
+            player.evolutionSelecting = false
+        end
         setFeedback(player, card.name .. " REMOVED", 0.8)
         return true
     end
@@ -1577,6 +1669,75 @@ function Game.toggleDeckCard(state, playerId, cardId)
     table.insert(player.deck, cardId)
     setFeedback(player, card.name .. " ADDED", 0.8)
     return true
+end
+
+function Game.setEvolutionCard(state, playerId, cardId)
+    local player = state.players[playerId]
+    if not player or state.phase ~= "lobby" then return false end
+
+    player.ready = false
+    player.evolutionSelecting = false
+    player.evolutionProgress = 0
+
+    if cardId == nil then
+        player.evolutionCardId = nil
+        setFeedback(player, "EVOLUTION SLOT CLEARED", 0.9)
+        return true
+    end
+
+    local card = cards.get(cardId)
+    if not card then
+        setFeedback(player, "UNKNOWN EVOLUTION CARD", 1.0)
+        return false
+    end
+
+    if not deckHasCard(player.deck, cardId) then
+        setFeedback(player, "ADD CARD TO DECK FIRST", 1.2)
+        return false
+    end
+
+    if not cards.hasEvolution(cardId) then
+        setFeedback(player, card.name .. " HAS NO EVOLUTION", 1.2)
+        return false
+    end
+
+    player.evolutionCardId = cardId
+    setFeedback(player, card.name .. " SET AS EVOLUTION", 1.0)
+    return true
+end
+
+function Game.beginEvolutionSelection(state, playerId)
+    local player = state.players[playerId]
+    if not player or state.phase ~= "lobby" then return false end
+
+    if player.evolutionCardId then
+        return Game.setEvolutionCard(state, playerId, nil)
+    end
+
+    local eligible = false
+    for _, cardId in ipairs(player.deck) do
+        if cards.hasEvolution(cardId) then
+            eligible = true
+            break
+        end
+    end
+
+    if not eligible then
+        player.evolutionSelecting = false
+        setFeedback(player, "NO EVOLUTION CARD IN DECK", 1.2)
+        return false
+    end
+
+    player.evolutionSelecting = true
+    player.ready = false
+    setFeedback(player, "TAP AN EVO CARD IN YOUR DECK", 1.4)
+    return true
+end
+
+function Game.validateEvolutionSelection(state, playerId)
+    local player = state.players[playerId]
+    if not player then return false end
+    return validateEvolutionCard(player)
 end
 
 function Game.setGameMode(state, mode, requestingPlayerId)
@@ -1703,6 +1864,7 @@ function Game.loadDeckPreset(state, playerId, slot)
 
     player.deck = util.deepcopy(preset)
     player.ready = false
+    validateEvolutionCard(player)
     setFeedback(player, "PRESET " .. tostring(slot) .. " LOADED", 1.0)
     return true
 end
@@ -1713,6 +1875,7 @@ function Game.randomizeDeck(state, playerId)
 
     player.deck = randomDeck()
     player.ready = false
+    validateEvolutionCard(player)
     setFeedback(player, "RANDOM DECK", 1.0)
     return true
 end
@@ -1800,6 +1963,31 @@ function Game.handleTouch(state, playerId, x, y, layout)
             return
         end
 
+        if hit(layout.evolutionSlot, x, y) then
+            Game.beginEvolutionSelection(state, playerId)
+            emitSound(state, "minecraft:block.amethyst_block.hit", 0.45, player.evolutionSelecting and 1.5 or 0.9)
+            return
+        end
+
+        if player.evolutionSelecting and layout.deckSlots then
+            for slot, zone in ipairs(layout.deckSlots) do
+                if hit(zone, x, y) then
+                    local cardId = player.deck[slot]
+                    if cardId then
+                        Game.setEvolutionCard(state, playerId, cardId)
+                        emitSound(state, "minecraft:block.amethyst_block.chime", 0.5, cards.hasEvolution(cardId) and 1.4 or 0.7)
+                    end
+                    return
+                end
+            end
+        end
+
+        if hit(layout.randomButton, x, y) then
+            Game.randomizeDeck(state, playerId)
+            emitSound(state, "minecraft:block.note_block.pling", 0.45, 1.5)
+            return
+        end
+
         if layout.presetButtons then
             if hit(layout.presetButtons.prev, x, y) then
                 Game.cycleDeckPresetSlot(state, playerId, -1)
@@ -1837,8 +2025,13 @@ function Game.handleTouch(state, playerId, x, y, layout)
                 if hit(zone, x, y) then
                     local card = collectionCardForSlot(player, slot)
                     if card then
-                        Game.toggleDeckCard(state, playerId, card.id)
-                        emitSound(state, "minecraft:block.note_block.hat", 0.4, 1.2)
+                        if player.evolutionSelecting then
+                            Game.setEvolutionCard(state, playerId, card.id)
+                            emitSound(state, "minecraft:block.amethyst_block.chime", 0.5, cards.hasEvolution(card.id) and 1.4 or 0.7)
+                        else
+                            Game.toggleDeckCard(state, playerId, card.id)
+                            emitSound(state, "minecraft:block.note_block.hat", 0.4, 1.2)
+                        end
                     end
                     return
                 end
