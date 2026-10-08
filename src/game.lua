@@ -1039,6 +1039,7 @@ function Game.new(soundCallback)
         countdown = config.MATCH.countdown,
         timeLeft = config.MATCH.normalTime,
         overtime = false,
+        tiebreaker = false,
         winner = nil,
         resultReason = nil,
         sound = soundCallback,
@@ -1066,6 +1067,7 @@ function Game.resetLobby(state)
     state.winner = nil
     state.resultReason = nil
     state.overtime = false
+    state.tiebreaker = false
     state.adminMode = false
     state.adminPaused = false
     state.adminScenario = nil
@@ -1097,6 +1099,7 @@ function Game.startCountdown(state)
     state.winner = nil
     state.resultReason = nil
     state.overtime = false
+    state.tiebreaker = false
     state.stats = newMatchStats()
     resetPlayersForMatch(state)
     emitSound(state, "minecraft:block.note_block.pling", 0.7, 1.2)
@@ -1106,6 +1109,7 @@ local function beginBattle(state)
     state.phase = "battle"
     state.timeLeft = config.MATCH.normalTime
     state.overtime = false
+    state.tiebreaker = false
     createTowers(state)
     emitSound(state, "minecraft:entity.experience_orb.pickup", 0.9, 1.0)
 end
@@ -1123,6 +1127,88 @@ function Game.finish(state, winner, reason)
         emitSound(state, "minecraft:ui.toast.challenge_complete", 1.0, 1.0)
     else
         emitSound(state, "minecraft:block.note_block.bass", 0.8, 0.7)
+    end
+end
+
+local function lowestLivingTowerHp(state, owner)
+    local lowest = math.huge
+
+    for _, entity in ipairs(state.entities) do
+        if entity.alive
+            and entity.kind == "tower"
+            and entity.owner == owner
+        then
+            lowest = math.min(lowest, math.max(0, entity.hp or 0))
+        end
+    end
+
+    return lowest
+end
+
+local function startTiebreaker(state)
+    state.tiebreaker = true
+    state.timeLeft = 0
+    state.projectiles = {}
+    state.pendingSpells = {}
+    state.effects = {}
+    state.players[1].selectedSlot = nil
+    state.players[2].selectedSlot = nil
+
+    -- Once overtime expires, normal combat stops. Only towers remain on
+    -- screen while all surviving towers lose equal raw HP, Clash-style.
+    local towers = {}
+    for _, entity in ipairs(state.entities) do
+        if entity.alive and entity.kind == "tower" then
+            towers[#towers + 1] = entity
+            entity.targetId = nil
+            entity.damageFlash = 0.18
+            addEffect(state, "tower_warning", entity.x, entity.y, 6, 0.65, entity.owner)
+        end
+    end
+    state.entities = towers
+
+    setFeedback(state.players[1], "TIEBREAKER - ALL TOWERS LOSE HP", 3)
+    setFeedback(state.players[2], "TIEBREAKER - ALL TOWERS LOSE HP", 3)
+    emitSound(state, "minecraft:block.beacon.deactivate", 1.0, 0.75)
+end
+
+local function updateTiebreaker(state, dt)
+    local rate = config.MATCH.tiebreakerDamagePerSecond or 300
+    local p1Lowest = lowestLivingTowerHp(state, 1)
+    local p2Lowest = lowestLivingTowerHp(state, 2)
+
+    if p1Lowest == math.huge or p2Lowest == math.huge then
+        if p1Lowest == p2Lowest then
+            Game.finish(state, nil, "TIEBREAKER DRAW")
+        elseif p1Lowest == math.huge then
+            Game.finish(state, 2, "TIEBREAKER")
+        else
+            Game.finish(state, 1, "TIEBREAKER")
+        end
+        return
+    end
+
+    local firstHp = math.min(p1Lowest, p2Lowest)
+    local requestedDamage = rate * dt
+    local actualDamage = math.min(requestedDamage, firstHp)
+
+    for _, entity in ipairs(state.entities) do
+        if entity.alive and entity.kind == "tower" then
+            entity.hp = math.max(0, (entity.hp or 0) - actualDamage)
+            entity.damageFlash = 0.14
+        end
+    end
+
+    if actualDamage + 1e-9 < firstHp then return end
+
+    -- Equal HP drain means the tower that started with the least raw HP
+    -- reaches zero first. Exact equal lowest HP produces a genuine draw.
+    if math.abs(p1Lowest - p2Lowest) < 1e-9 then
+        Game.finish(state, nil, "TIEBREAKER DRAW")
+    elseif p1Lowest < p2Lowest then
+        Game.finish(state, 2, "TIEBREAKER")
+    else
+        Game.finish(state, 1, "TIEBREAKER")
     end
 end
 
@@ -1241,7 +1327,10 @@ end
 
 function Game.playCardFromSlot(state, playerId, slot, x, y)
     local player = state.players[playerId]
-    if not player or (state.phase ~= "battle" and state.phase ~= "admin") then
+    if not player
+        or (state.phase ~= "battle" and state.phase ~= "admin")
+        or (state.phase == "battle" and state.tiebreaker)
+    then
         return false, "NOT PLAYABLE"
     end
 
@@ -1689,6 +1778,13 @@ function Game.update(state, dt)
     if not isBattle and not isAdmin then return end
     if isAdmin and state.adminPaused then return end
 
+    if isBattle and state.tiebreaker then
+        if state.stats then state.stats.elapsed = state.stats.elapsed + dt end
+        updateEffects(state, dt)
+        updateTiebreaker(state, dt)
+        return
+    end
+
     if isBattle then
         if state.stats then state.stats.elapsed = state.stats.elapsed + dt end
 
@@ -1781,7 +1877,7 @@ function Game.update(state, dt)
                     setFeedback(state.players[2], "OVERTIME - 3X EMERALDS", 2)
                 end
             else
-                Game.finish(state, nil, "DRAW")
+                startTiebreaker(state)
             end
         end
     end
