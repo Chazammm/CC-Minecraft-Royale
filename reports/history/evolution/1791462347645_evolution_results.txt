@@ -1,0 +1,66 @@
+CC-Minecraft Royale controlled Evolution impact analysis
+Contexts/evolution: 30   Evolutions: 3   Total matches: 360   Seed: 2608
+Each context compares the exact same subject deck and opponent deck with side swapping.
+BASE disables all Evolution Slots. EVO enables only the tested card's Evolution Slot.
+Corresponding BASE/EVO matches are reseeded with the same gameplay RNG seed.
+This measures the raw contribution of that Evolution Slot, not its opportunity cost versus another Evolution.
+
+RUN 1/3: Creeper -> Charged Creeper
+  10/30 contexts  (40/360 total matches)
+  20/30 contexts  (80/360 total matches)
+  30/30 contexts  (120/360 total matches)
+
+EVOLUTION|creeper|base=Creeper|evolved=Charged Creeper
+RULE|cycles=2|evolves_on_play=3|base_cost=4.0|evo_cost=4.0
+SCORE|BASE=50.00%|EVO=50.00%|DELTA_EVO_MINUS_BASE=+0.00pp
+PAIRED_95CI|mean=+0.00pp|low=-4.70pp|high=+4.70pp|signal=NO CLEAR IMPACT
+CONTEXT_EDGE|BASE=1|EVO=1|TIE=28
+BASE_CARD|plays/match=2.75|unit/E=73.62|tower/E=0.00|kills/match=3.32|avg_match=268.7s
+EVO_CARD|plays/match=2.87|evo/match=0.65|evo_share=22.7%|reached=46.7%|unit/E=74.52|tower/E=0.00|kills/match=3.53|avg_match=269.7s
+SUBJECT_SLOTS|1:3,2:5,3:5,4:4,5:7,6:2,7:3,8:1
+
+RUN 2/3: Endermite -> Mega Mite
+  10/30 contexts  (160/360 total matches)
+  20/30 contexts  (200/360 total matches)
+  30/30 contexts  (240/360 total matches)
+
+EVOLUTION|endermite|base=Endermite|evolved=Mega Mite
+RULE|cycles=3|evolves_on_play=4|base_cost=1.0|evo_cost=1.0
+SCORE|BASE=58.33%|EVO=61.67%|DELTA_EVO_MINUS_BASE=+3.33pp
+PAIRED_95CI|mean=+3.33pp|low=-8.11pp|high=+14.78pp|signal=LEAN BOOST
+CONTEXT_EDGE|BASE=4|EVO=5|TIE=21
+BASE_CARD|plays/match=10.63|unit/E=47.13|tower/E=1.44|kills/match=1.47|avg_match=279.7s
+EVO_CARD|plays/match=10.55|evo/match=2.32|evo_share=22.0%|reached=100.0%|unit/E=60.54|tower/E=1.96|kills/match=1.80|avg_match=277.9s
+SUBJECT_SLOTS|1:2,2:5,3:3,4:4,5:6,6:5,7:2,8:3
+
+RUN 3/3: Nether Portal -> Ghast Portal
+  10/30 contexts  (280/360 total matches)
+  20/30 contexts  (320/360 total matches)
+  30/30 contexts  (360/360 total matches)
+
+EVOLUTION|nether_portal|base=Nether Portal|evolved=Ghast Portal
+RULE|cycles=2|evolves_on_play=3|base_cost=3.0|evo_cost=3.0
+SCORE|BASE=35.83%|EVO=62.50%|DELTA_EVO_MINUS_BASE=+26.67pp
+PAIRED_95CI|mean=+26.67pp|low=+13.60pp|high=+39.73pp|signal=CLEAR LARGE BOOST
+CONTEXT_EDGE|BASE=1|EVO=14|TIE=15
+BASE_CARD|plays/match=6.00|unit/E=87.18|tower/E=0.54|kills/match=7.25|avg_match=272.6s
+EVO_CARD|plays/match=5.70|evo/match=1.53|evo_share=26.9%|reached=85.0%|unit/E=145.16|tower/E=10.27|kills/match=11.62|avg_match=263.9s
+UTILITY_BASE|bonus/match=0.00|slow/play=0.00|hits/play=0.00
+UTILITY_EVO|bonus/match=0.00|slow/play=1.45|hits/play=0.00
+SUBJECT_SLOTS|1:3,2:2,3:3,4:2,5:3,6:6,7:6,8:5
+
+HOW TO READ
+DELTA_EVO_MINUS_BASE isolates the tested Evolution against the same card/deck with no Evolution Slot.
+PAIRED_95CI uses context-by-context BASE/EVO differences after swapping P1/P2.
+reached = percent of EVO matches where the card actually cycled far enough to deploy at least one Evolution.
+evo_share = percent of that card's actual plays that were evolved in the EVO variant.
+CLEAR BOOST means the paired interval is entirely above zero; CLEAR LARGE BOOST also exceeds +10pp.
+A large boost is not automatically overpowered: Evolution Slots are supposed to add power and have cycle/opportunity costs.
+Use mixed simulation afterward to judge the resulting card/deck meta.
+
+Recommended:
+  evo_compare 30 all             -- 360-match first pass with 3 current Evolutions
+  evo_compare 100 creeper        -- confirm one Evolution
+  simulate 1000 mixed            -- overall meta after Evolutions
+
+Saved report: evolution_results.txt
