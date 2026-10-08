@@ -2076,21 +2076,27 @@ assertTrue(
     Game.debugSpawnCard(adminEvoState, 1, "evo:villager", 80, 110),
     "Admin must directly spawn Emerald Bank"
 )
+assertTrue(
+    Game.debugSpawnCard(adminEvoState, 1, "evo:iron_golem", 35, 110),
+    "Admin must directly spawn Diamond Golem"
+)
 
 local foundCharged, foundPortal, foundMega = false, false, false
-local foundElder, foundBank = false, false
+local foundElder, foundBank, foundDiamond = false, false, false
 for _, entity in ipairs(adminEvoState.entities) do
     if entity.name == "Charged Creeper" and entity.isEvolution then foundCharged = true end
     if entity.name == "Ghast Portal" and entity.isEvolution then foundPortal = true end
     if entity.name == "Mega Mite" and entity.isEvolution then foundMega = true end
     if entity.name == "Elder Guardian" and entity.isEvolution then foundElder = true end
     if entity.name == "Emerald Bank" and entity.isEvolution then foundBank = true end
+    if entity.name == "Diamond Golem" and entity.isEvolution then foundDiamond = true end
 end
 assertTrue(foundCharged, "Direct admin spawn must create evolved Charged Creeper entity")
 assertTrue(foundPortal, "Direct admin spawn must create evolved Ghast Portal entity")
 assertTrue(foundMega, "Direct admin spawn must create evolved Mega Mite entity")
 assertTrue(foundElder, "Direct admin spawn must create evolved Elder Guardian entity")
 assertTrue(foundBank, "Direct admin spawn must create evolved Emerald Bank entity")
+assertTrue(foundDiamond, "Direct admin spawn must create evolved Diamond Golem entity")
 
 assertTrue(type(adminRender.draw) == "function", "Admin renderer with Evolution catalog must load")
 end
