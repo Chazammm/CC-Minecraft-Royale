@@ -280,8 +280,8 @@ local function spawnTower(state, blueprint)
     else
         entity.name = "Princess Tower"
         entity.icon = "T"
-        entity.maxHp = 1580
-        entity.damage = 82
+        entity.maxHp = 1501
+        entity.damage = 80
         entity.attackRange = 26
         entity.attackCooldown = 0.95
     end
