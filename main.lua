@@ -86,6 +86,8 @@ end
 
 local tickTimer = os.startTimer(config.TICK_RATE)
 local lastTick = nowSeconds()
+local tickAccumulator = 0
+local MAX_CATCHUP_STEPS = 5
 
 redraw()
 
@@ -121,13 +123,35 @@ while true do
 
     elseif name == "timer" and event[2] == tickTimer then
         local current = nowSeconds()
-        local dt = current - lastTick
+        local elapsed = current - lastTick
         lastTick = current
 
-        if dt <= 0 then dt = config.TICK_RATE end
-        Game.update(state, dt)
-        syncBot()
-        Bot.update(bot, state, dt)
+        if elapsed <= 0 then elapsed = config.TICK_RATE end
+
+        -- Gameplay uses a bounded fixed timestep. A temporary CC/HTTP/audio
+        -- stall must not turn into one giant physics/combat jump that can skip
+        -- river collision, cooldown cadence or short-lived effects.
+        local maxCatchup = config.TICK_RATE * MAX_CATCHUP_STEPS
+        tickAccumulator = math.min(
+            tickAccumulator + elapsed,
+            maxCatchup
+        )
+
+        local steps = 0
+        while tickAccumulator + 1e-9 >= config.TICK_RATE
+            and steps < MAX_CATCHUP_STEPS
+        do
+            Game.update(state, config.TICK_RATE)
+            syncBot()
+            Bot.update(bot, state, config.TICK_RATE)
+
+            tickAccumulator = tickAccumulator - config.TICK_RATE
+            steps = steps + 1
+        end
+
+        -- Drop sub-millisecond floating-point residue after catch-up.
+        if tickAccumulator < 1e-9 then tickAccumulator = 0 end
+
         syncMusic()
         Music.pump(music)
 
