@@ -406,7 +406,7 @@ local function moveAway(entity, target, dt)
         length = 1
     end
 
-    local step = (entity.moveSpeed or 0) * dt
+    local step = currentMoveSpeed(entity) * dt
     local nx = entity.x + dx / length * step
     local ny = entity.y + dy / length * step
 
@@ -1709,6 +1709,7 @@ function Game.handleTouch(state, playerId, x, y, layout)
     end
 
     if state.phase == "battle" then
+        if state.tiebreaker then return end
         if state.gameMode == "bot" and playerId == state.botPlayerId then return end
 
         for slot = 1, 4 do
@@ -1936,6 +1937,7 @@ function Game.debugLoadScenario(state, scenario)
     state.winner = nil
     state.resultReason = nil
     state.overtime = false
+    state.tiebreaker = false
 
     for playerId = 1, 2 do
         state.players[playerId].emeralds = state.players[playerId].maxEmeralds
