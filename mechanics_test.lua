@@ -372,9 +372,15 @@ runTest("evo_charged_creeper", "Charged Creeper has larger blue blast", function
     for _, entity in ipairs(state.entities) do
         if entity.kind == "tower" then
             entity.damage = 0
+            entity.attackRange = 0
             entity.attackCooldownLeft = 999
+            entity.targetId = nil
+            entity.lockedTargetId = nil
+            entity.passive = true
+            entity.targetMode = "none"
         end
     end
+    state.projectiles = {}
 
     state.players[1].evolutionProgress = 2
     state.players[1].hand[1] = "creeper"
