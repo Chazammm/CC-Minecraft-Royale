@@ -29,6 +29,7 @@ local files = {
 }
 
 local base = ("https://raw.githubusercontent.com/%s/%s/%s/"):format(OWNER, REPO, BRANCH)
+local STAGE_DIR = ".cc_royale_update"
 
 local function ensureDir(path)
   local dir = fs.getDir(path)
@@ -37,8 +38,13 @@ local function ensureDir(path)
   end
 end
 
+local function stagedPath(path)
+  return fs.combine(STAGE_DIR, path)
+end
+
 local function download(path)
-  ensureDir(path)
+  local target = stagedPath(path)
+  ensureDir(target)
 
   -- raw.githubusercontent.com/CDN caches can briefly serve an older file
   -- immediately after a push. A unique query string forces a fresh fetch.
@@ -69,13 +75,28 @@ local function download(path)
   local body = response.readAll()
   response.close()
 
-  local handle = fs.open(path, "w")
+  local handle = fs.open(target, "w")
   if not handle then
-    error("Could not write " .. path, 0)
+    error("Could not stage " .. path, 0)
   end
   handle.write(body)
   handle.close()
   print("OK")
+end
+
+local function applyStaged(path)
+  local staged = stagedPath(path)
+  if not fs.exists(staged) or fs.isDir(staged) then
+    error("Staged update is missing " .. path, 0)
+  end
+
+  ensureDir(path)
+
+  if fs.exists(path) then
+    fs.delete(path)
+  end
+
+  fs.move(staged, path)
 end
 
 print("CC-Minecraft Royale installer")
@@ -84,8 +105,26 @@ if not http then
   error("HTTP API is disabled on this server/client.", 0)
 end
 
+-- Download the complete update before replacing any live program files.
+-- A network failure can therefore no longer leave half the repo on the old
+-- version and half on the new one.
+if fs.exists(STAGE_DIR) then
+  fs.delete(STAGE_DIR)
+end
+fs.makeDir(STAGE_DIR)
+
 for _, path in ipairs(files) do
   download(path)
+end
+
+print("")
+print("All files downloaded. Applying update...")
+for _, path in ipairs(files) do
+  applyStaged(path)
+end
+
+if fs.exists(STAGE_DIR) then
+  fs.delete(STAGE_DIR)
 end
 
 print("")
