@@ -76,14 +76,17 @@ for _, card in ipairs(cards.list) do
 end
 
 local deckState = Game.new()
-assertEq(#deckState.players[1].deck, 8, "Player must start with an eight-card deck")
-Game.toggleDeckCard(deckState, 1, "zombie")
-assertEq(#deckState.players[1].deck, 7, "Removing a deck card must leave seven cards")
-assertTrue(not cards.isValidDeck(deckState.players[1].deck), "Seven-card deck must be invalid")
-Game.toggleDeckCard(deckState, 1, "blaze")
-assertEq(#deckState.players[1].deck, 8, "Adding a new card must restore eight cards")
-assertTrue(cards.isValidDeck(deckState.players[1].deck), "Edited eight-card deck must be valid")
-assertEq(deckState.players[1].deck[8], "blaze", "Added card should occupy the open deck slot")
+assertEq(#deckState.players[1].deck, 0, "Player 1 must boot with an empty deck")
+assertEq(#deckState.players[2].deck, 0, "Player 2 must boot with an empty deck")
+assertEq(#deckState.players[1].hand, 0, "Empty boot deck must not create a hand")
+assertEq(#deckState.players[1].queue, 0, "Empty boot deck must not create a queue")
+assertTrue(not cards.isValidDeck(deckState.players[1].deck), "Empty boot deck must be invalid for READY")
+
+for _, cardId in ipairs(cards.defaultDeck()) do
+    assertTrue(Game.toggleDeckCard(deckState, 1, cardId), "Boot deck must allow adding " .. cardId)
+end
+assertEq(#deckState.players[1].deck, 8, "Selecting eight cards must fill the boot deck")
+assertTrue(cards.isValidDeck(deckState.players[1].deck), "Selected eight-card deck must be valid")
 
 local villagerCard = cards.get("villager")
 assertTrue(villagerCard and villagerCard.kind == "unit", "Villager must be a unit, not a building")
@@ -235,8 +238,10 @@ for playerId = 1, 2 do
 end
 
 local state = Game.new()
-assertEq(#state.players[1].hand, 4, "Player 1 must start with four cards")
-assertEq(#state.players[1].queue, 4, "Player 1 must have four queued cards")
+assertEq(#state.players[1].deck, 0, "Normal lobby must boot with an empty P1 deck")
+assertEq(#state.players[2].deck, 0, "Normal lobby must boot with an empty P2 deck")
+assertEq(#state.players[1].hand, 0, "Lobby boot must not pre-deal a hand")
+assertEq(#state.players[1].queue, 0, "Lobby boot must not pre-fill a queue")
 
 local layout = {
     readyButton = { x1 = 10, y1 = 10, x2 = 20, y2 = 12 },
@@ -255,9 +260,16 @@ local layout = {
 }
 
 Game.handleTouch(state, 1, 15, 11, layout)
-assertTrue(state.players[1].ready, "Player 1 ready toggle failed")
+assertTrue(not state.players[1].ready, "READY must reject an empty boot deck")
+assertEq(state.players[1].feedback, "SELECT EXACTLY 8 CARDS", "Empty READY must explain the deck requirement")
+
+state.players[1].deck = cards.defaultDeck()
+state.players[2].deck = cards.defaultDeck()
+
+Game.handleTouch(state, 1, 15, 11, layout)
+assertTrue(state.players[1].ready, "Player 1 ready toggle failed with a valid deck")
 Game.handleTouch(state, 2, 15, 11, layout)
-assertEq(state.phase, "countdown", "Both players ready must start countdown")
+assertEq(state.phase, "countdown", "Both valid decks ready must start countdown")
 
 for _ = 1, 13 do
     Game.update(state, 0.25)
@@ -1095,6 +1107,7 @@ assertEq(sharedModeState.gameMode, "pvp", "P1 monitor must be able to switch bac
 -- P2-human path must also auto-ready the dynamically selected P1 bot.
 Game.handleTouch(sharedModeState, 2, 5, 2, sharedModeLayout)
 assertEq(sharedModeState.botPlayerId, 1, "P2-human bot match must keep P1 as AI")
+sharedModeState.players[2].deck = cards.defaultDeck()
 Game.handleTouch(sharedModeState, 2, 25, 21, sharedModeLayout)
 assertEq(sharedModeState.phase, "countdown", "P2 human READY must auto-ready P1 bot and start")
 
@@ -1201,6 +1214,7 @@ assertEq(featureBot.mode, "hard", "Bot mode must store HARD difficulty")
 -- Deck presets work in memory even in the plain Lua smoke-test environment
 -- where ComputerCraft's fs/textutils persistence APIs are unavailable.
 local presetState = Game.new()
+presetState.players[1].deck = cards.defaultDeck()
 local originalPresetDeck = {}
 for i, id in ipairs(presetState.players[1].deck) do originalPresetDeck[i] = id end
 assertEq(presetState.players[1].presetSlot, 1, "Preset selector should start at slot 1")
@@ -1234,6 +1248,7 @@ textutils = {
     serialize = function() return "{}" end,
 }
 local presetFailureState = Game.new()
+presetFailureState.players[1].deck = cards.defaultDeck()
 local oldSlot2 = presetFailureState.deckPresets[1][2]
 assertTrue(
     not Game.saveDeckPreset(presetFailureState, 1, 2),
