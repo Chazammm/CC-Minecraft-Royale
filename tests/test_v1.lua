@@ -203,6 +203,10 @@ assertEq(#debugState.entities, 2, "1v1 tower scenario must have one tower per pl
 Game.debugLoadScenario(debugState, "empty")
 assertEq(#debugState.entities, 0, "Empty admin scenario must start empty")
 
+debugState.tiebreaker = true
+Game.debugLoadScenario(debugState, "empty")
+assertTrue(not debugState.tiebreaker, "Admin scenario reload must clear tiebreaker state")
+
 local ok = Game.debugSpawnCard(debugState, 1, "zombie", 50, 120)
 assertTrue(ok, "Admin must spawn cards without Emerald or side restrictions")
 assertEq(#debugState.entities, 1, "Admin spawn must create the selected unit")
@@ -371,6 +375,29 @@ for _, entity in ipairs(slowState.entities) do
     if entity.name == "Zombie" then slowedZombie = entity end
 end
 assertTrue(slowedZombie and slowedZombie.slowRemaining > 0, "Snow Golem snowball must slow targets")
+
+local kiteSlowState = Game.new()
+Game.debugLoadScenario(kiteSlowState, "empty")
+Game.debugSpawnCard(kiteSlowState, 1, "skeleton", 50, 95)
+Game.debugSpawnCard(kiteSlowState, 2, "zombie", 50, 93)
+
+local slowedSkeleton
+for _, entity in ipairs(kiteSlowState.entities) do
+    if entity.name == "Skeleton" then slowedSkeleton = entity end
+end
+assertTrue(slowedSkeleton ~= nil, "Slow-aware kite test needs a Skeleton")
+slowedSkeleton.slowRemaining = 1.0
+slowedSkeleton.slowFactor = 0.5
+local kiteStartY = slowedSkeleton.y
+
+Game.debugSetPaused(kiteSlowState, false)
+Game.update(kiteSlowState, 0.20)
+
+local kiteDistance = math.abs(slowedSkeleton.y - kiteStartY)
+assertTrue(
+    math.abs(kiteDistance - 0.75) < 0.05,
+    "Skeleton retreat speed must respect active movement slow"
+)
 
 local teleportState = Game.new()
 Game.debugLoadScenario(teleportState, "empty")
@@ -674,6 +701,25 @@ assertTrue(bot.actions > actionsBefore, "Normal bot must react to a dangerous pu
 assertTrue(botState.players[2].emeralds < 10, "Bot must pay Emerald costs for cards")
 assertTrue(bot.lastAction ~= "NONE", "Bot should expose its last action for admin UI")
 
+local antiAirBotState = Game.new()
+Game.debugLoadScenario(antiAirBotState, "full")
+local antiAirBot = Bot.new(2)
+Bot.setEnabled(antiAirBot, antiAirBotState, true)
+antiAirBotState.players[2].hand = { "cannon", "iron_golem", "spider", "wolf" }
+antiAirBotState.players[2].queue = { "zombie", "slime", "creeper", "endermite" }
+antiAirBotState.players[2].emeralds = 10
+Game.debugSpawnCard(antiAirBotState, 1, "bat_swarm", 50, 58)
+Game.debugSetPaused(antiAirBotState, false)
+antiAirBot.thinkTimer = 0
+
+local antiAirActionsBefore = antiAirBot.actions
+Bot.update(antiAirBot, antiAirBotState, 1.0)
+assertEq(
+    antiAirBot.actions,
+    antiAirActionsBefore,
+    "Bot must not waste Cannon or ground-only cards against a flying threat"
+)
+
 local botStatus = Bot.status(bot, botState)
 assertTrue(botStatus.enabled and botStatus.playerId == 2, "Bot status must report P2 enabled")
 
@@ -878,6 +924,14 @@ assertEq(tiebreakState.phase, "battle", "Tiebreaker must remain visible as a bat
 tiebreakState.players[1].emeralds = 10
 local tiePlayOk = Game.playCardFromSlot(tiebreakState, 1, 1, 25, 120)
 assertTrue(not tiePlayOk, "Cards must be locked during the tiebreaker")
+
+tiebreakState.players[1].selectedSlot = nil
+Game.handleTouch(tiebreakState, 1, 5, 47, layout)
+assertEq(
+    tiebreakState.players[1].selectedSlot,
+    nil,
+    "Hidden hand touches must be ignored during tiebreaker"
+)
 
 for _ = 1, 8 do
     if tiebreakState.phase == "result" then break end
