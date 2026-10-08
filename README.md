@@ -40,8 +40,9 @@ Each monitor shows its own side at the bottom through a mirrored 180-degree view
 - A troop attacks its lane's Princess Tower first; after that tower falls it advances toward the King Tower instead of crossing to the opposite Princess Tower
 - Destroying a Princess Tower unlocks a limited deployment pocket in that lane on the enemy side
 - Crown Towers can attack both enemy units and enemy buildings in range
-- Defensive buildings can pull building-targeting troops such as Iron Golem
-- Buildings lose HP continuously across their lifetime instead of staying full and disappearing instantly
+- Defensive buildings can pull building-targeting troops such as Iron Golem before they commit an attack
+- Units lock onto a target after their first attack; newly spawned troops/buildings cannot pull them away until that target dies
+- Buildings lose HP continuously over time instead of staying full and disappearing instantly; natural decay currently runs at 1.15x
 - Skeleton can kite; Snow Golem intentionally does not
 - Projectiles, slows, summons, teleports, explosions and delayed spells are supported
 
