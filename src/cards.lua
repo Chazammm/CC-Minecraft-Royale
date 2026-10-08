@@ -380,6 +380,64 @@ cards.list = {
             },
         },
     },
+    {
+        id = "wither_skeleton",
+        name = "Wither Skeleton",
+        icon = "Y",
+        cost = 3,
+        kind = "unit",
+        color = colors.gray,
+        unit = {
+            maxHp = 470,
+            damage = 88,
+            moveSpeed = 7.4,
+            attackRange = 2.5,
+            attackCooldown = 1.00,
+            aggroRange = 27,
+            canAttackAir = false,
+            targetMode = "any",
+        },
+    },
+    {
+        id = "magma_cube",
+        name = "Magma Cube",
+        icon = "U",
+        cost = 3,
+        kind = "unit",
+        color = colors.orange,
+        unit = {
+            maxHp = 380,
+            damage = 54.6,
+            moveSpeed = 6.4,
+            attackRange = 2.6,
+            attackCooldown = 1.05,
+            aggroRange = 27,
+            canAttackAir = false,
+            targetMode = "any",
+            splitOnDeath = {
+                count = 2,
+                template = "mini_magma_cube",
+            },
+        },
+    },
+    {
+        id = "pillager_outpost",
+        name = "Pillager Outpost",
+        icon = "J",
+        cost = 4,
+        kind = "building",
+        color = colors.brown,
+        building = {
+            maxHp = 464,
+            damage = 48,
+            attackRange = 27,
+            attackCooldown = 0.95,
+            canAttackAir = true,
+            projectileSpeed = 48,
+            projectileVisual = "crossbow_bolt",
+            lifetime = 35,
+        },
+    },
 }
 
 cards.internalUnits = {
@@ -389,6 +447,19 @@ cards.internalUnits = {
         color = colors.lime,
         maxHp = 110,
         damage = 22,
+        moveSpeed = 7.3,
+        attackRange = 2.2,
+        attackCooldown = 0.90,
+        aggroRange = 24,
+        canAttackAir = false,
+        targetMode = "any",
+    },
+    mini_magma_cube = {
+        name = "Mini Magma Cube",
+        icon = "u",
+        color = colors.orange,
+        maxHp = 104.5,
+        damage = 23.1,
         moveSpeed = 7.3,
         attackRange = 2.2,
         attackCooldown = 0.90,
@@ -523,6 +594,18 @@ cards.info = {
     nether_portal = {
         role = "Piglin spawner",
         description = "Lasts 23s and spawns 3 Piglins. Piglins use crossbow vs air and axe vs ground.",
+    },
+    wither_skeleton = {
+        role = "Damage melee",
+        description = "Zombie sidegrade: about 10% less HP for 10% more hit damage at the same 3E cost.",
+    },
+    magma_cube = {
+        role = "Damage split melee",
+        description = "Slime sidegrade: 5% less HP and 5% more damage before and after splitting.",
+    },
+    pillager_outpost = {
+        role = "Air + ground defense",
+        description = "Cannon alternative with 25% less HP and damage, but it can shoot both air and ground.",
     },
 }
 function cards.getInfo(id)
