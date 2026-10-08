@@ -72,6 +72,17 @@ assertEq(endermiteCard.cost, 1, "Endermite must cost one Emerald")
 assertTrue(endermiteCard.unit.maxHp < 150, "Endermite should have low HP")
 assertTrue(endermiteCard.unit.damage < 25, "Endermite should have low DPS damage")
 
+local skeletonCard = cards.get("skeleton")
+local snowGolemCard = cards.get("snow_golem")
+assertTrue(
+    skeletonCard.unit.preferredMinRange ~= nil,
+    "Skeleton must keep its kiting distance"
+)
+assertTrue(
+    snowGolemCard.unit.preferredMinRange == nil,
+    "Snow Golem must not kite like Skeleton"
+)
+
 local anvilCard = cards.get("falling_anvil")
 assertTrue(anvilCard and anvilCard.kind == "spell", "Falling Anvil must be a selectable spell")
 assertEq(anvilCard.cost, 3, "Falling Anvil must cost three Emeralds")
