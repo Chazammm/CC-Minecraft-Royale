@@ -152,6 +152,20 @@ Results are written to:
 
 Invalid/help commands do not overwrite the previous report.
 
+## Active mechanics diagnostics
+
+Run:
+
+    mechanics_test
+
+This executes deterministic gameplay scenarios against the real game logic rather than only checking static values. It currently exercises target pull/lock behavior, building HP decay, Nether Portal spawn cadence, Magma Cube splitting, Falling Anvil air/ground AoE and delay, Creeper fuse behavior, Skeleton kiting, Pillager Outpost anti-air, full regulation/overtime/tiebreaker flow, Emerald multipliers and a live bot smoke test.
+
+The runner writes a shareable machine-readable report to:
+
+    mechanics_report.txt
+
+The report contains PASS/FAIL status plus measured values (spawn times, HP decay, Emerald generation, tower drain, bot actions, etc.) so failures can be analyzed without reproducing the match manually.
+
 ## Battle music
 
 Battle music is shuffled and streamed as 48 kHz mono DFPWM from the repository's split music packs. When two speakers are available, SFX and music use separate devices. Streaming has reconnect/retry handling for interrupted HTTP requests.
@@ -182,6 +196,7 @@ Then run:
 - `src/hardware.lua` - monitor/speaker discovery
 - `src/music.lua` - streamed battle music controller
 - `simulate.lua` - automated balance benchmark
+- `mechanics_test.lua` - active deterministic gameplay diagnostics + shareable report
 - `tests/test_v1.lua` - automated logic regression/smoke tests
 
 ## Deliberate simplifications
