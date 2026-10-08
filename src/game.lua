@@ -940,8 +940,9 @@ local function updatePeriodicSpawn(state, entity, dt)
         return
     end
 
+    local aliveSummons = nil
     if spec.maxAlive then
-        local aliveSummons = 0
+        aliveSummons = 0
         for _, candidate in ipairs(state.entities) do
             if candidate.alive and candidate.summonerId == entity.id then
                 aliveSummons = aliveSummons + 1
@@ -955,6 +956,9 @@ local function updatePeriodicSpawn(state, entity, dt)
     end
 
     local count = spec.count or 1
+    if spec.maxAlive and aliveSummons then
+        count = math.min(count, math.max(0, spec.maxAlive - aliveSummons))
+    end
     if spec.maxTotal then
         count = math.min(
             count,
@@ -1464,6 +1468,8 @@ local function updateProjectiles(state, dt)
                         )
                         local shouldSlow = victim.alive
                             and projectile.onHitSlow
+                            and victim.kind == "unit"
+                            and (victim.moveSpeed or 0) > 0
                             and (
                                 not projectile.slowPrimaryOnly
                                 or victim.id == target.id
