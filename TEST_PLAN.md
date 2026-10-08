@@ -75,9 +75,11 @@ Pass condition: arrows/projectiles travel to the target and the Skeleton tries t
 - Destroy that left Princess Tower while the match continues.
 - Confirm surviving/new left-lane troops now advance toward the King Tower rather than crossing to the right Princess Tower.
 - Place an enemy troop near an Iron Golem and confirm it ignores the troop.
-- Place a defensive Cannon inside the Iron Golem's aggro range and confirm the Cannon can pull it away from its tower path.
+- Place a defensive Cannon inside the Iron Golem's aggro range before it reaches a tower and confirm the Cannon can pull it away.
+- Let the Iron Golem hit the tower once, then place another Cannon beside it.
+- Repeat with a normal troop locked onto a tower, then spawn a new enemy troop beside it.
 
-Pass condition: Crown Tower objectives stay lane-correct, a destroyed lane leads toward the King Tower, and defensive buildings still provide intentional kiting/distraction.
+Pass condition: Crown Tower objectives stay lane-correct, pre-attack kiting/distraction still works, and after the first attack the unit stays locked to that target until it dies.
 
 ## 9. Bat Swarm flying
 
