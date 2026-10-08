@@ -25,8 +25,9 @@ config.MUSIC = {
 }
 
 config.MATCH = {
-    normalTime = 180,
-    overtimeTime = 120,
+    normalTime = 150,
+    overtimeTime = 150,
+    tiebreakerDamagePerSecond = 300,
     emeraldMax = 10,
     emeraldStart = 5,
     emeraldPerSecond = 1 / 2.8,
