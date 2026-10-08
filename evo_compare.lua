@@ -101,6 +101,10 @@ else
         nativePrint("ERROR: Unknown selectable card ID: " .. cardId)
         return
     end
+    if not cards.isSelectable(cardId) then
+        nativePrint("ERROR: " .. cardId .. " is currently DEV ONLY.")
+        return
+    end
     if not cards.hasEvolution(cardId) then
         nativePrint("ERROR: " .. cardId .. " has no Evolution definition.")
         return
