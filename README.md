@@ -191,6 +191,40 @@ The runner writes a shareable machine-readable report to:
 
 The report contains PASS/FAIL status plus measured values (spawn times, HP decay, Emerald generation, tower drain, bot actions, etc.) so failures can be analyzed without reproducing the match manually.
 
+## GitHub report sync
+
+Reports can be uploaded directly from the arena computer into this repository so the newest diagnostics are always available without screenshots.
+
+One-time setup:
+
+    report_sync setup
+
+Enter a **fine-grained GitHub personal access token** restricted to `Chazammm/CC-Minecraft-Royale` with **Contents: Read and write**. The token is stored only on the Minecraft computer at:
+
+    .cc_royale/github_token.txt
+
+It is not part of the installer and is never committed to the repository.
+
+After setup, `mechanics_test`, `simulate`, and `compare` automatically upload their completed report. Reports are organized as:
+
+    reports/latest/mechanics_report.txt
+    reports/latest/balance_results.txt
+    reports/latest/comparison_results.txt
+
+and timestamped history copies under:
+
+    reports/history/mechanics/
+    reports/history/balance/
+    reports/history/comparison/
+
+Manual commands:
+
+    report_sync
+    report_sync status
+    report_sync logout
+
+`report_sync` uploads every currently available local report. If an upload fails, the local report is kept and the game/test itself does not fail.
+
 ## Battle music
 
 Battle music is shuffled and streamed as 48 kHz mono DFPWM from the repository's split music packs. When two speakers are available, SFX and music use separate devices. Streaming has reconnect/retry handling for interrupted HTTP requests.
@@ -223,6 +257,8 @@ Then run:
 - `simulate.lua` - automated balance benchmark
 - `compare.lua` - paired controlled card replacement analysis
 - `mechanics_test.lua` - active deterministic gameplay diagnostics + shareable report
+- `report_sync.lua` - GitHub report sync setup/manual uploader
+- `src/report_sync.lua` - authenticated report upload/history helper
 - `tests/test_v1.lua` - automated logic regression/smoke tests
 
 ## Deliberate simplifications
