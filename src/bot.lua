@@ -843,6 +843,7 @@ function Bot.update(bot, state, dt)
 
     local playable = state.phase == "battle" or state.phase == "admin"
     if not playable then return end
+    if state.phase == "battle" and state.tiebreaker then return end
     if state.phase == "admin" and state.adminPaused then return end
 
     if state.phase == "battle" then
