@@ -308,7 +308,11 @@ local function targetAllowed(attacker, candidate)
     if not candidate.alive or candidate.owner == attacker.owner then return false end
     if candidate.flying and not attacker.canAttackAir then return false end
 
-    if attacker.kind == "tower" or attacker.kind == "building" then
+    if attacker.kind == "tower" then
+        return candidate.kind == "unit" or candidate.kind == "building"
+    end
+
+    if attacker.kind == "building" then
         return candidate.kind == "unit"
     end
 
@@ -379,11 +383,16 @@ local function acquireTarget(state, entity)
         return nil
     end
 
-    if entity.kind == "tower" or entity.kind == "building" then
-        local target = findNearest(state, entity, function(candidate)
+    if entity.kind == "tower" then
+        return findNearest(state, entity, function(candidate)
+            return candidate.kind == "unit" or candidate.kind == "building"
+        end, entity.attackRange)
+    end
+
+    if entity.kind == "building" then
+        return findNearest(state, entity, function(candidate)
             return candidate.kind == "unit"
         end, entity.attackRange)
-        return target
     end
 
     -- Troops/buildings may distract a marching unit, but towers do not take
