@@ -367,9 +367,46 @@ local function getEntityById(state, id)
     return nil
 end
 
+local function attackReachAgainst(attacker, candidate)
+    if attacker.hybridAttack and not candidate.flying then
+        return attacker.hybridAttack.meleeRange or 2.5
+    end
+
+    if attacker.proximityExplosion then
+        return attacker.proximityExplosion.triggerRange
+            or attacker.attackRange
+            or 0
+    end
+
+    return attacker.attackRange or 0
+end
+
+local function canAttackWaterTarget(attacker, candidate)
+    if not candidate.waterOnly then return true end
+
+    -- Air/water units can physically occupy the river, while towers and
+    -- buildings do not need pathing and are already range-gated by their own
+    -- acquireTarget branches.
+    if attacker.flying
+        or attacker.waterOnly
+        or attacker.kind == "tower"
+        or attacker.kind == "building"
+    then
+        return true
+    end
+
+    local requiredReach = arena.distanceToGroundReach(
+        candidate.x,
+        candidate.y
+    )
+
+    return attackReachAgainst(attacker, candidate) + 0.001 >= requiredReach
+end
+
 local function targetAllowed(attacker, candidate)
     if not candidate.alive or candidate.owner == attacker.owner then return false end
     if candidate.flying and not attacker.canAttackAir then return false end
+    if not canAttackWaterTarget(attacker, candidate) then return false end
 
     if attacker.kind == "tower" then
         return candidate.kind == "unit" or candidate.kind == "building"
@@ -2755,6 +2792,16 @@ function Game.debugSpawnCard(state, owner, cardId, x, y)
 
     x = util.clamp(x, 2, config.ARENA.width - 2)
     y = util.clamp(y, 2, config.ARENA.height - 2)
+
+    -- The admin sandbox normally allows free placement for testing. Water-only
+    -- units are the exception because their terrain restriction is part of
+    -- their combat identity and targetability. Guardian/Elder Guardian must
+    -- therefore remain in open river water even in admin mode.
+    if card.placement == "water"
+        and not arena.placementAllowed(owner, x, y, "water", state)
+    then
+        return false, "WATER ONLY - PLACE IN OPEN RIVER"
+    end
 
     if card.kind == "unit" then
         spawnCardUnit(state, owner, card, x, y)
