@@ -95,18 +95,80 @@ The Evolution Slot duplicates one card that is already part of the normal 8-card
 
 Only cards with an explicit `card.evolution` definition in `src/cards.lua` are eligible. Cards without an evolution cannot be placed in the slot.
 
-For the standard two-cycle evolution:
+Evolution timing is configured **per card** with `cycles`:
 
-1. First play is normal and charges the tracker to 1/2.
-2. Second play is normal and charges the tracker to READY.
-3. Third play uses the evolved card definition.
-4. The tracker resets to 0/2 and repeats.
+- `cycles = 0` -> every successful play is evolved
+- `cycles = 1` -> one normal play, second play evolves
+- `cycles = 2` -> two normal plays, third play evolves
+- `cycles = 3` -> three normal plays, fourth play evolves
+- and so on
 
-The battle UI shows the Evolution charge persistently in the status area and directly on the evolved card whenever it is in hand. Evolution use is battle-only; the admin sandbox does not consume or trigger Evolution cycles.
+After an evolved play the counter resets and the card starts charging again.
 
-Evolution definitions are data-driven and can apply numeric multipliers or direct overrides to unit, building, spell, or top-level card data. No gameplay Evolution is enabled in the shipped card pool until a specific card Evolution is designed and added.
+Each Evolution can also have its own Emerald cost. Supported forms include:
 
-VS BOT automatically selects the first evolution-capable card in its deck when one exists.
+    cost = 4                      -- exact evolved cost
+    cost = { delta = 1 }          -- base 3E -> evolved 4E
+    cost = { multiplier = 1.5 }   -- multiply base cost
+    cost = { set = 5 }            -- explicit exact cost
+    costDelta = 1                 -- shorthand
+    costMultiplier = 1.5          -- shorthand
+
+The real play API, UI, bot affordability and telemetry all use the evolved cost only when that evolved play is actually ready.
+
+Stats can be configured either as exact values or multipliers:
+
+    evolution = {
+        cycles = 3,
+        cost = { delta = 1 },
+
+        statMultipliers = {
+            maxHp = 1.15,
+            damage = 1.10,
+        },
+
+        stats = {
+            attackRange = 18,
+        },
+    }
+
+`stats` and `statMultipliers` automatically target the card's active unit/building/spell payload.
+
+Abilities are deep-merged with `abilities`. This allows an Evolution to add or modify any mechanic already supported by the engine, for example:
+
+    abilities = {
+        onHitSlow = {
+            factor = 0.75,
+            duration = 2.0,
+        },
+
+        teleport = {
+            minRange = 8,
+            maxRange = 20,
+            cooldown = 4,
+        },
+
+        canAttackAir = true,
+    }
+
+This same system can configure existing mechanics such as teleporting, slowing, splitting, proximity explosions, periodic summons, Emerald generation and target behavior. A completely new ability type still needs its gameplay handler implemented once in `Game.lua`; after that it can be configured per Evolution through the same data structure.
+
+For more specialized Evolutions, the older section format remains supported:
+
+    unit = {
+        multipliers = { maxHp = 1.2 },
+        overrides = { canAttackAir = true },
+    }
+
+and `patch = {...}` can deep-merge arbitrary whole-card data such as `spawnCount`, placement data, or future custom fields.
+
+The battle UI shows the Evolution charge persistently in the status area and directly on the Evolution card whenever it is in hand. When the evolved play has a different Emerald cost, the hand displays the **actual evolved cost** and affordability state.
+
+Evolution use is battle-only; the admin sandbox does not consume or trigger Evolution cycles.
+
+No gameplay Evolution is enabled in the shipped card pool until a specific card Evolution is designed and added.
+
+VS BOT automatically selects the first evolution-capable card in its deck when one exists and respects the configured evolved Emerald cost.
 
 ## Game modes
 
