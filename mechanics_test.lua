@@ -5,7 +5,7 @@ local Bot = require("src.bot")
 local util = require("src.util")
 local arena = require("src.arena")
 
-local SUITE_VERSION = 13
+local SUITE_VERSION = 14
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 local EPSILON = 0.000001
@@ -815,6 +815,16 @@ runTest("guardian_beam", "Guardian water beam ramps and resists disruption", fun
     local blaze = findEntity(spikeState, function(e)
         return e.alive and e.owner == 2 and e.name == "Blaze"
     end)
+
+    -- Isolate spike reflection from Guardian beam damage. With the improved
+    -- 18 range the Guardian can now reach this Blaze, so leaving its offense
+    -- enabled would mix beam damage into the reflected-damage measurement.
+    if spikeGuardian then
+        spikeGuardian.passive = true
+        spikeGuardian.targetMode = "none"
+        spikeGuardian.targetId = nil
+        spikeGuardian.lockedTargetId = nil
+    end
 
     local blazeStartHp = blaze and blaze.hp or 0
     local spikeHit, spikeElapsed = waitUntil(
