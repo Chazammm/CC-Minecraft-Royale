@@ -119,6 +119,22 @@ local SPRITES = {
             "LL...LL",
         },
     },
+    charged_creeper = {
+        -- Green Creeper core with the cyan/light-blue electric shell associated
+        -- with Minecraft's charged Creeper.
+        rows = {
+            "C.LLLLL.C",
+            ".ALKLKLA.",
+            "C.LLKLL.C",
+            ".ALKKKLA.",
+            "C..LLL..C",
+            "...LLL...",
+            "C..LLL..C",
+            ".ALL.LLA.",
+            "C.L...L.C",
+            "CLL...LLC",
+        },
+    },
     slime = {
         rows = {
             ".LLL.",
@@ -247,6 +263,15 @@ local SPRITES = {
             ".PPP.",
         },
     },
+    mega_mite = {
+        rows = {
+            "..PPPPP..",
+            ".PPKPKPP.",
+            "PPPPPPPPP",
+            ".PPKPKPP.",
+            "..PPPPP..",
+        },
+    },
     wolf = {
         -- 12x9 side profile with a clear red tamed-wolf collar.
         rows = {
@@ -271,6 +296,31 @@ local SPRITES = {
             "PPMKKMM",
             "PPMMMMM",
             ".PPPPP.",
+        },
+    },
+    ghast_portal = {
+        rows = {
+            ".CCCCCCC.",
+            "CCAAAAACC",
+            "CAAKKKAAC",
+            "CAAKKKAAC",
+            "CAAKKKAAC",
+            "CAAKKKAAC",
+            "CCAAAAACC",
+            ".CCCCCCC.",
+        },
+    },
+    ghast = {
+        rows = {
+            ".WWWWWWWWW.",
+            "WWWWWWWWWWW",
+            "WWWWWWWWWWW",
+            "WWWKWWWKWWW",
+            "WWWWKWWWWWW",
+            ".WWWWWWWWW.",
+            "..W.W.W.W..",
+            "..W.W.W.W..",
+            "...W...W...",
         },
     },
     piglin = {
@@ -333,9 +383,12 @@ local NAME_TO_SPRITE = {
     ["Snow Golem"] = "snow_golem",
     ["Villager"] = "villager",
     ["Endermite"] = "endermite",
+    ["Mega Mite"] = "mega_mite",
     ["Wolf"] = "wolf",
     ["Nether Portal"] = "nether_portal",
+    ["Ghast Portal"] = "ghast_portal",
     ["Piglin"] = "piglin",
+    ["Ghast"] = "ghast",
 }
 
 local function normalizeSprites()
@@ -349,6 +402,9 @@ end
 normalizeSprites()
 
 local function spriteFor(entity)
+    if entity.visualVariant and SPRITES[entity.visualVariant] then
+        return SPRITES[entity.visualVariant]
+    end
     if entity.kind == "tower" then
         return entity.towerType == "king" and SPRITES.king_tower or SPRITES.princess_tower
     end
@@ -509,8 +565,20 @@ local function drawSprite(box, entity, playerId)
                 if color then
                     if flash then
                         color = colors.white
-                    elseif fuseBlink and entity.name == "Creeper" then
-                        color = token == "K" and colors.black or colors.white
+                    elseif fuseBlink and entity.proximityExplosion then
+                        if token == "K" then
+                            color = colors.black
+                        elseif entity.visualVariant == "charged_creeper" then
+                            color = colors.lightBlue
+                        else
+                            color = colors.white
+                        end
+                    elseif entity.visualVariant == "ghast_portal"
+                        and (token == "A" or token == "C")
+                    then
+                        local clock = (os.clock and os.clock() or 0)
+                        local shimmer = (math.floor(clock * 5) + rowIndex + col) % 2 == 0
+                        color = shimmer and colors.cyan or colors.lightBlue
                     elseif entity.kind == "tower" and token == "T" then
                         -- Deterministic crack pixels make damaged towers look
                         -- visibly worn without losing their team silhouette.
@@ -559,6 +627,10 @@ local function drawProjectile(box, state, playerId, projectile)
     elseif projectile.visual == "fireball" then
         fillRect(box, px - 1, py - 1, px + 1, py + 1, colors.orange)
         put(box, px, py, colors.yellow)
+    elseif projectile.visual == "ghast_fireball" then
+        fillRect(box, px - 2, py - 2, px + 2, py + 2, colors.cyan)
+        fillRect(box, px - 1, py - 1, px + 1, py + 1, colors.lightBlue)
+        put(box, px, py, colors.white)
     elseif projectile.visual == "potion" then
         fillRect(box, px - 1, py - 1, px + 1, py + 1, colors.purple)
     elseif projectile.visual == "snowball" then
@@ -599,6 +671,43 @@ local function drawExplosion(box, playerId, effect)
             end
         end
     end
+end
+
+local function drawChargedExplosion(box, playerId, effect)
+    local cx, cy = worldToPixel(box, playerId, effect.x, effect.y)
+    local duration = math.max(0.001, effect.duration or 0.90)
+    local progress = math.max(0, math.min(1, 1 - effect.ttl / duration))
+    local maxRx = worldRadiusX(box, effect.radius or 16)
+    local maxRy = worldRadiusY(box, effect.radius or 16)
+    local rx = math.max(3, maxRx * (0.20 + progress * 0.80))
+    local ry = math.max(3, maxRy * (0.20 + progress * 0.80))
+
+    local ringColor = progress < 0.35 and colors.white
+        or (progress < 0.72 and colors.lightBlue or colors.cyan)
+
+    for y = math.floor(-ry), math.ceil(ry) do
+        for x = math.floor(-rx), math.ceil(rx) do
+            local nx, ny = x / rx, y / ry
+            local d = nx * nx + ny * ny
+            if d <= 1 and d >= 0.30 then
+                put(box, cx + x, cy + y, ringColor)
+            end
+        end
+    end
+
+    local sparkSpread = 3 + progress * math.max(rx, ry)
+    for i = 1, 12 do
+        local angle = i * 2.399
+        put(
+            box,
+            cx + math.cos(angle) * sparkSpread,
+            cy + math.sin(angle) * sparkSpread * 0.7,
+            i % 3 == 0 and colors.white or colors.lightBlue
+        )
+    end
+
+    drawLine(box, cx - 4, cy, cx + 4, cy, colors.white)
+    drawLine(box, cx, cy - 4, cx, cy + 4, colors.cyan)
 end
 
 local function drawArrowVolley(box, playerId, effect)
@@ -712,11 +821,22 @@ local function drawEffect(box, playerId, effect)
         drawRingEffect(box, playerId, effect, colors.magenta)
     elseif effect.kind == "splash" then
         drawRingEffect(box, playerId, effect, colors.purple)
+    elseif effect.kind == "ghast_splash" then
+        drawRingEffect(box, playerId, effect, colors.cyan)
+        drawSparkle(box, playerId, effect, colors.white)
+    elseif effect.kind == "charged_explosion" then
+        drawChargedExplosion(box, playerId, effect)
     elseif effect.kind == "summon" then
         drawRingEffect(box, playerId, effect, colors.lime)
     elseif effect.kind == "portal_spawn" then
         drawRingEffect(box, playerId, effect, colors.magenta)
         drawSparkle(box, playerId, effect, colors.purple)
+    elseif effect.kind == "ghast_portal_spawn" then
+        drawRingEffect(box, playerId, effect, colors.cyan)
+        drawSparkle(box, playerId, effect, colors.lightBlue)
+    elseif effect.kind == "evolution_spawn" then
+        drawRingEffect(box, playerId, effect, colors.magenta)
+        drawSparkle(box, playerId, effect, colors.cyan)
     elseif effect.kind == "spawn" then
         local team = effect.owner == playerId and colors.lightBlue or colors.red
         drawRingEffect(box, playerId, effect, team)
