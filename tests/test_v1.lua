@@ -296,6 +296,8 @@ assertEq(config.MATCH.overtimeFinalSeconds, 30, "Final overtime boost must begin
 assertEq(config.MATCH.overtimeFinalMultiplier, 3, "Final thirty seconds must use triple Emerald generation")
 assertEq(config.MATCH.tiebreakerDamagePerSecond, 300, "Tiebreaker drain rate must stay deterministic")
 assertEq(config.BUILDINGS.lifetimeDecayMultiplier, 1.15, "Buildings must naturally lose HP fifteen percent faster")
+assertEq(config.TOWERS.princessRange, 42.5, "Princess Towers must engage shortly after a bridge exit")
+assertEq(config.TOWERS.kingRange, 27, "King Tower range must remain unchanged")
 local riverMid = (config.ARENA.riverTop + config.ARENA.riverBottom) / 2
 
 assertTrue(not arena.placementAllowed(1, 50, 20, nil), "P1 must not deploy troops on enemy half")
