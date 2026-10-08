@@ -48,7 +48,7 @@ Each monitor shows its own side at the bottom through a mirrored 180-degree view
 
 ## Current selectable cards
 
-There are currently **22 selectable cards**:
+There are currently **21 selectable cards**:
 
 1. Zombie
 2. Skeleton
@@ -65,13 +65,14 @@ There are currently **22 selectable cards**:
 13. Snow Golem
 14. Villager
 15. Endermite
-16. Guardian
-17. Wolf
-18. Falling Anvil
-19. Nether Portal
-20. Wither Skeleton
-21. Magma Cube
-22. Pillager Outpost
+16. Wolf
+17. Falling Anvil
+18. Nether Portal
+19. Wither Skeleton
+20. Magma Cube
+21. Pillager Outpost
+
+**Guardian is currently benched as a DEV-ONLY card.** Guardian and Elder Guardian remain implemented and directly spawnable in the admin sandbox, but neither appears in normal card selection, random decks, bot/simulation card pools or the normal Evolution Slot.
 
 Nether Portal summons the internal-only Piglin unit; Piglin is not directly selectable. Magma Cube splits into the internal-only Mini Magma Cube.
 
@@ -87,7 +88,7 @@ Nether Portal summons the internal-only Piglin unit; Piglin is not directly sele
 - **Slime**: splits into two Mini Slimes on death
 - **Witch**: periodically summons Baby Zombies
 - **Villager**: stationary Emerald-generation support
-- **Guardian**: 6E stationary water-only tank counter. Its 18-range beam ramps from 35 to 350 DPS over 4s while locked to one target. Each incoming hit reduces current beam charge by 20% rather than resetting it; flying attackers receive 5% of their dealt damage back from Guardian spikes. Guardian has 90 HP, exactly three current Skeleton arrows. Water-only placement is enforced in both normal play and the admin sandbox. Ground units ignore a Guardian if their real attack/trigger range cannot reach its water position; ranged, flying, building and tower attackers that can reach it still target normally.
+- **Guardian (DEV ONLY)**: benched from the production card/Evolution pools while its water-only targeting and balance are still being developed. In admin it remains a 6E stationary water tank counter with an 18-range ramping beam, 20% charge loss on incoming hits and 5% reflected damage against flying attackers.
 - **Enderman**: teleporting melee attacker
 - **Snow Golem**: ranged slow support without kiting
 
@@ -199,7 +200,7 @@ The bot uses the normal card API and Emerald economy rather than special spawn c
 
 The lobby includes:
 
-- 22-card paginated collection
+- 21-card paginated collection
 - 8-card deck builder
 - 1 extra **Evolution Slot** below the normal deck
 - Random 8-card deck button
@@ -238,7 +239,7 @@ The admin sandbox can:
 - browse the paginated card pool
 
 
-Evolution forms are also listed directly in the admin card pages. They are marked **EVO** and can be spawned immediately without charging cycles or paying Emeralds. Current direct admin forms are Charged Creeper, Ghast Portal, Mega Mite, Elder Guardian, Emerald Bank and Diamond Golem.
+Evolution forms are also listed directly in the admin card pages. They are marked **EVO** and can be spawned immediately without charging cycles or paying Emeralds. Current direct admin forms are Charged Creeper, Ghast Portal, Mega Mite, Elder Guardian, Emerald Bank and Diamond Golem. Guardian and Elder Guardian are intentionally admin/dev-only while benched.
 ## Balance simulator
 
 Run any whole-number match count from **100 to 1000**:
@@ -315,13 +316,12 @@ For a clean Evolution-only measurement use:
     evo_compare 100 creeper
     evo_compare 100 nether_portal
     evo_compare 100 endermite
-    evo_compare 100 guardian
     evo_compare 100 villager
     evo_compare 100 iron_golem
 
 `evo_compare` builds identical 8-card subject decks and identical opponents for BASE and EVO. BASE disables every Evolution Slot; EVO enables only the tested card. Each context is played from both sides, and corresponding BASE/EVO matches use the same gameplay RNG seed.
 
-With the current six Evolutions, `evo_compare 30 all` runs 720 matches.
+With Guardian/Elder Guardian benched, the normal pool currently has five selectable Evolutions, so `evo_compare 30 all` runs 600 matches.
 
 The report is written to:
 
