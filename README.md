@@ -176,7 +176,7 @@ The first gameplay Evolutions are enabled:
 - **Mega Mite** — Endermite, 4 cycles, so the 5th play evolves. Same 1E cost. Keeps all normal Endermite combat stats except max HP, which is exactly 5x (525 HP), and uses a visibly larger sprite.
 - **Elder Guardian** — Guardian, 2 cycles, same 6E cost. Doubles HP from 90 to 180 and applies a battlefield-wide 5% movement-speed penalty to every enemy unit while alive. Beam, range and spike reflection are unchanged.
 - **Emerald Bank** — Villager, 3 cycles, same 7E cost. Keeps the exact 61.6% Emerald-generation boost, gains 5% HP (185 -> 194.25) and lasts 70s instead of 50s.
-- **Diamond Golem** — Iron Golem, 2 cycles, same 5E cost. Gains 5% HP (1377 -> 1445.85). Every 2s it stomps the ground, creating a visible local quake that deals 20 damage in 8 radius to enemy grounded units only; flying and water-only units are ignored.
+- **Diamond Golem** — Iron Golem, 2 cycles, same 5E cost. Gains 5% HP (1377 -> 1445.85). While it is actually walking, each accumulated 2.0s of movement triggers a stomp, creating a visible local quake that deals 20 damage in 8 radius to enemy grounded units only. Standing still to attack a building or Crown Tower pauses the stomp timer; flying and water-only units are ignored.
 
 VS BOT automatically selects the first evolution-capable card in its deck when one exists and respects the configured evolved Emerald cost.
 
