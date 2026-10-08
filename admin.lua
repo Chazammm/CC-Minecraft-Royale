@@ -99,7 +99,10 @@ local function handleTouch(monitorName, x, y)
     for slot, zone in ipairs(layout.cards) do
         if hit(zone, x, y) then
             local entry = spawnCatalog[((ui.cardPage or 1) - 1) * pageSize + slot]
-            if entry then ui.selectedCard = entry.key end
+            if entry then
+                ui.selectedCard = entry.key
+                ui.notice = nil
+            end
             redraw()
             return
         end
@@ -107,7 +110,14 @@ local function handleTouch(monitorName, x, y)
 
     if hit(layout.arena, x, y) then
         local wx, wy = arena.screenToWorld(viewerId, x, y, layout.arena)
-        Game.debugSpawnCard(state, ui.owner, ui.selectedCard, wx, wy)
+        local ok, reason = Game.debugSpawnCard(
+            state,
+            ui.owner,
+            ui.selectedCard,
+            wx,
+            wy
+        )
+        ui.notice = ok and nil or tostring(reason or "INVALID PLACEMENT")
         redraw()
     end
 end
