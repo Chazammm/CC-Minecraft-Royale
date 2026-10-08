@@ -152,6 +152,31 @@ Results are written to:
 
 Invalid/help commands do not overwrite the previous report.
 
+## Controlled replacement analysis
+
+After a broad mixed benchmark, use the paired replacement analyzer to isolate whether one card actually improves otherwise identical decks:
+
+    compare 30 all
+    compare 100 zombie wither_skeleton
+    compare 100 iron_golem enderman 2026
+
+Each context creates one randomized 7-card shell and one randomized opponent deck. Card A and Card B occupy the same replacement slot, and both variants play once as P1 and once as P2. This removes most deck-composition and side bias from the comparison.
+
+The default `all` suite compares:
+
+- Zombie vs Wither Skeleton
+- Slime vs Magma Cube
+- Cannon vs Pillager Outpost
+- Iron Golem vs Enderman (same-cost diagnostic)
+- Skeleton vs Snow Golem (ranged-support diagnostic)
+- Bat Swarm vs Spider (2E pressure diagnostic)
+
+Results are written to:
+
+    comparison_results.txt
+
+The report includes score-rate delta, paired context wins, card efficiency and a paired 95% confidence interval. A raw edge whose interval still crosses zero is labeled LEAN; an interval fully on one side of zero is labeled CLEAR.
+
 ## Active mechanics diagnostics
 
 Run:
@@ -196,6 +221,7 @@ Then run:
 - `src/hardware.lua` - monitor/speaker discovery
 - `src/music.lua` - streamed battle music controller
 - `simulate.lua` - automated balance benchmark
+- `compare.lua` - paired controlled card replacement analysis
 - `mechanics_test.lua` - active deterministic gameplay diagnostics + shareable report
 - `tests/test_v1.lua` - automated logic regression/smoke tests
 
