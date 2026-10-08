@@ -256,7 +256,7 @@ local SPRITES = {
             "..SSSSS..",
             ".SSYWYSS.",
             "SSYYKYYSS",
-            "SYYSSSYY S":gsub(" ", ""),
+            "SYYSSSYYS",
             "SSYYKYYSS",
             ".SSYWYSS.",
             "..SSSSS..",
