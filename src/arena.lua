@@ -44,6 +44,43 @@ local function sideOfRiver(y)
     return 0
 end
 
+function arena.laneForX(x)
+    return x < A.width / 2 and "left" or "right"
+end
+
+local function enemyPocketUnlocked(state, playerId, x)
+    if not state or state.phase ~= "battle" or not state.destroyedSideTowers then
+        return false
+    end
+
+    local enemyId = playerId == 1 and 2 or 1
+    local destroyed = state.destroyedSideTowers[enemyId]
+    if not destroyed then return false end
+
+    local lane = arena.laneForX(x)
+    return destroyed[lane] == true
+end
+
+local function insideUnlockedPocket(state, playerId, x, y)
+    if not enemyPocketUnlocked(state, playerId, x) then return false end
+
+    local centerGap = A.pocketCenterGap or 6
+    local lane = arena.laneForX(x)
+
+    if lane == "left" and x > A.width / 2 - centerGap then return false end
+    if lane == "right" and x < A.width / 2 + centerGap then return false end
+
+    local towerYTop = A.enemyPrincessYTop or 28
+    local towerYBottom = A.enemyPrincessYBottom or (A.height - towerYTop)
+    local pastTower = A.pocketPastTower or 4
+
+    if playerId == 1 then
+        return y >= towerYTop - pastTower and y < A.riverTop - 2
+    else
+        return y <= towerYBottom + pastTower and y > A.riverBottom + 2
+    end
+end
+
 local function nearestBridge(x1, y1, x2, y2)
     local best = A.bridgeCenters[1]
     local bestScore = math.huge
@@ -84,7 +121,7 @@ function arena.navigationPoint(entity, target)
     return target.x, target.y
 end
 
-function arena.placementAllowed(playerId, x, y, placement)
+function arena.placementAllowed(playerId, x, y, placement, state)
     if x < 3 or x > A.width - 3 or y < 3 or y > A.height - 3 then
         return false
     end
@@ -95,11 +132,18 @@ function arena.placementAllowed(playerId, x, y, placement)
 
     if arena.isRiver(y) then return false end
 
+    local ownHalf
     if playerId == 1 then
-        return y > A.riverBottom + 2
+        ownHalf = y > A.riverBottom + 2
     else
-        return y < A.riverTop - 2
+        ownHalf = y < A.riverTop - 2
     end
+
+    if ownHalf then return true end
+
+    -- Destroying an enemy Princess Tower unlocks only that lane's pocket.
+    -- The opposite lane and the centre around the King Tower remain locked.
+    return insideUnlockedPocket(state, playerId, x, y)
 end
 
 function arena.worldToScreen(playerId, x, y, rect)
