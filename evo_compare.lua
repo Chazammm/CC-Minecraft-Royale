@@ -8,6 +8,32 @@ local args = { ... }
 local RESULT_PATH = "evolution_results.txt"
 local DEFAULT_SEED = 2608
 local SIM_DT = config.TICK_RATE or 0.10
+local YIELD_CHECK_TICKS = 50
+local YIELD_AFTER_MS = 500
+local lastYieldMs = os.epoch and os.epoch("utc") or 0
+
+local function cooperativeYield(force)
+    local due = force == true
+
+    if not due and os.epoch then
+        due = os.epoch("utc") - lastYieldMs >= YIELD_AFTER_MS
+    elseif not due and not os.epoch then
+        due = true
+    end
+
+    if not due then return end
+
+    if os.queueEvent and os.pullEvent then
+        os.queueEvent("__cc_royale_benchmark_yield")
+        os.pullEvent("__cc_royale_benchmark_yield")
+    elseif sleep then
+        sleep(0)
+    end
+
+    if os.epoch then
+        lastYieldMs = os.epoch("utc")
+    end
+end
 local nativePrint = print
 local liveHandle = nil
 
@@ -257,7 +283,13 @@ local function runMatch(subjectDeck, opponentDeck, subjectCardId, subjectOwner, 
         end
 
         ticks = ticks + 1
+
+        if ticks % YIELD_CHECK_TICKS == 0 then
+            cooperativeYield(false)
+        end
     end
+
+    cooperativeYield(true)
 
     if state.phase ~= "result" then
         Game.finish(state, nil, "EVOLUTION COMPARISON TIMEOUT")
