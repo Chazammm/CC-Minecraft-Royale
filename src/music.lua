@@ -117,15 +117,15 @@ local function openRemoteRange(track, relativeOffset)
     if response.getResponseCode then
         local code = response.getResponseCode()
 
-        if startByte > 0 and code ~= 206 then
-            if code == 200 then
-                if not seekTo(response, startByte) then
-                    response.close()
-                    return nil, "MUSIC STREAM SKIP FAILED"
-                end
-            else
+        if code ~= 200 and code ~= 206 then
+            response.close()
+            return nil, "MUSIC HTTP " .. tostring(code)
+        end
+
+        if startByte > 0 and code == 200 then
+            if not seekTo(response, startByte) then
                 response.close()
-                return nil, "MUSIC HTTP " .. tostring(code)
+                return nil, "MUSIC STREAM SKIP FAILED"
             end
         end
     end
@@ -259,8 +259,12 @@ function Music.start(controller)
 
     local ok, err = nextTrack(controller)
     if not ok then
-        controller.active = false
+        -- Keep the controller active so the regular timer-driven pump can
+        -- retry transient GitHub/HTTP failures instead of losing music for
+        -- the entire match after one failed request at battle start.
         controller.error = err
+        local now = os.epoch and os.epoch("utc") / 1000 or os.clock()
+        controller.retryAt = now + 1.5
         closeHandle(controller)
         return false
     end
