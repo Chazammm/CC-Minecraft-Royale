@@ -522,7 +522,7 @@ cards.info = {
     },
     nether_portal = {
         role = "Spawner building",
-        description = "Opens a temporary Nether Portal that periodically sends out short-lived Piglins. Piglins use a crossbow at range and an axe in melee.",
+        description = "Opens a temporary Nether Portal that periodically sends out short-lived Piglins. Piglins use their crossbow only against flying enemies and their axe against ground targets.",
     },
 }
 
