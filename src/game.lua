@@ -160,6 +160,7 @@ local function newPlayer(playerId)
         evolutionProgress = 0,
         evolutionSelecting = false,
         infoOpen = false,
+        rulesetOpen = false,
         infoCardId = cards.list[1] and cards.list[1].id or nil,
         collectionPage = 1,
         presetSlot = 1,
@@ -1221,6 +1222,7 @@ local function resetPlayersForMatch(state)
         player.towersDestroyed = 0
         player.rematch = false
         player.infoOpen = false
+        player.rulesetOpen = false
         player.feedback = nil
         player.feedbackTime = 0
     end
@@ -1262,6 +1264,9 @@ function Game.new(soundCallback)
         gameMode = "pvp",
         botPlayerId = 2,
         botDifficulty = "normal",
+        ruleset = util.deepcopy(config.RULESET_DEFAULTS or {
+            evolutions = true,
+        }),
         deckPresets = loadPresets(),
         stats = newMatchStats(),
     }
@@ -1297,6 +1302,7 @@ function Game.resetLobby(state)
         player.ready = false
         player.rematch = false
         player.infoOpen = false
+        player.rulesetOpen = false
         if not cards.get(player.infoCardId) then
             player.infoCardId = cards.list[1] and cards.list[1].id or nil
         end
@@ -1557,6 +1563,7 @@ function Game.getActiveCardForPlayer(state, playerId, cardId)
     if not card or not player then return card, false end
 
     if state.phase == "battle"
+        and Game.rulesetEnabled(state, "evolutions")
         and player.evolutionCardId == card.id
         and cards.hasEvolution(card.id)
     then
@@ -1626,6 +1633,7 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
 
     local evolutionCycles = nil
     if state.phase == "battle"
+        and Game.rulesetEnabled(state, "evolutions")
         and player.evolutionCardId == card.id
         and cards.hasEvolution(card.id)
     then
@@ -1669,6 +1677,7 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
     local deploymentFeedback = card.name .. " DEPLOYED"
 
     if state.phase == "battle"
+        and Game.rulesetEnabled(state, "evolutions")
         and player.evolutionCardId == card.id
         and cards.hasEvolution(card.id)
     then
@@ -1821,6 +1830,80 @@ function Game.validateEvolutionSelection(state, playerId)
     local player = state.players[playerId]
     if not player then return false end
     return validateEvolutionCard(player)
+end
+
+function Game.rulesetEnabled(state, key)
+    if not state or type(state.ruleset) ~= "table" then return true end
+    if state.ruleset[key] == nil then return true end
+    return state.ruleset[key] ~= false
+end
+
+function Game.setRulesetRule(state, key, value, requestingPlayerId)
+    if not state or state.phase ~= "lobby" then return false end
+    if type(state.ruleset) ~= "table" then state.ruleset = {} end
+    if state.ruleset[key] == nil then return false end
+
+    local enabled = value == true
+    if state.ruleset[key] == enabled then return true end
+
+    state.ruleset[key] = enabled
+
+    -- Match-wide rules are shared by both monitors. Any rules change cancels
+    -- READY for both players so the countdown can never start under stale
+    -- assumptions.
+    for playerId = 1, 2 do
+        local player = state.players[playerId]
+        player.ready = false
+        player.rematch = false
+
+        if key == "evolutions" and not enabled then
+            player.evolutionProgress = 0
+            player.evolutionSelecting = false
+        end
+
+        if playerId == requestingPlayerId then
+            setFeedback(
+                player,
+                "EVOLUTIONS " .. (enabled and "ENABLED" or "DISABLED"),
+                1.1
+            )
+        else
+            setFeedback(
+                player,
+                "RULESET UPDATED: EVOS " .. (enabled and "ON" or "OFF"),
+                1.1
+            )
+        end
+    end
+
+    return true
+end
+
+function Game.toggleRulesetRule(state, key, requestingPlayerId)
+    return Game.setRulesetRule(
+        state,
+        key,
+        not Game.rulesetEnabled(state, key),
+        requestingPlayerId
+    )
+end
+
+function Game.openRuleset(state, playerId)
+    local player = state and state.players and state.players[playerId]
+    if not player or state.phase ~= "lobby" then return false end
+
+    player.rulesetOpen = true
+    player.infoOpen = false
+    player.evolutionSelecting = false
+    return true
+end
+
+function Game.closeRuleset(state, playerId)
+    local player = state and state.players and state.players[playerId]
+    if not player then return false end
+
+    player.rulesetOpen = false
+    return true
 end
 
 function Game.setGameMode(state, mode, requestingPlayerId)
@@ -2006,8 +2089,34 @@ function Game.handleTouch(state, playerId, x, y, layout)
             return
         end
 
+        if player.rulesetOpen then
+            if hit(layout.rulesetEvolutionButton, x, y) then
+                Game.toggleRulesetRule(state, "evolutions", playerId)
+                emitSound(
+                    state,
+                    "minecraft:block.note_block.pling",
+                    0.5,
+                    Game.rulesetEnabled(state, "evolutions") and 1.45 or 0.75
+                )
+                return
+            end
+
+            if hit(layout.rulesetBackButton or layout.readyButton, x, y) then
+                Game.closeRuleset(state, playerId)
+                emitSound(state, "minecraft:block.note_block.pling", 0.45, 1.0)
+            end
+            return
+        end
+
+        if hit(layout.rulesetButton, x, y) then
+            Game.openRuleset(state, playerId)
+            emitSound(state, "minecraft:block.note_block.pling", 0.45, 1.25)
+            return
+        end
+
         if hit(layout.infoButton, x, y) then
             player.infoOpen = true
+            player.rulesetOpen = false
             if not cards.get(player.infoCardId) then
                 player.infoCardId = cards.list[1] and cards.list[1].id or nil
             end
