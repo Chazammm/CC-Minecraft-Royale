@@ -894,7 +894,7 @@ local function infoStatLines(card)
 
         if u.groundPulse then
             table.insert(lines, string.format(
-                "STOMP: %s ground dmg every %ss  |  RADIUS %s",
+                "STOMP WHILE MOVING: %s dmg every %ss  |  RADIUS %s",
                 numberText(u.groundPulse.damage),
                 numberText(u.groundPulse.interval, 1),
                 numberText(u.groundPulse.radius, 1)
