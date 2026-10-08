@@ -176,14 +176,26 @@ assertEq(witherSkeletonCard.unit.damage, 88, "Wither Skeleton starting damage mu
 local slimeCard = cards.get("slime")
 local magmaCubeCard = cards.get("magma_cube")
 assertEq(magmaCubeCard.cost, slimeCard.cost, "Magma Cube must cost the same as Slime")
-assertEq(magmaCubeCard.unit.maxHp, slimeCard.unit.maxHp * 0.95, "Magma Cube must have five percent less HP than Slime")
-assertEq(magmaCubeCard.unit.damage, slimeCard.unit.damage * 1.05, "Magma Cube must have five percent more damage than Slime")
+assertTrue(
+    math.abs(magmaCubeCard.unit.maxHp - slimeCard.unit.maxHp * 0.95) < 0.000001,
+    "Magma Cube must have five percent less HP than Slime"
+)
+assertTrue(
+    math.abs(magmaCubeCard.unit.damage - slimeCard.unit.damage * 1.05) < 0.000001,
+    "Magma Cube must have five percent more damage than Slime"
+)
 assertEq(magmaCubeCard.unit.splitOnDeath.template, "mini_magma_cube", "Magma Cube must split into Mini Magma Cubes")
 
 local miniSlime = cards.getInternalUnit("mini_slime")
 local miniMagma = cards.getInternalUnit("mini_magma_cube")
-assertEq(miniMagma.maxHp, miniSlime.maxHp * 0.95, "Mini Magma Cube must have five percent less HP than Mini Slime")
-assertEq(miniMagma.damage, miniSlime.damage * 1.05, "Mini Magma Cube must have five percent more damage than Mini Slime")
+assertTrue(
+    math.abs(miniMagma.maxHp - miniSlime.maxHp * 0.95) < 0.000001,
+    "Mini Magma Cube must have five percent less HP than Mini Slime"
+)
+assertTrue(
+    math.abs(miniMagma.damage - miniSlime.damage * 1.05) < 0.000001,
+    "Mini Magma Cube must have five percent more damage than Mini Slime"
+)
 
 local outpostCard = cards.get("pillager_outpost")
 assertEq(outpostCard.cost, cannonCard.cost, "Pillager Outpost must cost the same as Cannon")
@@ -366,6 +378,29 @@ assertTrue(
     math.abs(decayOutpost.hp - outpostCard.building.maxHp * 0.5) < 0.01,
     "Pillager Outpost must use the same lifetime HP-decay system"
 )
+
+local outpostAirState = Game.new()
+Game.debugLoadScenario(outpostAirState, "empty")
+Game.debugSpawnCard(outpostAirState, 1, "pillager_outpost", 50, 100)
+Game.debugSpawnCard(outpostAirState, 2, "bat_swarm", 50, 85)
+Game.debugSetPaused(outpostAirState, false)
+
+local outpostBatHp = {}
+for _, entity in ipairs(outpostAirState.entities) do
+    if entity.name == "Bat Swarm" then outpostBatHp[entity.id] = entity.hp end
+end
+
+for _ = 1, 12 do Game.update(outpostAirState, 0.10) end
+
+local outpostHitAir = false
+for _, entity in ipairs(outpostAirState.entities) do
+    local before = outpostBatHp[entity.id]
+    if before and (not entity.alive or entity.hp < before) then
+        outpostHitAir = true
+        break
+    end
+end
+assertTrue(outpostHitAir, "Pillager Outpost must actually shoot flying troops")
 
 local retargetState = Game.new()
 Game.debugLoadScenario(retargetState, "king")
