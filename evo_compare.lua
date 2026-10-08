@@ -7,6 +7,7 @@ local args = { ... }
 
 local RESULT_PATH = "evolution_results.txt"
 local DEFAULT_SEED = 2608
+local SIM_DT = config.TICK_RATE or 0.10
 local nativePrint = print
 local liveHandle = nil
 
@@ -242,17 +243,17 @@ local function runMatch(subjectDeck, opponentDeck, subjectCardId, subjectOwner, 
         + config.MATCH.normalTime
         + config.MATCH.overtimeTime
         + 30
-    local maxTicks = math.ceil(maxSimulationSeconds / 0.25)
+    local maxTicks = math.ceil(maxSimulationSeconds / SIM_DT)
 
     while state.phase ~= "result" and ticks < maxTicks do
-        Game.update(state, 0.25)
+        Game.update(state, SIM_DT)
 
         if ticks % 2 == 0 then
-            Bot.update(bot1, state, 0.25)
-            Bot.update(bot2, state, 0.25)
+            Bot.update(bot1, state, SIM_DT)
+            Bot.update(bot2, state, SIM_DT)
         else
-            Bot.update(bot2, state, 0.25)
-            Bot.update(bot1, state, 0.25)
+            Bot.update(bot2, state, SIM_DT)
+            Bot.update(bot1, state, SIM_DT)
         end
 
         ticks = ticks + 1
@@ -338,6 +339,7 @@ local totalMatches = #evolutionCards * contextCount * 4
 liveHandle = fs and fs.open(RESULT_PATH, "w") or nil
 
 reportPrint("CC-Minecraft Royale controlled Evolution impact analysis")
+reportPrint(("Tick: %.2fs"):format(SIM_DT))
 reportPrint(("Contexts/evolution: %d   Evolutions: %d   Total matches: %d   Seed: %d"):format(
     contextCount,
     #evolutionCards,
