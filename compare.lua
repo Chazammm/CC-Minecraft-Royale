@@ -197,6 +197,7 @@ local function newAggregate()
         emeraldBonus = 0,
         slowSeconds = 0,
         targetsHit = 0,
+        evolutionPlays = 0,
     }
 end
 
@@ -223,6 +224,7 @@ local function addResult(agg, result)
     agg.emeraldBonus = agg.emeraldBonus + (stat.emeraldBonus or 0)
     agg.slowSeconds = agg.slowSeconds + (stat.slowSeconds or 0)
     agg.targetsHit = agg.targetsHit + (stat.targetsHit or 0)
+    agg.evolutionPlays = agg.evolutionPlays + (stat.evolutionPlays or 0)
 end
 
 local function runMatch(subjectDeck, opponentDeck, subjectCardId, subjectOwner)
@@ -320,6 +322,8 @@ local function summarize(agg)
         bonusPerMatch = agg.emeraldBonus / matches,
         slowPerPlay = agg.plays > 0 and agg.slowSeconds / agg.plays or 0,
         hitsPerPlay = agg.plays > 0 and agg.targetsHit / agg.plays or 0,
+        evoPerMatch = agg.evolutionPlays / matches,
+        evoShare = agg.plays > 0 and agg.evolutionPlays / agg.plays * 100 or 0,
         avgTime = agg.totalTime / matches,
     }
 end
@@ -448,15 +452,19 @@ for comparisonIndex, spec in ipairs(comparisons) do
         contextsB,
         contextsTie
     ))
-    reportPrint(("A_CARD|plays/match=%.2f|unit/E=%.2f|tower/E=%.2f|kills/match=%.2f|avg_match=%.1fs"):format(
+    reportPrint(("A_CARD|plays/match=%.2f|evo/match=%.2f|evo_share=%.1f%%|unit/E=%.2f|tower/E=%.2f|kills/match=%.2f|avg_match=%.1fs"):format(
         summaryA.playsPerMatch,
+        summaryA.evoPerMatch,
+        summaryA.evoShare,
         summaryA.unitPerE,
         summaryA.towerPerE,
         summaryA.killsPerMatch,
         summaryA.avgTime
     ))
-    reportPrint(("B_CARD|plays/match=%.2f|unit/E=%.2f|tower/E=%.2f|kills/match=%.2f|avg_match=%.1fs"):format(
+    reportPrint(("B_CARD|plays/match=%.2f|evo/match=%.2f|evo_share=%.1f%%|unit/E=%.2f|tower/E=%.2f|kills/match=%.2f|avg_match=%.1fs"):format(
         summaryB.playsPerMatch,
+        summaryB.evoPerMatch,
+        summaryB.evoShare,
         summaryB.unitPerE,
         summaryB.towerPerE,
         summaryB.killsPerMatch,
@@ -498,6 +506,7 @@ reportPrint("NEAR-EVEN means the measured delta is under 3 percentage points and
 reportPrint("LEAN means an observed edge whose interval still crosses zero; collect more contexts before balancing.")
 reportPrint("CLEAR means the paired interval excludes zero. CLEAR ++ also has at least an 8pp measured edge.")
 reportPrint("Diagnostic comparisons (Golem/Enderman etc.) compare impact, not identical tactical roles.")
+reportPrint("evo/match and evo_share show how often the compared card actually reached its Evolution.")
 reportPrint("")
 reportPrint("Recommended:")
 reportPrint("  compare 30 all        -- broad first pass")
