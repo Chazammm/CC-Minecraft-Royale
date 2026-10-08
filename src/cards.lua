@@ -691,7 +691,7 @@ cards.info = {
     },
     creeper = {
         role = "Kamikaze burst",
-        description = "Runs into range, primes for 0.65s and explodes. Killing it before the fuse finishes denies all damage.",
+        description = "Runs into range, primes for 0.65s and explodes. Kill it before the fuse ends to deny the blast.",
         goodAgainst = "clustered ground units, grouped pushes",
         badAgainst = "Skeleton, Blaze, ranged focus fire",
     },
