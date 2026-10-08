@@ -214,6 +214,7 @@ assertEq(config.MATCH.overtimeMultiplier, 2, "Most of overtime must use double E
 assertEq(config.MATCH.overtimeFinalSeconds, 30, "Final overtime boost must begin with thirty seconds left")
 assertEq(config.MATCH.overtimeFinalMultiplier, 3, "Final thirty seconds must use triple Emerald generation")
 assertEq(config.MATCH.tiebreakerDamagePerSecond, 300, "Tiebreaker drain rate must stay deterministic")
+assertEq(config.BUILDINGS.lifetimeDecayMultiplier, 1.15, "Buildings must naturally lose HP fifteen percent faster")
 local riverMid = (config.ARENA.riverTop + config.ARENA.riverBottom) / 2
 
 assertTrue(not arena.placementAllowed(1, 50, 20, nil), "P1 must not deploy troops on enemy half")
@@ -1752,8 +1753,9 @@ assertTrue(
     "Pillager Outpost info must visibly show air and ground targeting"
 )
 assertTrue(
-    outpostInfoScreen:find("LIFETIME DECAY:", 1, true) ~= nil,
-    "Building info must explain visible lifetime HP decay"
+    outpostInfoScreen:find("HP DECAY", 1, true) ~= nil
+        and outpostInfoScreen:find("NATURAL LIFE", 1, true) ~= nil,
+    "Building info must show the accelerated HP decay and effective natural life"
 )
 
 local magmaInfoScreen = renderInfoCard("magma_cube")
