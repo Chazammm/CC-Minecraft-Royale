@@ -1,13 +1,13 @@
 CC-MINECRAFT-ROYALE MECHANICS REPORT
-FORMAT_VERSION|10
-GENERATED_EPOCH_MS|1791470400714
+FORMAT_VERSION|11
+GENERATED_EPOCH_MS|1791472279315
 OS_VERSION|CraftOS 1.9
 CARD_COUNT|22
 HARNESS|condition_waits=true|dt=0.050|safe_x=50.0|safe_y=110.0
 CONFIG|tick=0.100|normal=150|overtime=150|emerald_rate=0.357143|building_decay=1.150
 BALANCE_SNAPSHOT|skeleton_range=15.00|skeleton_retreat=0.85|bat_damage=17.00
 EVOLUTION_SNAPSHOT|creeper_cycles=2|portal_cycles=2|mite_cycles=4|guardian_cycles=2|villager_cycles=3|golem_cycles=2|ghast_damage=130.0|ghast_range=24.0
-SUMMARY|pass=22|fail=0|error=0|total=22|runtime_cpu_s=0.0500
+SUMMARY|pass=21|fail=1|error=0|total=22|runtime_cpu_s=0.0000
 
 RESULT|boot_deck|PASS|Lobby boots with empty human decks|Human players should build/load/randomize an 8-card deck before READY.
 DATA|boot_deck|p1_deck_cards=0.0000
@@ -51,18 +51,20 @@ DATA|admin_evolution_spawn|emerald_bank_spawned=true
 DATA|admin_evolution_spawn|diamond_golem_spawned=true
 DATA|admin_evolution_spawn|all_marked_evolution=true
 
-RESULT|evo_diamond_golem|PASS|Diamond Golem stomps grounded enemies every two seconds|Diamond Golem must gain 5% HP and pulse 20 damage every 2s to nearby grounded enemy units without hitting air.
+RESULT|evo_diamond_golem|PASS|Diamond Golem stomps only while walking|Diamond Golem must charge/stomp only from real walking time; standing still to hit a building or tower must pause the stomp timer.
 DATA|evo_diamond_golem|configured_cycles=2.0000
 DATA|evo_diamond_golem|base_hp=1377.0000
 DATA|evo_diamond_golem|diamond_hp=1445.8500
 DATA|evo_diamond_golem|stomp_interval_s=2.0000
 DATA|evo_diamond_golem|stomp_damage=20.0000
 DATA|evo_diamond_golem|stomp_radius=8.0000
-DATA|evo_diamond_golem|ground_damage_before_2s=0.0000
-DATA|evo_diamond_golem|ground_damage_after_first_pulse=20.0000
+DATA|evo_diamond_golem|ground_damage_before_2s_walk=0.0000
+DATA|evo_diamond_golem|ground_damage_after_first_walk_pulse=20.0000
 DATA|evo_diamond_golem|flying_damage_after_first_pulse=0.0000
-DATA|evo_diamond_golem|ground_damage_after_second_pulse=40.0000
 DATA|evo_diamond_golem|quake_effect_visible=true
+DATA|evo_diamond_golem|stationary_damage_over_2_3s=0.0000
+DATA|evo_diamond_golem|stationary_timer_before=1.9500
+DATA|evo_diamond_golem|stationary_timer_after=1.9500
 
 RESULT|guardian_targeting|PASS|Unreachable ground troops ignore water Guardian|Admin must preserve Guardian water placement; ground attackers only aggro it when their real attack reach can touch water.
 DATA|guardian_targeting|admin_land_spawn_rejected=true
@@ -115,7 +117,7 @@ DATA|evo_emerald_bank|bank_emerald_boost=0.6160
 DATA|evo_emerald_bank|expected_emerald_gain_0_25s=0.1443
 DATA|evo_emerald_bank|realized_emerald_gain_0_25s=0.1443
 
-RESULT|evo_charged_creeper|PASS|Charged Creeper has larger blue blast|Charged Creeper must keep normal damage but expand gameplay AoE from 8 to 12 and use the large blue explosion effect.
+RESULT|evo_charged_creeper|PASS|Charged Creeper has larger blue blast|Charged Creeper must deal double base damage, expand gameplay AoE from 8 to 12 and use the large blue explosion effect.
 DATA|evo_charged_creeper|configured_cycles=2.0000
 DATA|evo_charged_creeper|base_radius=8.0000
 DATA|evo_charged_creeper|charged_radius=12.0000
@@ -123,12 +125,12 @@ DATA|evo_charged_creeper|charged_visual_radius=16.0000
 DATA|evo_charged_creeper|visual_variant=charged_creeper
 DATA|evo_charged_creeper|exploded=true
 DATA|evo_charged_creeper|explosion_time_s=0.7500
-DATA|evo_charged_creeper|near_target_damage=290.0000
+DATA|evo_charged_creeper|near_target_damage=580.0000
 DATA|evo_charged_creeper|far_target_distance=10.0000
-DATA|evo_charged_creeper|far_target_damage=290.0000
+DATA|evo_charged_creeper|far_target_damage=580.0000
 DATA|evo_charged_creeper|charged_effect_visible=true
 
-RESULT|evo_ghast_portal|PASS|Ghast Portal spawns exactly two artillery Ghasts|Ghast Portal must emit exactly two fragile long-range Ghasts; their 130-damage splash fireballs two-hit Blaze and slow only the primary target.
+RESULT|evo_ghast_portal|FAIL|Ghast Portal spawns exactly two artillery Ghasts|Ghast Portal must emit exactly two fragile long-range Ghasts; their 130-damage splash fireballs two-hit Blaze and slow only the primary target.
 DATA|evo_ghast_portal|configured_cycles=2.0000
 DATA|evo_ghast_portal|portal_visual_variant=ghast_portal
 DATA|evo_ghast_portal|first_ghast_spawn_s=2.5500
@@ -141,7 +143,7 @@ DATA|evo_ghast_portal|ghast_cooldown=2.8000
 DATA|evo_ghast_portal|first_hit_time_s=0.3000
 DATA|evo_ghast_portal|blaze_hp_after_first_hit=127.0000
 DATA|evo_ghast_portal|splash_zombie_damage_first_hit=130.0000
-DATA|evo_ghast_portal|primary_target_slowed=true
+DATA|evo_ghast_portal|primary_target_slowed=false
 DATA|evo_ghast_portal|splash_target_not_slowed=true
 DATA|evo_ghast_portal|blaze_killed_by_second_hit=true
 DATA|evo_ghast_portal|second_hit_time_s=0.3000
