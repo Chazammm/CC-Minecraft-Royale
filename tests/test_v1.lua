@@ -1324,6 +1324,8 @@ for _, card in ipairs(cards.list) do
     assertTrue(info ~= nil, "Every selectable card must have Unit Info metadata")
     assertTrue(type(info.description) == "string" and #info.description > 10, "Unit Info needs a useful description")
     assertTrue(type(info.role) == "string" and #info.role > 0, "Unit Info needs a role")
+    assertTrue(type(info.goodAgainst) == "string" and #info.goodAgainst > 0, "Unit Info needs GOOD VS guidance")
+    assertTrue(type(info.badAgainst) == "string" and #info.badAgainst > 0, "Unit Info needs WEAK VS guidance")
 end
 
 local infoState = Game.new()
@@ -2177,6 +2179,26 @@ local function renderInfoCard(cardId)
     render.draw(monitor, infoState, 1, "test_monitor")
     return table.concat(rows, "\n")
 end
+
+local guardianInfoScreen = renderInfoCard("guardian")
+assertTrue(
+    guardianInfoScreen:find("GOOD VS:", 1, true) ~= nil
+        and guardianInfoScreen:find("Iron Golem", 1, true) ~= nil,
+    "Guardian Unit Info must show tactical GOOD VS guidance"
+)
+assertTrue(
+    guardianInfoScreen:find("WEAK VS:", 1, true) ~= nil
+        and guardianInfoScreen:find("Skeleton", 1, true) ~= nil,
+    "Guardian Unit Info must show tactical WEAK VS guidance"
+)
+assertTrue(
+    guardianInfoScreen:find("EVO: Elder Guardian | PLAY 3 | 6E", 1, true) ~= nil,
+    "Guardian Unit Info must show Elder Guardian timing and cost"
+)
+assertTrue(
+    guardianInfoScreen:find("2x HP and slows all enemy movement by 5%", 1, true) ~= nil,
+    "Guardian Unit Info must show the Elder Guardian description"
+)
 
 local portalInfoScreen = renderInfoCard("nether_portal")
 assertTrue(
