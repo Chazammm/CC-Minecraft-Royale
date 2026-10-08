@@ -590,8 +590,8 @@ assertTrue(babyZombieCount >= 1, "Witch must periodically summon a Baby Zombie")
 
 local magmaSplitState = Game.new()
 Game.debugLoadScenario(magmaSplitState, "empty")
-Game.debugSpawnCard(magmaSplitState, 1, "magma_cube", 50, 82)
-Game.debugSpawnCard(magmaSplitState, 2, "zombie", 50, 80)
+Game.debugSpawnCard(magmaSplitState, 1, "magma_cube", 50, 100)
+Game.debugSpawnCard(magmaSplitState, 2, "zombie", 50, 98)
 
 local testMagma
 for _, entity in ipairs(magmaSplitState.entities) do
@@ -607,6 +607,31 @@ for _, entity in ipairs(magmaSplitState.entities) do
     if entity.name == "Mini Magma Cube" then miniMagmaCount = miniMagmaCount + 1 end
 end
 assertEq(miniMagmaCount, 2, "Dead Magma Cube must split into two Mini Magma Cubes")
+
+local bridgeSplitState = Game.new()
+Game.debugLoadScenario(bridgeSplitState, "empty")
+local bridgeX = config.ARENA.bridgeCenters[1]
+local bridgeY = (config.ARENA.riverTop + config.ARENA.riverBottom) / 2
+Game.debugSpawnCard(bridgeSplitState, 1, "slime", bridgeX, bridgeY)
+Game.debugSpawnCard(bridgeSplitState, 2, "zombie", bridgeX, bridgeY - 2)
+
+local bridgeSlime
+for _, entity in ipairs(bridgeSplitState.entities) do
+    if entity.name == "Slime" then bridgeSlime = entity end
+end
+bridgeSlime.hp = 1
+Game.debugSetPaused(bridgeSplitState, false)
+Game.update(bridgeSplitState, 0.10)
+
+local bridgeMiniCount = 0
+for _, entity in ipairs(bridgeSplitState.entities) do
+    if entity.name == "Mini Slime" then bridgeMiniCount = bridgeMiniCount + 1 end
+end
+assertEq(
+    bridgeMiniCount,
+    2,
+    "Slime splits must not disappear when offset positions fall beside a bridge"
+)
 
 local anvilState = Game.new()
 Game.debugLoadScenario(anvilState, "empty")
