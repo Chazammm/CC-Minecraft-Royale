@@ -21,6 +21,7 @@ colors = {
 
 package.path = "./?.lua;./?/init.lua;" .. package.path
 
+local config = require("config")
 local cards = require("src.cards")
 local arena = require("src.arena")
 local Game = require("src.game")
@@ -249,7 +250,6 @@ assertEq(outpostCard.building.damage, cannonCard.building.damage * 0.75, "Pillag
 assertTrue(outpostCard.building.canAttackAir, "Pillager Outpost must attack flying units")
 end
 
-local config = require("config")
 assertEq(config.MATCH.normalTime, 150, "Regulation must last two minutes thirty")
 assertEq(config.MATCH.overtimeTime, 150, "Overtime must last two minutes thirty")
 assertEq(config.MATCH.overtimeMultiplier, 2, "Most of overtime must use double Emerald generation")
