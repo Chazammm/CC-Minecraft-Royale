@@ -751,10 +751,12 @@ local function infoStatLines(card)
                 or b.periodicSpawn.interval
                 or 0
             local interval = b.periodicSpawn.interval or 0
+            local decayMultiplier = (config.BUILDINGS and config.BUILDINGS.lifetimeDecayMultiplier) or 1
+            local effectiveLifetime = b.lifetime and (b.lifetime / decayMultiplier) or nil
 
-            if b.lifetime and interval > 0 and first < b.lifetime then
+            if effectiveLifetime and interval > 0 and first < effectiveLifetime then
                 totalSpawns = 1 + math.floor(
-                    math.max(0, b.lifetime - first - 0.000001) / interval
+                    math.max(0, effectiveLifetime - first - 0.000001) / interval
                 )
             end
 
