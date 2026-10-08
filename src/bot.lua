@@ -633,11 +633,27 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
     elseif defending then
         score = 3 + ctx.primaryThreatScore * 0.35
 
-        -- Never answer a flying threat with a troop that cannot actually hit it.
-        if threat.flying
-            and card.kind == "unit"
-            and not card.unit.canAttackAir
-            and not card.unit.passive
+        -- Never answer a flying threat with a card that cannot actually
+        -- interact with it. This covers both troops and defensive buildings.
+        if threat.flying then
+            if card.kind == "unit"
+                and not card.unit.canAttackAir
+                and not card.unit.passive
+            then
+                return -math.huge
+            end
+
+            if card.kind == "building"
+                and not card.building.canAttackAir
+            then
+                return -math.huge
+            end
+        end
+
+        -- Passive spawners are pressure/economy tools, not an immediate
+        -- emergency answer to a push already threatening a tower.
+        if card.kind == "building"
+            and (card.building.passive or card.building.targetMode == "none")
         then
             return -math.huge
         end
