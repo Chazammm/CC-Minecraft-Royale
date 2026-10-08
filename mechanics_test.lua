@@ -5,7 +5,7 @@ local Bot = require("src.bot")
 local util = require("src.util")
 local arena = require("src.arena")
 
-local SUITE_VERSION = 15
+local SUITE_VERSION = 16
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 local EPSILON = 0.000001
@@ -509,7 +509,7 @@ runTest("admin_evolution_spawn", "Admin directly spawns Evolution forms", functi
         and elderOk
         and bankOk
         and diamondOk
-        and evoEntries == #cards.evolutionCards()
+        and evoEntries == #cards.evolutionCards(true)
         and charged ~= nil
         and portal ~= nil
         and mite ~= nil
@@ -916,89 +916,53 @@ runTest("guardian_beam", "Guardian water beam ramps and resists disruption", fun
         data
 end)
 
-runTest("evo_elder_guardian", "Third Guardian play deploys a fully functional Elder Guardian", function()
+runTest("evo_elder_guardian", "Benched Elder Guardian remains fully functional in dev mode", function()
     local riverY = (config.ARENA.riverTop + config.ARENA.riverBottom) / 2
     local guardianX = config.ARENA.bridgeCenters[1]
         + config.ARENA.bridgeHalfWidth
         + 3
 
-    local state = Game.new()
-    state.players[1].deck = {
-        "guardian",
-        "zombie",
-        "skeleton",
-        "iron_golem",
-        "bat_swarm",
-        "cannon",
-        "arrows",
-        "creeper",
-    }
-    state.players[2].deck = cards.defaultDeck()
-
-    local selected = Game.setEvolutionCard(state, 1, "guardian")
-    Game.startCountdown(state)
-    local enteredBattle = waitUntil(
-        state,
-        config.MATCH.countdown + 1,
-        function() return state.phase == "battle" end,
-        0.10
+    local lobbyState = Game.new()
+    lobbyState.players[1].deck = cards.defaultDeck()
+    local deckAddRejected = not Game.toggleDeckCard(
+        lobbyState,
+        1,
+        "guardian"
     )
 
-    if not selected or not enteredBattle then
-        return false, "Could not start real Elder Guardian evolution scenario.", {}
-    end
+    lobbyState.players[1].deck[8] = "guardian"
+    local evoSelectionRejected = not Game.setEvolutionCard(
+        lobbyState,
+        1,
+        "guardian"
+    )
 
-    local played = {}
-    for play = 1, 3 do
-        state.players[1].hand[1] = "guardian"
-        state.players[1].emeralds = 10
-        played[play] = Game.playCardFromSlot(
-            state,
-            1,
-            1,
-            guardianX,
-            riverY
-        )
-    end
+    local state = newAdminState("empty")
+    local elderOk = Game.debugSpawnCard(
+        state,
+        1,
+        "evo:guardian",
+        guardianX,
+        riverY
+    )
 
-    local normalGuardians = {}
-    local elder = nil
-    for _, entity in ipairs(state.entities) do
-        if entity.alive and entity.owner == 1 and entity.sourceCardId == "guardian" then
-            if entity.name == "Guardian" then
-                normalGuardians[#normalGuardians + 1] = entity
-            elseif entity.name == "Elder Guardian" then
-                elder = entity
-            end
-        end
-    end
+    local elder = findEntity(state, function(e)
+        return e.alive and e.owner == 1 and e.name == "Elder Guardian"
+    end)
 
-    if not played[1] or not played[2] or not played[3] or not elder then
-        return false, "Third real Guardian play did not create Elder Guardian.", {}
-    end
-
-    -- Remove the two base Guardians so only the evolved form can interact with
-    -- the range/aura target below.
-    for _, guardian in ipairs(normalGuardians) do
-        guardian.alive = false
-    end
-
-    state.players[2].hand[1] = "zombie"
-    state.players[2].emeralds = 10
-    local targetY = riverY - 17
-    local zombieOk = Game.playCardFromSlot(
+    local zombieOk = Game.debugSpawnCard(
         state,
         2,
-        1,
+        "zombie",
         guardianX,
-        targetY
+        riverY - 17
     )
     local zombie = findEntity(state, function(e)
         return e.alive and e.owner == 2 and e.name == "Zombie"
     end)
 
-    if not zombieOk or not zombie then
-        return false, "Could not create Elder Guardian range/aura target.", {}
+    if not elderOk or not elder or not zombieOk or not zombie then
+        return false, "Could not create dev-only Elder Guardian scenario.", {}
     end
 
     zombie.passive = true
@@ -1017,15 +981,14 @@ runTest("evo_elder_guardian", "Third Guardian play deploys a fully functional El
 
     local base = cards.get("guardian")
     local evolved = cards.evolvedCopy("guardian")
-    local cardStats = state.stats.players[1].cards.guardian or {}
     local data = {}
-    addData(data, "configured_cycles", cards.evolutionCycles("guardian"))
-    addData(data, "normal_guardians_from_first_two_plays", #normalGuardians)
-    addData(data, "third_play_name", elder.name)
-    addData(data, "third_play_is_evolution", elder.isEvolution == true)
-    addData(data, "progress_after_third_play", state.players[1].evolutionProgress)
-    addData(data, "telemetry_evolution_plays", cardStats.evolutionPlays or 0)
-    addData(data, "base_range", base.unit.attackRange)
+    addData(data, "guardian_dev_only", base and base.devOnly == true)
+    addData(data, "guardian_normal_deck_add_rejected", deckAddRejected)
+    addData(data, "guardian_normal_evo_selection_rejected", evoSelectionRejected)
+    addData(data, "public_evolution_count", #cards.evolutionCards())
+    addData(data, "dev_evolution_count", #cards.evolutionCards(true))
+    addData(data, "elder_admin_spawned", elderOk)
+    addData(data, "elder_is_evolution", elder.isEvolution == true)
     addData(data, "elder_range", elder.attackRange)
     addData(data, "elder_hp", elder.maxHp)
     addData(data, "global_slow", elder.globalEnemyMoveSlow)
@@ -1034,13 +997,15 @@ runTest("evo_elder_guardian", "Third Guardian play deploys a fully functional El
     addData(data, "beam_damage_at_17", beamDamageAt17)
     addData(data, "enemy_move_factor_after_elder_death", restoredFactor)
 
-    return #normalGuardians == 2
+    return base
+        and base.devOnly == true
+        and not cards.isSelectable("guardian")
+        and deckAddRejected
+        and evoSelectionRejected
+        and #cards.evolutionCards() == 5
+        and #cards.evolutionCards(true) == 6
         and elder.isEvolution == true
-        and state.players[1].evolutionProgress == 0
-        and (cardStats.evolutionPlays or 0) == 1
-        and cards.evolutionCycles("guardian") == 2
         and evolved
-        and base.unit.attackRange == 18
         and elder.attackRange == 18
         and elder.aggroRange == 18
         and elder.maxHp == base.unit.maxHp * 2
@@ -1048,7 +1013,7 @@ runTest("evo_elder_guardian", "Third Guardian play deploys a fully functional El
         and elderAcquiredAt17
         and beamDamageAt17 > 0
         and math.abs((restoredFactor or 0) - 1.0) <= EPSILON,
-        "The real third Guardian play must become an 18-range Elder Guardian with double HP, working beam, one Evo telemetry play and a live 5% global enemy movement slow.",
+        "Guardian/Elder must be unavailable to normal deck/Evo selection while remaining fully functional through admin/dev spawns.",
         data
 end)
 
