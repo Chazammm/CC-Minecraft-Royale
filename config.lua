@@ -31,7 +31,9 @@ config.MATCH = {
     emeraldMax = 10,
     emeraldStart = 5,
     emeraldPerSecond = 1 / 2.8,
-    overtimeMultiplier = 3,
+    overtimeMultiplier = 2,
+    overtimeFinalSeconds = 30,
+    overtimeFinalMultiplier = 3,
     countdown = 3,
 }
 
