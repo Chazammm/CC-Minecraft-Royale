@@ -1816,6 +1816,55 @@ assertEq(lobbyClearState.players[1].evolutionCardId, nil, "Removing the deck car
 cards.get("zombie").evolution = zombieEvolutionBefore
 end
 
+-- First real Evolution set.
+do
+local creeperEvo = cards.evolvedCopy("creeper")
+assertTrue(creeperEvo ~= nil, "Creeper must expose a real Evolution")
+assertEq(cards.evolutionCycles("creeper"), 2, "Charged Creeper must evolve on the third play")
+assertEq(cards.evolutionCost("creeper"), 4, "Charged Creeper must keep the base 4E cost")
+assertEq(creeperEvo.name, "Charged Creeper", "Creeper Evolution must use Charged Creeper form")
+assertEq(creeperEvo.unit.visualVariant, "charged_creeper", "Charged Creeper needs its blue visual variant")
+assertEq(creeperEvo.unit.proximityExplosion.radius, 12, "Charged Creeper gameplay blast must be larger")
+assertEq(creeperEvo.unit.proximityExplosion.damage, 290, "Charged Creeper blast damage must stay unchanged for initial testing")
+assertEq(creeperEvo.unit.proximityExplosion.effectKind, "charged_explosion", "Charged Creeper must use the enhanced explosion effect")
+assertTrue(
+    creeperEvo.unit.proximityExplosion.visualRadius > creeperEvo.unit.proximityExplosion.radius,
+    "Charged Creeper visual explosion must read larger than its gameplay AoE"
+)
+
+local portalEvo = cards.evolvedCopy("nether_portal")
+assertTrue(portalEvo ~= nil, "Nether Portal must expose a real Evolution")
+assertEq(cards.evolutionCycles("nether_portal"), 2, "Ghast Portal must evolve on the third play")
+assertEq(cards.evolutionCost("nether_portal"), 3, "Ghast Portal must keep the base 3E cost")
+assertEq(portalEvo.name, "Ghast Portal", "Nether Portal Evolution must use Ghast Portal form")
+assertEq(portalEvo.building.visualVariant, "ghast_portal", "Ghast Portal needs the turquoise visual variant")
+assertEq(portalEvo.building.periodicSpawn.template, "ghast", "Ghast Portal must summon Ghasts")
+assertEq(portalEvo.building.periodicSpawn.maxTotal, 2, "Ghast Portal must summon exactly two Ghasts total")
+
+local ghast = cards.getInternalUnit("ghast")
+assertTrue(ghast ~= nil and ghast.flying, "Ghast must be a flying internal unit")
+assertEq(ghast.damage, 130, "Ghast must deal 130 damage per artillery shot")
+assertTrue(ghast.damage < cards.get("blaze").unit.maxHp, "Ghast must not one-shot a full-health Blaze")
+assertTrue(ghast.damage * 2 >= cards.get("blaze").unit.maxHp, "Ghast must two-shot a full-health Blaze")
+assertTrue(ghast.attackRange >= 24, "Ghast must have long artillery range")
+assertTrue(ghast.attackCooldown >= 2.8, "Ghast must fire slowly like fragile artillery")
+assertTrue(ghast.maxHp < cards.get("blaze").unit.maxHp, "Ghast must remain more fragile than Blaze")
+assertTrue(ghast.projectileSplashRadius > 0, "Ghast fireball must deal splash damage")
+assertTrue(ghast.projectileSlowPrimaryOnly, "Ghast slow must apply only to the primary target")
+assertTrue(ghast.onHitSlow ~= nil, "Ghast primary hit must apply a slow")
+
+local miteEvo = cards.evolvedCopy("endermite")
+assertTrue(miteEvo ~= nil, "Endermite must expose a real Evolution")
+assertEq(cards.evolutionCycles("endermite"), 3, "Mega Mite must evolve on the fourth play")
+assertEq(cards.evolutionCost("endermite"), 1, "Mega Mite must keep the base 1E cost")
+assertEq(miteEvo.name, "Mega Mite", "Endermite Evolution must use Mega Mite form")
+assertEq(miteEvo.unit.maxHp, cards.get("endermite").unit.maxHp * 5, "Mega Mite must have exactly five times Endermite HP")
+assertEq(miteEvo.unit.damage, cards.get("endermite").unit.damage, "Mega Mite damage must stay unchanged")
+assertEq(miteEvo.unit.moveSpeed, cards.get("endermite").unit.moveSpeed, "Mega Mite movement speed must stay unchanged")
+assertEq(miteEvo.unit.attackCooldown, cards.get("endermite").unit.attackCooldown, "Mega Mite attack speed must stay unchanged")
+assertEq(miteEvo.unit.visualVariant, "mega_mite", "Mega Mite needs its larger visual variant")
+end
+
 assertEq(#musicManifest.tracks, 34, "Battle music playlist must expose 34 shuffled tracks")
 assertEq(musicManifest.sourceRate, 48000, "Battle music pack must use native 48 kHz DFPWM")
 assertEq(musicManifest.outputRate, 48000, "Speaker output must stay at native 48 kHz")
