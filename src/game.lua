@@ -2554,16 +2554,42 @@ function Game.debugSpawnCard(state, owner, cardId, x, y)
     if not state.adminMode then return false, "NOT IN ADMIN MODE" end
     if owner ~= 1 and owner ~= 2 then return false, "INVALID OWNER" end
 
-    local card = cards.get(cardId)
-    if not card then return false, "UNKNOWN CARD" end
+    local card
+    local evolutionBaseId = tostring(cardId or ""):match("^evo:(.+)$")
+
+    if evolutionBaseId then
+        card = cards.evolvedCopy(evolutionBaseId)
+        if not card then return false, "UNKNOWN EVOLUTION" end
+    else
+        card = cards.get(cardId)
+        if not card then return false, "UNKNOWN CARD" end
+    end
 
     x = util.clamp(x, 2, config.ARENA.width - 2)
     y = util.clamp(y, 2, config.ARENA.height - 2)
 
     if card.kind == "unit" then
         spawnCardUnit(state, owner, card, x, y)
+        addEffect(
+            state,
+            evolutionBaseId and "evolution_spawn" or "spawn",
+            x,
+            y,
+            card.spawnCount and 5 or 3.5,
+            0.30,
+            owner
+        )
     elseif card.kind == "building" then
         spawnBuilding(state, owner, card, x, y)
+        addEffect(
+            state,
+            evolutionBaseId and "evolution_spawn" or "spawn",
+            x,
+            y,
+            5,
+            0.35,
+            owner
+        )
     elseif card.kind == "spell" then
         if card.id == "falling_anvil" then
             castFallingAnvil(state, owner, card, x, y)
@@ -2572,6 +2598,10 @@ function Game.debugSpawnCard(state, owner, cardId, x, y)
         end
     else
         return false, "UNSUPPORTED CARD"
+    end
+
+    if evolutionBaseId then
+        emitSound(state, "minecraft:block.amethyst_block.chime", 0.65, 1.55)
     end
 
     return true
