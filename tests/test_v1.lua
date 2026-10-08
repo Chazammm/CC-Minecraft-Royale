@@ -78,6 +78,9 @@ assertTrue(batCard.unit.maxHp < 80, "Princess Tower must one-shot each Bat")
 
 local skeletonCard = cards.get("skeleton")
 local snowGolemCard = cards.get("snow_golem")
+local witchCard = cards.get("witch")
+assertEq(skeletonCard.unit.maxHp, 181, "Skeleton HP must reflect the five-percent nerf")
+assertEq(skeletonCard.unit.damage, 30, "Skeleton damage must be nerfed to thirty")
 assertTrue(
     skeletonCard.unit.preferredMinRange ~= nil,
     "Skeleton must keep its kiting distance"
@@ -86,6 +89,8 @@ assertTrue(
     snowGolemCard.unit.preferredMinRange == nil,
     "Snow Golem must not kite like Skeleton"
 )
+assertEq(snowGolemCard.unit.onHitSlow.duration, 1.0, "Snow Golem slow must last one second")
+assertEq(witchCard.cost, 5, "Witch must cost five Emeralds")
 
 local ironGolemCard = cards.get("iron_golem")
 local cannonCard = cards.get("cannon")
@@ -98,7 +103,7 @@ assertEq(blazeCard.unit.maxHp, 270, "Blaze HP must reflect the additional two-pe
 local anvilCard = cards.get("falling_anvil")
 assertTrue(anvilCard and anvilCard.kind == "spell", "Falling Anvil must be a selectable spell")
 assertEq(anvilCard.cost, 3, "Falling Anvil must cost three Emeralds")
-assertEq(anvilCard.spell.delay, 3.0, "Falling Anvil must have a three-second delay")
+assertEq(anvilCard.spell.delay, 2.7, "Falling Anvil must have a 2.7-second delay")
 assertEq(anvilCard.spell.damage, 549, "Falling Anvil must leave a full-health Zombie at exactly one HP")
 assertEq(anvilCard.spell.radius, 6.05, "Falling Anvil radius must be ten percent larger")
 assertTrue(anvilCard.spell.groundOnly == false, "Falling Anvil must hit flying and grounded units")
@@ -444,11 +449,12 @@ assertEq(anvilZombie.hp, 550, "Falling Anvil must not deal instant damage")
 assertEq(#anvilState.pendingSpells, 1, "Falling Anvil must wait as a pending spell")
 
 Game.debugSetPaused(anvilState, false)
-for _ = 1, 11 do Game.update(anvilState, 0.25) end
-assertEq(anvilZombie.hp, 550, "Falling Anvil must still be harmless before three seconds")
-Game.update(anvilState, 0.25)
+for _ = 1, 10 do Game.update(anvilState, 0.25) end
+Game.update(anvilState, 0.19)
+assertEq(anvilZombie.hp, 550, "Falling Anvil must still be harmless before 2.7 seconds")
+Game.update(anvilState, 0.02)
 assertEq(anvilZombie.hp, 1, "Falling Anvil direct hit must leave Zombie at exactly one HP")
-assertEq(#anvilState.pendingSpells, 0, "Falling Anvil must resolve after its delay")
+assertEq(#anvilState.pendingSpells, 0, "Falling Anvil must resolve after its 2.7-second delay")
 
 local anvilMultiState = Game.new()
 Game.debugLoadScenario(anvilMultiState, "empty")
@@ -703,6 +709,63 @@ end
 assertTrue(bot.actions > actionsBefore, "Normal bot must react to a dangerous push")
 assertTrue(botState.players[2].emeralds < 10, "Bot must pay Emerald costs for cards")
 assertTrue(bot.lastAction ~= "NONE", "Bot should expose its last action for admin UI")
+
+local singleAnvilBotState = Game.new()
+Game.debugLoadScenario(singleAnvilBotState, "full")
+local singleAnvilBot = Bot.new(2)
+Bot.setDifficulty(singleAnvilBot, "hard")
+Bot.setEnabled(singleAnvilBot, singleAnvilBotState, true)
+singleAnvilBotState.players[2].hand = {
+    "falling_anvil",
+    "iron_golem",
+    "villager",
+    "witch",
+}
+singleAnvilBotState.players[2].queue = {
+    "zombie",
+    "slime",
+    "creeper",
+    "endermite",
+}
+singleAnvilBotState.players[2].emeralds = 3
+Game.debugSpawnCard(singleAnvilBotState, 1, "zombie", 50, 62)
+Game.debugSetPaused(singleAnvilBotState, false)
+singleAnvilBot.thinkTimer = 0
+Bot.update(singleAnvilBot, singleAnvilBotState, 0.5)
+assertEq(
+    #singleAnvilBotState.pendingSpells,
+    0,
+    "Bot must not waste Falling Anvil on one ordinary moving target"
+)
+
+local clusterAnvilBotState = Game.new()
+Game.debugLoadScenario(clusterAnvilBotState, "full")
+local clusterAnvilBot = Bot.new(2)
+Bot.setDifficulty(clusterAnvilBot, "hard")
+Bot.setEnabled(clusterAnvilBot, clusterAnvilBotState, true)
+clusterAnvilBotState.players[2].hand = {
+    "falling_anvil",
+    "iron_golem",
+    "villager",
+    "witch",
+}
+clusterAnvilBotState.players[2].queue = {
+    "zombie",
+    "slime",
+    "creeper",
+    "endermite",
+}
+clusterAnvilBotState.players[2].emeralds = 3
+Game.debugSpawnCard(clusterAnvilBotState, 1, "zombie", 48, 62)
+Game.debugSpawnCard(clusterAnvilBotState, 1, "zombie", 52, 62)
+Game.debugSetPaused(clusterAnvilBotState, false)
+clusterAnvilBot.thinkTimer = 0
+Bot.update(clusterAnvilBot, clusterAnvilBotState, 0.5)
+assertEq(
+    #clusterAnvilBotState.pendingSpells,
+    1,
+    "Bot must prefer Falling Anvil when multiple predicted targets cluster"
+)
 
 local antiAirBotState = Game.new()
 Game.debugLoadScenario(antiAirBotState, "full")
