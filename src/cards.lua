@@ -64,7 +64,7 @@ cards.list = {
             cycles = 2,
             name = "Diamond Golem",
             color = colors.cyan,
-            description = "5% more HP. Every 2s it stomps for 20 damage to nearby grounded enemy units.",
+            description = "5% more HP. While walking, every 2s it stomps for 20 damage to nearby grounded enemy units.",
             statMultipliers = {
                 maxHp = 1.05,
             },
