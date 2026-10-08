@@ -95,7 +95,22 @@ function render.layoutFor(monitor)
         collectionCards = {},
         collectionPageButtons = {},
         deckSlots = {},
+        -- Preset/loadout controls remain implemented in Game.lua but are
+        -- intentionally hidden from the normal lobby. This space is now used
+        -- by the Evolution Slot.
         presetButtons = {},
+        evolutionSlot = {
+            x1 = 1,
+            x2 = math.floor(width * 0.72),
+            y1 = 36,
+            y2 = 38,
+        },
+        randomButton = {
+            x1 = math.floor(width * 0.72) + 1,
+            x2 = width,
+            y1 = 36,
+            y2 = 38,
+        },
         infoButton = {
             x1 = math.floor(width * 0.25),
             x2 = math.ceil(width * 0.75),
@@ -301,6 +316,20 @@ local function drawStatus(buffer, state, playerId)
     if player.feedback then
         rightText = util.truncate(player.feedback, math.floor(buffer.width * 0.50))
         rightColor = colors.yellow
+    elseif player.evolutionCardId and cards.hasEvolution(player.evolutionCardId) then
+        local evoCard = cards.get(player.evolutionCardId)
+        local cycles = cards.evolutionCycles(evoCard) or 2
+        local progress = math.min(cycles, player.evolutionProgress or 0)
+        local evoState = progress >= cycles and "READY" or (tostring(progress) .. "/" .. tostring(cycles))
+        rightText = "EVO " .. (evoCard.icon or "?") .. " " .. evoState
+        rightColor = progress >= cycles and colors.magenta or colors.lightBlue
+
+        if player.queue and player.queue[1] then
+            local nextCard = cards.get(player.queue[1])
+            if nextCard then
+                rightText = rightText .. " | NEXT " .. (nextCard.icon or "?")
+            end
+        end
     elseif player.queue and player.queue[1] then
         local nextCard = cards.get(player.queue[1])
         if nextCard then
@@ -327,8 +356,9 @@ local function compactNameLines(name, width)
     return { util.truncate(name, math.max(1, width)) }
 end
 
-local function drawCard(buffer, zone, card, selected, affordable)
-    local bg = selected and colors.orange or colors.gray
+local function drawCard(buffer, zone, card, selected, affordable, evolutionInfo)
+    local evolutionReady = evolutionInfo and evolutionInfo.ready
+    local bg = evolutionReady and colors.purple or (selected and colors.orange or colors.gray)
     if not affordable then bg = colors.black end
     fill(buffer, zone.x1, zone.y1, zone.x2, zone.y2, bg)
 
@@ -336,6 +366,20 @@ local function drawCard(buffer, zone, card, selected, affordable)
     local label = selected and ("> " .. (card.icon or "?") .. " <") or (card.icon or "?")
     local nameLines = compactNameLines(card.name, width)
     local cost = tostring(card.cost) .. "E"
+
+    if evolutionInfo then
+        local evoText = evolutionInfo.ready
+            and "EVO READY"
+            or string.format("EVO %d/%d", evolutionInfo.progress, evolutionInfo.cycles)
+        writeText(
+            buffer,
+            zone.x1 + math.max(0, math.floor((width - #evoText) / 2)),
+            zone.y1,
+            util.truncate(evoText, width),
+            evolutionInfo.ready and colors.magenta or colors.lightBlue,
+            bg
+        )
+    end
 
     writeText(
         buffer,
@@ -394,12 +438,24 @@ local function drawBattle(buffer, state, playerId, layout)
     for slot = 1, 4 do
         local card = cards.get(player.hand[slot])
         if card then
+            local evolutionInfo = nil
+            if player.evolutionCardId == card.id and cards.hasEvolution(card.id) then
+                local cycles = cards.evolutionCycles(card.id) or 2
+                local progress = math.min(cycles, player.evolutionProgress or 0)
+                evolutionInfo = {
+                    cycles = cycles,
+                    progress = progress,
+                    ready = progress >= cycles,
+                }
+            end
+
             drawCard(
                 buffer,
                 layout.cards[slot],
                 card,
                 player.selectedSlot == slot,
-                player.emeralds + 0.0001 >= card.cost
+                player.emeralds + 0.0001 >= card.cost,
+                evolutionInfo
             )
         end
     end
@@ -470,16 +526,36 @@ local function contrastTextColor(bg)
     return colors.white
 end
 
-local function drawCollectionCard(buffer, zone, card, selected)
-    local bg = selected and colors.blue or colors.gray
+local function drawCollectionCard(buffer, zone, card, selected, evolutionSelected, evolutionSelecting)
+    local bg = evolutionSelected and colors.purple or (selected and colors.blue or colors.gray)
     local accent = card.color or colors.white
     local accentText = contrastTextColor(accent)
     fill(buffer, zone.x1, zone.y1, zone.x2, zone.y2, bg)
 
     local width = zone.x2 - zone.x1 + 1
-    local top = string.format("%s  %dE", card.icon or "?", card.cost)
+    local evoAvailable = cards.hasEvolution(card)
+    local top = string.format(
+        "%s%s  %dE",
+        evoAvailable and "E " or "",
+        card.icon or "?",
+        card.cost
+    )
     local nameLines = compactNameLines(card.name, width)
-    local stateText = selected and "IN DECK" or "TAP TO ADD"
+    local stateText
+
+    if evolutionSelected then
+        stateText = "EVOLUTION"
+    elseif evolutionSelecting then
+        if selected and evoAvailable then
+            stateText = "SET EVO"
+        elseif selected then
+            stateText = "NO EVO"
+        else
+            stateText = "NOT IN DECK"
+        end
+    else
+        stateText = selected and "IN DECK" or "TAP TO ADD"
+    end
 
     -- Always show the actual card colour as a full-width accent strip.
     -- This avoids gray/brown cards disappearing into the neutral tile bg.
@@ -508,17 +584,31 @@ local function drawCollectionCard(buffer, zone, card, selected)
         zone.x1 + math.max(0, math.floor((width - #stateText) / 2)),
         zone.y2,
         util.truncate(stateText, width),
-        selected and colors.lime or colors.lightGray,
+        evolutionSelected and colors.magenta
+            or (selected and colors.lime or colors.lightGray),
         bg
     )
 end
 
-local function drawDeckSlot(buffer, zone, slot, card)
-    local bg = card and colors.black or colors.gray
+local function drawDeckSlot(buffer, zone, slot, card, evolutionSelected, evolutionSelecting)
+    local eligible = card and cards.hasEvolution(card)
+    local bg
+    if evolutionSelected then
+        bg = colors.purple
+    elseif evolutionSelecting and eligible then
+        bg = colors.blue
+    else
+        bg = card and colors.black or colors.gray
+    end
     fill(buffer, zone.x1, zone.y1, zone.x2, zone.y2, bg)
 
     local width = zone.x2 - zone.x1 + 1
     local label = "SLOT " .. tostring(slot)
+    if evolutionSelected then
+        label = "EVO > " .. label
+    elseif eligible then
+        label = "E " .. label
+    end
     writeText(
         buffer,
         zone.x1 + math.max(0, math.floor((width - #label) / 2)),
@@ -561,6 +651,60 @@ local function drawDeckSlot(buffer, zone, slot, card)
             bg
         )
     end
+end
+
+local function drawEvolutionSlot(buffer, zone, player)
+    local selected = player.evolutionCardId and cards.get(player.evolutionCardId) or nil
+    local selecting = player.evolutionSelecting == true
+    local bg = selected and colors.purple or (selecting and colors.blue or colors.black)
+
+    fill(buffer, zone.x1, zone.y1, zone.x2, zone.y2, bg)
+
+    local width = zone.x2 - zone.x1 + 1
+    local header = selecting and "EVOLUTION SLOT - SELECTING" or "EVOLUTION SLOT"
+    writeText(
+        buffer,
+        zone.x1 + math.max(0, math.floor((width - #header) / 2)),
+        zone.y1,
+        util.truncate(header, width),
+        selected and colors.magenta or colors.lightBlue,
+        bg
+    )
+
+    local line
+    if selected and cards.hasEvolution(selected) then
+        line = string.format(
+            "%s %s  |  %d CYCLES -> 3RD PLAY",
+            selected.icon or "?",
+            selected.name,
+            cards.evolutionCycles(selected) or 2
+        )
+    elseif selecting then
+        line = "TAP AN ELIGIBLE CARD IN YOUR DECK"
+    elseif #cards.evolutionCards() == 0 then
+        line = "NO EVOLUTION CARDS DEFINED YET"
+    else
+        line = "TAP SLOT, THEN CHOOSE AN EVO CARD"
+    end
+
+    writeText(
+        buffer,
+        zone.x1 + math.max(0, math.floor((width - #line) / 2)),
+        zone.y1 + 1,
+        util.truncate(line, width),
+        colors.white,
+        bg
+    )
+
+    local footer = selected and "TAP TO CLEAR" or "E-CARDS ARE MARKED WITH E"
+    writeText(
+        buffer,
+        zone.x1 + math.max(0, math.floor((width - #footer) / 2)),
+        zone.y2,
+        util.truncate(footer, width),
+        colors.lightGray,
+        bg
+    )
 end
 
 local function wrapWords(text, maxWidth)
@@ -816,6 +960,14 @@ local function infoStatLines(card)
         end
     end
 
+    if cards.hasEvolution(card) then
+        local cycles = cards.evolutionCycles(card) or 2
+        table.insert(lines, string.format(
+            "EVOLUTION: %d normal plays charge it; next play evolves",
+            cycles
+        ))
+    end
+
     return lines
 end
 
@@ -960,7 +1112,9 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
         3,
         (state.gameMode == "bot" and playerId == state.botPlayerId)
             and (string.upper(state.botDifficulty or "normal") .. " BOT DECK - CONTROLLED BY AI")
-            or "TAP A CARD TO ADD / REMOVE",
+            or (player.evolutionSelecting
+                and "EVOLUTION: TAP AN ELIGIBLE CARD ALREADY IN DECK"
+                or "TAP A CARD TO ADD / REMOVE"),
         colors.lightGray,
         colors.black
     )
@@ -972,7 +1126,9 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
                 buffer,
                 layout.collectionCards[slot],
                 card,
-                deckContains(player.deck, card.id)
+                deckContains(player.deck, card.id),
+                player.evolutionCardId == card.id,
+                player.evolutionSelecting == true
             )
         end
     end
@@ -988,27 +1144,22 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
 
     for slot = 1, 8 do
         local cardId = player.deck[slot]
-        drawDeckSlot(buffer, layout.deckSlots[slot], slot, cardId and cards.get(cardId) or nil)
+        drawDeckSlot(
+            buffer,
+            layout.deckSlots[slot],
+            slot,
+            cardId and cards.get(cardId) or nil,
+            player.evolutionCardId == cardId,
+            player.evolutionSelecting == true
+        )
     end
 
+    drawEvolutionSlot(buffer, layout.evolutionSlot, player)
+
     if not (state.gameMode == "bot" and playerId == state.botPlayerId) then
-        local presetSlot = player.presetSlot or 1
-        local presetSaved = state.deckPresets[playerId][presetSlot] ~= nil
-        local slotLabel = string.format(
-            "PRESET %d/3  %s",
-            presetSlot,
-            presetSaved and "SAVED" or "EMPTY"
-        )
-
-        drawButton(buffer, layout.presetButtons.prev, "<", false)
-        drawButton(buffer, layout.presetButtons.slot, slotLabel, presetSaved)
-        drawButton(buffer, layout.presetButtons.next, ">", false)
-
-        drawButton(buffer, layout.presetButtons.save, "SAVE", false)
-        drawButton(buffer, layout.presetButtons.load, "LOAD", presetSaved)
-        drawButton(buffer, layout.presetButtons.random, "RANDOM 8", false)
+        drawButton(buffer, layout.randomButton, "RANDOM 8", false)
     else
-        centered(buffer, 37, "BOT DECK LOCKED", colors.gray, colors.black)
+        drawButton(buffer, layout.randomButton, "BOT LOCKED", false)
     end
 
     drawButton(buffer, layout.infoButton, "UNIT INFO", false)
