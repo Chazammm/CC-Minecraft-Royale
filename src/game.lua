@@ -40,12 +40,16 @@ local function loadPresets()
 end
 
 local function savePresets(presets)
-    if not fs or not fs.open or not textutils or not textutils.serialize then return false end
+    if not fs or not fs.open or not textutils or not textutils.serialize then
+        return nil
+    end
+
     local handle = fs.open(PRESET_FILE, "w")
     if not handle then return false end
-    handle.write(textutils.serialize(presets))
+
+    local ok = pcall(handle.write, textutils.serialize(presets))
     handle.close()
-    return true
+    return ok
 end
 
 local function randomDeck()
@@ -1108,6 +1112,7 @@ function Game.new(soundCallback)
         effects = {},
         pendingSpells = {},
         nextEntityId = 1,
+        combatTick = 0,
         countdown = config.MATCH.countdown,
         timeLeft = config.MATCH.normalTime,
         overtime = false,
@@ -1140,6 +1145,8 @@ function Game.resetLobby(state)
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
+    state.nextEntityId = 1
+    state.combatTick = 0
     state.winner = nil
     state.resultReason = nil
     state.overtime = false
@@ -1176,6 +1183,8 @@ function Game.startCountdown(state)
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
+    state.nextEntityId = 1
+    state.combatTick = 0
     state.winner = nil
     state.resultReason = nil
     state.overtime = false
@@ -1603,8 +1612,19 @@ function Game.saveDeckPreset(state, playerId, slot)
         return false
     end
 
+    local previous = state.deckPresets[playerId][slot]
+        and util.deepcopy(state.deckPresets[playerId][slot])
+        or nil
+
     state.deckPresets[playerId][slot] = util.deepcopy(player.deck)
-    savePresets(state.deckPresets)
+    local persisted = savePresets(state.deckPresets)
+
+    if persisted == false then
+        state.deckPresets[playerId][slot] = previous
+        setFeedback(player, "PRESET SAVE FAILED", 1.2)
+        return false
+    end
+
     setFeedback(player, "PRESET " .. tostring(slot) .. " SAVED", 1.0)
     return true
 end
@@ -1946,9 +1966,25 @@ function Game.update(state, dt)
 
     updatePendingSpells(state, dt)
 
-    for _, entity in ipairs(state.entities) do
-        if isBattle and state.phase ~= "battle" then break end
-        updateCombatEntity(state, entity, dt)
+    -- Freeze the entity count for this tick. Summons/splits created while
+    -- updating combat begin acting next tick instead of receiving a hidden
+    -- same-tick movement/attack/lifetime update.
+    local entityCount = #state.entities
+    state.combatTick = (state.combatTick or 0) + 1
+
+    -- Alternate traversal direction to avoid a permanent "earlier entity"
+    -- advantage in near-simultaneous combat. This is especially important for
+    -- the fixed P1/P2 Crown Tower insertion order.
+    if state.combatTick % 2 == 1 then
+        for i = 1, entityCount do
+            if isBattle and state.phase ~= "battle" then break end
+            updateCombatEntity(state, state.entities[i], dt)
+        end
+    else
+        for i = entityCount, 1, -1 do
+            if isBattle and state.phase ~= "battle" then break end
+            updateCombatEntity(state, state.entities[i], dt)
+        end
     end
 
     if (isBattle and state.phase == "battle") or isAdmin then
