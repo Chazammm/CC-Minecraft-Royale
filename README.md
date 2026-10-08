@@ -205,6 +205,18 @@ The lobby includes:
 
 The old 3-slot deck preset/loadout implementation is still kept in the codebase, but its controls are currently hidden from the normal lobby UI to free space for Evolutions.
 
+### Match Ruleset
+
+The lobby now has a shared **RULESET** button beside the game-mode control. Rules apply to the whole match and are visible from either monitor.
+
+Current rule:
+
+- **EVOLUTIONS: ON/OFF** — ON is the default. OFF preserves each player's selected Evolution Slot card in the deckbuilder, but the match completely suppresses Evolution charging, evolved costs, evolved stats and evolved abilities. Every card behaves as its base form.
+
+Changing a Ruleset option automatically clears READY for both players so a match cannot begin under stale settings.
+
+The Ruleset UI is intentionally data-oriented so additional match options can be added later without rebuilding the lobby flow.
+
 ## Admin sandbox
 
 Run:
@@ -220,6 +232,8 @@ The admin sandbox can:
 - enable a bot
 - browse the paginated card pool
 
+
+Evolution forms are also listed directly in the admin card pages. They are marked **EVO** and can be spawned immediately without charging cycles or paying Emeralds. Current direct admin forms are Charged Creeper, Ghast Portal and Mega Mite.
 ## Balance simulator
 
 Run any whole-number match count from **100 to 1000**:
