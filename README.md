@@ -176,6 +176,7 @@ The first gameplay Evolutions are enabled:
 - **Mega Mite** — Endermite, 4 cycles, so the 5th play evolves. Same 1E cost. Keeps all normal Endermite combat stats except max HP, which is exactly 5x (525 HP), and uses a visibly larger sprite.
 - **Elder Guardian** — Guardian, 2 cycles, same 6E cost. Doubles HP from 90 to 180 and applies a battlefield-wide 5% movement-speed penalty to every enemy unit while alive. Beam, range and spike reflection are unchanged.
 - **Emerald Bank** — Villager, 3 cycles, same 7E cost. Keeps the exact 61.6% Emerald-generation boost, gains 5% HP (185 -> 194.25) and lasts 70s instead of 50s.
+- **Diamond Golem** — Iron Golem, 2 cycles, same 5E cost. Gains 5% HP (1377 -> 1445.85). Every 2s it stomps the ground, creating a visible local quake that deals 20 damage in 8 radius to enemy grounded units only; flying and water-only units are ignored.
 
 VS BOT automatically selects the first evolution-capable card in its deck when one exists and respects the configured evolved Emerald cost.
 
@@ -237,7 +238,7 @@ The admin sandbox can:
 - browse the paginated card pool
 
 
-Evolution forms are also listed directly in the admin card pages. They are marked **EVO** and can be spawned immediately without charging cycles or paying Emeralds. Current direct admin forms are Charged Creeper, Ghast Portal, Mega Mite, Elder Guardian and Emerald Bank.
+Evolution forms are also listed directly in the admin card pages. They are marked **EVO** and can be spawned immediately without charging cycles or paying Emeralds. Current direct admin forms are Charged Creeper, Ghast Portal, Mega Mite, Elder Guardian, Emerald Bank and Diamond Golem.
 ## Balance simulator
 
 Run any whole-number match count from **100 to 1000**:
@@ -316,10 +317,11 @@ For a clean Evolution-only measurement use:
     evo_compare 100 endermite
     evo_compare 100 guardian
     evo_compare 100 villager
+    evo_compare 100 iron_golem
 
 `evo_compare` builds identical 8-card subject decks and identical opponents for BASE and EVO. BASE disables every Evolution Slot; EVO enables only the tested card. Each context is played from both sides, and corresponding BASE/EVO matches use the same gameplay RNG seed.
 
-With the current five Evolutions, `evo_compare 30 all` runs 600 matches.
+With the current six Evolutions, `evo_compare 30 all` runs 720 matches.
 
 The report is written to:
 
