@@ -313,6 +313,21 @@ cards.list = {
             lifetime = 50,
             emeraldBoost = 0.616,
         },
+        evolution = {
+            cycles = 3,
+            name = "Emerald Bank",
+            color = colors.lime,
+            description = "Produces Emeralds at the exact Villager rate, gains 5% HP and remains active 20 seconds longer.",
+            statMultipliers = {
+                maxHp = 1.05,
+            },
+            stats = {
+                lifetime = 70,
+            },
+            abilities = {
+                visualVariant = "emerald_bank",
+            },
+        },
     },
     {
         id = "endermite",
@@ -332,7 +347,7 @@ cards.list = {
             targetMode = "any",
         },
         evolution = {
-            cycles = 3,
+            cycles = 4,
             name = "Mega Mite",
             color = colors.magenta,
             description = "A huge Endermite with exactly five times the HP. Every other combat stat and the 1E cost stay unchanged.",
@@ -341,6 +356,47 @@ cards.list = {
             },
             abilities = {
                 visualVariant = "mega_mite",
+            },
+        },
+    },
+    {
+        id = "guardian",
+        name = "Guardian",
+        icon = "Q",
+        cost = 6,
+        kind = "unit",
+        color = colors.cyan,
+        placement = "water",
+        unit = {
+            maxHp = 90,
+            damage = 0,
+            moveSpeed = 0,
+            attackRange = 13.5,
+            attackCooldown = 0.25,
+            aggroRange = 13.5,
+            canAttackAir = true,
+            targetMode = "any",
+            waterOnly = true,
+            beam = {
+                baseDps = 35,
+                maxDps = 350,
+                rampSeconds = 4.0,
+                tick = 0.25,
+                chargeLossOnHit = 0.20,
+            },
+            spikeReflectFlying = 0.05,
+        },
+        evolution = {
+            cycles = 2,
+            name = "Elder Guardian",
+            color = colors.lightGray,
+            description = "Doubles Guardian HP and slows every enemy unit on the battlefield by 5% while alive. Beam, spikes, range and cost stay identical.",
+            statMultipliers = {
+                maxHp = 2.0,
+            },
+            abilities = {
+                visualVariant = "elder_guardian",
+                globalEnemyMoveSlow = 0.05,
             },
         },
     },
@@ -656,6 +712,10 @@ cards.info = {
     endermite = {
         role = "1E distraction",
         description = "Very cheap, fast and fragile. Use it to pull, distract and waste expensive enemy attacks.",
+    },
+    guardian = {
+        role = "Water tank melter",
+        description = "6E stationary water-only beam unit. Ramps damage while locked; incoming hits weaken charge and flying attackers take spike damage.",
     },
     wolf = {
         role = "Fast fighter",
