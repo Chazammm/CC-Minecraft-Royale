@@ -78,6 +78,7 @@ local function newPlayerStats()
         kills = 0,
         towersKilled = 0,
         evolutionPlays = 0,
+        playHistory = {},
         cards = {},
     }
 end
@@ -1988,6 +1989,7 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
         local cardStats = getCardStats(state, playerId, card.id)
         playerStats.cardsPlayed = playerStats.cardsPlayed + 1
         playerStats.emeraldSpent = playerStats.emeraldSpent + playCost
+        playerStats.playHistory[#playerStats.playHistory + 1] = card.id
         cardStats.plays = cardStats.plays + 1
         cardStats.emeraldSpent = cardStats.emeraldSpent + playCost
 
