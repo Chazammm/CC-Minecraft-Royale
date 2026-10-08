@@ -1072,9 +1072,9 @@ runTest("evo_charged_creeper", "Charged Creeper has larger blue blast", function
         and (spec.visualRadius or 0) > spec.radius
         and exploded
         and chargedEffect
-        and math.abs(nearDamage - 290) <= EPSILON
-        and math.abs(farDamage - 290) <= EPSILON,
-        "Charged Creeper must keep normal damage but expand gameplay AoE from 8 to 12 and use the large blue explosion effect.",
+        and math.abs(nearDamage - 580) <= EPSILON
+        and math.abs(farDamage - 580) <= EPSILON,
+        "Charged Creeper must deal double base damage, expand gameplay AoE from 8 to 12 and use the large blue explosion effect.",
         data
 end)
 
