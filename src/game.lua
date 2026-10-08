@@ -1967,10 +1967,14 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
         spawnBuilding(state, playerId, activeCard, x, y)
         addEffect(state, evolutionUsed and "evolution_spawn" or "spawn", x, y, 5, 0.35, playerId)
     elseif activeCard.kind == "spell" then
-        if activeCard.id == "falling_anvil" then
+        local castType = activeCard.spell and activeCard.spell.cast
+        if castType == "falling_anvil" then
             castFallingAnvil(state, playerId, activeCard, x, y)
-        else
+        elseif castType == "arrows" then
             castArrows(state, playerId, activeCard, x, y)
+        else
+            setFeedback(player, "UNSUPPORTED SPELL")
+            return false, "UNSUPPORTED SPELL"
         end
     else
         setFeedback(player, "UNSUPPORTED CARD")
@@ -2921,10 +2925,13 @@ function Game.debugSpawnCard(state, owner, cardId, x, y)
             owner
         )
     elseif card.kind == "spell" then
-        if card.id == "falling_anvil" then
+        local castType = card.spell and card.spell.cast
+        if castType == "falling_anvil" then
             castFallingAnvil(state, owner, card, x, y)
-        else
+        elseif castType == "arrows" then
             castArrows(state, owner, card, x, y)
+        else
+            return false, "UNSUPPORTED SPELL"
         end
     else
         return false, "UNSUPPORTED CARD"
