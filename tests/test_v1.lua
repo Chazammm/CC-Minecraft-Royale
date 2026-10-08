@@ -997,4 +997,24 @@ assertEq(packOffsets[1], musicManifest.packs[1].size, "Music pack 1 manifest siz
 assertEq(packOffsets[2], musicManifest.packs[2].size, "Music pack 2 manifest size mismatch")
 assertEq(totalMusicBytes, musicManifest.totalSize, "Music manifest must cover the whole HQ playlist")
 
+-- CLI help/validation must not erase a previous simulation report.
+local oldFs = fs
+local simulateOpenCalls = 0
+fs = {
+    open = function()
+        simulateOpenCalls = simulateOpenCalls + 1
+        return nil
+    end,
+}
+
+local simulateChunk = assert(loadfile("simulate.lua"))
+simulateChunk("help")
+simulateChunk("99")
+assertEq(
+    simulateOpenCalls,
+    0,
+    "simulate help/invalid input must not open or truncate balance_results.txt"
+)
+fs = oldFs
+
 print("Smoke tests passed")
