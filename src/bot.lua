@@ -323,63 +323,198 @@ local function bestArrowTarget(state, playerId)
     return nil, nil, bestScore
 end
 
+local function botEntityById(state, id)
+    if not id then return nil end
+    for _, entity in ipairs(state.entities) do
+        if entity.id == id and entity.alive then return entity end
+    end
+    return nil
+end
+
+local function predictedAnvilPosition(state, entity, delay)
+    local x, y = entity.x, entity.y
+
+    if entity.kind ~= "unit"
+        or entity.passive
+        or (entity.moveSpeed or 0) <= 0
+    then
+        return x, y, 1.0
+    end
+
+    local speed = entity.moveSpeed or 0
+    if entity.slowRemaining and entity.slowRemaining > 0 then
+        speed = speed * (entity.slowFactor or 1)
+    end
+
+    local target = botEntityById(state, entity.targetId)
+    if not target then
+        -- Freshly spawned / currently untargeted troops still generally move
+        -- toward the enemy side. Keep this fallback conservative because the
+        -- real lane objective may acquire during the Anvil warning.
+        local direction = entity.owner == 1 and -1 or 1
+        y = y + direction * speed * delay * 0.55
+        y = math.max(3, math.min(config.ARENA.height - 3, y))
+        return x, y, 0.55
+    end
+
+    local attackRange = entity.attackRange or 0
+    if entity.hybridAttack and not target.flying then
+        attackRange = entity.hybridAttack.meleeRange or attackRange
+    end
+
+    local initialDistance = math.sqrt((target.x - x)^2 + (target.y - y)^2)
+
+    -- A troop already fighting is much more likely to still be near its
+    -- current position than a marching troop. This is especially useful for
+    -- tanks/buildings being stalled at a bridge or tower.
+    if initialDistance <= attackRange + 0.75 then
+        return x, y, 0.90
+    end
+
+    -- Simulate several small pathing steps using the same bridge navigation
+    -- helper as live gameplay. This predicts lateral movement toward bridges,
+    -- unlike the old Y-only lead which frequently missed entire lanes.
+    local probe = {
+        x = x,
+        y = y,
+        owner = entity.owner,
+        flying = entity.flying,
+    }
+    local steps = 6
+    local stepTime = delay / steps
+
+    for _ = 1, steps do
+        local tx, ty = arena.navigationPoint(probe, target)
+        local dx = tx - probe.x
+        local dy = ty - probe.y
+        local length = math.sqrt(dx * dx + dy * dy)
+
+        if length < 0.001 then break end
+
+        local distanceToTarget = math.sqrt(
+            (target.x - probe.x)^2 + (target.y - probe.y)^2
+        )
+        local travelBudget = math.max(0, distanceToTarget - attackRange)
+        if travelBudget <= 0 then break end
+
+        local step = math.min(length, speed * stepTime, travelBudget)
+        probe.x = probe.x + dx / length * step
+        probe.y = probe.y + dy / length * step
+    end
+
+    return probe.x, probe.y, 0.82
+end
+
+local function anvilOverlapsPending(state, playerId, x, y, radius)
+    for _, pending in ipairs(state.pendingSpells or {}) do
+        if pending.owner == playerId
+            and pending.kind == "falling_anvil"
+        then
+            local d = math.sqrt((pending.x - x)^2 + (pending.y - y)^2)
+            if d <= radius * 1.25 then return true end
+        end
+    end
+    return false
+end
+
 local function bestAnvilTarget(state, playerId)
     local card = cards.get("falling_anvil")
     local spell = card and card.spell or nil
     if not spell then return nil, nil, 0 end
 
     local radius = spell.radius or 5.5
-    local delay = spell.delay or 3
+    local delay = spell.delay or 2.7
     local damage = spell.damage or 0
     local bestX, bestY, bestScore = nil, nil, 0
 
+    local predicted = {}
+    for _, entity in ipairs(state.entities) do
+        if entity.alive and entity.owner ~= playerId then
+            local px, py, confidence = predictedAnvilPosition(state, entity, delay)
+            predicted[entity.id] = {
+                x = px,
+                y = py,
+                confidence = confidence,
+            }
+        end
+    end
+
     for _, center in ipairs(state.entities) do
-        if center.alive
-            and center.owner ~= playerId
-        then
-            local cx, cy = center.x, center.y
+        if center.alive and center.owner ~= playerId then
+            local centerPrediction = predicted[center.id]
+            local cx = centerPrediction and centerPrediction.x or center.x
+            local cy = centerPrediction and centerPrediction.y or center.y
 
-            -- Lead moving ground troops roughly toward the bot's side. This
-            -- turns the 3-second warning into an actual timing challenge.
-            if center.kind == "unit" and (center.moveSpeed or 0) > 0 then
-                local direction = playerId == 1 and 1 or -1
-                cy = cy + direction * (center.moveSpeed or 0) * delay * 0.80
-                cy = math.max(3, math.min(config.ARENA.height - 3, cy))
-            end
+            if not anvilOverlapsPending(state, playerId, cx, cy, radius) then
+                local score = 0
+                local hitCount = 0
+                local reliableHits = 0
+                local lethalTower = false
 
-            local score = 0
-            for _, target in ipairs(state.entities) do
-                if target.alive
-                    and target.owner ~= playerId
-                then
-                    local tx, ty = target.x, target.y
-                    if target.kind == "unit" and (target.moveSpeed or 0) > 0 then
-                        local direction = playerId == 1 and 1 or -1
-                        ty = ty + direction * (target.moveSpeed or 0) * delay * 0.80
-                        ty = math.max(3, math.min(config.ARENA.height - 3, ty))
-                    end
+                for _, target in ipairs(state.entities) do
+                    if target.alive and target.owner ~= playerId then
+                        local targetPrediction = predicted[target.id]
+                        local tx = targetPrediction and targetPrediction.x or target.x
+                        local ty = targetPrediction and targetPrediction.y or target.y
+                        local confidence = targetPrediction
+                            and targetPrediction.confidence
+                            or 1
 
-                    local d = math.sqrt((cx - tx)^2 + (cy - ty)^2)
-                    if d <= radius then
-                        local hitDamage = damage
-                        if target.kind == "tower" then
-                            hitDamage = hitDamage * (spell.towerMultiplier or 1)
-                            score = score + math.min(hitDamage, target.hp) / 90
-                            if target.hp <= hitDamage + 0.001 then
-                                score = score + (target.towerType == "king" and 60 or 25)
+                        local d = math.sqrt((cx - tx)^2 + (cy - ty)^2)
+                        if d <= radius then
+                            hitCount = hitCount + 1
+                            if confidence >= 0.80 then
+                                reliableHits = reliableHits + 1
                             end
-                        else
-                            score = score + math.min(hitDamage, target.hp or 0) / 100
-                            if (target.hp or 0) <= hitDamage then score = score + 2.5 end
-                            if target.name == "Villager" then score = score + 4 end
+
+                            local hitDamage = damage
+                            if target.kind == "tower" then
+                                hitDamage = hitDamage * (spell.towerMultiplier or 1)
+                                score = score + math.min(hitDamage, target.hp) / 90
+                                if target.hp <= hitDamage + 0.001 then
+                                    lethalTower = true
+                                    score = score
+                                        + (target.towerType == "king" and 60 or 25)
+                                end
+                            else
+                                score = score + math.min(hitDamage, target.hp or 0) / 100
+                                if (target.hp or 0) <= hitDamage then
+                                    score = score + 2.5
+                                end
+                                if target.name == "Villager" then
+                                    score = score + 4
+                                end
+                                if target.kind == "building" or target.passive then
+                                    score = score + 1.0
+                                end
+                            end
                         end
                     end
                 end
-            end
 
-            if score > bestScore then
-                bestScore = score
-                bestX, bestY = cx, cy
+                -- The old bot was happy to spend Anvil on a single moving
+                -- tank, which explains sub-1.0 Hits/Play in benchmarks.
+                -- Strongly prefer clusters; single-target casts are reserved
+                -- for stable/high-value targets or a lethal Crown Tower.
+                if hitCount >= 2 then
+                    score = score + (hitCount - 1) * 3.0
+                    if reliableHits >= 2 then score = score + 1.5 end
+                elseif hitCount == 1 and not lethalTower then
+                    local confidence = centerPrediction
+                        and centerPrediction.confidence
+                        or 1
+                    if center.kind == "unit"
+                        and not center.passive
+                        and (center.moveSpeed or 0) > 0
+                    then
+                        score = score * (confidence >= 0.85 and 0.72 or 0.52)
+                    end
+                end
+
+                if score > bestScore then
+                    bestScore = score
+                    bestX, bestY = cx, cy
+                end
             end
         end
     end
