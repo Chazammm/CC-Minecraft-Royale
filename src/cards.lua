@@ -616,6 +616,87 @@ function cards.get(id)
     return cards.byId[id]
 end
 
+-- Evolution definitions are intentionally data-driven and live on the base
+-- card as card.evolution. Cards without that table cannot enter the Evolution
+-- Slot. A definition can override/multiply the card, unit, building or spell
+-- data without requiring Game.lua to know card-specific evolution rules.
+--
+-- Example schema for a future card:
+-- evolution = {
+--     cycles = 2, -- two normal plays, third play evolves
+--     name = "Evolved Zombie",
+--     unit = {
+--         multipliers = { maxHp = 1.15, damage = 1.10 },
+--         overrides = { canAttackAir = false },
+--     },
+-- }
+local function evolutionCard(cardOrId)
+    if type(cardOrId) == "table" then return cardOrId end
+    return cards.byId[cardOrId]
+end
+
+function cards.hasEvolution(cardOrId)
+    local card = evolutionCard(cardOrId)
+    return card ~= nil and type(card.evolution) == "table"
+end
+
+function cards.evolutionCycles(cardOrId)
+    local card = evolutionCard(cardOrId)
+    if not card or type(card.evolution) ~= "table" then return nil end
+    return math.max(1, math.floor(tonumber(card.evolution.cycles) or 2))
+end
+
+local function applyEvolutionBlock(target, spec)
+    if type(target) ~= "table" or type(spec) ~= "table" then return end
+
+    if type(spec.multipliers) == "table" then
+        for key, multiplier in pairs(spec.multipliers) do
+            if type(target[key]) == "number" and type(multiplier) == "number" then
+                target[key] = target[key] * multiplier
+            end
+        end
+    end
+
+    if type(spec.overrides) == "table" then
+        for key, value in pairs(spec.overrides) do
+            target[key] = util.deepcopy(value)
+        end
+    end
+end
+
+function cards.evolvedCopy(cardOrId)
+    local card = evolutionCard(cardOrId)
+    if not card or type(card.evolution) ~= "table" then return nil end
+
+    local evolved = util.deepcopy(card)
+    local evo = card.evolution
+
+    evolved.isEvolution = true
+    evolved.evolutionBaseId = card.id
+    evolved.name = evo.name or ("Evolved " .. tostring(card.name or card.id))
+    evolved.icon = evo.icon or card.icon
+    evolved.color = evo.color or card.color
+
+    applyEvolutionBlock(evolved, evo.card)
+    applyEvolutionBlock(evolved.unit, evo.unit)
+    applyEvolutionBlock(evolved.building, evo.building)
+    applyEvolutionBlock(evolved.spell, evo.spell)
+
+    if evolved.unit then evolved.unit.isEvolution = true end
+    if evolved.building then evolved.building.isEvolution = true end
+    if evolved.spell then evolved.spell.isEvolution = true end
+
+    return evolved
+end
+
+function cards.evolutionCards()
+    local out = {}
+    for _, card in ipairs(cards.list) do
+        if cards.hasEvolution(card) then out[#out + 1] = card end
+    end
+    return out
+end
+
 function cards.getInternalUnit(id)
     local unit = cards.internalUnits[id]
     if not unit then return nil end
