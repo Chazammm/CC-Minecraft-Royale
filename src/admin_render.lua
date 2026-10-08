@@ -186,19 +186,35 @@ function render.draw(monitor, state, viewerId, ui)
     )
 
     local pageSize = 16
-    local pages = math.max(1, math.ceil(#cards.list / pageSize))
+    local spawnCatalog = cards.adminSpawnCards()
+    local pages = math.max(1, math.ceil(#spawnCatalog / pageSize))
     local page = math.max(1, math.min(pages, ui.cardPage or 1))
 
     drawButton(b, layout.cardPageButtons.prev, "< PREV", false)
-    drawButton(b, layout.cardPageButtons.label, string.format("CARDS %d/%d", page, pages), false)
+    drawButton(b, layout.cardPageButtons.label, string.format("SPAWNS %d/%d", page, pages), false)
     drawButton(b, layout.cardPageButtons.next, "NEXT >", false)
 
     for slot = 1, pageSize do
-        local card = cards.list[(page - 1) * pageSize + slot]
-        if card then
-            local selected = ui.selectedCard == card.id
+        local entry = spawnCatalog[(page - 1) * pageSize + slot]
+        if entry and entry.card then
+            local card = entry.card
+            local selected = ui.selectedCard == entry.key
             local zone = layout.cards[slot]
-            drawCardButton(b, zone, card, selected, card.color or colors.orange)
+            local activeColor = entry.isEvolution and colors.magenta
+                or (card.color or colors.orange)
+            drawCardButton(b, zone, card, selected, activeColor)
+
+            if entry.isEvolution then
+                local tag = "EVO"
+                writeText(
+                    b,
+                    zone.x1 + 1,
+                    zone.y1,
+                    tag,
+                    colors.lightBlue,
+                    selected and activeColor or colors.gray
+                )
+            end
         end
     end
 
