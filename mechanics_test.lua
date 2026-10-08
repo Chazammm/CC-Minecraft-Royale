@@ -176,6 +176,104 @@ runTest("boot_deck", "Lobby boots with empty human decks", function()
         data
 end)
 
+runTest("evolution_cycle", "Evolution Slot charges twice and evolves third play", function()
+    local base = cards.get("zombie")
+    local oldEvolution = base.evolution
+    base.evolution = {
+        cycles = 2,
+        name = "Evolved Zombie",
+        unit = {
+            multipliers = {
+                damage = 1.50,
+                maxHp = 1.10,
+            },
+        },
+    }
+
+    local data = {}
+    local state = Game.new()
+    state.players[1].deck = cards.defaultDeck()
+    state.players[2].deck = cards.defaultDeck()
+
+    local selected = Game.setEvolutionCard(state, 1, "zombie")
+    local rejectedNonEvo = not Game.setEvolutionCard(state, 2, "skeleton")
+
+    Game.startCountdown(state)
+    waitUntil(
+        state,
+        config.MATCH.countdown + 1,
+        function() return state.phase == "battle" end,
+        0.10
+    )
+
+    local normalPlays = true
+    local evolvedThird = false
+    local progressSequence = {}
+
+    local function newestZombie()
+        local newest = nil
+        for _, entity in ipairs(state.entities) do
+            if entity.owner == 1 and entity.sourceCardId == "zombie" then
+                if not newest or entity.id > newest.id then newest = entity end
+            end
+        end
+        return newest
+    end
+
+    for playIndex = 1, 3 do
+        state.players[1].hand[1] = "zombie"
+        state.players[1].emeralds = 10
+
+        local ok = Game.playCardFromSlot(state, 1, 1, SAFE_X - 10 + playIndex * 3, SAFE_Y)
+        if not ok then
+            base.evolution = oldEvolution
+            return false, "Evolution test could not play Zombie " .. tostring(playIndex), data
+        end
+
+        local entity = newestZombie()
+        progressSequence[#progressSequence + 1] = state.players[1].evolutionProgress or -1
+
+        if playIndex < 3 then
+            normalPlays = normalPlays
+                and entity ~= nil
+                and entity.isEvolution ~= true
+                and math.abs((entity.damage or 0) - 80) <= EPSILON
+        else
+            evolvedThird = entity ~= nil
+                and entity.isEvolution == true
+                and entity.name == "Evolved Zombie"
+                and math.abs((entity.damage or 0) - 120) <= EPSILON
+                and state.players[1].evolutionProgress == 0
+        end
+    end
+
+    local telemetry = state.stats.players[1].evolutionPlays == 1
+        and state.stats.players[1].cards.zombie
+        and state.stats.players[1].cards.zombie.evolutionPlays == 1
+
+    addData(data, "eligible_selected", selected)
+    addData(data, "non_evolution_rejected", rejectedNonEvo)
+    addData(data, "progress_after_play_1", progressSequence[1])
+    addData(data, "progress_after_play_2", progressSequence[2])
+    addData(data, "progress_after_play_3", progressSequence[3])
+    addData(data, "first_two_normal", normalPlays)
+    addData(data, "third_play_evolved", evolvedThird)
+    addData(data, "evolution_telemetry", telemetry)
+
+    base.evolution = oldEvolution
+
+    return selected
+        and rejectedNonEvo
+        and normalPlays
+        and evolvedThird
+        and progressSequence[1] == 1
+        and progressSequence[2] == 2
+        and progressSequence[3] == 0
+        and telemetry,
+        "Only eligible deck cards may use the Evolution Slot; two normal plays charge it and the third evolves.",
+        data
+end)
+
 runTest("target_lock", "Pull before attack, lock after attack", function()
     local data = {}
 
