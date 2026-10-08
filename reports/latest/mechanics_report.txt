@@ -1,12 +1,13 @@
 CC-MINECRAFT-ROYALE MECHANICS REPORT
-FORMAT_VERSION|5
-GENERATED_EPOCH_MS|1791459898701
+FORMAT_VERSION|6
+GENERATED_EPOCH_MS|1791460764154
 OS_VERSION|CraftOS 1.9
 CARD_COUNT|21
 HARNESS|condition_waits=true|dt=0.050|safe_x=50.0|safe_y=110.0
 CONFIG|tick=0.100|normal=150|overtime=150|emerald_rate=0.357143|building_decay=1.150
 BALANCE_SNAPSHOT|skeleton_range=15.00|skeleton_retreat=0.85|bat_damage=17.00
-SUMMARY|pass=12|fail=0|error=0|total=12|runtime_cpu_s=0.0500
+EVOLUTION_SNAPSHOT|creeper_cycles=2|portal_cycles=2|mite_cycles=3|ghast_damage=130.0|ghast_range=24.0
+SUMMARY|pass=14|fail=1|error=0|total=15|runtime_cpu_s=0.0500
 
 RESULT|boot_deck|PASS|Lobby boots with empty human decks|Human players should build/load/randomize an 8-card deck before READY.
 DATA|boot_deck|p1_deck_cards=0.0000
@@ -29,6 +30,50 @@ DATA|evolution_cycle|first_three_normal=true
 DATA|evolution_cycle|fourth_play_evolved=true
 DATA|evolution_cycle|evolution_abilities_applied=true
 DATA|evolution_cycle|evolution_telemetry=true
+
+RESULT|evo_charged_creeper|FAIL|Charged Creeper has larger blue blast|Charged Creeper must keep normal damage but expand gameplay AoE from 8 to 12 and use the large blue explosion effect.
+DATA|evo_charged_creeper|configured_cycles=2.0000
+DATA|evo_charged_creeper|base_radius=8.0000
+DATA|evo_charged_creeper|charged_radius=12.0000
+DATA|evo_charged_creeper|charged_visual_radius=16.0000
+DATA|evo_charged_creeper|visual_variant=charged_creeper
+DATA|evo_charged_creeper|exploded=true
+DATA|evo_charged_creeper|explosion_time_s=0.7500
+DATA|evo_charged_creeper|near_target_damage=290.0000
+DATA|evo_charged_creeper|far_target_distance=10.0000
+DATA|evo_charged_creeper|far_target_damage=450.0000
+DATA|evo_charged_creeper|charged_effect_visible=true
+
+RESULT|evo_ghast_portal|PASS|Ghast Portal spawns exactly two artillery Ghasts|Ghast Portal must emit exactly two fragile long-range Ghasts; their 130-damage splash fireballs two-hit Blaze and slow only the primary target.
+DATA|evo_ghast_portal|configured_cycles=2.0000
+DATA|evo_ghast_portal|portal_visual_variant=ghast_portal
+DATA|evo_ghast_portal|first_ghast_spawn_s=2.5500
+DATA|evo_ghast_portal|portal_spawn_total=2.0000
+DATA|evo_ghast_portal|unique_ghasts_seen=2.0000
+DATA|evo_ghast_portal|ghast_hp=220.0000
+DATA|evo_ghast_portal|ghast_damage=130.0000
+DATA|evo_ghast_portal|ghast_range=24.0000
+DATA|evo_ghast_portal|ghast_cooldown=2.8000
+DATA|evo_ghast_portal|first_hit_time_s=0.3000
+DATA|evo_ghast_portal|blaze_hp_after_first_hit=127.0000
+DATA|evo_ghast_portal|splash_zombie_damage_first_hit=130.0000
+DATA|evo_ghast_portal|primary_target_slowed=true
+DATA|evo_ghast_portal|splash_target_not_slowed=true
+DATA|evo_ghast_portal|blaze_killed_by_second_hit=true
+DATA|evo_ghast_portal|second_hit_time_s=0.3000
+
+RESULT|evo_mega_mite|PASS|Mega Mite keeps all stats except five-times HP|Mega Mite must cost the normal 1E and preserve every Endermite combat stat except max HP, which is exactly 5x.
+DATA|evo_mega_mite|configured_cycles=3.0000
+DATA|evo_mega_mite|base_hp=105.0000
+DATA|evo_mega_mite|mega_hp=525.0000
+DATA|evo_mega_mite|base_damage=18.0000
+DATA|evo_mega_mite|mega_damage=18.0000
+DATA|evo_mega_mite|base_speed=9.2000
+DATA|evo_mega_mite|mega_speed=9.2000
+DATA|evo_mega_mite|base_cooldown=0.8500
+DATA|evo_mega_mite|mega_cooldown=0.8500
+DATA|evo_mega_mite|visual_variant=mega_mite
+DATA|evo_mega_mite|emeralds_after_play=9.0000
 
 RESULT|target_lock|PASS|Pull before attack, lock after attack|Golem must remain pullable before commitment; attacked targets must stay locked until death.
 DATA|target_lock|golem_pulled_before_hit=true
