@@ -1,6 +1,7 @@
 local Game = require("src.game")
 local Bot = require("src.bot")
 local cards = require("src.cards")
+local config = require("config")
 
 local args = { ... }
 
@@ -182,7 +183,13 @@ local function runMatch(deck1, deck2)
     bot2.enabled = true
 
     local ticks = 0
-    while state.phase ~= "result" and ticks < 1400 do
+    local maxSimulationSeconds = config.MATCH.countdown
+        + config.MATCH.normalTime
+        + config.MATCH.overtimeTime
+        + 30
+    local maxTicks = math.ceil(maxSimulationSeconds / 0.25)
+
+    while state.phase ~= "result" and ticks < maxTicks do
         Game.update(state, 0.25)
         Bot.update(bot1, state, 0.25)
         Bot.update(bot2, state, 0.25)
