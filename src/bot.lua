@@ -156,7 +156,15 @@ function Bot.prepare(bot, state)
     player.emeralds = config.MATCH.emeraldStart
     player.evolutionProgress = 0
     player.evolutionSelecting = false
-    Game.validateEvolutionSelection(state, bot.playerId)
+
+    if not Game.validateEvolutionSelection(state, bot.playerId) then
+        for _, cardId in ipairs(player.deck) do
+            if cards.hasEvolution(cardId) then
+                player.evolutionCardId = cardId
+                break
+            end
+        end
+    end
 
     bot.thinkTimer = 0.75
     bot.decisionCount = 0
