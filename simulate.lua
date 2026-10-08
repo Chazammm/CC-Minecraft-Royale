@@ -380,7 +380,22 @@ if liveHandle then
     nativePrint("")
     nativePrint("Saved full report to: " .. resultPath)
     nativePrint("View it with: type " .. resultPath)
-    nativePrint("Share it with: pastebin put " .. resultPath)
+
+    local syncLoaded, ReportSync = pcall(require, "src.report_sync")
+    if syncLoaded and ReportSync.isConfigured() then
+        nativePrint("Syncing balance report to GitHub...")
+        local synced, syncResult = ReportSync.autoUpload("balance", resultPath)
+        if synced then
+            nativePrint("GitHub sync OK: " .. syncResult.latestPath)
+        else
+            nativePrint("GitHub sync FAILED: " .. tostring(syncResult))
+            nativePrint("Local report is still safe at: " .. resultPath)
+        end
+    elseif syncLoaded then
+        nativePrint("GitHub auto-sync not configured. Run once: report_sync setup")
+    else
+        nativePrint("GitHub auto-sync unavailable: " .. tostring(ReportSync))
+    end
 else
     nativePrint("")
     nativePrint("WARNING: Could not create " .. resultPath)
