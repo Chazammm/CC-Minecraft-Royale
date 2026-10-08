@@ -41,12 +41,13 @@ Each monitor shows its own side at the bottom through a mirrored 180-degree view
 - Destroying a Princess Tower unlocks a limited deployment pocket in that lane on the enemy side
 - Crown Towers can attack both enemy units and enemy buildings in range
 - Defensive buildings can pull building-targeting troops such as Iron Golem
+- Buildings lose HP continuously across their lifetime instead of staying full and disappearing instantly
 - Skeleton can kite; Snow Golem intentionally does not
 - Projectiles, slows, summons, teleports, explosions and delayed spells are supported
 
 ## Current selectable cards
 
-There are currently **18 selectable cards**:
+There are currently **21 selectable cards**:
 
 1. Zombie
 2. Skeleton
@@ -66,14 +67,20 @@ There are currently **18 selectable cards**:
 16. Wolf
 17. Falling Anvil
 18. Nether Portal
+19. Wither Skeleton
+20. Magma Cube
+21. Pillager Outpost
 
-Nether Portal summons the internal-only Piglin unit; Piglin is not directly selectable.
+Nether Portal summons the internal-only Piglin unit; Piglin is not directly selectable. Magma Cube splits into the internal-only Mini Magma Cube.
 
 ## Important special mechanics
 
 - **Falling Anvil**: delayed 2.7-second AoE, can hit multiple ground and flying targets
 - **Nether Portal**: periodic Piglin spawner
 - **Piglin**: crossbow only versus flying targets, axe versus grounded targets
+- **Wither Skeleton**: Zombie sidegrade with lower HP and higher melee damage
+- **Magma Cube**: Slime sidegrade with 5% less HP and 5% more damage before and after splitting
+- **Pillager Outpost**: Cannon sidegrade that attacks air and ground with 25% lower HP and damage
 - **Creeper**: proximity fuse; being killed before the fuse completes does not trigger the explosion
 - **Slime**: splits into two Mini Slimes on death
 - **Witch**: periodically summons Baby Zombies
@@ -100,7 +107,7 @@ The bot uses the normal card API and Emerald economy rather than special spawn c
 
 The lobby includes:
 
-- 18-card paginated collection
+- 21-card paginated collection
 - 8-card deck builder
 - 3 persistent deck presets per player
 - Random 8-card deck button
