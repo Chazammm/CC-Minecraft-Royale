@@ -197,8 +197,17 @@ local function runMatch(deck1, deck2)
 
     while state.phase ~= "result" and ticks < maxTicks do
         Game.update(state, 0.25)
-        Bot.update(bot1, state, 0.25)
-        Bot.update(bot2, state, 0.25)
+
+        -- Alternate which bot thinks first. The benchmark should measure card
+        -- balance, not gain a systematic P1 advantage from a fixed call order.
+        if ticks % 2 == 0 then
+            Bot.update(bot1, state, 0.25)
+            Bot.update(bot2, state, 0.25)
+        else
+            Bot.update(bot2, state, 0.25)
+            Bot.update(bot1, state, 0.25)
+        end
+
         ticks = ticks + 1
     end
 
@@ -252,10 +261,19 @@ while completed < matchCount do
         deckA, deckB = mixedDeckPair()
     end
 
-    runMatch(deckA, deckB)
-    completed = completed + 1
+    if completed + 1 == matchCount then
+        -- Odd match counts cannot form a complete side-swapped pair. Randomize
+        -- the final orientation so the leftover game is not always A=P1.
+        if randomInt(2) == 1 then
+            runMatch(deckA, deckB)
+        else
+            runMatch(deckB, deckA)
+        end
+        completed = completed + 1
+    else
+        runMatch(deckA, deckB)
+        completed = completed + 1
 
-    if completed < matchCount then
         runMatch(deckB, deckA)
         completed = completed + 1
     end
