@@ -1513,6 +1513,30 @@ local function cycleHand(player, slot)
     table.insert(player.queue, playedCard)
 end
 
+function Game.getActiveCardForPlayer(state, playerId, cardId)
+    local card = cards.get(cardId)
+    local player = state and state.players and state.players[playerId]
+    if not card or not player then return card, false end
+
+    if state.phase == "battle"
+        and player.evolutionCardId == card.id
+        and cards.hasEvolution(card.id)
+    then
+        local cycles = cards.evolutionCycles(card.id)
+        if cycles ~= nil and (player.evolutionProgress or 0) >= cycles then
+            local evolved = cards.evolvedCopy(card.id)
+            if evolved then return evolved, true end
+        end
+    end
+
+    return card, false
+end
+
+function Game.getCardPlayCost(state, playerId, cardId)
+    local active = Game.getActiveCardForPlayer(state, playerId, cardId)
+    return active and active.cost or nil
+end
+
 function Game.playCardFromSlot(state, playerId, slot, x, y)
     local player = state.players[playerId]
     if not player
@@ -1530,31 +1554,45 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
         return false, "CARD ERROR"
     end
 
-    if player.emeralds + 0.0001 < card.cost then
-        setFeedback(player, "NOT ENOUGH EMERALDS")
+    local activeCard, evolutionUsed = Game.getActiveCardForPlayer(
+        state,
+        playerId,
+        card.id
+    )
+    activeCard = activeCard or card
+    local playCost = tonumber(activeCard.cost) or tonumber(card.cost) or 0
+
+    if player.emeralds + 0.0001 < playCost then
+        if evolutionUsed then
+            setFeedback(
+                player,
+                string.format("EVOLUTION NEEDS %.1f EMERALDS", playCost),
+                1.0
+            )
+        else
+            setFeedback(player, "NOT ENOUGH EMERALDS")
+        end
         return false, "NOT ENOUGH EMERALDS"
     end
 
-    if not arena.placementAllowed(playerId, x, y, card.placement, state) then
+    if not arena.placementAllowed(
+        playerId,
+        x,
+        y,
+        activeCard.placement or card.placement,
+        state
+    ) then
         setFeedback(player, "INVALID PLACEMENT")
         return false, "INVALID PLACEMENT"
     end
 
-    -- Evolutions are battle-only. Two successful normal plays charge the
-    -- selected Evolution Slot card; its third successful play is evolved.
-    local activeCard = card
-    local evolutionUsed = false
     local evolutionCycles = nil
-
     if state.phase == "battle"
         and player.evolutionCardId == card.id
         and cards.hasEvolution(card.id)
     then
-        evolutionCycles = cards.evolutionCycles(card.id) or 2
-        if (player.evolutionProgress or 0) >= evolutionCycles then
-            activeCard = cards.evolvedCopy(card.id) or card
-            evolutionUsed = activeCard ~= card
-        end
+        evolutionCycles = cards.evolutionCycles(card.id)
+        if evolutionCycles == nil then evolutionCycles = 2 end
     end
 
     if activeCard.kind == "unit" then
@@ -1574,15 +1612,15 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
         return false, "UNSUPPORTED CARD"
     end
 
-    player.emeralds = player.emeralds - card.cost
+    player.emeralds = player.emeralds - playCost
 
     if state.phase == "battle" and state.stats then
         local playerStats = state.stats.players[playerId]
         local cardStats = getCardStats(state, playerId, card.id)
         playerStats.cardsPlayed = playerStats.cardsPlayed + 1
-        playerStats.emeraldSpent = playerStats.emeraldSpent + card.cost
+        playerStats.emeraldSpent = playerStats.emeraldSpent + playCost
         cardStats.plays = cardStats.plays + 1
-        cardStats.emeraldSpent = cardStats.emeraldSpent + card.cost
+        cardStats.emeraldSpent = cardStats.emeraldSpent + playCost
 
         if evolutionUsed then
             playerStats.evolutionPlays = (playerStats.evolutionPlays or 0) + 1
@@ -1596,11 +1634,18 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
         and player.evolutionCardId == card.id
         and cards.hasEvolution(card.id)
     then
-        evolutionCycles = evolutionCycles or cards.evolutionCycles(card.id) or 2
+        if evolutionCycles == nil then
+            evolutionCycles = cards.evolutionCycles(card.id)
+        end
+        if evolutionCycles == nil then evolutionCycles = 2 end
 
         if evolutionUsed then
             player.evolutionProgress = 0
-            deploymentFeedback = "EVOLVED " .. card.name .. " DEPLOYED"
+            deploymentFeedback = string.format(
+                "EVOLVED %s DEPLOYED (%.1fE)",
+                card.name,
+                playCost
+            )
             emitSound(state, "minecraft:block.amethyst_block.chime", 0.75, 1.65)
         else
             player.evolutionProgress = math.min(
