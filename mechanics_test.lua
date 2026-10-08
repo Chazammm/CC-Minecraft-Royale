@@ -5,7 +5,7 @@ local Bot = require("src.bot")
 local util = require("src.util")
 local arena = require("src.arena")
 
-local SUITE_VERSION = 9
+local SUITE_VERSION = 10
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 local EPSILON = 0.000001
@@ -523,6 +523,103 @@ runTest("admin_evolution_spawn", "Admin directly spawns Evolution forms", functi
         and bank.isEvolution == true
         and diamond.isEvolution == true,
         "Admin card pages must include every Evolution as a direct sandbox spawn, bypassing cycles and Emerald cost.",
+        data
+end)
+
+runTest("evo_diamond_golem", "Diamond Golem stomps grounded enemies every two seconds", function()
+    local state = newAdminState("empty")
+
+    local diamondOk = Game.debugSpawnCard(
+        state,
+        1,
+        "evo:iron_golem",
+        SAFE_X,
+        SAFE_Y
+    )
+    local zombieOk = Game.debugSpawnCard(
+        state,
+        2,
+        "zombie",
+        SAFE_X + 4,
+        SAFE_Y
+    )
+    local blazeOk = Game.debugSpawnCard(
+        state,
+        2,
+        "blaze",
+        SAFE_X - 4,
+        SAFE_Y
+    )
+
+    local diamond = findEntity(state, function(e)
+        return e.alive and e.owner == 1 and e.name == "Diamond Golem"
+    end)
+    local zombie = findEntity(state, function(e)
+        return e.alive and e.owner == 2 and e.name == "Zombie"
+    end)
+    local blaze = findEntity(state, function(e)
+        return e.alive and e.owner == 2 and e.name == "Blaze"
+    end)
+
+    if not diamondOk or not zombieOk or not blazeOk
+        or not diamond or not zombie or not blaze
+    then
+        return false, "Could not create Diamond Golem stomp scenario.", {}
+    end
+
+    zombie.moveSpeed = 0
+    zombie.damage = 0
+    zombie.attackCooldownLeft = 999
+    blaze.moveSpeed = 0
+    blaze.damage = 0
+    blaze.attackCooldownLeft = 999
+
+    local zombieStart = zombie.hp
+    local blazeStart = blaze.hp
+
+    step(state, 1.90, DEFAULT_DT)
+    local beforeFirstPulse = zombieStart - zombie.hp
+
+    step(state, 0.20, DEFAULT_DT)
+    local afterFirstPulse = zombieStart - zombie.hp
+    local blazeAfterFirstPulse = blazeStart - blaze.hp
+
+    local quakeVisible = false
+    for _, effect in ipairs(state.effects) do
+        if effect.kind == "diamond_quake" then
+            quakeVisible = true
+            break
+        end
+    end
+
+    step(state, 2.00, DEFAULT_DT)
+    local afterSecondPulse = zombieStart - zombie.hp
+
+    local base = cards.get("iron_golem")
+    local evolved = cards.evolvedCopy("iron_golem")
+    local data = {}
+    addData(data, "configured_cycles", cards.evolutionCycles("iron_golem"))
+    addData(data, "base_hp", base.unit.maxHp)
+    addData(data, "diamond_hp", evolved and evolved.unit.maxHp)
+    addData(data, "stomp_interval_s", diamond.groundPulse and diamond.groundPulse.interval)
+    addData(data, "stomp_damage", diamond.groundPulse and diamond.groundPulse.damage)
+    addData(data, "stomp_radius", diamond.groundPulse and diamond.groundPulse.radius)
+    addData(data, "ground_damage_before_2s", beforeFirstPulse)
+    addData(data, "ground_damage_after_first_pulse", afterFirstPulse)
+    addData(data, "flying_damage_after_first_pulse", blazeAfterFirstPulse)
+    addData(data, "ground_damage_after_second_pulse", afterSecondPulse)
+    addData(data, "quake_effect_visible", quakeVisible)
+
+    return cards.evolutionCycles("iron_golem") == 2
+        and evolved
+        and math.abs(evolved.unit.maxHp - base.unit.maxHp * 1.05) <= EPSILON
+        and diamond.visualVariant == "diamond_golem"
+        and math.abs(beforeFirstPulse) <= EPSILON
+        and math.abs(afterFirstPulse - 20) <= EPSILON
+        and math.abs(blazeAfterFirstPulse) <= EPSILON
+        and math.abs(afterSecondPulse - 40) <= EPSILON
+        and quakeVisible,
+        "Diamond Golem must gain 5% HP and pulse 20 damage every 2s to nearby grounded enemy units without hitting air.",
         data
 end)
 
@@ -1859,12 +1956,13 @@ report[#report + 1] = string.format(
     bats.unit.damage
 )
 report[#report + 1] = string.format(
-    "EVOLUTION_SNAPSHOT|creeper_cycles=%d|portal_cycles=%d|mite_cycles=%d|guardian_cycles=%d|villager_cycles=%d|ghast_damage=%.1f|ghast_range=%.1f",
+    "EVOLUTION_SNAPSHOT|creeper_cycles=%d|portal_cycles=%d|mite_cycles=%d|guardian_cycles=%d|villager_cycles=%d|golem_cycles=%d|ghast_damage=%.1f|ghast_range=%.1f",
     cards.evolutionCycles("creeper") or -1,
     cards.evolutionCycles("nether_portal") or -1,
     cards.evolutionCycles("endermite") or -1,
     cards.evolutionCycles("guardian") or -1,
     cards.evolutionCycles("villager") or -1,
+    cards.evolutionCycles("iron_golem") or -1,
     (cards.getInternalUnit("ghast") or {}).damage or -1,
     (cards.getInternalUnit("ghast") or {}).attackRange or -1
 )
