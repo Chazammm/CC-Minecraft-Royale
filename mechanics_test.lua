@@ -526,7 +526,7 @@ runTest("admin_evolution_spawn", "Admin directly spawns Evolution forms", functi
         data
 end)
 
-runTest("evo_diamond_golem", "Diamond Golem stomps grounded enemies every two seconds", function()
+runTest("evo_diamond_golem", "Diamond Golem stomps only while walking", function()
     local state = newAdminState("empty")
 
     local diamondOk = Game.debugSpawnCard(
@@ -536,23 +536,33 @@ runTest("evo_diamond_golem", "Diamond Golem stomps grounded enemies every two se
         SAFE_X,
         SAFE_Y
     )
+    local cannonOk = Game.debugSpawnCard(
+        state,
+        2,
+        "cannon",
+        SAFE_X,
+        SAFE_Y - 20
+    )
     local zombieOk = Game.debugSpawnCard(
         state,
         2,
         "zombie",
-        SAFE_X + 4,
-        SAFE_Y
+        SAFE_X + 2,
+        SAFE_Y - 4
     )
     local blazeOk = Game.debugSpawnCard(
         state,
         2,
         "blaze",
-        SAFE_X - 4,
-        SAFE_Y
+        SAFE_X - 2,
+        SAFE_Y - 4
     )
 
     local diamond = findEntity(state, function(e)
         return e.alive and e.owner == 1 and e.name == "Diamond Golem"
+    end)
+    local cannon = findEntity(state, function(e)
+        return e.alive and e.owner == 2 and e.name == "Cannon"
     end)
     local zombie = findEntity(state, function(e)
         return e.alive and e.owner == 2 and e.name == "Zombie"
@@ -561,12 +571,13 @@ runTest("evo_diamond_golem", "Diamond Golem stomps grounded enemies every two se
         return e.alive and e.owner == 2 and e.name == "Blaze"
     end)
 
-    if not diamondOk or not zombieOk or not blazeOk
-        or not diamond or not zombie or not blaze
+    if not diamondOk or not cannonOk or not zombieOk or not blazeOk
+        or not diamond or not cannon or not zombie or not blaze
     then
         return false, "Could not create Diamond Golem stomp scenario.", {}
     end
 
+    cannon.damage = 0
     zombie.moveSpeed = 0
     zombie.damage = 0
     zombie.attackCooldownLeft = 999
@@ -577,6 +588,8 @@ runTest("evo_diamond_golem", "Diamond Golem stomps grounded enemies every two se
     local zombieStart = zombie.hp
     local blazeStart = blaze.hp
 
+    -- The Golem is walking toward the Cannon. Its 2-second stomp timer must
+    -- advance only during that real movement time.
     step(state, 1.90, DEFAULT_DT)
     local beforeFirstPulse = zombieStart - zombie.hp
 
@@ -592,8 +605,21 @@ runTest("evo_diamond_golem", "Diamond Golem stomps grounded enemies every two se
         end
     end
 
-    step(state, 2.00, DEFAULT_DT)
-    local afterSecondPulse = zombieStart - zombie.hp
+    -- Put the Golem directly in melee range of its building target. It now
+    -- stands still and attacks; the freshly reset stomp timer must pause.
+    diamond.x = cannon.x
+    diamond.y = cannon.y + 2.5
+    diamond.targetId = cannon.id
+    diamond.lockedTargetId = cannon.id
+    zombie.x = diamond.x + 2
+    zombie.y = diamond.y
+    local stationaryZombieHp = zombie.hp
+    local stationaryTimerBefore = diamond.groundPulseTimer
+
+    step(state, 2.30, DEFAULT_DT)
+
+    local stationaryDamage = stationaryZombieHp - zombie.hp
+    local stationaryTimerAfter = diamond.groundPulseTimer
 
     local base = cards.get("iron_golem")
     local evolved = cards.evolvedCopy("iron_golem")
@@ -604,11 +630,13 @@ runTest("evo_diamond_golem", "Diamond Golem stomps grounded enemies every two se
     addData(data, "stomp_interval_s", diamond.groundPulse and diamond.groundPulse.interval)
     addData(data, "stomp_damage", diamond.groundPulse and diamond.groundPulse.damage)
     addData(data, "stomp_radius", diamond.groundPulse and diamond.groundPulse.radius)
-    addData(data, "ground_damage_before_2s", beforeFirstPulse)
-    addData(data, "ground_damage_after_first_pulse", afterFirstPulse)
+    addData(data, "ground_damage_before_2s_walk", beforeFirstPulse)
+    addData(data, "ground_damage_after_first_walk_pulse", afterFirstPulse)
     addData(data, "flying_damage_after_first_pulse", blazeAfterFirstPulse)
-    addData(data, "ground_damage_after_second_pulse", afterSecondPulse)
     addData(data, "quake_effect_visible", quakeVisible)
+    addData(data, "stationary_damage_over_2_3s", stationaryDamage)
+    addData(data, "stationary_timer_before", stationaryTimerBefore)
+    addData(data, "stationary_timer_after", stationaryTimerAfter)
 
     return cards.evolutionCycles("iron_golem") == 2
         and evolved
@@ -617,9 +645,10 @@ runTest("evo_diamond_golem", "Diamond Golem stomps grounded enemies every two se
         and math.abs(beforeFirstPulse) <= EPSILON
         and math.abs(afterFirstPulse - 20) <= EPSILON
         and math.abs(blazeAfterFirstPulse) <= EPSILON
-        and math.abs(afterSecondPulse - 40) <= EPSILON
-        and quakeVisible,
-        "Diamond Golem must gain 5% HP and pulse 20 damage every 2s to nearby grounded enemy units without hitting air.",
+        and quakeVisible
+        and math.abs(stationaryDamage) <= EPSILON
+        and math.abs((stationaryTimerAfter or 0) - (stationaryTimerBefore or 0)) <= EPSILON,
+        "Diamond Golem must charge/stomp only from real walking time; standing still to hit a building or tower must pause the stomp timer.",
         data
 end)
 
