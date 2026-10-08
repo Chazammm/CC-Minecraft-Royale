@@ -105,7 +105,7 @@ assertTrue(endermiteCard.unit.damage < 25, "Endermite should have low DPS damage
 
 local batCard = cards.get("bat_swarm")
 assertEq(batCard.unit.maxHp, 45, "Bat Swarm must be extremely fragile")
-assertEq(batCard.unit.damage, 20, "Bat Swarm damage must be reduced to twenty")
+assertEq(batCard.unit.damage, 17, "Bat Swarm damage must reflect the controlled-analysis nerf")
 assertTrue(batCard.unit.maxHp < 80, "Princess Tower must one-shot each Bat")
 
 local skeletonCard = cards.get("skeleton")
@@ -113,8 +113,8 @@ local snowGolemCard = cards.get("snow_golem")
 local witchCard = cards.get("witch")
 assertEq(skeletonCard.unit.maxHp, 168, "Skeleton HP must reflect the latest five-percent nerf")
 assertEq(skeletonCard.unit.damage, 30, "Skeleton damage must stay at thirty")
-assertEq(skeletonCard.unit.attackRange, 16.5, "Skeleton range must be increased by ten percent")
-assertEq(skeletonCard.unit.retreatSpeedMultiplier, 0.95, "Skeleton retreat must be five percent slower")
+assertEq(skeletonCard.unit.attackRange, 15.0, "Skeleton range must reflect the controlled-analysis nerf")
+assertEq(skeletonCard.unit.retreatSpeedMultiplier, 0.85, "Skeleton retreat speed must reflect the controlled-analysis nerf")
 assertTrue(
     skeletonCard.unit.preferredMinRange ~= nil,
     "Skeleton must keep its kiting distance"
