@@ -5,7 +5,7 @@ local Bot = require("src.bot")
 local util = require("src.util")
 local arena = require("src.arena")
 
-local SUITE_VERSION = 5
+local SUITE_VERSION = 6
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 local EPSILON = 0.000001
@@ -345,6 +345,356 @@ runTest("evolution_cycle", "Evolution timing, cost, stats and abilities", functi
         and progressSequence[4] == 0
         and telemetry,
         "Each Evolution may define its own charge count, Emerald cost, stats and existing engine abilities.",
+        data
+end)
+
+runTest("evo_charged_creeper", "Charged Creeper has larger blue blast", function()
+    local state = Game.new()
+    state.players[1].deck = cards.defaultDeck()
+    state.players[2].deck = cards.defaultDeck()
+
+    local selected = Game.setEvolutionCard(state, 1, "creeper")
+    Game.startCountdown(state)
+    local enteredBattle = waitUntil(
+        state,
+        config.MATCH.countdown + 1,
+        function() return state.phase == "battle" end,
+        0.10
+    )
+
+    if not selected or not enteredBattle then
+        return false, "Could not start Charged Creeper evolution scenario.", {}
+    end
+
+    state.players[1].evolutionProgress = 2
+    state.players[1].hand[1] = "creeper"
+    state.players[1].emeralds = 10
+
+    local played = Game.playCardFromSlot(state, 1, 1, SAFE_X, SAFE_Y)
+    local charged = findEntity(state, function(e)
+        return e.alive and e.owner == 1 and e.name == "Charged Creeper"
+    end)
+
+    if not played or not charged then
+        return false, "Charged Creeper did not deploy on its ready play.", {}
+    end
+
+    local function debugSpawnEnemy(cardId, x, y)
+        state.adminMode = true
+        local ok = Game.debugSpawnCard(state, 2, cardId, x, y)
+        state.adminMode = false
+        if not ok then return nil end
+
+        local newest = nil
+        for _, entity in ipairs(state.entities) do
+            if entity.alive and entity.owner == 2 and entity.sourceCardId == cardId then
+                if not newest or entity.id > newest.id then newest = entity end
+            end
+        end
+        return newest
+    end
+
+    local nearZombie = debugSpawnEnemy("zombie", SAFE_X, SAFE_Y + 3)
+    local farZombie = debugSpawnEnemy("zombie", SAFE_X, SAFE_Y + 10)
+    if not nearZombie or not farZombie then
+        return false, "Could not create Charged Creeper blast targets.", {}
+    end
+
+    for _, zombie in ipairs({ nearZombie, farZombie }) do
+        zombie.moveSpeed = 0
+        zombie.damage = 0
+        zombie.attackCooldownLeft = 999
+    end
+
+    local nearStart = nearZombie.hp
+    local farStart = farZombie.hp
+
+    local exploded, elapsed = waitUntil(
+        state,
+        1.50,
+        function() return not charged.alive end,
+        DEFAULT_DT
+    )
+
+    local chargedEffect = false
+    for _, effect in ipairs(state.effects) do
+        if effect.kind == "charged_explosion" then
+            chargedEffect = true
+            break
+        end
+    end
+
+    local nearDamage = nearStart - nearZombie.hp
+    local farDamage = farStart - farZombie.hp
+    local spec = charged.proximityExplosion
+
+    local data = {}
+    addData(data, "configured_cycles", cards.evolutionCycles("creeper"))
+    addData(data, "base_radius", cards.get("creeper").unit.proximityExplosion.radius)
+    addData(data, "charged_radius", spec and spec.radius)
+    addData(data, "charged_visual_radius", spec and spec.visualRadius)
+    addData(data, "visual_variant", charged.visualVariant)
+    addData(data, "exploded", exploded)
+    addData(data, "explosion_time_s", elapsed)
+    addData(data, "near_target_damage", nearDamage)
+    addData(data, "far_target_distance", 10)
+    addData(data, "far_target_damage", farDamage)
+    addData(data, "charged_effect_visible", chargedEffect)
+
+    return cards.evolutionCycles("creeper") == 2
+        and charged.visualVariant == "charged_creeper"
+        and spec
+        and spec.radius == 12
+        and (spec.visualRadius or 0) > spec.radius
+        and exploded
+        and chargedEffect
+        and math.abs(nearDamage - 290) <= EPSILON
+        and math.abs(farDamage - 290) <= EPSILON,
+        "Charged Creeper must keep normal damage but expand gameplay AoE from 8 to 12 and use the large blue explosion effect.",
+        data
+end)
+
+runTest("evo_ghast_portal", "Ghast Portal spawns exactly two artillery Ghasts", function()
+    local state = Game.new()
+    state.players[1].deck = {
+        "zombie",
+        "skeleton",
+        "iron_golem",
+        "bat_swarm",
+        "cannon",
+        "arrows",
+        "creeper",
+        "nether_portal",
+    }
+    state.players[2].deck = cards.defaultDeck()
+
+    local selected = Game.setEvolutionCard(state, 1, "nether_portal")
+    Game.startCountdown(state)
+    local enteredBattle = waitUntil(
+        state,
+        config.MATCH.countdown + 1,
+        function() return state.phase == "battle" end,
+        0.10
+    )
+
+    if not selected or not enteredBattle then
+        return false, "Could not start Ghast Portal evolution scenario.", {}
+    end
+
+    -- Towers stay as targetable objectives but cannot kill the fragile Ghasts
+    -- while this diagnostic verifies their artillery behavior.
+    for _, entity in ipairs(state.entities) do
+        if entity.kind == "tower" then entity.damage = 0 end
+    end
+
+    state.players[1].evolutionProgress = 2
+    state.players[1].hand[1] = "nether_portal"
+    state.players[1].emeralds = 10
+
+    local played = Game.playCardFromSlot(state, 1, 1, SAFE_X, SAFE_Y)
+    local portal = findEntity(state, function(e)
+        return e.alive and e.owner == 1 and e.name == "Ghast Portal"
+    end)
+
+    if not played or not portal then
+        return false, "Ghast Portal did not deploy on its ready play.", {}
+    end
+
+    local firstGhastReady, firstSpawnElapsed = waitUntil(
+        state,
+        3.5,
+        function()
+            return findEntity(state, function(e)
+                return e.alive and e.owner == 1 and e.name == "Ghast"
+            end) ~= nil
+        end,
+        DEFAULT_DT
+    )
+
+    local ghast = findEntity(state, function(e)
+        return e.alive and e.owner == 1 and e.name == "Ghast"
+    end)
+
+    if not firstGhastReady or not ghast then
+        return false, "Ghast Portal did not produce its first Ghast.", {}
+    end
+
+    ghast.moveSpeed = 0
+    ghast.attackCooldownLeft = 0
+
+    local function debugSpawnEnemy(cardId, x, y)
+        state.adminMode = true
+        local ok = Game.debugSpawnCard(state, 2, cardId, x, y)
+        state.adminMode = false
+        if not ok then return nil end
+
+        local newest = nil
+        for _, entity in ipairs(state.entities) do
+            if entity.alive and entity.owner == 2 and entity.sourceCardId == cardId then
+                if not newest or entity.id > newest.id then newest = entity end
+            end
+        end
+        return newest
+    end
+
+    local blaze = debugSpawnEnemy("blaze", ghast.x, ghast.y + 8)
+    local splashZombie = debugSpawnEnemy("zombie", ghast.x + 2, ghast.y + 8)
+
+    if not blaze or not splashZombie then
+        return false, "Could not create Ghast artillery targets.", {}
+    end
+
+    blaze.moveSpeed = 0
+    blaze.damage = 0
+    blaze.attackCooldownLeft = 999
+    splashZombie.moveSpeed = 0
+    splashZombie.damage = 0
+    splashZombie.attackCooldownLeft = 999
+
+    local blazeStart = blaze.hp
+    local zombieStart = splashZombie.hp
+
+    ghast.targetId = blaze.id
+    ghast.lockedTargetId = nil
+    ghast.attackCooldownLeft = 0
+
+    local firstHit, firstHitElapsed = waitUntil(
+        state,
+        1.5,
+        function() return blaze.hp < blazeStart end,
+        DEFAULT_DT
+    )
+
+    local blazeAfterFirst = blaze.hp
+    local zombieAfterFirst = splashZombie.hp
+    local primarySlowed = (blaze.slowRemaining or 0) > 0
+        and (blaze.slowFactor or 1) < 1
+    local splashNotSlowed = (splashZombie.slowRemaining or 0) <= EPSILON
+        and math.abs((splashZombie.slowFactor or 1) - 1) <= EPSILON
+
+    ghast.attackCooldownLeft = 0
+    local killedInSecondHit, secondHitElapsed = waitUntil(
+        state,
+        1.5,
+        function() return not blaze.alive end,
+        DEFAULT_DT
+    )
+
+    -- Continue until the portal has completed its natural lifetime. Track
+    -- every Ghast ID so a killed first summon cannot make the total look lower.
+    local seenGhasts = {}
+    for _, entity in ipairs(state.entities) do
+        if entity.name == "Ghast" then seenGhasts[entity.id] = true end
+    end
+
+    local extraElapsed = 0
+    while portal.alive and extraElapsed < 22 do
+        Game.update(state, DEFAULT_DT)
+        extraElapsed = extraElapsed + DEFAULT_DT
+        for _, entity in ipairs(state.entities) do
+            if entity.name == "Ghast" then seenGhasts[entity.id] = true end
+        end
+    end
+
+    local uniqueGhasts = 0
+    for _ in pairs(seenGhasts) do uniqueGhasts = uniqueGhasts + 1 end
+
+    local template = cards.getInternalUnit("ghast")
+    local data = {}
+    addData(data, "configured_cycles", cards.evolutionCycles("nether_portal"))
+    addData(data, "portal_visual_variant", portal.visualVariant)
+    addData(data, "first_ghast_spawn_s", firstSpawnElapsed)
+    addData(data, "portal_spawn_total", portal.periodicSpawnTotal)
+    addData(data, "unique_ghasts_seen", uniqueGhasts)
+    addData(data, "ghast_hp", template and template.maxHp)
+    addData(data, "ghast_damage", template and template.damage)
+    addData(data, "ghast_range", template and template.attackRange)
+    addData(data, "ghast_cooldown", template and template.attackCooldown)
+    addData(data, "first_hit_time_s", firstHitElapsed)
+    addData(data, "blaze_hp_after_first_hit", blazeAfterFirst)
+    addData(data, "splash_zombie_damage_first_hit", zombieStart - zombieAfterFirst)
+    addData(data, "primary_target_slowed", primarySlowed)
+    addData(data, "splash_target_not_slowed", splashNotSlowed)
+    addData(data, "blaze_killed_by_second_hit", killedInSecondHit)
+    addData(data, "second_hit_time_s", secondHitElapsed)
+
+    return cards.evolutionCycles("nether_portal") == 2
+        and portal.visualVariant == "ghast_portal"
+        and portal.periodicSpawn
+        and portal.periodicSpawn.maxTotal == 2
+        and portal.periodicSpawnTotal == 2
+        and uniqueGhasts == 2
+        and firstHit
+        and math.abs((blazeStart - blazeAfterFirst) - 130) <= EPSILON
+        and math.abs((zombieStart - zombieAfterFirst) - 130) <= EPSILON
+        and primarySlowed
+        and splashNotSlowed
+        and killedInSecondHit,
+        "Ghast Portal must emit exactly two fragile long-range Ghasts; their 130-damage splash fireballs two-hit Blaze and slow only the primary target.",
+        data
+end)
+
+runTest("evo_mega_mite", "Mega Mite keeps all stats except five-times HP", function()
+    local state = Game.new()
+    state.players[1].deck = {
+        "zombie",
+        "skeleton",
+        "iron_golem",
+        "bat_swarm",
+        "cannon",
+        "arrows",
+        "creeper",
+        "endermite",
+    }
+    state.players[2].deck = cards.defaultDeck()
+
+    local selected = Game.setEvolutionCard(state, 1, "endermite")
+    Game.startCountdown(state)
+    local enteredBattle = waitUntil(
+        state,
+        config.MATCH.countdown + 1,
+        function() return state.phase == "battle" end,
+        0.10
+    )
+
+    if not selected or not enteredBattle then
+        return false, "Could not start Mega Mite evolution scenario.", {}
+    end
+
+    state.players[1].evolutionProgress = 3
+    state.players[1].hand[1] = "endermite"
+    state.players[1].emeralds = 10
+
+    local played = Game.playCardFromSlot(state, 1, 1, SAFE_X, SAFE_Y)
+    local mega = findEntity(state, function(e)
+        return e.alive and e.owner == 1 and e.name == "Mega Mite"
+    end)
+    local base = cards.get("endermite").unit
+
+    local data = {}
+    addData(data, "configured_cycles", cards.evolutionCycles("endermite"))
+    addData(data, "base_hp", base.maxHp)
+    addData(data, "mega_hp", mega and mega.maxHp)
+    addData(data, "base_damage", base.damage)
+    addData(data, "mega_damage", mega and mega.damage)
+    addData(data, "base_speed", base.moveSpeed)
+    addData(data, "mega_speed", mega and mega.moveSpeed)
+    addData(data, "base_cooldown", base.attackCooldown)
+    addData(data, "mega_cooldown", mega and mega.attackCooldown)
+    addData(data, "visual_variant", mega and mega.visualVariant)
+    addData(data, "emeralds_after_play", state.players[1].emeralds)
+
+    return played
+        and mega ~= nil
+        and cards.evolutionCycles("endermite") == 3
+        and math.abs(mega.maxHp - base.maxHp * 5) <= EPSILON
+        and math.abs(mega.damage - base.damage) <= EPSILON
+        and math.abs(mega.moveSpeed - base.moveSpeed) <= EPSILON
+        and math.abs(mega.attackRange - base.attackRange) <= EPSILON
+        and math.abs(mega.attackCooldown - base.attackCooldown) <= EPSILON
+        and mega.visualVariant == "mega_mite"
+        and math.abs(state.players[1].emeralds - 9) <= EPSILON,
+        "Mega Mite must cost the normal 1E and preserve every Endermite combat stat except max HP, which is exactly 5x.",
         data
 end)
 
@@ -980,6 +1330,14 @@ report[#report + 1] = string.format(
     skeleton.unit.attackRange,
     skeleton.unit.retreatSpeedMultiplier,
     bats.unit.damage
+)
+report[#report + 1] = string.format(
+    "EVOLUTION_SNAPSHOT|creeper_cycles=%d|portal_cycles=%d|mite_cycles=%d|ghast_damage=%.1f|ghast_range=%.1f",
+    cards.evolutionCycles("creeper") or -1,
+    cards.evolutionCycles("nether_portal") or -1,
+    cards.evolutionCycles("endermite") or -1,
+    (cards.getInternalUnit("ghast") or {}).damage or -1,
+    (cards.getInternalUnit("ghast") or {}).attackRange or -1
 )
 report[#report + 1] = string.format(
     "SUMMARY|pass=%d|fail=%d|error=%d|total=%d|runtime_cpu_s=%.4f",
