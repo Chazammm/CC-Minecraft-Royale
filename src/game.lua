@@ -602,7 +602,15 @@ local function handleDeathAbilities(state, entity)
                 local direction = i % 2 == 0 and 1 or -1
                 local sx = util.clamp(entity.x + direction * 2.2, 2, config.ARENA.width - 2)
                 local sy = util.clamp(entity.y + (i - 1) * 1.2, 2, config.ARENA.height - 2)
-                if arena.isWalkable(template, sx, sy) then
+
+                -- Offset splits can land beside a bridge in water. The parent
+                -- ground unit died on a valid tile, so fall back to that
+                -- position instead of silently losing the split unit.
+                if not (template.flying or arena.isWalkable(template, sx, sy)) then
+                    sx, sy = entity.x, entity.y
+                end
+
+                if template.flying or arena.isWalkable(template, sx, sy) then
                     spawnUnitFromStats(
                         state,
                         entity.owner,
