@@ -69,6 +69,7 @@ end
 local function newMemory()
     return {
         observedPlays = {},
+        observedHistoryCount = 0,
         knownCards = {},
         lastSeenPlayIndex = {},
         enemyPlayIndex = 0,
@@ -99,18 +100,19 @@ local function observeOpponent(bot, state)
         )
     )
 
-    for cardId, cardStats in pairs(stats.cards or {}) do
-        local plays = cardStats.plays or 0
-        local seen = bot.memory.observedPlays[cardId] or 0
+    local history = stats.playHistory or {}
+    local seenHistory = bot.memory.observedHistoryCount or 0
 
-        if plays > seen then
-            for _ = seen + 1, plays do
-                bot.memory.enemyPlayIndex = bot.memory.enemyPlayIndex + 1
-                bot.memory.lastSeenPlayIndex[cardId] = bot.memory.enemyPlayIndex
-                bot.memory.knownCards[cardId] = true
-            end
-            bot.memory.observedPlays[cardId] = plays
+    if #history > seenHistory then
+        for i = seenHistory + 1, #history do
+            local cardId = history[i]
+            bot.memory.enemyPlayIndex = bot.memory.enemyPlayIndex + 1
+            bot.memory.lastSeenPlayIndex[cardId] = bot.memory.enemyPlayIndex
+            bot.memory.knownCards[cardId] = true
+            bot.memory.observedPlays[cardId] =
+                (bot.memory.observedPlays[cardId] or 0) + 1
         end
+        bot.memory.observedHistoryCount = #history
     end
 end
 
