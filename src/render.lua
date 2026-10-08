@@ -632,9 +632,11 @@ local function infoStatLines(card)
         end
 
         if u.splitOnDeath then
+            local splitUnit = cards.getInternalUnit(u.splitOnDeath.template)
             table.insert(lines, string.format(
-                "ON DEATH: splits into %d Mini Slimes",
-                u.splitOnDeath.count or 2
+                "ON DEATH: splits into %dx %s",
+                u.splitOnDeath.count or 2,
+                splitUnit and splitUnit.name or tostring(u.splitOnDeath.template)
             ))
         end
 
