@@ -877,6 +877,160 @@ end
 assertTrue(Game.randomizeDeck(presetState, 1), "Random deck button must work")
 assertTrue(cards.isValidDeck(presetState.players[1].deck), "Random deck must contain eight unique valid cards")
 
+-- Lane objectives must stay Clash-like: same-lane Princess first, then King.
+local laneState = Game.new()
+laneState.players[1].ready = true
+laneState.players[2].ready = true
+Game.startCountdown(laneState)
+for _ = 1, 13 do Game.update(laneState, 0.25) end
+assertEq(laneState.phase, "battle", "Lane objective test must enter battle")
+
+local enemyLeftPrincess, enemyRightPrincess, enemyKing
+for _, entity in ipairs(laneState.entities) do
+    if entity.owner == 2 and entity.kind == "tower" then
+        if entity.towerType == "king" then
+            enemyKing = entity
+        elseif entity.x < config.ARENA.width / 2 then
+            enemyLeftPrincess = entity
+        else
+            enemyRightPrincess = entity
+        end
+    end
+end
+assertTrue(
+    enemyLeftPrincess and enemyRightPrincess and enemyKing,
+    "Lane objective test needs all three enemy Crown Towers"
+)
+
+assertTrue(
+    not arena.placementAllowed(1, 25, 50, nil, laneState),
+    "Enemy left lane must be locked before its Princess Tower falls"
+)
+
+laneState.players[1].hand[1] = "zombie"
+laneState.players[1].emeralds = 10
+assertTrue(
+    Game.playCardFromSlot(laneState, 1, 1, 25, 100),
+    "Lane test Zombie must deploy on the normal own half"
+)
+
+local laneZombie
+for _, entity in ipairs(laneState.entities) do
+    if entity.owner == 1 and entity.name == "Zombie" then
+        laneZombie = entity
+        break
+    end
+end
+assertTrue(laneZombie ~= nil, "Lane objective test must spawn a Zombie")
+
+Game.update(laneState, 0.10)
+assertEq(
+    laneZombie.targetId,
+    enemyLeftPrincess.id,
+    "A left-lane troop must target the left Princess Tower first"
+)
+
+-- Kill exactly the left Princess Tower through the real battle API so the
+-- destroyed-lane deployment state is exercised too.
+enemyLeftPrincess.hp = 1
+laneState.players[1].hand[1] = "arrows"
+laneState.players[1].emeralds = 10
+assertTrue(
+    Game.playCardFromSlot(
+        laneState,
+        1,
+        1,
+        enemyLeftPrincess.x,
+        enemyLeftPrincess.y
+    ),
+    "Arrow Volley must be able to finish the lane tower in the test"
+)
+assertTrue(not enemyLeftPrincess.alive, "Left Princess Tower must be destroyed")
+assertTrue(
+    laneState.destroyedSideTowers[2].left,
+    "Destroying the left Princess Tower must unlock only its lane"
+)
+
+Game.update(laneState, 0.10)
+assertEq(
+    laneZombie.targetId,
+    enemyKing.id,
+    "After its lane tower falls, a left-lane troop must target the King Tower"
+)
+assertTrue(
+    laneZombie.targetId ~= enemyRightPrincess.id,
+    "A left-lane troop must not cross-map to the opposite Princess Tower"
+)
+
+assertTrue(
+    arena.placementAllowed(1, 25, 50, nil, laneState),
+    "Destroyed left Princess Tower must unlock the left enemy pocket"
+)
+assertTrue(
+    not arena.placementAllowed(1, 75, 50, nil, laneState),
+    "Destroying left Princess Tower must not unlock the right enemy pocket"
+)
+assertTrue(
+    not arena.placementAllowed(1, 50, 50, nil, laneState),
+    "The centre King-Tower corridor must remain locked"
+)
+assertTrue(
+    not arena.placementAllowed(1, 25, 20, nil, laneState),
+    "Pocket deployment must not extend too far behind the old Princess Tower"
+)
+
+laneState.players[1].hand[1] = "zombie"
+laneState.players[1].emeralds = 10
+assertTrue(
+    Game.playCardFromSlot(laneState, 1, 1, 25, 50),
+    "Normal card API must allow deployment inside the unlocked lane pocket"
+)
+
+-- Pocket buildings must be punishable by Crown Towers; otherwise post-tower
+-- building placement would be an exploit.
+laneState.players[1].hand[1] = "cannon"
+laneState.players[1].emeralds = 10
+assertTrue(
+    Game.playCardFromSlot(laneState, 1, 1, 44, 24),
+    "A building may be placed in the unlocked pocket"
+)
+
+local pocketCannon
+for _, entity in ipairs(laneState.entities) do
+    if entity.owner == 1 and entity.name == "Cannon" then
+        pocketCannon = entity
+    end
+end
+assertTrue(pocketCannon ~= nil, "Pocket building test must spawn a Cannon")
+
+Game.update(laneState, 0.10)
+assertEq(
+    enemyKing.targetId,
+    pocketCannon.id,
+    "King Tower must defend against an enemy building placed in its pocket range"
+)
+assertTrue(
+    enemyKing.attackCooldownLeft > 0,
+    "King Tower must actively shoot when an enemy is in range"
+)
+
+-- Symmetric P2 pocket rule.
+local mirrorPocketState = {
+    phase = "battle",
+    destroyedSideTowers = {
+        [1] = { left = false, right = true },
+        [2] = { left = false, right = false },
+    },
+}
+assertTrue(
+    arena.placementAllowed(2, 75, 110, nil, mirrorPocketState),
+    "P2 must get the symmetric right-lane pocket after destroying P1 right tower"
+)
+assertTrue(
+    not arena.placementAllowed(2, 25, 110, nil, mirrorPocketState),
+    "P2 pocket unlock must also remain lane-specific"
+)
+
 -- Battle starts with the reduced tower HP values and a real next-card queue.
 local featureBattle = Game.new()
 featureBattle.players[1].ready = true
@@ -891,9 +1045,12 @@ for _, entity in ipairs(featureBattle.entities) do
     if entity.kind == "tower" and entity.towerType == "princess" then
         assertEq(entity.maxHp, 1501, "Princess Tower must use the latest five-percent HP nerf")
         assertEq(entity.damage, 80, "Princess Tower must use the latest two-percent damage nerf")
+        assertEq(entity.attackRange, 30, "Princess Tower range must use the defensive range buff")
         sawPrincess = true
     elseif entity.kind == "tower" and entity.towerType == "king" then
         assertEq(entity.maxHp, 2565, "King Tower must use five-percent HP nerf")
+        assertEq(entity.damage, 105, "King Tower must remain an active attacking tower")
+        assertEq(entity.attackRange, 27, "King Tower range must remain unchanged")
         sawKing = true
     end
 end
