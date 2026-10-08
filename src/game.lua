@@ -467,7 +467,8 @@ local function moveAway(entity, target, dt)
         length = 1
     end
 
-    local step = currentMoveSpeed(entity) * dt
+    local retreatMultiplier = entity.retreatSpeedMultiplier or 1
+    local step = currentMoveSpeed(entity) * retreatMultiplier * dt
     local nx = entity.x + dx / length * step
     local ny = entity.y + dy / length * step
 
