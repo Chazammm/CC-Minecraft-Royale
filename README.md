@@ -87,7 +87,7 @@ Nether Portal summons the internal-only Piglin unit; Piglin is not directly sele
 - **Slime**: splits into two Mini Slimes on death
 - **Witch**: periodically summons Baby Zombies
 - **Villager**: stationary Emerald-generation support
-- **Guardian**: 6E stationary water-only tank counter. Its short-range beam ramps from 35 to 350 DPS over 4s while locked to one target. Each incoming hit reduces current beam charge by 20% rather than resetting it; flying attackers receive 5% of their dealt damage back from Guardian spikes. Guardian has 90 HP, exactly three current Skeleton arrows.
+- **Guardian**: 6E stationary water-only tank counter. Its short-range beam ramps from 35 to 350 DPS over 4s while locked to one target. Each incoming hit reduces current beam charge by 20% rather than resetting it; flying attackers receive 5% of their dealt damage back from Guardian spikes. Guardian has 90 HP, exactly three current Skeleton arrows. Water-only placement is enforced in both normal play and the admin sandbox. Ground units ignore a Guardian if their real attack/trigger range cannot reach its water position; ranged, flying, building and tower attackers that can reach it still target normally.
 - **Enderman**: teleporting melee attacker
 - **Snow Golem**: ranged slow support without kiting
 
