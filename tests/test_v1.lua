@@ -40,7 +40,7 @@ local function assertTrue(value, message)
     if not value then error(message or "assertTrue failed") end
 end
 
-assertEq(#cards.list, 21, "Card pool must contain twenty-one selectable cards")
+assertEq(#cards.list, 22, "Card pool must contain twenty-two selectable cards")
 assertEq(#cards.defaultDeck(), 8, "Default deck must contain eight cards")
 assertTrue(cards.isValidDeck(cards.defaultDeck()), "Default deck must be valid")
 
@@ -95,6 +95,45 @@ assertEq(villagerCard.cost, 7, "Villager must cost seven Emeralds")
 assertTrue(villagerCard.unit.passive, "Villager must be passive")
 assertEq(villagerCard.unit.lifetime, 50, "Villager must last fifty seconds")
 assertEq(villagerCard.unit.emeraldBoost, 0.616, "Villager boost must target four-Emerald net value")
+
+local bankEvo = cards.evolvedCopy("villager")
+assertTrue(bankEvo ~= nil, "Villager must expose Emerald Bank Evolution")
+assertEq(cards.evolutionCycles("villager"), 3, "Emerald Bank must evolve on the fourth Villager play")
+assertEq(bankEvo.name, "Emerald Bank", "Villager Evolution must be Emerald Bank")
+assertTrue(math.abs(bankEvo.unit.maxHp - 194.25) < 0.000001, "Emerald Bank must have exactly five percent more HP")
+assertEq(bankEvo.unit.lifetime, 70, "Emerald Bank must last twenty seconds longer")
+assertEq(bankEvo.unit.emeraldBoost, villagerCard.unit.emeraldBoost, "Emerald Bank must preserve Villager Emerald production")
+
+local guardianCard = cards.get("guardian")
+assertTrue(guardianCard ~= nil and guardianCard.kind == "unit", "Guardian must be a selectable unit")
+assertEq(guardianCard.cost, 6, "Guardian must cost six Emeralds")
+assertEq(guardianCard.placement, "water", "Guardian must be water-only")
+assertEq(guardianCard.unit.maxHp, 90, "Guardian must die to exactly three 30-damage Skeleton arrows")
+assertEq(guardianCard.unit.maxHp, cards.get("skeleton").unit.damage * 3, "Guardian HP must equal exactly three Skeleton arrows")
+assertEq(guardianCard.unit.moveSpeed, 0, "Guardian must be stationary")
+assertTrue(guardianCard.unit.waterOnly, "Guardian unit stats must be water-only")
+assertTrue(guardianCard.unit.canAttackAir, "Guardian beam must be able to target flying units")
+assertEq(guardianCard.unit.attackRange, 13.5, "Guardian must keep short beam range")
+assertEq(guardianCard.unit.beam.baseDps, 35, "Guardian beam must start at 35 DPS")
+assertEq(guardianCard.unit.beam.maxDps, 350, "Guardian beam must ramp to 350 DPS")
+assertEq(guardianCard.unit.beam.rampSeconds, 4.0, "Guardian beam must take four seconds to fully ramp")
+assertEq(guardianCard.unit.beam.chargeLossOnHit, 0.20, "Guardian must lose twenty percent current beam charge when hit")
+assertEq(guardianCard.unit.spikeReflectFlying, 0.05, "Guardian spikes must reflect five percent damage to flying attackers")
+
+local elderEvo = cards.evolvedCopy("guardian")
+assertTrue(elderEvo ~= nil, "Guardian must expose Elder Guardian Evolution")
+assertEq(cards.evolutionCycles("guardian"), 2, "Elder Guardian must evolve on the third Guardian play")
+assertEq(cards.evolutionCost("guardian"), 6, "Elder Guardian must keep the base 6E cost")
+assertEq(elderEvo.name, "Elder Guardian", "Guardian Evolution must be Elder Guardian")
+assertEq(elderEvo.unit.maxHp, 180, "Elder Guardian must have exactly double Guardian HP")
+assertEq(elderEvo.unit.globalEnemyMoveSlow, 0.05, "Elder Guardian must globally slow enemy movement by five percent")
+assertEq(elderEvo.unit.beam.maxDps, guardianCard.unit.beam.maxDps, "Elder Guardian beam must otherwise stay identical")
+assertEq(elderEvo.unit.spikeReflectFlying, guardianCard.unit.spikeReflectFlying, "Elder Guardian spikes must stay identical")
+
+local riverMid = (config.ARENA.riverTop + config.ARENA.riverBottom) / 2
+assertTrue(arena.placementAllowed(1, 50, riverMid, "water", Game.new()), "Guardian must be placeable in open river water")
+assertTrue(not arena.placementAllowed(1, 27, riverMid, "water", Game.new()), "Guardian must not be placeable on a bridge")
+assertTrue(not arena.placementAllowed(1, 50, 110, "water", Game.new()), "Guardian must not be placeable on land")
 
 local zombieCard = cards.get("zombie")
 assertEq(zombieCard.unit.maxHp, 523, "Zombie HP must reflect the latest five-percent nerf")
@@ -1856,7 +1895,7 @@ assertTrue(ghast.onHitSlow ~= nil, "Ghast primary hit must apply a slow")
 
 local miteEvo = cards.evolvedCopy("endermite")
 assertTrue(miteEvo ~= nil, "Endermite must expose a real Evolution")
-assertEq(cards.evolutionCycles("endermite"), 3, "Mega Mite must evolve on the fourth play")
+assertEq(cards.evolutionCycles("endermite"), 4, "Mega Mite must evolve on the fifth play")
 assertEq(cards.evolutionCost("endermite"), 1, "Mega Mite must keep the base 1E cost")
 assertEq(miteEvo.name, "Mega Mite", "Endermite Evolution must use Mega Mite form")
 assertEq(miteEvo.unit.maxHp, cards.get("endermite").unit.maxHp * 5, "Mega Mite must have exactly five times Endermite HP")
@@ -2010,16 +2049,29 @@ assertTrue(
     Game.debugSpawnCard(adminEvoState, 1, "evo:endermite", 70, 110),
     "Admin must directly spawn Mega Mite"
 )
+assertTrue(
+    Game.debugSpawnCard(adminEvoState, 1, "evo:guardian", 50, 80),
+    "Admin must directly spawn Elder Guardian"
+)
+assertTrue(
+    Game.debugSpawnCard(adminEvoState, 1, "evo:villager", 80, 110),
+    "Admin must directly spawn Emerald Bank"
+)
 
 local foundCharged, foundPortal, foundMega = false, false, false
+local foundElder, foundBank = false, false
 for _, entity in ipairs(adminEvoState.entities) do
     if entity.name == "Charged Creeper" and entity.isEvolution then foundCharged = true end
     if entity.name == "Ghast Portal" and entity.isEvolution then foundPortal = true end
     if entity.name == "Mega Mite" and entity.isEvolution then foundMega = true end
+    if entity.name == "Elder Guardian" and entity.isEvolution then foundElder = true end
+    if entity.name == "Emerald Bank" and entity.isEvolution then foundBank = true end
 end
 assertTrue(foundCharged, "Direct admin spawn must create evolved Charged Creeper entity")
 assertTrue(foundPortal, "Direct admin spawn must create evolved Ghast Portal entity")
 assertTrue(foundMega, "Direct admin spawn must create evolved Mega Mite entity")
+assertTrue(foundElder, "Direct admin spawn must create evolved Elder Guardian entity")
+assertTrue(foundBank, "Direct admin spawn must create evolved Emerald Bank entity")
 
 assertTrue(type(adminRender.draw) == "function", "Admin renderer with Evolution catalog must load")
 end
