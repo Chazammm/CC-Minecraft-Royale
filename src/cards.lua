@@ -715,7 +715,7 @@ cards.info = {
     },
     guardian = {
         role = "Water tank melter",
-        description = "6E stationary water-only beam unit. Ramps damage while locked; incoming hits weaken charge and flying attackers take spike damage.",
+        description = "6E water-only beam. Ramps damage while locked; hits weaken charge and flying attackers take spike damage.",
     },
     wolf = {
         role = "Fast fighter",
