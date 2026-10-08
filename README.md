@@ -87,7 +87,7 @@ Nether Portal summons the internal-only Piglin unit; Piglin is not directly sele
 - **Slime**: splits into two Mini Slimes on death
 - **Witch**: periodically summons Baby Zombies
 - **Villager**: stationary Emerald-generation support
-- **Guardian**: 6E stationary water-only tank counter. Its short-range beam ramps from 35 to 350 DPS over 4s while locked to one target. Each incoming hit reduces current beam charge by 20% rather than resetting it; flying attackers receive 5% of their dealt damage back from Guardian spikes. Guardian has 90 HP, exactly three current Skeleton arrows. Water-only placement is enforced in both normal play and the admin sandbox. Ground units ignore a Guardian if their real attack/trigger range cannot reach its water position; ranged, flying, building and tower attackers that can reach it still target normally.
+- **Guardian**: 6E stationary water-only tank counter. Its 18-range beam ramps from 35 to 350 DPS over 4s while locked to one target. Each incoming hit reduces current beam charge by 20% rather than resetting it; flying attackers receive 5% of their dealt damage back from Guardian spikes. Guardian has 90 HP, exactly three current Skeleton arrows. Water-only placement is enforced in both normal play and the admin sandbox. Ground units ignore a Guardian if their real attack/trigger range cannot reach its water position; ranged, flying, building and tower attackers that can reach it still target normally.
 - **Enderman**: teleporting melee attacker
 - **Snow Golem**: ranged slow support without kiting
 
@@ -174,7 +174,7 @@ The first gameplay Evolutions are enabled:
 - **Ghast Portal** — Nether Portal, 2 cycles, same 3E cost. Replaces the purple portal with a cyan/light-blue shimmer and summons exactly 2 Ghasts total.
   - **Ghast** — 220 HP flying artillery, 130 damage, 24 range, 2.8s attack cooldown, 5.5 splash radius. Two full hits kill the current 257-HP Blaze. The primary target is slowed by 35% for 1.5s; splash victims take damage but are not slowed.
 - **Mega Mite** — Endermite, 4 cycles, so the 5th play evolves. Same 1E cost. Keeps all normal Endermite combat stats except max HP, which is exactly 5x (525 HP), and uses a visibly larger sprite.
-- **Elder Guardian** — Guardian, 2 cycles, same 6E cost. Doubles HP from 90 to 180 and applies a battlefield-wide 5% movement-speed penalty to every enemy unit while alive. Beam, range and spike reflection are unchanged.
+- **Elder Guardian** — Guardian, 2 cycles, same 6E cost. Doubles HP from 90 to 180 and applies a battlefield-wide 5% movement-speed penalty to every enemy unit while alive. It inherits the Guardian's 18 range; beam ramp and spike reflection are otherwise unchanged.
 - **Emerald Bank** — Villager, 3 cycles, same 7E cost. Keeps the exact 61.6% Emerald-generation boost, gains 5% HP (185 -> 194.25) and lasts 70s instead of 50s.
 - **Diamond Golem** — Iron Golem, 2 cycles, same 5E cost. Gains 5% HP (1377 -> 1445.85). While it is actually walking, each accumulated 2.0s of movement triggers a stomp, creating a visible local quake that deals 20 damage in 8 radius to enemy grounded units only. Standing still to attack a building or Crown Tower pauses the stomp timer; flying and water-only units are ignored.
 
