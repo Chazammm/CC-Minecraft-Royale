@@ -74,6 +74,19 @@ local SPRITES = {
             "SS...SS",
         },
     },
+    diamond_golem = {
+        rows = {
+            "..AAA..",
+            ".AAKAA.",
+            ".AACAA.",
+            "AAAAAAA",
+            "A.AAA.A",
+            "..ACA..",
+            "..AAA..",
+            ".AA.AA.",
+            "AA...AA",
+        },
+    },
     bat_swarm = {
         rows = {
             "P.....P",
@@ -853,6 +866,32 @@ local function drawAnvilImpact(box, playerId, effect)
     drawLine(box, cx - 5, cy + 3, cx + 5, cy + 3, colors.brown)
 end
 
+local function drawDiamondQuake(box, playerId, effect)
+    local cx, cy = worldToPixel(box, playerId, effect.x, effect.y)
+    local duration = math.max(0.001, effect.duration or 0.55)
+    local progress = math.max(0, math.min(1, 1 - effect.ttl / duration))
+    local maxRx = math.max(2, worldRadiusX(box, effect.radius or 8))
+    local maxRy = math.max(2, worldRadiusY(box, effect.radius or 8))
+    local rx = math.max(2, maxRx * (0.30 + progress * 0.70))
+    local ry = math.max(2, maxRy * (0.30 + progress * 0.70))
+    local ringColor = progress < 0.45 and colors.lightGray or colors.gray
+
+    for i = 0, 18 do
+        local angle = i / 18 * math.pi * 2
+        put(
+            box,
+            cx + math.cos(angle) * rx,
+            cy + math.sin(angle) * ry,
+            ringColor
+        )
+    end
+
+    local crack = math.max(2, math.floor(rx * 0.55))
+    drawLine(box, cx - crack, cy, cx - 1, cy + 1, colors.brown)
+    drawLine(box, cx + 1, cy - 1, cx + crack, cy, colors.brown)
+    put(box, cx, cy, colors.cyan)
+end
+
 local function drawGuardianBeam(box, playerId, effect)
     local x1, y1 = worldToPixel(box, playerId, effect.x, effect.y)
     local x2, y2 = worldToPixel(box, playerId, effect.x2 or effect.x, effect.y2 or effect.y)
@@ -908,6 +947,8 @@ local function drawEffect(box, playerId, effect)
         drawRingEffect(box, playerId, effect, team)
     elseif effect.kind == "death" then
         drawRingEffect(box, playerId, effect, colors.lightGray)
+    elseif effect.kind == "diamond_quake" then
+        drawDiamondQuake(box, playerId, effect)
     elseif effect.kind == "guardian_beam" then
         drawGuardianBeam(box, playerId, effect)
     elseif effect.kind == "guardian_spike" then
