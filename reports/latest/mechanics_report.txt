@@ -1,13 +1,13 @@
 CC-MINECRAFT-ROYALE MECHANICS REPORT
-FORMAT_VERSION|6
-GENERATED_EPOCH_MS|1791461190608
+FORMAT_VERSION|7
+GENERATED_EPOCH_MS|1791463100944
 OS_VERSION|CraftOS 1.9
 CARD_COUNT|21
 HARNESS|condition_waits=true|dt=0.050|safe_x=50.0|safe_y=110.0
 CONFIG|tick=0.100|normal=150|overtime=150|emerald_rate=0.357143|building_decay=1.150
 BALANCE_SNAPSHOT|skeleton_range=15.00|skeleton_retreat=0.85|bat_damage=17.00
 EVOLUTION_SNAPSHOT|creeper_cycles=2|portal_cycles=2|mite_cycles=3|ghast_damage=130.0|ghast_range=24.0
-SUMMARY|pass=15|fail=0|error=0|total=15|runtime_cpu_s=0.0500
+SUMMARY|pass=17|fail=0|error=0|total=17|runtime_cpu_s=0.0500
 
 RESULT|boot_deck|PASS|Lobby boots with empty human decks|Human players should build/load/randomize an 8-card deck before READY.
 DATA|boot_deck|p1_deck_cards=0.0000
@@ -30,6 +30,23 @@ DATA|evolution_cycle|first_three_normal=true
 DATA|evolution_cycle|fourth_play_evolved=true
 DATA|evolution_cycle|evolution_abilities_applied=true
 DATA|evolution_cycle|evolution_telemetry=true
+
+RESULT|evolution_ruleset|PASS|Ruleset OFF fully disables Evolution gameplay|Ruleset OFF must preserve the selected Evo card but make every battle play use the untouched base form.
+DATA|evolution_ruleset|ruleset_evolutions_enabled=false
+DATA|evolution_ruleset|saved_evolution_card=creeper
+DATA|evolution_ruleset|play_cost=4.0000
+DATA|evolution_ruleset|spawned_name=Creeper
+DATA|evolution_ruleset|spawned_is_evolution=false
+DATA|evolution_ruleset|progress_after_play=2.0000
+DATA|evolution_ruleset|telemetry_evolution_plays=0.0000
+
+RESULT|admin_evolution_spawn|PASS|Admin directly spawns Evolution forms|Admin card pages must include every Evolution as a direct sandbox spawn, bypassing cycles and Emerald cost.
+DATA|admin_evolution_spawn|admin_catalog_entries=24.0000
+DATA|admin_evolution_spawn|admin_evolution_entries=3.0000
+DATA|admin_evolution_spawn|charged_creeper_spawned=true
+DATA|admin_evolution_spawn|ghast_portal_spawned=true
+DATA|admin_evolution_spawn|mega_mite_spawned=true
+DATA|admin_evolution_spawn|all_marked_evolution=true
 
 RESULT|evo_charged_creeper|PASS|Charged Creeper has larger blue blast|Charged Creeper must keep normal damage but expand gameplay AoE from 8 to 12 and use the large blue explosion effect.
 DATA|evo_charged_creeper|configured_cycles=2.0000
