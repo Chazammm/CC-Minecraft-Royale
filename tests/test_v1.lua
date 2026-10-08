@@ -221,6 +221,40 @@ Game.update(retargetState, 0.1)
 assertEq(skeleton.targetId, zombie.id, "Skeleton must switch from tower to nearby enemy troop")
 assertEq(zombie.targetId, skeleton.id, "Zombie must switch from tower to nearby enemy troop")
 
+local golemPullState = Game.new()
+Game.debugLoadScenario(golemPullState, "full")
+Game.debugSpawnCard(golemPullState, 1, "iron_golem", 50, 105)
+Game.debugSpawnCard(golemPullState, 2, "cannon", 50, 68)
+
+local pullGolem, pullCannon, distantEnemyTower
+for _, entity in ipairs(golemPullState.entities) do
+    if entity.name == "Iron Golem" then
+        pullGolem = entity
+    elseif entity.name == "Cannon" and entity.owner == 2 then
+        pullCannon = entity
+    elseif entity.kind == "tower" and entity.owner == 2 then
+        if not distantEnemyTower
+            or math.abs(entity.x - 50) < math.abs(distantEnemyTower.x - 50)
+        then
+            distantEnemyTower = entity
+        end
+    end
+end
+
+assertTrue(pullGolem and pullCannon and distantEnemyTower, "Iron Golem pull test entities must exist")
+
+-- Reproduce the problematic case: the Golem already committed to a tower,
+-- then a defensive Cannon is placed inside its sight range.
+pullGolem.targetId = distantEnemyTower.id
+Game.debugSetPaused(golemPullState, false)
+Game.update(golemPullState, 0.10)
+
+assertEq(
+    pullGolem.targetId,
+    pullCannon.id,
+    "Iron Golem must retarget from a tower to a closer Cannon"
+)
+
 local creeperState = Game.new()
 Game.debugLoadScenario(creeperState, "empty")
 Game.debugSpawnCard(creeperState, 1, "creeper", 50, 80)
