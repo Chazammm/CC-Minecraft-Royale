@@ -1798,6 +1798,8 @@ fs = {
     end,
 }
 
+assert(loadfile("mechanics_test.lua"), "mechanics_test.lua must compile")
+assert(loadfile("compare.lua"), "compare.lua must compile")
 local simulateChunk = assert(loadfile("simulate.lua"))
 simulateChunk("help")
 simulateChunk("99")
