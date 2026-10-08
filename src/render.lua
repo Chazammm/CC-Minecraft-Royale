@@ -820,14 +820,17 @@ local function drawInfoCollectionCard(buffer, zone, card, selected)
     local width = zone.x2 - zone.x1 + 1
     local top = string.format("%s %dE", card.icon or "?", card.cost)
     local nameLines = compactNameLines(card.name, width)
+    local accent = card.color or colors.white
+    local accentText = contrastTextColor(accent)
 
+    fill(buffer, zone.x1, zone.y1, zone.x2, zone.y1, accent)
     writeText(
         buffer,
         zone.x1 + math.max(0, math.floor((width - #top) / 2)),
         zone.y1,
         top,
-        card.color or colors.white,
-        bg
+        accentText,
+        accent
     )
 
     local nameY = #nameLines > 1 and (zone.y1 + 2) or (zone.y1 + 3)
