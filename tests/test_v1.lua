@@ -39,7 +39,7 @@ local function assertTrue(value, message)
     if not value then error(message or "assertTrue failed") end
 end
 
-assertEq(#cards.list, 18, "Card pool must contain eighteen selectable cards")
+assertEq(#cards.list, 21, "Card pool must contain twenty-one selectable cards")
 assertEq(#cards.defaultDeck(), 8, "Default deck must contain eight cards")
 assertTrue(cards.isValidDeck(cards.defaultDeck()), "Default deck must be valid")
 
@@ -159,6 +159,38 @@ assertTrue(
     piglinTemplate.hybridAttack.meleeDamage > piglinTemplate.hybridAttack.rangedDamage,
     "Piglin axe hit should be stronger than its crossbow shot"
 )
+
+local witherSkeletonCard = cards.get("wither_skeleton")
+assertEq(witherSkeletonCard.cost, 3, "Wither Skeleton must cost three Emeralds")
+assertTrue(
+    witherSkeletonCard.unit.maxHp < zombieCard.unit.maxHp,
+    "Wither Skeleton must trade HP away versus Zombie"
+)
+assertTrue(
+    witherSkeletonCard.unit.damage > zombieCard.unit.damage,
+    "Wither Skeleton must gain damage versus Zombie"
+)
+assertEq(witherSkeletonCard.unit.maxHp, 470, "Wither Skeleton starting HP must be 470")
+assertEq(witherSkeletonCard.unit.damage, 88, "Wither Skeleton starting damage must be 88")
+
+local slimeCard = cards.get("slime")
+local magmaCubeCard = cards.get("magma_cube")
+assertEq(magmaCubeCard.cost, slimeCard.cost, "Magma Cube must cost the same as Slime")
+assertEq(magmaCubeCard.unit.maxHp, slimeCard.unit.maxHp * 0.95, "Magma Cube must have five percent less HP than Slime")
+assertEq(magmaCubeCard.unit.damage, slimeCard.unit.damage * 1.05, "Magma Cube must have five percent more damage than Slime")
+assertEq(magmaCubeCard.unit.splitOnDeath.template, "mini_magma_cube", "Magma Cube must split into Mini Magma Cubes")
+
+local miniSlime = cards.getInternalUnit("mini_slime")
+local miniMagma = cards.getInternalUnit("mini_magma_cube")
+assertEq(miniMagma.maxHp, miniSlime.maxHp * 0.95, "Mini Magma Cube must have five percent less HP than Mini Slime")
+assertEq(miniMagma.damage, miniSlime.damage * 1.05, "Mini Magma Cube must have five percent more damage than Mini Slime")
+
+local outpostCard = cards.get("pillager_outpost")
+assertEq(outpostCard.cost, cannonCard.cost, "Pillager Outpost must cost the same as Cannon")
+assertEq(outpostCard.building.lifetime, cannonCard.building.lifetime, "Pillager Outpost must last as long as Cannon")
+assertEq(outpostCard.building.maxHp, cannonCard.building.maxHp * 0.75, "Pillager Outpost must have exactly 25 percent less HP")
+assertEq(outpostCard.building.damage, cannonCard.building.damage * 0.75, "Pillager Outpost must have exactly 25 percent less damage")
+assertTrue(outpostCard.building.canAttackAir, "Pillager Outpost must attack flying units")
 
 local config = require("config")
 assertEq(config.MATCH.normalTime, 150, "Regulation must last two minutes thirty")
@@ -294,6 +326,45 @@ end
 assertTrue(
     reverseP2Alive and not reverseP1Alive,
     "Even combat ticks must reverse update order instead of permanently favoring earlier entities"
+)
+
+local buildingDecayState = Game.new()
+Game.debugLoadScenario(buildingDecayState, "empty")
+Game.debugSpawnCard(buildingDecayState, 1, "cannon", 50, 100)
+
+local decayCannon
+for _, entity in ipairs(buildingDecayState.entities) do
+    if entity.name == "Cannon" then decayCannon = entity end
+end
+assertTrue(decayCannon ~= nil, "Building decay test must spawn a Cannon")
+assertEq(decayCannon.hp, cannonCard.building.maxHp, "Building must spawn at full HP")
+
+Game.debugSetPaused(buildingDecayState, false)
+for _ = 1, 70 do Game.update(buildingDecayState, 0.25) end
+assertTrue(decayCannon.alive, "Cannon must still be alive halfway through its lifetime")
+assertTrue(
+    math.abs(decayCannon.hp - cannonCard.building.maxHp * 0.5) < 0.01,
+    "Building HP must visibly decay to half at half lifetime"
+)
+
+for _ = 1, 69 do Game.update(buildingDecayState, 0.25) end
+assertTrue(decayCannon.alive, "Cannon must survive until just before its configured lifetime")
+Game.update(buildingDecayState, 0.25)
+assertTrue(not decayCannon.alive, "Cannon must die from HP decay at the end of its lifetime")
+
+local outpostDecayState = Game.new()
+Game.debugLoadScenario(outpostDecayState, "empty")
+Game.debugSpawnCard(outpostDecayState, 1, "pillager_outpost", 50, 100)
+Game.debugSetPaused(outpostDecayState, false)
+
+local decayOutpost
+for _, entity in ipairs(outpostDecayState.entities) do
+    if entity.name == "Pillager Outpost" then decayOutpost = entity end
+end
+for _ = 1, 70 do Game.update(outpostDecayState, 0.25) end
+assertTrue(
+    math.abs(decayOutpost.hp - outpostCard.building.maxHp * 0.5) < 0.01,
+    "Pillager Outpost must use the same lifetime HP-decay system"
 )
 
 local retargetState = Game.new()
@@ -516,6 +587,26 @@ for _, entity in ipairs(summonState.entities) do
     if entity.name == "Baby Zombie" then babyZombieCount = babyZombieCount + 1 end
 end
 assertTrue(babyZombieCount >= 1, "Witch must periodically summon a Baby Zombie")
+
+local magmaSplitState = Game.new()
+Game.debugLoadScenario(magmaSplitState, "empty")
+Game.debugSpawnCard(magmaSplitState, 1, "magma_cube", 50, 82)
+Game.debugSpawnCard(magmaSplitState, 2, "zombie", 50, 80)
+
+local testMagma
+for _, entity in ipairs(magmaSplitState.entities) do
+    if entity.name == "Magma Cube" then testMagma = entity end
+end
+assertTrue(testMagma ~= nil, "Magma split test must spawn a Magma Cube")
+testMagma.hp = 1
+Game.debugSetPaused(magmaSplitState, false)
+Game.update(magmaSplitState, 0.10)
+
+local miniMagmaCount = 0
+for _, entity in ipairs(magmaSplitState.entities) do
+    if entity.name == "Mini Magma Cube" then miniMagmaCount = miniMagmaCount + 1 end
+end
+assertEq(miniMagmaCount, 2, "Dead Magma Cube must split into two Mini Magma Cubes")
 
 local anvilState = Game.new()
 Game.debugLoadScenario(anvilState, "empty")
@@ -1018,6 +1109,12 @@ Game.handleTouch(infoState, 1, 1, 10, infoLayout)
 assertEq(infoState.players[1].infoCardId, "falling_anvil", "Page-two first slot must expose Falling Anvil")
 Game.handleTouch(infoState, 1, 2, 10, infoLayout)
 assertEq(infoState.players[1].infoCardId, "nether_portal", "Page-two second slot must expose Nether Portal")
+Game.handleTouch(infoState, 1, 3, 10, infoLayout)
+assertEq(infoState.players[1].infoCardId, "wither_skeleton", "Page-two third slot must expose Wither Skeleton")
+Game.handleTouch(infoState, 1, 4, 10, infoLayout)
+assertEq(infoState.players[1].infoCardId, "magma_cube", "Page-two fourth slot must expose Magma Cube")
+Game.handleTouch(infoState, 1, 5, 10, infoLayout)
+assertEq(infoState.players[1].infoCardId, "pillager_outpost", "Page-two fifth slot must expose Pillager Outpost")
 
 Game.handleTouch(infoState, 1, 2, 21, infoLayout)
 assertTrue(not infoState.players[1].infoOpen, "BACK TO DECK must close Unit Info")
@@ -1447,6 +1544,22 @@ assertTrue(
 assertTrue(
     creeperInfoScreen:find("DPS 0", 1, true) == nil,
     "Creeper info must not show misleading zero DPS"
+)
+
+local outpostInfoScreen = renderInfoCard("pillager_outpost")
+assertTrue(
+    outpostInfoScreen:find("TARGETS AIR + GROUND", 1, true) ~= nil,
+    "Pillager Outpost info must visibly show air and ground targeting"
+)
+assertTrue(
+    outpostInfoScreen:find("LIFETIME DECAY:", 1, true) ~= nil,
+    "Building info must explain visible lifetime HP decay"
+)
+
+local magmaInfoScreen = renderInfoCard("magma_cube")
+assertTrue(
+    magmaInfoScreen:find("ON DEATH: splits into 2 Mini Slimes", 1, true) == nil,
+    "Magma Cube info must not incorrectly claim that it splits into Mini Slimes"
 )
 
 colors.toBlit = oldToBlit
