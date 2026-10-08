@@ -2078,6 +2078,72 @@ assertTrue(foundBank, "Direct admin spawn must create evolved Emerald Bank entit
 assertTrue(type(adminRender.draw) == "function", "Admin renderer with Evolution catalog must load")
 end
 
+-- Water-only admin placement and combat targetability. Ground units should not
+-- aggro a Guardian they can never bring inside attack range, while ranged
+-- units that can actually reach it should still target it.
+do
+local waterAdmin = Game.new()
+Game.debugLoadScenario(waterAdmin, "empty")
+local riverY = (config.ARENA.riverTop + config.ARENA.riverBottom) / 2
+
+local landOk, landReason = Game.debugSpawnCard(waterAdmin, 1, "guardian", 50, 110)
+assertTrue(not landOk, "Admin must reject Guardian spawning on land")
+assertEq(landReason, "WATER ONLY - PLACE IN OPEN RIVER", "Admin land rejection should explain water-only placement")
+
+local bridgeOk = Game.debugSpawnCard(
+    waterAdmin,
+    1,
+    "evo:guardian",
+    config.ARENA.bridgeCenters[1],
+    riverY
+)
+assertTrue(not bridgeOk, "Admin must reject Elder Guardian spawning on a bridge")
+
+local waterOk = Game.debugSpawnCard(waterAdmin, 1, "guardian", 50, riverY)
+assertTrue(waterOk, "Admin must allow Guardian spawning in open river water")
+
+local guardian
+for _, entity in ipairs(waterAdmin.entities) do
+    if entity.name == "Guardian" then guardian = entity end
+end
+assertTrue(guardian ~= nil, "Water placement test must create Guardian")
+guardian.passive = true
+guardian.targetMode = "none"
+
+assertTrue(
+    Game.debugSpawnCard(waterAdmin, 2, "zombie", 50, config.ARENA.riverTop - 6),
+    "Targetability test must spawn Zombie"
+)
+Game.update(waterAdmin, 0.10)
+
+local zombie
+for _, entity in ipairs(waterAdmin.entities) do
+    if entity.owner == 2 and entity.name == "Zombie" then zombie = entity end
+end
+assertTrue(zombie ~= nil, "Targetability test must find Zombie")
+assertTrue(
+    zombie.targetId == nil,
+    "Ground melee Zombie must ignore a mid-river Guardian it cannot reach"
+)
+
+assertTrue(
+    Game.debugSpawnCard(waterAdmin, 2, "skeleton", 50, config.ARENA.riverTop - 6),
+    "Targetability test must spawn Skeleton"
+)
+Game.update(waterAdmin, 0.10)
+
+local skeleton
+for _, entity in ipairs(waterAdmin.entities) do
+    if entity.owner == 2 and entity.name == "Skeleton" then skeleton = entity end
+end
+assertTrue(skeleton ~= nil, "Targetability test must find Skeleton")
+assertEq(
+    skeleton.targetId,
+    guardian.id,
+    "Ranged Skeleton must still target a Guardian it can actually reach"
+)
+end
+
 assertEq(#musicManifest.tracks, 34, "Battle music playlist must expose 34 shuffled tracks")
 assertEq(musicManifest.sourceRate, 48000, "Battle music pack must use native 48 kHz DFPWM")
 assertEq(musicManifest.outputRate, 48000, "Speaker output must stay at native 48 kHz")
