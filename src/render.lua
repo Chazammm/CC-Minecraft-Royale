@@ -734,9 +734,13 @@ local function infoStatLines(card)
         end
 
         if b.lifetime and b.lifetime > 0 then
+            local decayMultiplier = (config.BUILDINGS and config.BUILDINGS.lifetimeDecayMultiplier) or 1
+            local decayPerSecond = ((b.maxHp or 0) / b.lifetime) * decayMultiplier
+            local naturalLife = b.lifetime / decayMultiplier
             table.insert(lines, string.format(
-                "LIFETIME DECAY: %.1f HP/s",
-                (b.maxHp or 0) / b.lifetime
+                "HP DECAY %.1f/s  |  NATURAL LIFE %.1fs",
+                decayPerSecond,
+                naturalLife
             ))
         end
 
