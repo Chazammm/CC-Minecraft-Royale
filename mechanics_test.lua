@@ -5,7 +5,7 @@ local Bot = require("src.bot")
 local util = require("src.util")
 local arena = require("src.arena")
 
-local SUITE_VERSION = 11
+local SUITE_VERSION = 12
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 local EPSILON = 0.000001
@@ -1197,10 +1197,12 @@ runTest("evo_ghast_portal", "Ghast Portal spawns exactly two artillery Ghasts", 
         return false, "Could not create Ghast artillery targets.", {}
     end
 
-    blaze.moveSpeed = 0
+    blaze.passive = true
+    blaze.targetMode = "none"
     blaze.damage = 0
     blaze.attackCooldownLeft = 999
-    splashZombie.moveSpeed = 0
+    splashZombie.passive = true
+    splashZombie.targetMode = "none"
     splashZombie.damage = 0
     splashZombie.attackCooldownLeft = 999
 
