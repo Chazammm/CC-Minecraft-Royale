@@ -23,11 +23,40 @@ local function reportPrint(...)
         if liveHandle.flush then liveHandle.flush() end
     end
 end
-local matchCount = math.floor(tonumber(args[1]) or 100)
-matchCount = math.max(2, math.min(2000, matchCount))
+local function printUsage()
+    nativePrint("Usage: simulate <100-1000> [mixed|fixed] [seed]")
+    nativePrint("Examples:")
+    nativePrint("  simulate 100")
+    nativePrint("  simulate 137 mixed")
+    nativePrint("  simulate 500 mixed")
+    nativePrint("  simulate 1000 fixed")
+end
+
+local rawCount = args[1]
+if rawCount == nil or rawCount == "help" or rawCount == "--help" or rawCount == "-h" then
+    printUsage()
+    return
+end
+
+local parsedCount = tonumber(rawCount)
+if not parsedCount
+    or parsedCount ~= math.floor(parsedCount)
+    or parsedCount < 100
+    or parsedCount > 1000
+then
+    nativePrint("ERROR: Match count must be a whole number from 100 to 1000.")
+    printUsage()
+    return
+end
+
+local matchCount = parsedCount
 
 local mode = string.lower(tostring(args[2] or "mixed"))
-if mode ~= "mixed" and mode ~= "fixed" then mode = "mixed" end
+if mode ~= "mixed" and mode ~= "fixed" then
+    nativePrint("ERROR: Mode must be 'mixed' or 'fixed'.")
+    printUsage()
+    return
+end
 
 local seed = math.floor(tonumber(args[3]) or 1337)
 local rngState = seed % 2147483647
