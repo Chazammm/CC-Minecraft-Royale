@@ -965,6 +965,51 @@ local function updatePeriodicSpawn(state, entity, dt)
     entity.periodicSpawnTimer = spec.interval or 8
 end
 
+local function updateGroundPulse(state, entity, dt)
+    local spec = entity.groundPulse
+    if not spec then return end
+
+    entity.groundPulseTimer = (entity.groundPulseTimer or (spec.interval or 2)) - dt
+    if entity.groundPulseTimer > 0 then return end
+
+    local radius = spec.radius or 8
+    local pulseDamage = spec.damage or 20
+    local hitCount = 0
+
+    for _, victim in ipairs(state.entities) do
+        if victim.alive
+            and victim.owner ~= entity.owner
+            and victim.kind == "unit"
+            and not victim.flying
+            and not victim.waterOnly
+            and util.distance(entity.x, entity.y, victim.x, victim.y) <= radius
+        then
+            damageEntity(
+                state,
+                victim,
+                pulseDamage,
+                entity.owner,
+                entity.sourceCardId,
+                entity.id
+            )
+            hitCount = hitCount + 1
+        end
+    end
+
+    addEffect(
+        state,
+        spec.effect or "ground_quake",
+        entity.x,
+        entity.y,
+        radius,
+        0.55,
+        entity.owner
+    )
+
+    entity.lastGroundPulseHits = hitCount
+    entity.groundPulseTimer = spec.interval or 2
+end
+
 local function performAttack(state, entity, target)
     if entity.hybridAttack then
         local spec = entity.hybridAttack
