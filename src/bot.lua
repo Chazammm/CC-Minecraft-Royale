@@ -336,7 +336,6 @@ local function bestAnvilTarget(state, playerId)
     for _, center in ipairs(state.entities) do
         if center.alive
             and center.owner ~= playerId
-            and not center.flying
         then
             local cx, cy = center.x, center.y
 
@@ -352,7 +351,6 @@ local function bestAnvilTarget(state, playerId)
             for _, target in ipairs(state.entities) do
                 if target.alive
                     and target.owner ~= playerId
-                    and not target.flying
                 then
                     local tx, ty = target.x, target.y
                     if target.kind == "unit" and (target.moveSpeed or 0) > 0 then
