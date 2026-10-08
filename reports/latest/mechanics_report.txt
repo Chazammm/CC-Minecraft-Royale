@@ -1,13 +1,13 @@
 CC-MINECRAFT-ROYALE MECHANICS REPORT
-FORMAT_VERSION|9
-GENERATED_EPOCH_MS|1791469115266
+FORMAT_VERSION|10
+GENERATED_EPOCH_MS|1791470210363
 OS_VERSION|CraftOS 1.9
 CARD_COUNT|22
 HARNESS|condition_waits=true|dt=0.050|safe_x=50.0|safe_y=110.0
 CONFIG|tick=0.100|normal=150|overtime=150|emerald_rate=0.357143|building_decay=1.150
 BALANCE_SNAPSHOT|skeleton_range=15.00|skeleton_retreat=0.85|bat_damage=17.00
-EVOLUTION_SNAPSHOT|creeper_cycles=2|portal_cycles=2|mite_cycles=4|guardian_cycles=2|villager_cycles=3|ghast_damage=130.0|ghast_range=24.0
-SUMMARY|pass=21|fail=0|error=0|total=21|runtime_cpu_s=0.0500
+EVOLUTION_SNAPSHOT|creeper_cycles=2|portal_cycles=2|mite_cycles=4|guardian_cycles=2|villager_cycles=3|golem_cycles=2|ghast_damage=130.0|ghast_range=24.0
+SUMMARY|pass=22|fail=0|error=0|total=22|runtime_cpu_s=0.0500
 
 RESULT|boot_deck|PASS|Lobby boots with empty human decks|Human players should build/load/randomize an 8-card deck before READY.
 DATA|boot_deck|p1_deck_cards=0.0000
@@ -41,14 +41,28 @@ DATA|evolution_ruleset|progress_after_play=2.0000
 DATA|evolution_ruleset|telemetry_evolution_plays=0.0000
 
 RESULT|admin_evolution_spawn|PASS|Admin directly spawns Evolution forms|Admin card pages must include every Evolution as a direct sandbox spawn, bypassing cycles and Emerald cost.
-DATA|admin_evolution_spawn|admin_catalog_entries=27.0000
-DATA|admin_evolution_spawn|admin_evolution_entries=5.0000
+DATA|admin_evolution_spawn|admin_catalog_entries=28.0000
+DATA|admin_evolution_spawn|admin_evolution_entries=6.0000
 DATA|admin_evolution_spawn|charged_creeper_spawned=true
 DATA|admin_evolution_spawn|ghast_portal_spawned=true
 DATA|admin_evolution_spawn|mega_mite_spawned=true
 DATA|admin_evolution_spawn|elder_guardian_spawned=true
 DATA|admin_evolution_spawn|emerald_bank_spawned=true
+DATA|admin_evolution_spawn|diamond_golem_spawned=true
 DATA|admin_evolution_spawn|all_marked_evolution=true
+
+RESULT|evo_diamond_golem|PASS|Diamond Golem stomps grounded enemies every two seconds|Diamond Golem must gain 5% HP and pulse 20 damage every 2s to nearby grounded enemy units without hitting air.
+DATA|evo_diamond_golem|configured_cycles=2.0000
+DATA|evo_diamond_golem|base_hp=1377.0000
+DATA|evo_diamond_golem|diamond_hp=1445.8500
+DATA|evo_diamond_golem|stomp_interval_s=2.0000
+DATA|evo_diamond_golem|stomp_damage=20.0000
+DATA|evo_diamond_golem|stomp_radius=8.0000
+DATA|evo_diamond_golem|ground_damage_before_2s=0.0000
+DATA|evo_diamond_golem|ground_damage_after_first_pulse=20.0000
+DATA|evo_diamond_golem|flying_damage_after_first_pulse=0.0000
+DATA|evo_diamond_golem|ground_damage_after_second_pulse=40.0000
+DATA|evo_diamond_golem|quake_effect_visible=true
 
 RESULT|guardian_targeting|PASS|Unreachable ground troops ignore water Guardian|Admin must preserve Guardian water placement; ground attackers only aggro it when their real attack reach can touch water.
 DATA|guardian_targeting|admin_land_spawn_rejected=true
