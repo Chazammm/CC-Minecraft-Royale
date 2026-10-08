@@ -48,7 +48,7 @@ Each monitor shows its own side at the bottom through a mirrored 180-degree view
 
 ## Current selectable cards
 
-There are currently **21 selectable cards**:
+There are currently **22 selectable cards**:
 
 1. Zombie
 2. Skeleton
@@ -65,12 +65,13 @@ There are currently **21 selectable cards**:
 13. Snow Golem
 14. Villager
 15. Endermite
-16. Wolf
-17. Falling Anvil
-18. Nether Portal
-19. Wither Skeleton
-20. Magma Cube
-21. Pillager Outpost
+16. Guardian
+17. Wolf
+18. Falling Anvil
+19. Nether Portal
+20. Wither Skeleton
+21. Magma Cube
+22. Pillager Outpost
 
 Nether Portal summons the internal-only Piglin unit; Piglin is not directly selectable. Magma Cube splits into the internal-only Mini Magma Cube.
 
@@ -86,6 +87,7 @@ Nether Portal summons the internal-only Piglin unit; Piglin is not directly sele
 - **Slime**: splits into two Mini Slimes on death
 - **Witch**: periodically summons Baby Zombies
 - **Villager**: stationary Emerald-generation support
+- **Guardian**: 6E stationary water-only tank counter. Its short-range beam ramps from 35 to 350 DPS over 4s while locked to one target. Each incoming hit reduces current beam charge by 20% rather than resetting it; flying attackers receive 5% of their dealt damage back from Guardian spikes. Guardian has 90 HP, exactly three current Skeleton arrows.
 - **Enderman**: teleporting melee attacker
 - **Snow Golem**: ranged slow support without kiting
 
@@ -171,7 +173,9 @@ The first gameplay Evolutions are enabled:
 - **Charged Creeper** — Creeper, 2 cycles, same 4E cost. Keeps 290 damage but expands the real blast radius from 8 to 12 and uses a much larger blue/cyan charged explosion visual.
 - **Ghast Portal** — Nether Portal, 2 cycles, same 3E cost. Replaces the purple portal with a cyan/light-blue shimmer and summons exactly 2 Ghasts total.
   - **Ghast** — 220 HP flying artillery, 130 damage, 24 range, 2.8s attack cooldown, 5.5 splash radius. Two full hits kill the current 257-HP Blaze. The primary target is slowed by 35% for 1.5s; splash victims take damage but are not slowed.
-- **Mega Mite** — Endermite, 3 cycles, same 1E cost. Keeps all normal Endermite combat stats except max HP, which is exactly 5x (525 HP), and uses a visibly larger sprite.
+- **Mega Mite** — Endermite, 4 cycles, so the 5th play evolves. Same 1E cost. Keeps all normal Endermite combat stats except max HP, which is exactly 5x (525 HP), and uses a visibly larger sprite.
+- **Elder Guardian** — Guardian, 2 cycles, same 6E cost. Doubles HP from 90 to 180 and applies a battlefield-wide 5% movement-speed penalty to every enemy unit while alive. Beam, range and spike reflection are unchanged.
+- **Emerald Bank** — Villager, 3 cycles, same 7E cost. Keeps the exact 61.6% Emerald-generation boost, gains 5% HP (185 -> 194.25) and lasts 70s instead of 50s.
 
 VS BOT automatically selects the first evolution-capable card in its deck when one exists and respects the configured evolved Emerald cost.
 
@@ -194,7 +198,7 @@ The bot uses the normal card API and Emerald economy rather than special spawn c
 
 The lobby includes:
 
-- 21-card paginated collection
+- 22-card paginated collection
 - 8-card deck builder
 - 1 extra **Evolution Slot** below the normal deck
 - Random 8-card deck button
@@ -310,10 +314,12 @@ For a clean Evolution-only measurement use:
     evo_compare 100 creeper
     evo_compare 100 nether_portal
     evo_compare 100 endermite
+    evo_compare 100 guardian
+    evo_compare 100 villager
 
 `evo_compare` builds identical 8-card subject decks and identical opponents for BASE and EVO. BASE disables every Evolution Slot; EVO enables only the tested card. Each context is played from both sides, and corresponding BASE/EVO matches use the same gameplay RNG seed.
 
-With the current three Evolutions, `evo_compare 30 all` runs 360 matches.
+With the current five Evolutions, `evo_compare 30 all` runs 600 matches.
 
 The report is written to:
 
