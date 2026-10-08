@@ -1014,6 +1014,14 @@ local function infoStatLines(card)
             formatEmeraldCost(evoCost),
             formatEmeraldCost(card.cost)
         ))
+
+        local evo = card.evolution
+        if evo and evo.name then
+            table.insert(lines, "EVO FORM: " .. tostring(evo.name))
+        end
+        if evo and evo.description then
+            table.insert(lines, tostring(evo.description))
+        end
     end
 
     return lines
