@@ -318,7 +318,8 @@ local function drawStatus(buffer, state, playerId)
         rightColor = colors.yellow
     elseif player.evolutionCardId and cards.hasEvolution(player.evolutionCardId) then
         local evoCard = cards.get(player.evolutionCardId)
-        local cycles = cards.evolutionCycles(evoCard) or 2
+        local cycles = cards.evolutionCycles(evoCard)
+        if cycles == nil then cycles = 2 end
         local progress = math.min(cycles, player.evolutionProgress or 0)
         local evoState = progress >= cycles and "READY" or (tostring(progress) .. "/" .. tostring(cycles))
         rightText = "EVO " .. (evoCard.icon or "?") .. " " .. evoState
@@ -356,6 +357,14 @@ local function compactNameLines(name, width)
     return { util.truncate(name, math.max(1, width)) }
 end
 
+local function formatEmeraldCost(value)
+    value = tonumber(value) or 0
+    if math.abs(value - math.floor(value + 0.5)) < 0.000001 then
+        return tostring(math.floor(value + 0.5)) .. "E"
+    end
+    return string.format("%.1fE", value)
+end
+
 local function drawCard(buffer, zone, card, selected, affordable, evolutionInfo)
     local evolutionReady = evolutionInfo and evolutionInfo.ready
     local bg = evolutionReady and colors.purple or (selected and colors.orange or colors.gray)
@@ -365,7 +374,8 @@ local function drawCard(buffer, zone, card, selected, affordable, evolutionInfo)
     local width = zone.x2 - zone.x1 + 1
     local label = selected and ("> " .. (card.icon or "?") .. " <") or (card.icon or "?")
     local nameLines = compactNameLines(card.name, width)
-    local cost = tostring(card.cost) .. "E"
+    local displayCost = evolutionInfo and evolutionInfo.cost or card.cost
+    local cost = formatEmeraldCost(displayCost)
 
     if evolutionInfo then
         local evoText = evolutionInfo.ready
@@ -439,13 +449,23 @@ local function drawBattle(buffer, state, playerId, layout)
         local card = cards.get(player.hand[slot])
         if card then
             local evolutionInfo = nil
+            local effectiveCost = card.cost
+
             if player.evolutionCardId == card.id and cards.hasEvolution(card.id) then
-                local cycles = cards.evolutionCycles(card.id) or 2
+                local cycles = cards.evolutionCycles(card.id)
+                if cycles == nil then cycles = 2 end
                 local progress = math.min(cycles, player.evolutionProgress or 0)
+                local ready = progress >= cycles
+
+                if ready then
+                    effectiveCost = cards.evolutionCost(card.id) or card.cost
+                end
+
                 evolutionInfo = {
                     cycles = cycles,
                     progress = progress,
-                    ready = progress >= cycles,
+                    ready = ready,
+                    cost = effectiveCost,
                 }
             end
 
@@ -454,7 +474,7 @@ local function drawBattle(buffer, state, playerId, layout)
                 layout.cards[slot],
                 card,
                 player.selectedSlot == slot,
-                player.emeralds + 0.0001 >= card.cost,
+                player.emeralds + 0.0001 >= effectiveCost,
                 evolutionInfo
             )
         end
@@ -673,12 +693,26 @@ local function drawEvolutionSlot(buffer, zone, player)
 
     local line
     if selected and cards.hasEvolution(selected) then
-        line = string.format(
-            "%s %s  |  %d CYCLES -> 3RD PLAY",
-            selected.icon or "?",
-            selected.name,
-            cards.evolutionCycles(selected) or 2
-        )
+        local cycles = cards.evolutionCycles(selected)
+        if cycles == nil then cycles = 2 end
+        local evoCost = cards.evolutionCost(selected) or selected.cost
+
+        if cycles == 0 then
+            line = string.format(
+                "%s %s | EVERY PLAY EVO | %s",
+                selected.icon or "?",
+                selected.name,
+                formatEmeraldCost(evoCost)
+            )
+        else
+            line = string.format(
+                "%s %s | %d NORMAL -> EVO | %s",
+                selected.icon or "?",
+                selected.name,
+                cycles,
+                formatEmeraldCost(evoCost)
+            )
+        end
     elseif selecting then
         line = "TAP AN ELIGIBLE CARD IN YOUR DECK"
     elseif #cards.evolutionCards() == 0 then
@@ -961,10 +995,24 @@ local function infoStatLines(card)
     end
 
     if cards.hasEvolution(card) then
-        local cycles = cards.evolutionCycles(card) or 2
+        local cycles = cards.evolutionCycles(card)
+        if cycles == nil then cycles = 2 end
+        local evoCost = cards.evolutionCost(card) or card.cost
+
+        if cycles == 0 then
+            table.insert(lines, "EVOLUTION: every play evolves")
+        else
+            table.insert(lines, string.format(
+                "EVOLUTION: %d normal plays; play %d evolves",
+                cycles,
+                cycles + 1
+            ))
+        end
+
         table.insert(lines, string.format(
-            "EVOLUTION: %d normal plays charge it; next play evolves",
-            cycles
+            "EVO COST: %s  |  BASE COST: %s",
+            formatEmeraldCost(evoCost),
+            formatEmeraldCost(card.cost)
         ))
     end
 
