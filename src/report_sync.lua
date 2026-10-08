@@ -12,6 +12,7 @@ local REPORTS = {
     { kind = "mechanics", path = "mechanics_report.txt" },
     { kind = "balance", path = "balance_results.txt" },
     { kind = "comparison", path = "comparison_results.txt" },
+    { kind = "evolution", path = "evolution_results.txt" },
 }
 
 local BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
