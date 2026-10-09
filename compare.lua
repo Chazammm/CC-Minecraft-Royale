@@ -258,7 +258,9 @@ local function runMatch(subjectDeck, opponentDeck, subjectCardId, subjectOwner)
     local deck1 = subjectOwner == 1 and subjectDeck or opponentDeck
     local deck2 = subjectOwner == 1 and opponentDeck or subjectDeck
 
-    local state = Game.new()
+    local state = Game.new(nil, {
+        headlessSimulation = true,
+    })
     local bot1 = Bot.new(1, deck1)
     local bot2 = Bot.new(2, deck2)
 
