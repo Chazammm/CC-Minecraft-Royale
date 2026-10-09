@@ -1,3 +1,4 @@
+local config = require("config")
 local function line()
   print("----------------------------------------")
 end
@@ -28,6 +29,14 @@ for i, monitor in ipairs(monitors) do
   if monitor.setTextScale then monitor.setTextScale(0.5) end
   local w, h = monitor.getSize()
   print(("Monitor %d: %s -> %dx%d @ 0.5"):format(i, tostring(name), w, h))
+  if w < (config.MIN_RECOMMENDED_WIDTH or 1)
+      or h < (config.MIN_RECOMMENDED_HEIGHT or 1)
+  then
+    print(("  WARNING: recommended minimum is %dx%d"):format(
+      config.MIN_RECOMMENDED_WIDTH or 1,
+      config.MIN_RECOMMENDED_HEIGHT or 1
+    ))
+  end
   if monitor.isColor then
     print("  Advanced/color: " .. tostring(monitor.isColor()))
   end
