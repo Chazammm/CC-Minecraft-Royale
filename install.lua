@@ -28,76 +28,23 @@ local files = {
   "report_sync.lua",
 }
 
-local base = ("https://raw.githubusercontent.com/%s/%s/%s/"):format(OWNER, REPO, BRANCH)
-local STAGE_DIR = ".cc_royale_update"
-local BACKUP_DIR = ".cc_royale_backup"
+local base = ("https://raw.githubusercontent.com/%s/%s/%s/"):format(
+  OWNER,
+  REPO,
+  BRANCH
+)
+
+-- Older installers staged a complete second copy on disk. Clean up leftovers
+-- before doing anything else so a previous "Out of space" failure immediately
+-- gives its temporary storage back.
+local LEGACY_STAGE_DIR = ".cc_royale_update"
+local LEGACY_BACKUP_DIR = ".cc_royale_backup"
 
 local function ensureDir(path)
   local dir = fs.getDir(path)
   if dir ~= "" and not fs.exists(dir) then
     fs.makeDir(dir)
   end
-end
-
-local function stagedPath(path)
-  return fs.combine(STAGE_DIR, path)
-end
-
-local function download(path)
-  local target = stagedPath(path)
-  ensureDir(target)
-
-  -- raw.githubusercontent.com/CDN caches can briefly serve an older file
-  -- immediately after a push. A unique query string forces a fresh fetch.
-  local cacheBust
-  if os.epoch then
-    cacheBust = tostring(os.epoch("utc"))
-  else
-    cacheBust = tostring(math.floor(os.clock() * 1000))
-  end
-
-  local url = base .. path .. "?v=" .. cacheBust
-  write(("Downloading %-24s ... "):format(path))
-  local response, err = http.get(url)
-  if not response then
-    print("FAILED")
-    error(("Could not download %s\n%s\nIf the GitHub repo is private, raw.githubusercontent.com will reject the request."):format(url, tostring(err)), 0)
-  end
-
-  if response.getResponseCode then
-    local code = response.getResponseCode()
-    if code ~= 200 then
-      response.close()
-      print("FAILED")
-      error(("GitHub returned HTTP %s while downloading %s"):format(tostring(code), path), 0)
-    end
-  end
-
-  local body = response.readAll()
-  response.close()
-
-  local handle = fs.open(target, "w")
-  if not handle then
-    error("Could not stage " .. path, 0)
-  end
-  handle.write(body)
-  handle.close()
-  print("OK")
-end
-
-local function applyStaged(path)
-  local staged = stagedPath(path)
-  if not fs.exists(staged) or fs.isDir(staged) then
-    error("Staged update is missing " .. path, 0)
-  end
-
-  ensureDir(path)
-
-  if fs.exists(path) then
-    fs.delete(path)
-  end
-
-  fs.move(staged, path)
 end
 
 local function readFile(path)
@@ -109,8 +56,24 @@ local function readFile(path)
   return body
 end
 
--- Do not destroy an unrelated startup script on a shared CC computer. The
--- installer still updates the simple startup file it previously installed.
+local function writeFile(path, body)
+  ensureDir(path)
+
+  local handle = fs.open(path, "w")
+  if not handle then
+    return false, "Could not open " .. path .. " for writing"
+  end
+
+  local ok, err = pcall(handle.write, body)
+  pcall(handle.close)
+
+  if not ok then
+    return false, err
+  end
+
+  return true
+end
+
 local existingStartup = readFile("startup.lua")
 local managedStartup = existingStartup ~= nil
   and (
@@ -123,95 +86,144 @@ local function shouldApply(path)
   return path ~= "startup.lua" or not preserveCustomStartup
 end
 
-local function backupPath(path)
-  return fs.combine(BACKUP_DIR, path)
-end
+local function downloadBody(path, cacheBust)
+  local url = base .. path .. "?v=" .. cacheBust
+  write(("Downloading %-24s ... "):format(path))
 
-local function makeBackup()
-  if fs.exists(BACKUP_DIR) then fs.delete(BACKUP_DIR) end
-  fs.makeDir(BACKUP_DIR)
+  local response, err = http.get(url)
+  if not response then
+    print("FAILED")
+    return nil, (
+      "Could not download %s\n%s\n"
+      .. "If the GitHub repo is private, raw.githubusercontent.com "
+      .. "will reject the request."
+    ):format(url, tostring(err))
+  end
 
-  for _, path in ipairs(files) do
-    if shouldApply(path) and fs.exists(path) and not fs.isDir(path) then
-      local target = backupPath(path)
-      ensureDir(target)
-      fs.copy(path, target)
+  if response.getResponseCode then
+    local code = response.getResponseCode()
+    if code ~= 200 then
+      response.close()
+      print("FAILED")
+      return nil, ("GitHub returned HTTP %s while downloading %s")
+        :format(tostring(code), path)
     end
   end
+
+  local body = response.readAll()
+  response.close()
+  print("OK")
+  return body
 end
 
-local function restoreBackup()
-  for _, path in ipairs(files) do
-    if shouldApply(path) then
-      if fs.exists(path) then fs.delete(path) end
-      local backup = backupPath(path)
-      if fs.exists(backup) and not fs.isDir(backup) then
-        ensureDir(path)
-        fs.move(backup, path)
+local function restoreSnapshot(snapshot, appliedFiles)
+  -- Delete updated files first. This guarantees that the old installation,
+  -- which demonstrably fit before the update, has enough disk space to return.
+  for _, path in ipairs(appliedFiles) do
+    if fs.exists(path) then
+      fs.delete(path)
+    end
+  end
+
+  for _, path in ipairs(appliedFiles) do
+    local oldBody = snapshot[path]
+    if oldBody ~= false then
+      local ok, err = writeFile(path, oldBody)
+      if not ok then
+        return false, ("Could not restore %s: %s")
+          :format(path, tostring(err))
       end
     end
   end
+
+  return true
 end
 
 print("CC-Minecraft Royale installer")
 print("--------------------------------")
-if preserveCustomStartup then
-  print("Custom startup.lua detected - leaving it untouched.")
-end
+
 if not http then
   error("HTTP API is disabled on this server/client.", 0)
 end
 
--- Download the complete update before replacing any live program files.
--- A network failure can therefore no longer leave half the repo on the old
--- version and half on the new one.
-if fs.exists(STAGE_DIR) then
-  fs.delete(STAGE_DIR)
+-- Reclaim any disk space left behind by the old full-disk staging installer.
+if fs.exists(LEGACY_STAGE_DIR) then
+  fs.delete(LEGACY_STAGE_DIR)
 end
-fs.makeDir(STAGE_DIR)
+if fs.exists(LEGACY_BACKUP_DIR) then
+  fs.delete(LEGACY_BACKUP_DIR)
+end
 
+if preserveCustomStartup then
+  print("Custom startup.lua detected - leaving it untouched.")
+end
+
+-- Download everything into RAM first. No live file changes until every network
+-- request has succeeded, and no second copy of the project is written to disk.
+local cacheBust
+if os.epoch then
+  cacheBust = tostring(os.epoch("utc"))
+else
+  cacheBust = tostring(math.floor(os.clock() * 1000))
+end
+
+local downloaded = {}
 for _, path in ipairs(files) do
-  download(path)
+  if shouldApply(path) then
+    local body, err = downloadBody(path, cacheBust)
+    if not body then error(err, 0) end
+    downloaded[path] = body
+  end
 end
 
 print("")
-print("All files downloaded. Applying update...")
+print("All files downloaded. Applying low-space atomic update...")
 
-makeBackup()
-local applied, applyErr = pcall(function()
-  for _, path in ipairs(files) do
-    if shouldApply(path) then
-      applyStaged(path)
+-- Keep the previous text files in RAM during the write phase. This provides a
+-- full rollback without ever storing an on-disk backup copy.
+local snapshot = {}
+local appliedFiles = {}
+for _, path in ipairs(files) do
+  if shouldApply(path) then
+    local oldBody = readFile(path)
+    snapshot[path] = oldBody ~= nil and oldBody or false
+    appliedFiles[#appliedFiles + 1] = path
+  end
+end
+
+local appliedCount = 0
+for _, path in ipairs(appliedFiles) do
+  -- Delete just this old file before writing its replacement. Peak disk usage
+  -- is therefore approximately the installed project size, not 2x the size.
+  if fs.exists(path) then
+    fs.delete(path)
+  end
+
+  local ok, err = writeFile(path, downloaded[path])
+  if not ok then
+    print("")
+    print(("APPLY FAILED at %s - restoring previous installation...")
+      :format(path))
+
+    -- Include the current path in rollback even if the failed write left a
+    -- partial file behind.
+    local restored, restoreErr = restoreSnapshot(snapshot, appliedFiles)
+    if not restored then
+      error(
+        "Update failed: " .. tostring(err)
+        .. "\nRollback also failed: " .. tostring(restoreErr),
+        0
+      )
     end
-  end
-end)
 
-if not applied then
-  print("APPLY FAILED - restoring previous installation...")
-  local restored, restoreErr = pcall(restoreBackup)
-
-  if fs.exists(STAGE_DIR) then fs.delete(STAGE_DIR) end
-
-  if not restored then
-    -- Keep the backup directory intact for manual recovery if restoring the
-    -- previous installation itself fails.
-    error(
-      "Update failed: " .. tostring(applyErr)
-      .. "\nRollback also failed: " .. tostring(restoreErr)
-      .. "\nBackup kept at " .. BACKUP_DIR,
-      0
-    )
+    error("Update failed and was rolled back: " .. tostring(err), 0)
   end
 
-  if fs.exists(BACKUP_DIR) then fs.delete(BACKUP_DIR) end
-  error("Update failed and was rolled back: " .. tostring(applyErr), 0)
+  appliedCount = appliedCount + 1
 end
 
-if fs.exists(STAGE_DIR) then fs.delete(STAGE_DIR) end
-if fs.exists(BACKUP_DIR) then fs.delete(BACKUP_DIR) end
-
 print("")
-print("Install complete.")
+print(("Install complete. Updated %d files."):format(appliedCount))
 
 local mechanicsVersion = "unknown"
 if fs.exists("mechanics_test.lua") then
@@ -219,11 +231,13 @@ if fs.exists("mechanics_test.lua") then
   if handle then
     local body = handle.readAll()
     handle.close()
-    mechanicsVersion = body:match("local%s+SUITE_VERSION%s*=%s*(%d+)") or "unknown"
+    mechanicsVersion = body:match(
+      "local%s+SUITE_VERSION%s*=%s*(%d+)"
+    ) or "unknown"
   end
 end
-print("Installed mechanics suite: FORMAT_VERSION " .. mechanicsVersion)
 
+print("Installed mechanics suite: FORMAT_VERSION " .. mechanicsVersion)
 print("Run: diagnose")
 print("Then: main")
 print("Admin sandbox: admin")
