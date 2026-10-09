@@ -989,6 +989,54 @@ Game.update(anvilState, 0.02)
 assertTrue(not anvilZombie.alive, "Falling Anvil must now one-shot the lower-HP Zombie")
 assertEq(#anvilState.pendingSpells, 0, "Falling Anvil must resolve after its 2.7-second delay")
 
+-- Regression: resolving one pending spell may end the match and replace the
+-- pending-spell table while another delayed spell is still queued. The update
+-- must stop cleanly instead of indexing the new empty table with the old count.
+local pendingFinishState = Game.new()
+pendingFinishState.players[1].deck = cards.defaultDeck()
+pendingFinishState.players[2].deck = cards.defaultDeck()
+Game.handleTouch(pendingFinishState, 1, 15, 11, layout)
+Game.handleTouch(pendingFinishState, 2, 15, 11, layout)
+for _ = 1, 13 do Game.update(pendingFinishState, 0.25) end
+assertEq(pendingFinishState.phase, "battle", "Pending-spell finish regression must reach battle")
+
+local pendingFinishKing
+for _, entity in ipairs(pendingFinishState.entities) do
+    if entity.kind == "tower" and entity.owner == 2 and entity.towerType == "king" then
+        pendingFinishKing = entity
+        break
+    end
+end
+assertTrue(pendingFinishKing ~= nil, "Pending-spell finish regression needs the enemy King Tower")
+pendingFinishKing.hp = 1
+
+local regressionAnvilSpell = cards.get("falling_anvil").spell
+pendingFinishState.pendingSpells = {
+    {
+        kind = "falling_anvil",
+        owner = 1,
+        cardId = "falling_anvil",
+        x = pendingFinishKing.x,
+        y = pendingFinishKing.y,
+        remaining = 0.01,
+        delay = 0.01,
+        spell = regressionAnvilSpell,
+    },
+    {
+        kind = "falling_anvil",
+        owner = 1,
+        cardId = "falling_anvil",
+        x = 2,
+        y = 2,
+        remaining = 0.01,
+        delay = 0.01,
+        spell = regressionAnvilSpell,
+    },
+}
+Game.update(pendingFinishState, 0.02)
+assertEq(pendingFinishState.phase, "result", "Lethal delayed spell must end the match")
+assertEq(#pendingFinishState.pendingSpells, 0, "Match finish must leave no pending spells")
+
 local anvilMultiState = Game.new()
 Game.debugLoadScenario(anvilMultiState, "empty")
 Game.debugSpawnCard(anvilMultiState, 2, "zombie", 47, 80)
