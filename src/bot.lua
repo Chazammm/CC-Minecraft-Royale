@@ -56,6 +56,44 @@ local NORMAL_DECK = {
     "blaze",
 }
 
+local ARROW_CARD = cards.get("arrows")
+local ANVIL_CARD = cards.get("falling_anvil")
+
+-- Static scoring tables are shared between decisions instead of being
+-- allocated again for every card evaluation.
+local POWER_PRIORITY = {
+    iron_golem = 9,
+    guardian = 8.5,
+    villager = 8,
+    witch = 7,
+    evoker = 7.2,
+    enderman = 6,
+    creeper = 5.5,
+    blaze = 5,
+}
+
+local OFFENSE_SCORE = {
+    iron_golem = 7,
+    witch = 6,
+    evoker = 6.2,
+    enderman = 5.5,
+    blaze = 5,
+    zombie = 4.5,
+    wither_skeleton = 4.7,
+    slime = 4.5,
+    magma_cube = 4.7,
+    spider = 4,
+    wolf = 4,
+    snow_golem = 3.5,
+    skeleton = 3.5,
+    bat_swarm = 4,
+    endermite = 2,
+    cannon = 1,
+    pillager_outpost = 1.3,
+    nether_portal = 5.0,
+    guardian = 1.4,
+}
+
 local function otherPlayer(playerId)
     return playerId == 1 and 2 or 1
 end
@@ -185,6 +223,46 @@ local function handHasCard(player, cardId)
     return false
 end
 
+-- A bot decision used to rescan state.entities independently for threat
+-- analysis, Arrow targeting, Anvil targeting, towers, and Villagers. Build
+-- those stable views once per decision while preserving the original entity
+-- order, so every scorer sees exactly the same candidates as before.
+local function buildDecisionView(state, playerId)
+    local view = {
+        enemyEntities = {},
+        enemyUnits = {},
+        enemyNonTowers = {},
+        enemyTowers = {},
+        ownTowers = {},
+        ownVillagerCount = 0,
+    }
+
+    for _, entity in ipairs(state.entities) do
+        if entity.alive then
+            if entity.owner == playerId then
+                if entity.kind == "tower" then
+                    view.ownTowers[#view.ownTowers + 1] = entity
+                end
+                if entity.sourceCardId == "villager" and entity.emeraldBoost then
+                    view.ownVillagerCount = view.ownVillagerCount + 1
+                end
+            else
+                view.enemyEntities[#view.enemyEntities + 1] = entity
+                if entity.kind == "tower" then
+                    view.enemyTowers[#view.enemyTowers + 1] = entity
+                else
+                    view.enemyNonTowers[#view.enemyNonTowers + 1] = entity
+                end
+                if entity.kind == "unit" then
+                    view.enemyUnits[#view.enemyUnits + 1] = entity
+                end
+            end
+        end
+    end
+
+    return view
+end
+
 local function ownedVillagerCount(state, playerId)
     local count = 0
     for _, entity in ipairs(state.entities) do
@@ -214,15 +292,13 @@ local function unitDps(entity)
     return entity.damage / math.max(0.25, entity.attackCooldown or 1)
 end
 
-local function nearestOwnTowerDistance(state, playerId, entity)
+local function nearestOwnTowerDistance(view, entity)
     local best = math.huge
-    for _, candidate in ipairs(state.entities) do
-        if candidate.alive and candidate.owner == playerId and candidate.kind == "tower" then
-            local dx = candidate.x - entity.x
-            local dy = candidate.y - entity.y
-            local d = math.sqrt(dx * dx + dy * dy)
-            if d < best then best = d end
-        end
+    for _, candidate in ipairs(view.ownTowers) do
+        local dx = candidate.x - entity.x
+        local dy = candidate.y - entity.y
+        local d = math.sqrt(dx * dx + dy * dy)
+        if d < best then best = d end
     end
     return best
 end
@@ -234,13 +310,13 @@ local function isApproachingHalf(playerId, y)
     return y <= config.ARENA.riverBottom + 12
 end
 
-local function threatScore(state, playerId, entity)
+local function threatScore(state, playerId, entity, view)
     if not entity.alive or entity.owner == playerId or entity.kind ~= "unit" then return -math.huge end
     if entity.passive then return 0 end
     if not isApproachingHalf(playerId, entity.y) then return 0 end
 
     local score = (entity.maxHp or 100) / 260 + unitDps(entity) / 35
-    local towerDistance = nearestOwnTowerDistance(state, playerId, entity)
+    local towerDistance = nearestOwnTowerDistance(view, entity)
 
     if towerDistance < math.huge then
         score = score + math.max(0, (65 - towerDistance) / 10)
@@ -254,41 +330,36 @@ local function threatScore(state, playerId, entity)
     return score
 end
 
-local function battlefield(state, playerId)
+local function battlefield(state, playerId, view)
     local ctx = {
-        enemies = {},
+        enemies = view.enemyUnits,
         primaryThreat = nil,
         primaryThreatScore = 0,
         nearbyThreats = 0,
     }
 
-    for _, entity in ipairs(state.entities) do
-        if entity.alive and entity.owner ~= playerId and entity.kind == "unit" then
-            table.insert(ctx.enemies, entity)
-            local score = threatScore(state, playerId, entity)
+    for _, entity in ipairs(view.enemyUnits) do
+        local score = threatScore(state, playerId, entity, view)
 
-            if score > 1.5 then ctx.nearbyThreats = ctx.nearbyThreats + 1 end
-            if score > ctx.primaryThreatScore then
-                ctx.primaryThreat = entity
-                ctx.primaryThreatScore = score
-            end
+        if score > 1.5 then ctx.nearbyThreats = ctx.nearbyThreats + 1 end
+        if score > ctx.primaryThreatScore then
+            ctx.primaryThreat = entity
+            ctx.primaryThreatScore = score
         end
     end
 
     return ctx
 end
 
-local function bestArrowTarget(state, playerId)
-    local arrow = cards.get("arrows")
+local function bestArrowTarget(state, playerId, view)
+    local arrow = ARROW_CARD
     local radius = arrow and arrow.spell and arrow.spell.radius or 12
     local best, bestScore = nil, 0
 
-    for _, center in ipairs(state.entities) do
-        if center.alive and center.owner ~= playerId and center.kind ~= "tower" then
-            local score = 0
+    for _, center in ipairs(view.enemyNonTowers) do
+        local score = 0
 
-            for _, target in ipairs(state.entities) do
-                if target.alive and target.owner ~= playerId and target.kind ~= "tower" then
+        for _, target in ipairs(view.enemyNonTowers) do
                     local dx = center.x - target.x
                     local dy = center.y - target.y
                     if math.sqrt(dx * dx + dy * dy) <= radius then
@@ -304,13 +375,11 @@ local function bestArrowTarget(state, playerId)
                             score = score + 0.35
                         end
                     end
-                end
             end
 
-            if score > bestScore then
-                bestScore = score
-                best = center
-            end
+        if score > bestScore then
+            bestScore = score
+            best = center
         end
     end
 
@@ -320,11 +389,8 @@ local function bestArrowTarget(state, playerId)
 
     -- A spell that can end a tower should not be ignored just because there
     -- is no troop cluster nearby.
-    for _, tower in ipairs(state.entities) do
-        if tower.alive
-            and tower.owner ~= playerId
-            and tower.kind == "tower"
-            and towerDamage > 0
+    for _, tower in ipairs(view.enemyTowers) do
+        if towerDamage > 0
             and tower.hp <= towerDamage + 0.001
         then
             local score = tower.towerType == "king" and 80 or 35
@@ -345,6 +411,10 @@ end
 
 local function botEntityById(state, id)
     if not id then return nil end
+    if state.entityById then
+        local entity = state.entityById[id]
+        return entity and entity.alive and entity or nil
+    end
     for _, entity in ipairs(state.entities) do
         if entity.id == id and entity.alive then return entity end
     end
@@ -438,8 +508,8 @@ local function anvilOverlapsPending(state, playerId, x, y, radius)
     return false
 end
 
-local function bestAnvilTarget(state, playerId)
-    local card = cards.get("falling_anvil")
+local function bestAnvilTarget(state, playerId, view)
+    local card = ANVIL_CARD
     local spell = card and card.spell or nil
     if not spell then return nil, nil, 0 end
 
@@ -449,20 +519,17 @@ local function bestAnvilTarget(state, playerId)
     local bestX, bestY, bestScore = nil, nil, 0
 
     local predicted = {}
-    for _, entity in ipairs(state.entities) do
-        if entity.alive and entity.owner ~= playerId then
-            local px, py, confidence = predictedAnvilPosition(state, entity, delay)
+    for _, entity in ipairs(view.enemyEntities) do
+        local px, py, confidence = predictedAnvilPosition(state, entity, delay)
             predicted[entity.id] = {
                 x = px,
                 y = py,
                 confidence = confidence,
-            }
-        end
+        }
     end
 
-    for _, center in ipairs(state.entities) do
-        if center.alive and center.owner ~= playerId then
-            local centerPrediction = predicted[center.id]
+    for _, center in ipairs(view.enemyEntities) do
+        local centerPrediction = predicted[center.id]
             local cx = centerPrediction and centerPrediction.x or center.x
             local cy = centerPrediction and centerPrediction.y or center.y
 
@@ -472,9 +539,8 @@ local function bestAnvilTarget(state, playerId)
                 local reliableHits = 0
                 local lethalTower = false
 
-                for _, target in ipairs(state.entities) do
-                    if target.alive and target.owner ~= playerId then
-                        local targetPrediction = predicted[target.id]
+                for _, target in ipairs(view.enemyEntities) do
+                    local targetPrediction = predicted[target.id]
                         local tx = targetPrediction and targetPrediction.x or target.x
                         local ty = targetPrediction and targetPrediction.y or target.y
                         local confidence = targetPrediction
@@ -509,7 +575,6 @@ local function bestAnvilTarget(state, playerId)
                                     score = score + 1.0
                                 end
                             end
-                        end
                     end
                 end
 
@@ -536,7 +601,6 @@ local function bestAnvilTarget(state, playerId)
                     bestScore = score
                     bestX, bestY = cx, cy
                 end
-            end
         end
     end
 
@@ -712,8 +776,8 @@ local function offensivePlacement(bot, state, card)
     return clampOwnPlacement(playerId, laneX, y)
 end
 
-local function shouldSaveForPowerCard(bot, state, ctx, arrowScore)
-    local cfg = difficultyConfig(bot)
+local function shouldSaveForPowerCard(bot, state, ctx, arrowScore, cfg, view)
+    cfg = cfg or difficultyConfig(bot)
     if not cfg.saveForPower then return false end
 
     local player = state.players[bot.playerId]
@@ -723,23 +787,12 @@ local function shouldSaveForPowerCard(bot, state, ctx, arrowScore)
     if threat and ctx.primaryThreatScore >= (lateGame and 4.5 or 3) then
         return false
     end
-    if arrowScore and arrowScore >= difficultyConfig(bot).arrowThreshold then
+    if arrowScore and arrowScore >= cfg.arrowThreshold then
         return false
     end
 
     local bestCost = nil
     local bestPriority = -math.huge
-
-    local priority = {
-        iron_golem = 9,
-        guardian = 8.5,
-        villager = lateGame and -math.huge or 8,
-        witch = 7,
-        evoker = 7.2,
-        enderman = 6,
-        creeper = 5.5,
-        blaze = 5,
-    }
 
     for slot = 1, 4 do
         local card = cards.get(player.hand[slot])
@@ -752,9 +805,11 @@ local function shouldSaveForPowerCard(bot, state, ctx, arrowScore)
 
             if player.emeralds < playCost then
                 local gap = playCost - player.emeralds
-                local p = priority[card.id] or 0
+                local p = POWER_PRIORITY[card.id] or 0
 
-                if card.id == "villager" and ownedVillagerCount(state, bot.playerId) > 0 then
+                if card.id == "villager"
+                    and (lateGame or (view and view.ownVillagerCount > 0))
+                then
                     p = -math.huge
                 end
 
@@ -770,8 +825,8 @@ local function shouldSaveForPowerCard(bot, state, ctx, arrowScore)
     return bestCost ~= nil
 end
 
-local function botDefenseThreshold(bot, state)
-    local cfg = difficultyConfig(bot)
+local function botDefenseThreshold(bot, state, cfg)
+    cfg = cfg or difficultyConfig(bot)
     local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
     local base = state.overtime and 5.0 or (lateGame and 4.2 or 3.0)
 
@@ -787,16 +842,27 @@ local function botDefenseThreshold(bot, state)
     return base + cfg.defenseOffset
 end
 
-local function scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
+local function scoreCard(
+    bot,
+    state,
+    ctx,
+    card,
+    slot,
+    arrowScore,
+    anvilScore,
+    cfg,
+    defenseThreshold,
+    view
+)
     local player = state.players[bot.playerId]
     local playCost = Game.getCardPlayCost(state, bot.playerId, card.id) or card.cost
     if player.emeralds + 0.0001 < playCost then return -math.huge end
 
-    local cfg = difficultyConfig(bot)
+    cfg = cfg or difficultyConfig(bot)
     local score = 0
     local threat = ctx.primaryThreat
     local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
-    local defenseThreshold = botDefenseThreshold(bot, state)
+    defenseThreshold = defenseThreshold or botDefenseThreshold(bot, state, cfg)
     local defending = threat and ctx.primaryThreatScore >= defenseThreshold
 
     -- Economy cards were effectively never tested because the bot kept
@@ -817,7 +883,7 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
             return -math.huge
         end
     elseif card.id == "villager" then
-        if defending or lateGame or ownedVillagerCount(state, bot.playerId) > 0 then
+        if defending or lateGame or (view and view.ownVillagerCount > 0) then
             return -math.huge
         end
         if player.emeralds >= 7 then
@@ -897,28 +963,7 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
             score = score + 2
         end
     else
-        local offense = {
-            iron_golem = 7,
-            witch = 6,
-            evoker = 6.2,
-            enderman = 5.5,
-            blaze = 5,
-            zombie = 4.5,
-            wither_skeleton = 4.7,
-            slime = 4.5,
-            magma_cube = 4.7,
-            spider = 4,
-            wolf = 4,
-            snow_golem = 3.5,
-            skeleton = 3.5,
-            bat_swarm = 4,
-            endermite = 2,
-            cannon = 1,
-            pillager_outpost = 1.3,
-            nether_portal = 5.0,
-            guardian = 1.4,
-        }
-        score = offense[card.id] or 2
+        score = OFFENSE_SCORE[card.id] or 2
         if lateGame and card.id ~= "cannon" and card.id ~= "villager" then
             score = score + (state.overtime and 4.5 or 3.0)
         end
@@ -970,21 +1015,45 @@ local function choosePlay(bot, state)
     end
 
     local player = state.players[bot.playerId]
-    local ctx = battlefield(state, bot.playerId)
-    local arrowX, arrowY, arrowScore = bestArrowTarget(state, bot.playerId)
-    local anvilX, anvilY, anvilScore = bestAnvilTarget(state, bot.playerId)
+    local view = buildDecisionView(state, bot.playerId)
+    local ctx = battlefield(state, bot.playerId, view)
 
-    if shouldSaveForPowerCard(bot, state, ctx, arrowScore) then
+    local arrowX, arrowY, arrowScore = nil, nil, 0
+    if cfg.saveForPower or handHasCard(player, "arrows") then
+        arrowX, arrowY, arrowScore = bestArrowTarget(state, bot.playerId, view)
+    end
+
+    -- Anvil prediction is one of the most expensive decision passes. Its
+    -- result is only consumed when Falling Anvil is actually in the current
+    -- four-card hand, so skipping it otherwise is behaviorally identical.
+    local anvilX, anvilY, anvilScore = nil, nil, 0
+    if handHasCard(player, "falling_anvil") then
+        anvilX, anvilY, anvilScore = bestAnvilTarget(state, bot.playerId, view)
+    end
+
+    if shouldSaveForPowerCard(bot, state, ctx, arrowScore, cfg, view) then
         return nil
     end
 
+    local defenseThreshold = botDefenseThreshold(bot, state, cfg)
     local best = nil
     local bestScore = -math.huge
 
     for slot = 1, 4 do
         local card = cards.get(player.hand[slot])
         if card then
-            local score = scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
+            local score = scoreCard(
+                bot,
+                state,
+                ctx,
+                card,
+                slot,
+                arrowScore,
+                anvilScore,
+                cfg,
+                defenseThreshold,
+                view
+            )
             if score > bestScore then
                 bestScore = score
                 best = { slot = slot, card = card }
@@ -999,7 +1068,7 @@ local function choosePlay(bot, state)
     elseif best.card.id == "falling_anvil" and anvilX then
         best.x, best.y = anvilX, anvilY
     elseif ctx.primaryThreat
-        and ctx.primaryThreatScore >= botDefenseThreshold(bot, state)
+        and ctx.primaryThreatScore >= defenseThreshold
     then
         best.x, best.y = defensivePlacement(bot, best.card, ctx.primaryThreat)
     else
