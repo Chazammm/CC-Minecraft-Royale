@@ -168,10 +168,6 @@ local function cardReport(cardId)
     return out
 end
 
-local function contains(deck, cardId)
-    for _, id in ipairs(deck) do
-        if id == cardId then return true end
-    end
     return false
 end
 
