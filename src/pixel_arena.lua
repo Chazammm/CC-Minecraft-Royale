@@ -529,7 +529,7 @@ local function getSurface(monitor, rect)
         cache[monitor] = cached
     end
 
-    return cached.box
+    return cached.box, cached
 end
 
 local function put(box, x, y, color)
@@ -597,6 +597,29 @@ local function drawTerrain(box)
         -- small dark bridge rails for depth/readability
         drawLine(box, x1, riverY1, x1, riverY2, colors.gray)
         drawLine(box, x2, riverY1, x2, riverY2, colors.gray)
+    end
+end
+
+local function restoreTerrain(box, cached)
+    if not cached.terrain then
+        drawTerrain(box)
+        cached.terrain = {}
+
+        for y = 1, box.height do
+            local source = box.canvas[y]
+            local row = {}
+            for x = 1, box.width do row[x] = source[x] end
+            cached.terrain[y] = row
+        end
+        return
+    end
+
+    -- Arena geometry is static for the entire match. Restore the cached pixel
+    -- background instead of recomputing river/bridge geometry every frame.
+    for y = 1, box.height do
+        local source = cached.terrain[y]
+        local target = box.canvas[y]
+        for x = 1, box.width do target[x] = source[x] end
     end
 end
 
@@ -1069,8 +1092,8 @@ local function drawEffect(box, playerId, effect)
 end
 
 function pixelArena.draw(monitor, state, playerId, rect)
-    local box = getSurface(monitor, rect)
-    drawTerrain(box)
+    local box, cached = getSurface(monitor, rect)
+    restoreTerrain(box, cached)
 
     local drawEntities = {}
     for _, entity in ipairs(state.entities) do
