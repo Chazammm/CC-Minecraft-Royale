@@ -147,6 +147,10 @@ while true do
         if refreshHardware() then redraw() end
 
     elseif name == "timer" and event[2] == tickTimer then
+        local phaseBeforeTick = state.phase
+        local feedback1Before = state.players[1].feedback
+        local feedback2Before = state.players[2].feedback
+
         local current = nowSeconds()
         local elapsed = current - lastTick
         lastTick = current
@@ -181,6 +185,13 @@ while true do
         Music.pump(music)
 
         tickTimer = os.startTimer(config.TICK_RATE)
-        redraw()
+
+        local liveArena = state.phase == "battle"
+            or state.phase == "countdown"
+        local uiChanged = state.phase ~= phaseBeforeTick
+            or state.players[1].feedback ~= feedback1Before
+            or state.players[2].feedback ~= feedback2Before
+
+        if liveArena or uiChanged then redraw() end
     end
 end
