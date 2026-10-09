@@ -585,7 +585,11 @@ local function defensivePlacement(bot, card, threat)
         return clampOwnPlacement(playerId, 50, threat.y + back * 10)
     end
 
-    if card.id == "snow_golem" or card.id == "skeleton" or card.id == "witch" then
+    if card.id == "snow_golem"
+        or card.id == "skeleton"
+        or card.id == "witch"
+        or card.id == "evoker"
+    then
         return clampOwnPlacement(playerId, threat.x, threat.y + back * 13)
     end
 
@@ -689,7 +693,7 @@ local function offensivePlacement(bot, state, card)
         return clampOwnPlacement(playerId, x, y)
     end
 
-    if card.id == "iron_golem" or card.id == "witch" then
+    if card.id == "iron_golem" or card.id == "witch" or card.id == "evoker" then
         local y
         if lateGame then
             y = playerId == 1 and 96 or 64
@@ -731,6 +735,7 @@ local function shouldSaveForPowerCard(bot, state, ctx, arrowScore)
         guardian = 8.5,
         villager = lateGame and -math.huge or 8,
         witch = 7,
+        evoker = 7.2,
         enderman = 6,
         creeper = 5.5,
         blaze = 5,
@@ -878,6 +883,8 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
             score = score + (threat.flying and 4.5 or 3)
         elseif card.id == "witch" then
             score = score + (threat.flying and 4.5 or 3)
+        elseif card.id == "evoker" and not threat.flying then
+            score = score + (ctx.nearbyThreats >= 2 and 5.0 or 3.2)
         elseif card.id == "bat_swarm" and not threat.canAttackAir then
             score = score + 5
         elseif card.id == "blaze" then
@@ -893,6 +900,7 @@ local function scoreCard(bot, state, ctx, card, slot, arrowScore, anvilScore)
         local offense = {
             iron_golem = 7,
             witch = 6,
+            evoker = 6.2,
             enderman = 5.5,
             blaze = 5,
             zombie = 4.5,
