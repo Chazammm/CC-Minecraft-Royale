@@ -17,18 +17,63 @@ music.volume = (config.MUSIC and config.MUSIC.volume) or music.volume
 local previousMode = state.gameMode
 local previousPhase = state.phase
 local previousMusicPhase = state.phase
+local savedHumanSide = {}
+
+local function copyList(list)
+    local out = {}
+    for i, value in ipairs(list or {}) do out[i] = value end
+    return out
+end
+
+local function saveHumanSide(playerId)
+    local player = state.players[playerId]
+    savedHumanSide[playerId] = {
+        deck = copyList(player.deck),
+        hand = copyList(player.hand),
+        queue = copyList(player.queue),
+        selectedSlot = player.selectedSlot,
+        evolutionCardId = player.evolutionCardId,
+        evolutionProgress = player.evolutionProgress,
+    }
+end
+
+local function restoreHumanSide(playerId)
+    local saved = savedHumanSide[playerId]
+    if not saved then return end
+
+    local player = state.players[playerId]
+    player.deck = copyList(saved.deck)
+    player.hand = copyList(saved.hand)
+    player.queue = copyList(saved.queue)
+    player.selectedSlot = saved.selectedSlot
+    player.evolutionCardId = saved.evolutionCardId
+    player.evolutionProgress = saved.evolutionProgress or 0
+    savedHumanSide[playerId] = nil
+end
 
 local function syncBot()
     Bot.setDifficulty(bot, state.botDifficulty or "normal")
 
     local desiredBotPlayerId = state.botPlayerId or 2
     local botSideChanged = bot.playerId ~= desiredBotPlayerId
+
+    if previousMode == "bot"
+        and state.gameMode ~= "bot"
+        and state.phase == "lobby"
+    then
+        restoreHumanSide(bot.playerId)
+    end
+
     if botSideChanged then
+        if previousMode == "bot" and state.phase == "lobby" then
+            restoreHumanSide(bot.playerId)
+        end
         bot.playerId = desiredBotPlayerId
     end
 
     if state.gameMode == "bot" then
         if (previousMode ~= "bot" or botSideChanged) and state.phase == "lobby" then
+            saveHumanSide(bot.playerId)
             Bot.prepare(bot, state)
         end
 
