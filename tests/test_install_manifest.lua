@@ -43,7 +43,7 @@ local function scan(path)
     visited[path] = true
 
     local body = read(path)
-    for quote, moduleName in body:gmatch("require%s*%(%s*(["'])(.-)%1%s*%)") do
+    for quote, moduleName in body:gmatch([=[require%s*%(%s*(["'])(.-)%1%s*%)]=]) do
         local requiredPath = modulePath(moduleName)
         local handle = io.open(requiredPath, "r")
         if handle then
