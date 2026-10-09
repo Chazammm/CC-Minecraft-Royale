@@ -16,6 +16,7 @@ local files = {
   "src/game.lua",
   "src/bot.lua",
   "src/benchmark_utils.lua",
+  "src/headless_match.lua",
   "src/music.lua",
   "src/music_manifest.lua",
   "src/render.lua",
@@ -29,17 +30,12 @@ local files = {
   "report_sync.lua",
 }
 
-local base = ("https://raw.githubusercontent.com/%s/%s/%s/"):format(
-  OWNER,
-  REPO,
-  BRANCH
-)
-
 -- Older installers staged a complete second copy on disk. Clean up leftovers
 -- before doing anything else so a previous "Out of space" failure immediately
 -- gives its temporary storage back.
 local LEGACY_STAGE_DIR = ".cc_royale_update"
 local LEGACY_BACKUP_DIR = ".cc_royale_backup"
+local INSTALL_MARKER = ".cc_royale_installing"
 
 local function ensureDir(path)
   local dir = fs.getDir(path)
@@ -87,8 +83,45 @@ local function shouldApply(path)
   return path ~= "startup.lua" or not preserveCustomStartup
 end
 
-local function downloadBody(path, cacheBust)
-  local url = base .. path .. "?v=" .. cacheBust
+local function resolveCommitSha()
+  local url = ("https://api.github.com/repos/%s/%s/commits/%s"):format(
+    OWNER,
+    REPO,
+    BRANCH
+  )
+
+  local response, err = http.get(url, {
+    ["Accept"] = "application/vnd.github+json",
+    ["User-Agent"] = "CC-Minecraft-Royale",
+  })
+  if not response then
+    return nil, "Could not resolve repository HEAD: " .. tostring(err)
+  end
+
+  if response.getResponseCode and response.getResponseCode() ~= 200 then
+    local code = response.getResponseCode()
+    response.close()
+    return nil, "GitHub commit lookup returned HTTP " .. tostring(code)
+  end
+
+  local body = response.readAll()
+  response.close()
+
+  if not textutils or not textutils.unserializeJSON then
+    return nil, "JSON support is unavailable; cannot pin installer commit."
+  end
+
+  local ok, decoded = pcall(textutils.unserializeJSON, body)
+  local sha = ok and type(decoded) == "table" and decoded.sha or nil
+  if type(sha) ~= "string" or #sha < 7 then
+    return nil, "GitHub commit lookup returned no usable SHA."
+  end
+
+  return sha
+end
+
+local function downloadBody(base, path)
+  local url = base .. path
   write(("Downloading %-24s ... "):format(path))
 
   local response, err = http.get(url)
@@ -155,23 +188,35 @@ if fs.exists(LEGACY_BACKUP_DIR) then
   fs.delete(LEGACY_BACKUP_DIR)
 end
 
+if fs.exists(INSTALL_MARKER) then
+  local interruptedSha = readFile(INSTALL_MARKER) or "unknown"
+  print("Interrupted previous update detected (" .. interruptedSha .. ").")
+  print("Reinstalling every managed file from one pinned commit.")
+end
+
 if preserveCustomStartup then
   print("Custom startup.lua detected - leaving it untouched.")
 end
 
+-- Resolve main once, then fetch every file from that immutable commit. A push
+-- which happens halfway through an update can therefore never create a mixed
+-- installation assembled from two repository versions.
+local targetSha, shaErr = resolveCommitSha()
+if not targetSha then error(shaErr, 0) end
+
+local base = ("https://raw.githubusercontent.com/%s/%s/%s/"):format(
+  OWNER,
+  REPO,
+  targetSha
+)
+print("Pinned repository commit: " .. targetSha:sub(1, 12))
+
 -- Download everything into RAM first. No live file changes until every network
 -- request has succeeded, and no second copy of the project is written to disk.
-local cacheBust
-if os.epoch then
-  cacheBust = tostring(os.epoch("utc"))
-else
-  cacheBust = tostring(math.floor(os.clock() * 1000))
-end
-
 local downloaded = {}
 for _, path in ipairs(files) do
   if shouldApply(path) then
-    local body, err = downloadBody(path, cacheBust)
+    local body, err = downloadBody(base, path)
     if not body then error(err, 0) end
     downloaded[path] = body
   end
@@ -179,6 +224,11 @@ end
 
 print("")
 print("All files downloaded. Applying low-space atomic update...")
+
+local markerOk, markerErr = writeFile(INSTALL_MARKER, targetSha)
+if not markerOk then
+  error("Could not create install recovery marker: " .. tostring(markerErr), 0)
+end
 
 -- Keep the previous text files in RAM during the write phase. This provides a
 -- full rollback without ever storing an on-disk backup copy.
@@ -212,19 +262,24 @@ for _, path in ipairs(appliedFiles) do
     if not restored then
       error(
         "Update failed: " .. tostring(err)
-        .. "\nRollback also failed: " .. tostring(restoreErr),
+        .. "\nRollback also failed: " .. tostring(restoreErr)
+        .. "\nRecovery marker retained at " .. INSTALL_MARKER,
         0
       )
     end
 
+    if fs.exists(INSTALL_MARKER) then fs.delete(INSTALL_MARKER) end
     error("Update failed and was rolled back: " .. tostring(err), 0)
   end
 
   appliedCount = appliedCount + 1
 end
 
+if fs.exists(INSTALL_MARKER) then fs.delete(INSTALL_MARKER) end
+
 print("")
 print(("Install complete. Updated %d files."):format(appliedCount))
+print("Installed commit: " .. targetSha:sub(1, 12))
 
 local mechanicsVersion = "unknown"
 if fs.exists("mechanics_test.lua") then
