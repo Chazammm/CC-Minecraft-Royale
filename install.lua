@@ -112,8 +112,12 @@ end
 -- Do not destroy an unrelated startup script on a shared CC computer. The
 -- installer still updates the simple startup file it previously installed.
 local existingStartup = readFile("startup.lua")
-local preserveCustomStartup = existingStartup ~= nil
-  and not existingStartup:find('shell%.run%(['"]main%.lua['"]%)')
+local managedStartup = existingStartup ~= nil
+  and (
+    existingStartup:find('shell.run("main.lua")', 1, true)
+    or existingStartup:find("shell.run('main.lua')", 1, true)
+  )
+local preserveCustomStartup = existingStartup ~= nil and not managedStartup
 
 local function shouldApply(path)
   return path ~= "startup.lua" or not preserveCustomStartup
