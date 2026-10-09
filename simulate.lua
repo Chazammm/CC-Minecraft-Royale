@@ -1,8 +1,8 @@
-local Game = require("src.game")
 local Bot = require("src.bot")
 local cards = require("src.cards")
 local config = require("config")
 local benchmark = require("src.benchmark_utils")
+local Runner = require("src.headless_match")
 
 local args = { ... }
 
@@ -189,69 +189,12 @@ local function addDeckResult(deck, owner, state)
 end
 
 local function runMatch(deck1, deck2)
-    local state = Game.new(nil, {
-        headlessSimulation = true,
+    local state = Runner.run(deck1, deck2, {
+        dt = SIM_DT,
+        yieldFn = cooperativeYield,
+        yieldCheckTicks = YIELD_CHECK_TICKS,
+        timeoutReason = "SIMULATION TIMEOUT",
     })
-    local bot1 = Bot.new(1, deck1)
-    local bot2 = Bot.new(2, deck2)
-
-    Bot.prepare(bot1, state)
-    Bot.prepare(bot2, state)
-
-    state.players[1].ready = true
-    state.players[2].ready = true
-    local started, skippedTicks = Game.startHeadlessBattle(state, SIM_DT)
-    if not started then error(skippedTicks or "Could not start headless battle", 0) end
-
-    Bot.beginMatch(bot1)
-    Bot.beginMatch(bot2)
-    bot1.enabled = true
-    bot2.enabled = true
-
-    -- In the normal loop, the tick which flips countdown -> battle returns
-    -- before combat but Bot.update still runs once. Preserve that exact
-    -- pre-combat timer/memory step and its alternating bot order.
-    local transitionTick = math.max(0, skippedTicks - 1)
-    if transitionTick % 2 == 0 then
-        Bot.update(bot1, state, SIM_DT)
-        Bot.update(bot2, state, SIM_DT)
-    else
-        Bot.update(bot2, state, SIM_DT)
-        Bot.update(bot1, state, SIM_DT)
-    end
-
-    local ticks = skippedTicks
-    local maxSimulationSeconds = config.MATCH.countdown
-        + config.MATCH.normalTime
-        + config.MATCH.overtimeTime
-        + 30
-    local maxTicks = math.ceil(maxSimulationSeconds / SIM_DT)
-
-    while state.phase ~= "result" and ticks < maxTicks do
-        Game.update(state, SIM_DT)
-
-        -- Alternate which bot thinks first. The benchmark should measure card
-        -- balance, not gain a systematic P1 advantage from a fixed call order.
-        if ticks % 2 == 0 then
-            Bot.update(bot1, state, SIM_DT)
-            Bot.update(bot2, state, SIM_DT)
-        else
-            Bot.update(bot2, state, SIM_DT)
-            Bot.update(bot1, state, SIM_DT)
-        end
-
-        ticks = ticks + 1
-
-        if ticks % YIELD_CHECK_TICKS == 0 then
-            cooperativeYield(false)
-        end
-    end
-
-    cooperativeYield(false)
-
-    if state.phase ~= "result" then
-        Game.finish(state, nil, "SIMULATION TIMEOUT")
-    end
 
     report.matches = report.matches + 1
     report.totalTime = report.totalTime + (state.stats.elapsed or 0)
