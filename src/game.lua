@@ -752,7 +752,12 @@ local function updateMovementSlows(entity, dt)
 
     -- Compatibility path for legacy/debug entities which still provide only
     -- the old aggregate slow fields.
-    updateMovementSlows(entity, dt)
+    if entity.slowRemaining and entity.slowRemaining > 0 then
+        entity.slowRemaining = math.max(0, entity.slowRemaining - dt)
+        if entity.slowRemaining <= 0 then
+            entity.slowFactor = 1
+        end
+    end
 end
 
 local function applyMovementSlow(entity, spec)
@@ -1636,12 +1641,7 @@ local function updateCombatEntity(state, entity, dt)
     entity.attackCooldownLeft = math.max(0, (entity.attackCooldownLeft or 0) - dt)
     entity.teleportCooldownLeft = math.max(0, (entity.teleportCooldownLeft or 0) - dt)
 
-    if entity.slowRemaining and entity.slowRemaining > 0 then
-        entity.slowRemaining = math.max(0, entity.slowRemaining - dt)
-        if entity.slowRemaining <= 0 then
-            entity.slowFactor = 1
-        end
-    end
+    updateMovementSlows(entity, dt)
 
     updatePeriodicSpawn(state, entity, dt)
 
