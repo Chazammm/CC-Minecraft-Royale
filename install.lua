@@ -191,16 +191,19 @@ if not applied then
   local restored, restoreErr = pcall(restoreBackup)
 
   if fs.exists(STAGE_DIR) then fs.delete(STAGE_DIR) end
-  if fs.exists(BACKUP_DIR) then fs.delete(BACKUP_DIR) end
 
   if not restored then
+    -- Keep the backup directory intact for manual recovery if restoring the
+    -- previous installation itself fails.
     error(
       "Update failed: " .. tostring(applyErr)
-      .. "\nRollback also failed: " .. tostring(restoreErr),
+      .. "\nRollback also failed: " .. tostring(restoreErr)
+      .. "\nBackup kept at " .. BACKUP_DIR,
       0
     )
   end
 
+  if fs.exists(BACKUP_DIR) then fs.delete(BACKUP_DIR) end
   error("Update failed and was rolled back: " .. tostring(applyErr), 0)
 end
 
