@@ -1645,6 +1645,7 @@ local function updateProjectiles(state, dt)
                         table.insert(victims, target)
                     end
 
+                    local battleAtStart = state.phase == "battle"
                     for _, victim in ipairs(victims) do
                         damageEntity(
                             state,
@@ -1654,6 +1655,11 @@ local function updateProjectiles(state, dt)
                             projectile.sourceCardId,
                             projectile.sourceEntityId
                         )
+
+                        if battleAtStart and state.phase ~= "battle" then
+                            break
+                        end
+
                         local shouldSlow = victim.alive
                             and projectile.onHitSlow
                             and victim.kind == "unit"
@@ -3115,6 +3121,8 @@ local function clearSimulation(state)
     state.effects = {}
     state.pendingSpells = {}
     state.nextEntityId = 1
+    state.globalMovementAuraActive = false
+    state.globalMovementAuraDirty = false
 end
 
 local function spawnScenarioTowers(state, scenario)
@@ -3163,6 +3171,7 @@ function Game.debugLoadScenario(state, scenario)
     state.resultReason = nil
     state.overtime = false
     state.tiebreaker = false
+    state.exitRequested = false
     state.destroyedSideTowers = {
         [1] = { left = false, right = false },
         [2] = { left = false, right = false },
