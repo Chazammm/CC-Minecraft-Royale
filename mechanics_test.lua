@@ -87,6 +87,27 @@ local function newAdminState(scenario)
     return state
 end
 
+local function debugSpawnEnemy(state, cardId, x, y)
+    state.adminMode = true
+    local ok = Game.debugSpawnCard(state, 2, cardId, x, y)
+    state.adminMode = false
+    if not ok then return nil end
+
+    local newest = nil
+    for _, entity in ipairs(state.entities) do
+        if entity.alive
+            and entity.owner == 2
+            and entity.sourceCardId == cardId
+        then
+            if not newest or entity.id > newest.id then
+                newest = entity
+            end
+        end
+    end
+    return newest
+end
+
+
 -- Pick a roomy ground patch dynamically so diagnostics do not silently become
 -- water/bridge tests if arena dimensions or river placement change later.
 local function findSafeGroundAnchor()
@@ -1134,23 +1155,8 @@ runTest("evo_charged_creeper", "Charged Creeper has larger blue blast", function
         return false, "Charged Creeper did not deploy on its ready play.", {}
     end
 
-    local function debugSpawnEnemy(cardId, x, y)
-        state.adminMode = true
-        local ok = Game.debugSpawnCard(state, 2, cardId, x, y)
-        state.adminMode = false
-        if not ok then return nil end
-
-        local newest = nil
-        for _, entity in ipairs(state.entities) do
-            if entity.alive and entity.owner == 2 and entity.sourceCardId == cardId then
-                if not newest or entity.id > newest.id then newest = entity end
-            end
-        end
-        return newest
-    end
-
-    local nearZombie = debugSpawnEnemy("zombie", SAFE_X, SAFE_Y + 3)
-    local farZombie = debugSpawnEnemy("zombie", SAFE_X, SAFE_Y + 10)
+    local nearZombie = debugSpawnEnemy(state, "zombie", SAFE_X, SAFE_Y + 3)
+    local farZombie = debugSpawnEnemy(state, "zombie", SAFE_X, SAFE_Y + 10)
     if not nearZombie or not farZombie then
         return false, "Could not create Charged Creeper blast targets.", {}
     end
@@ -1277,23 +1283,8 @@ runTest("evo_ghast_portal", "Ghast Portal spawns exactly two artillery Ghasts", 
     ghast.moveSpeed = 0
     ghast.attackCooldownLeft = 0
 
-    local function debugSpawnEnemy(cardId, x, y)
-        state.adminMode = true
-        local ok = Game.debugSpawnCard(state, 2, cardId, x, y)
-        state.adminMode = false
-        if not ok then return nil end
-
-        local newest = nil
-        for _, entity in ipairs(state.entities) do
-            if entity.alive and entity.owner == 2 and entity.sourceCardId == cardId then
-                if not newest or entity.id > newest.id then newest = entity end
-            end
-        end
-        return newest
-    end
-
-    local blaze = debugSpawnEnemy("blaze", ghast.x, ghast.y + 8)
-    local splashZombie = debugSpawnEnemy("zombie", ghast.x + 2, ghast.y + 8)
+    local blaze = debugSpawnEnemy(state, "blaze", ghast.x, ghast.y + 8)
+    local splashZombie = debugSpawnEnemy(state, "zombie", ghast.x + 2, ghast.y + 8)
 
     if not blaze or not splashZombie then
         return false, "Could not create Ghast artillery targets.", {}
