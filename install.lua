@@ -30,6 +30,7 @@ local files = {
 
 local base = ("https://raw.githubusercontent.com/%s/%s/%s/"):format(OWNER, REPO, BRANCH)
 local STAGE_DIR = ".cc_royale_update"
+local BACKUP_DIR = ".cc_royale_backup"
 
 local function ensureDir(path)
   local dir = fs.getDir(path)
@@ -99,8 +100,60 @@ local function applyStaged(path)
   fs.move(staged, path)
 end
 
+local function readFile(path)
+  if not fs.exists(path) or fs.isDir(path) then return nil end
+  local handle = fs.open(path, "r")
+  if not handle then return nil end
+  local body = handle.readAll()
+  handle.close()
+  return body
+end
+
+-- Do not destroy an unrelated startup script on a shared CC computer. The
+-- installer still updates the simple startup file it previously installed.
+local existingStartup = readFile("startup.lua")
+local preserveCustomStartup = existingStartup ~= nil
+  and not existingStartup:find('shell%.run%(['"]main%.lua['"]%)')
+
+local function shouldApply(path)
+  return path ~= "startup.lua" or not preserveCustomStartup
+end
+
+local function backupPath(path)
+  return fs.combine(BACKUP_DIR, path)
+end
+
+local function makeBackup()
+  if fs.exists(BACKUP_DIR) then fs.delete(BACKUP_DIR) end
+  fs.makeDir(BACKUP_DIR)
+
+  for _, path in ipairs(files) do
+    if shouldApply(path) and fs.exists(path) and not fs.isDir(path) then
+      local target = backupPath(path)
+      ensureDir(target)
+      fs.copy(path, target)
+    end
+  end
+end
+
+local function restoreBackup()
+  for _, path in ipairs(files) do
+    if shouldApply(path) then
+      if fs.exists(path) then fs.delete(path) end
+      local backup = backupPath(path)
+      if fs.exists(backup) and not fs.isDir(backup) then
+        ensureDir(path)
+        fs.move(backup, path)
+      end
+    end
+  end
+end
+
 print("CC-Minecraft Royale installer")
 print("--------------------------------")
+if preserveCustomStartup then
+  print("Custom startup.lua detected - leaving it untouched.")
+end
 if not http then
   error("HTTP API is disabled on this server/client.", 0)
 end
@@ -119,13 +172,36 @@ end
 
 print("")
 print("All files downloaded. Applying update...")
-for _, path in ipairs(files) do
-  applyStaged(path)
+
+makeBackup()
+local applied, applyErr = pcall(function()
+  for _, path in ipairs(files) do
+    if shouldApply(path) then
+      applyStaged(path)
+    end
+  end
+end)
+
+if not applied then
+  print("APPLY FAILED - restoring previous installation...")
+  local restored, restoreErr = pcall(restoreBackup)
+
+  if fs.exists(STAGE_DIR) then fs.delete(STAGE_DIR) end
+  if fs.exists(BACKUP_DIR) then fs.delete(BACKUP_DIR) end
+
+  if not restored then
+    error(
+      "Update failed: " .. tostring(applyErr)
+      .. "\nRollback also failed: " .. tostring(restoreErr),
+      0
+    )
+  end
+
+  error("Update failed and was rolled back: " .. tostring(applyErr), 0)
 end
 
-if fs.exists(STAGE_DIR) then
-  fs.delete(STAGE_DIR)
-end
+if fs.exists(STAGE_DIR) then fs.delete(STAGE_DIR) end
+if fs.exists(BACKUP_DIR) then fs.delete(BACKUP_DIR) end
 
 print("")
 print("Install complete.")
