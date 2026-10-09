@@ -1095,12 +1095,26 @@ function pixelArena.draw(monitor, state, playerId, rect)
     local box, cached = getSurface(monitor, rect)
     restoreTerrain(box, cached)
 
-    local drawEntities = {}
+    local drawEntities = cached.drawEntities or {}
+    cached.drawEntities = drawEntities
+    local drawCount = 0
+
     for _, entity in ipairs(state.entities) do
         if entity.alive then
+            drawCount = drawCount + 1
             local _, py = worldToPixel(box, playerId, entity.x, entity.y)
-            table.insert(drawEntities, { entity = entity, py = py })
+            local entry = drawEntities[drawCount]
+            if not entry then
+                entry = {}
+                drawEntities[drawCount] = entry
+            end
+            entry.entity = entity
+            entry.py = py
         end
+    end
+
+    for i = #drawEntities, drawCount + 1, -1 do
+        drawEntities[i] = nil
     end
 
     table.sort(drawEntities, function(a, b)
