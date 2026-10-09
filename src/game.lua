@@ -3119,15 +3119,21 @@ function Game.update(state, dt)
         local emeraldRate = config.MATCH.emeraldPerSecond * multiplier
 
         local emeraldBoost1, emeraldBoost2 = 0, 0
-        local emeraldBoostSources = { [1] = {}, [2] = {} }
+        local emeraldBoostSources1, emeraldBoostSources2 = nil, nil
         for _, entity in ipairs(state.entities) do
             if entity.alive and entity.emeraldBoost then
                 if entity.owner == 1 then
                     emeraldBoost1 = emeraldBoost1 + entity.emeraldBoost
-                    emeraldBoostSources[1][#emeraldBoostSources[1] + 1] = entity
+                    if state.stats then
+                        emeraldBoostSources1 = emeraldBoostSources1 or {}
+                        emeraldBoostSources1[#emeraldBoostSources1 + 1] = entity
+                    end
                 elseif entity.owner == 2 then
                     emeraldBoost2 = emeraldBoost2 + entity.emeraldBoost
-                    emeraldBoostSources[2][#emeraldBoostSources[2] + 1] = entity
+                    if state.stats then
+                        emeraldBoostSources2 = emeraldBoostSources2 or {}
+                        emeraldBoostSources2[#emeraldBoostSources2 + 1] = entity
+                    end
                 end
             end
         end
@@ -3158,7 +3164,10 @@ function Game.update(state, dt)
                 -- created each living boost unit. This makes Villager useful
                 -- in balance reports even though it deals no damage.
                 if realizedBonus > 0 and boost > 0 then
-                    for _, entity in ipairs(emeraldBoostSources[playerId]) do
+                    local boostSources = playerId == 1
+                        and emeraldBoostSources1
+                        or emeraldBoostSources2
+                    for _, entity in ipairs(boostSources or {}) do
                         if entity.sourceCardId then
                             local share = realizedBonus * entity.emeraldBoost / boost
                             local cardStats = getCardStats(
