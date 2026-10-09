@@ -63,20 +63,26 @@ local function centered(buffer, y, text, fg, bg)
     writeText(buffer, x, y, text, fg, bg)
 end
 
-local function flush(buffer, monitor)
+local function flush(buffer, monitor, skipZone)
     for y = 1, buffer.height do
-        local chars = {}
-        local fg = {}
-        local bg = {}
+        local skipped = skipZone
+            and y >= skipZone.y1
+            and y <= skipZone.y2
 
-        for x = 1, buffer.width do
-            chars[x] = buffer.chars[y][x]
-            fg[x] = colors.toBlit(buffer.fg[y][x])
-            bg[x] = colors.toBlit(buffer.bg[y][x])
+        if not skipped then
+            local chars = {}
+            local fg = {}
+            local bg = {}
+
+            for x = 1, buffer.width do
+                chars[x] = buffer.chars[y][x]
+                fg[x] = colors.toBlit(buffer.fg[y][x])
+                bg[x] = colors.toBlit(buffer.bg[y][x])
+            end
+
+            monitor.setCursorPos(1, y)
+            monitor.blit(table.concat(chars), table.concat(fg), table.concat(bg))
         end
-
-        monitor.setCursorPos(1, y)
-        monitor.blit(table.concat(chars), table.concat(fg), table.concat(bg))
     end
 end
 
@@ -1559,7 +1565,10 @@ function render.draw(monitor, state, playerId, monitorName)
         flush(buffer, monitor)
     else
         drawBattle(buffer, state, playerId, layout)
-        flush(buffer, monitor)
+        -- PixelBox redraws the complete arena immediately afterwards, so
+        -- avoid sending those rows once as blank text and then a second time
+        -- as pixels over the wired monitor network.
+        flush(buffer, monitor, layout.arena)
         pixelArena.draw(monitor, state, playerId, layout.arena)
         drawCountdownOverlay(monitor, state, layout)
     end
