@@ -1,0 +1,19 @@
+# CC:Tweaked runtime state
+.cc_royale/
+deck_presets.db
+
+# Local benchmark outputs (GitHub-synced copies live under reports/)
+balance_results.txt
+comparison_results.txt
+evolution_results.txt
+mechanics_report.txt
+
+# Installer scratch directories from current/legacy installers
+.cc_royale_update/
+.cc_royale_backup/
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
