@@ -19,7 +19,7 @@ local function assertTrue(value, message)
     if not value then error(message or "assertTrue failed") end
 end
 
-(function()
+do
     local oldPeripheral = peripheral
 
     local monitors = {
@@ -80,9 +80,9 @@ end
 
     peripheral = oldPeripheral
     package.loaded["src.hardware"] = nil
-end)()
+end
 
-(function()
+do
     local oldHttp = http
     local oldFs = fs
     local oldPreload = package.preload["cc.audio.dfpwm"]
@@ -125,9 +125,9 @@ end)()
     package.preload["cc.audio.dfpwm"] = oldPreload
     http = oldHttp
     fs = oldFs
-end)()
+end
 
-(function()
+do
     local oldHttp = http
     http = {}
 
@@ -148,6 +148,6 @@ end)()
 
     package.loaded["src.report_sync"] = nil
     http = oldHttp
-end)()
+end
 
 print("Platform stub tests passed")
