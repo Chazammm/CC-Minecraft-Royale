@@ -580,21 +580,30 @@ local function currentMoveSpeed(entity)
 end
 
 local function updateGlobalMovementAuras(state)
-    local slowByOwner = { [1] = 0, [2] = 0 }
+    local slow1, slow2 = 0, 0
+    local anyAura = false
 
     for _, entity in ipairs(state.entities) do
         if entity.alive and entity.globalEnemyMoveSlow then
-            slowByOwner[entity.owner] = math.max(
-                slowByOwner[entity.owner] or 0,
-                util.clamp(entity.globalEnemyMoveSlow, 0, 0.95)
-            )
+            anyAura = true
+            local slow = util.clamp(entity.globalEnemyMoveSlow, 0, 0.95)
+            if entity.owner == 1 then
+                slow1 = math.max(slow1, slow)
+            else
+                slow2 = math.max(slow2, slow)
+            end
         end
     end
 
+    -- Most production matches have no global movement aura at all. Once no
+    -- aura has ever been active, there is nothing to reset on every tick.
+    if not anyAura and not state.globalMovementAuraActive then return end
+    state.globalMovementAuraActive = anyAura
+
     for _, entity in ipairs(state.entities) do
         if entity.kind == "unit" then
-            local enemyOwner = otherPlayer(entity.owner)
-            entity.globalMoveSpeedFactor = 1 - (slowByOwner[enemyOwner] or 0)
+            local enemySlow = entity.owner == 1 and slow2 or slow1
+            entity.globalMoveSpeedFactor = 1 - enemySlow
         else
             entity.globalMoveSpeedFactor = 1
         end
@@ -1254,20 +1263,22 @@ end
 local function updateCombatEntity(state, entity, dt)
     if not entity.alive then return end
 
-    if entity.damageFlash and entity.damageFlash > 0 then
-        entity.damageFlash = math.max(0, entity.damageFlash - dt)
-    end
+    if not state.headlessSimulation then
+        if entity.damageFlash and entity.damageFlash > 0 then
+            entity.damageFlash = math.max(0, entity.damageFlash - dt)
+        end
 
-    if entity.kind == "tower"
-        and entity.hp
-        and entity.maxHp
-        and entity.hp > 0
-        and entity.hp / math.max(1, entity.maxHp) <= 0.25
-    then
-        entity.criticalPulseTimer = (entity.criticalPulseTimer or 0) - dt
-        if entity.criticalPulseTimer <= 0 then
-            entity.damageFlash = math.max(entity.damageFlash or 0, 0.10)
-            entity.criticalPulseTimer = 0.55
+        if entity.kind == "tower"
+            and entity.hp
+            and entity.maxHp
+            and entity.hp > 0
+            and entity.hp / math.max(1, entity.maxHp) <= 0.25
+        then
+            entity.criticalPulseTimer = (entity.criticalPulseTimer or 0) - dt
+            if entity.criticalPulseTimer <= 0 then
+                entity.damageFlash = math.max(entity.damageFlash or 0, 0.10)
+                entity.criticalPulseTimer = 0.55
+            end
         end
     end
 
@@ -1323,7 +1334,7 @@ local function updateCombatEntity(state, entity, dt)
 
     updatePeriodicSpawn(state, entity, dt)
 
-    if entity.emeraldBoost then
+    if entity.emeraldBoost and not state.headlessSimulation then
         entity.emeraldPulseTimer = (entity.emeraldPulseTimer or 0) - dt
         if entity.emeraldPulseTimer <= 0 then
             addEffect(state, "emerald", entity.x, entity.y, 2.5, 0.45, entity.owner)
@@ -2012,9 +2023,11 @@ local function resolveFallingAnvil(state, pending)
 end
 
 local function updatePendingSpells(state, dt)
-    local kept = {}
+    local write = 1
+    local count = #state.pendingSpells
 
-    for _, pending in ipairs(state.pendingSpells) do
+    for read = 1, count do
+        local pending = state.pendingSpells[read]
         pending.remaining = pending.remaining - dt
         if pending.remaining <= 0 then
             if pending.kind == "falling_anvil" then
@@ -2023,11 +2036,12 @@ local function updatePendingSpells(state, dt)
                 resolveEvokerFangs(state, pending)
             end
         else
-            kept[#kept + 1] = pending
+            state.pendingSpells[write] = pending
+            write = write + 1
         end
     end
 
-    state.pendingSpells = kept
+    for i = write, count do state.pendingSpells[i] = nil end
 end
 
 local function castArrows(state, playerId, card, x, y)
