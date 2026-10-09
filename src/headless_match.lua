@@ -10,8 +10,12 @@ local function normalizedGameplaySeed(seed)
     return value
 end
 
+local function firstBotForTick(tick, orderOffset)
+    return (tick + (orderOffset or 0)) % 2 == 0 and 1 or 2
+end
+
 local function updateBots(bot1, bot2, state, dt, tick, orderOffset)
-    if (tick + (orderOffset or 0)) % 2 == 0 then
+    if firstBotForTick(tick, orderOffset) == 1 then
         Bot.update(bot1, state, dt)
         Bot.update(bot2, state, dt)
     else
@@ -116,6 +120,10 @@ function Runner.run(deck1, deck2, options)
     end
 
     return state, bot1, bot2, ticks
+end
+
+function Runner.debugFirstBotForTick(tick, orderOffset)
+    return firstBotForTick(tick, orderOffset)
 end
 
 return Runner
