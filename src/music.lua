@@ -190,18 +190,6 @@ local function nextTrack(controller)
     return openTrack(controller, trackIndex)
 end
 
-local function tryPending(controller)
-    if not controller.pending then return true end
-    local ok, queued = pcall(
-        controller.speaker.playAudio,
-        controller.pending,
-        controller.volume
-    )
-    if not ok or not queued then return false end
-    controller.pending = nil
-    return true
-end
-
 function Music.new(speaker, speakerName)
     local ok, dfpwm = pcall(require, "cc.audio.dfpwm")
 
@@ -223,6 +211,7 @@ function Music.new(speaker, speakerName)
         lastTrackId = nil,
         reconnectAttempts = 0,
         retryAt = 0,
+        consecutiveFailures = 0,
         bag = {},
         rng = seedNow(),
         volume = manifest.volume or 0.28,
@@ -262,9 +251,11 @@ function Music.start(controller)
         -- Keep the controller active so the regular timer-driven pump can
         -- retry transient GitHub/HTTP failures instead of losing music for
         -- the entire match after one failed request at battle start.
-        controller.error = err
+        controller.consecutiveFailures = (controller.consecutiveFailures or 0) + 1
+        controller.error = tostring(err or "BATTLE MUSIC SOURCE UNAVAILABLE")
         local now = os.epoch and os.epoch("utc") / 1000 or os.clock()
-        controller.retryAt = now + 1.5
+        local delay = math.min(12, 1.5 * (2 ^ math.min(3, controller.consecutiveFailures - 1)))
+        controller.retryAt = now + delay
         closeHandle(controller)
         return false
     end
@@ -280,6 +271,7 @@ function Music.stop(controller, hardStop)
     controller.currentTrackId = nil
     controller.retryAt = 0
     controller.reconnectAttempts = 0
+    controller.consecutiveFailures = 0
     closeHandle(controller)
 
     if hardStop and controller.speaker and controller.speaker.stop then
@@ -293,8 +285,15 @@ local function nowSeconds()
 end
 
 local function scheduleRetry(controller, err, delay)
+    controller.consecutiveFailures = (controller.consecutiveFailures or 0) + 1
     controller.error = tostring(err or "MUSIC STREAM INTERRUPTED")
-    controller.retryAt = nowSeconds() + (delay or 0.75)
+
+    -- Persistent GitHub/network failures should not cause a new HTTP request
+    -- every 0.5-1.5 seconds for the entire match. Back off exponentially while
+    -- still retrying automatically when the connection returns.
+    local base = delay or 0.75
+    local multiplier = 2 ^ math.min(4, controller.consecutiveFailures - 1)
+    controller.retryAt = nowSeconds() + math.min(20, base * multiplier)
     closeHandle(controller)
 end
 
@@ -402,6 +401,7 @@ function Music.pump(controller)
     end
 
     controller.error = nil
+    controller.consecutiveFailures = 0
     return true
 end
 
@@ -427,6 +427,8 @@ function Music.status(controller)
         tracks = #manifest.tracks,
         source = controller.source,
         reconnects = controller.reconnectAttempts or 0,
+        failures = controller.consecutiveFailures or 0,
+        retryAt = controller.retryAt or 0,
         error = controller.error,
     }
 end
