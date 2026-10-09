@@ -119,10 +119,10 @@ local function githubGet(token, url)
     return false, code, body ~= "" and body or tostring(err)
 end
 
-local function githubPut(token, url, body)
+local function githubWrite(token, method, url, payload)
     local response, err, failedResponse = http.post({
         url = url,
-        body = body,
+        body = textutils.serializeJSON(payload or {}),
         headers = {
             ["Accept"] = "application/vnd.github+json",
             ["Authorization"] = "Bearer " .. token,
@@ -130,79 +130,150 @@ local function githubPut(token, url, body)
             ["User-Agent"] = "CC-Minecraft-Royale-report-sync",
             ["Content-Type"] = "application/json",
         },
-        method = "PUT",
+        method = method,
         timeout = 30,
     })
 
     if response then
         local code, responseBody = responseDetails(response)
-        return code == 200 or code == 201, code, responseBody
+        return code and code >= 200 and code < 300, code, responseBody
     end
 
     local code, responseBody = responseDetails(failedResponse)
     return false, code, responseBody ~= "" and responseBody or tostring(err)
 end
 
-local function contentUrl(remotePath, includeRef)
-    local url = API_BASE .. "/contents/" .. remotePath
-    if includeRef then
-        url = url .. "?ref=" .. textutils.urlEncode(BRANCH)
-    end
-    return url
-end
-
-local function remoteSha(token, remotePath)
-    local ok, code, body = githubGet(token, contentUrl(remotePath, true))
-
-    if not ok then
-        if code == 404 then return nil end
-        return nil, ("GitHub GET failed (HTTP %s): %s"):format(
-            tostring(code or "?"),
-            tostring(body or "unknown error")
-        )
-    end
-
-    local decoded, decodeErr = textutils.unserializeJSON(body)
+local function decodeGithub(body, context)
+    local decoded, decodeErr = textutils.unserializeJSON(body or "")
     if not decoded then
-        return nil, "Could not parse GitHub response: " .. tostring(decodeErr)
+        return nil, (context or "GitHub response")
+            .. " JSON error: " .. tostring(decodeErr)
     end
-
-    return decoded.sha
+    return decoded
 end
 
-local function putContent(token, remotePath, content, message, overwrite)
-    local payload = {
-        message = message,
-        content = base64Encode(content),
-        branch = BRANCH,
-    }
-
-    if overwrite then
-        local sha, shaErr = remoteSha(token, remotePath)
-        if shaErr then return false, shaErr end
-        if sha then payload.sha = sha end
-    end
-
-    local body = textutils.serializeJSON(payload)
-    local ok, code, responseBody = githubPut(
+local function commitFiles(token, files, message)
+    -- Git Data API lets history + latest move in one commit, avoiding two
+    -- report-only commits for every benchmark upload.
+    local ok, code, body = githubGet(
         token,
-        contentUrl(remotePath, false),
-        body
+        API_BASE .. "/git/ref/heads/" .. BRANCH
     )
-
-    if not ok then
-        local detail = tostring(responseBody or "")
-        local parsed = textutils.unserializeJSON(detail)
-        if parsed and parsed.message then detail = tostring(parsed.message) end
-
-        return false, ("GitHub PUT failed for %s (HTTP %s): %s"):format(
-            remotePath,
+    if not ok or code ~= 200 then
+        return false, ("Could not read %s HEAD (HTTP %s): %s"):format(
+            BRANCH,
             tostring(code or "?"),
-            detail ~= "" and detail or "unknown error"
+            tostring(body or "")
         )
     end
 
-    return true
+    local ref, refErr = decodeGithub(body, "branch ref")
+    if not ref then return false, refErr end
+    local parentSha = ref.object and ref.object.sha
+    if not parentSha then return false, "GitHub branch ref had no commit SHA" end
+
+    ok, code, body = githubGet(
+        token,
+        API_BASE .. "/git/commits/" .. parentSha
+    )
+    if not ok or code ~= 200 then
+        return false, ("Could not read parent commit (HTTP %s): %s"):format(
+            tostring(code or "?"),
+            tostring(body or "")
+        )
+    end
+
+    local parent, parentErr = decodeGithub(body, "parent commit")
+    if not parent then return false, parentErr end
+    local baseTree = parent.tree and parent.tree.sha
+    if not baseTree then return false, "GitHub parent commit had no tree SHA" end
+
+    local treeEntries = {}
+    for _, file in ipairs(files) do
+        local blobOk, blobCode, blobBody = githubWrite(
+            token,
+            "POST",
+            API_BASE .. "/git/blobs",
+            {
+                content = file.content,
+                encoding = "utf-8",
+            }
+        )
+        if not blobOk then
+            return false, ("Could not create blob for %s (HTTP %s): %s")
+                :format(
+                    file.path,
+                    tostring(blobCode or "?"),
+                    tostring(blobBody or "")
+                )
+        end
+
+        local blob, blobErr = decodeGithub(blobBody, "blob")
+        if not blob then return false, blobErr end
+
+        treeEntries[#treeEntries + 1] = {
+            path = file.path,
+            mode = "100644",
+            type = "blob",
+            sha = blob.sha,
+        }
+    end
+
+    local treeOk, treeCode, treeBody = githubWrite(
+        token,
+        "POST",
+        API_BASE .. "/git/trees",
+        {
+            base_tree = baseTree,
+            tree = treeEntries,
+        }
+    )
+    if not treeOk then
+        return false, ("Could not create report tree (HTTP %s): %s"):format(
+            tostring(treeCode or "?"),
+            tostring(treeBody or "")
+        )
+    end
+    local tree, treeErr = decodeGithub(treeBody, "tree")
+    if not tree then return false, treeErr end
+
+    local commitOk, commitCode, commitBody = githubWrite(
+        token,
+        "POST",
+        API_BASE .. "/git/commits",
+        {
+            message = message,
+            tree = tree.sha,
+            parents = { parentSha },
+        }
+    )
+    if not commitOk then
+        return false, ("Could not create report commit (HTTP %s): %s"):format(
+            tostring(commitCode or "?"),
+            tostring(commitBody or "")
+        )
+    end
+    local commit, commitErr = decodeGithub(commitBody, "commit")
+    if not commit then return false, commitErr end
+
+    local refOk, refCode, refBody = githubWrite(
+        token,
+        "PATCH",
+        API_BASE .. "/git/refs/heads/" .. BRANCH,
+        {
+            sha = commit.sha,
+            force = false,
+        }
+    )
+    if not refOk then
+        return false, ("Could not advance %s (HTTP %s): %s"):format(
+            BRANCH,
+            tostring(refCode or "?"),
+            tostring(refBody or "")
+        )
+    end
+
+    return true, commit.sha
 end
 
 local function epochStamp()
@@ -300,25 +371,15 @@ function M.upload(kind, localPath, token, stamp)
     local historyPath = ("reports/history/%s/%s_%s"):format(kind, stamp, fileName)
     local latestPath = "reports/latest/" .. fileName
 
-    local ok, err = putContent(
+    local ok, commitOrErr = commitFiles(
         token,
-        historyPath,
-        content,
-        ("Archive %s report %s"):format(kind, stamp),
-        false
+        {
+            { path = historyPath, content = content },
+            { path = latestPath, content = content },
+        },
+        ("Sync %s report %s"):format(kind, stamp)
     )
-    if not ok then return false, err end
-
-    ok, err = putContent(
-        token,
-        latestPath,
-        content,
-        ("Update latest %s report"):format(kind),
-        true
-    )
-    if not ok then
-        return false, err .. " (history copy was uploaded successfully)"
-    end
+    if not ok then return false, commitOrErr end
 
     return true, {
         kind = kind,
@@ -326,6 +387,7 @@ function M.upload(kind, localPath, token, stamp)
         historyPath = historyPath,
         latestPath = latestPath,
         stamp = stamp,
+        commitSha = commitOrErr,
     }
 end
 
