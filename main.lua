@@ -71,13 +71,27 @@ end
 
 local function redraw()
     for playerId = 1, 2 do
-        render.draw(
+        local ok = pcall(
+            render.draw,
             hw.monitors[playerId],
             state,
             playerId,
             hw.monitorNames[playerId]
         )
+        if not ok then return false end
     end
+    return true
+end
+
+local function refreshHardware()
+    local ok, refreshed = pcall(hardware.init)
+    if not ok or not refreshed then return false end
+
+    hw = refreshed
+    music.speaker = hw.musicSpeaker
+    music.speakerName = hw.musicSpeakerName
+    Music.refreshAvailability(music)
+    return true
 end
 
 local function isArenaMonitor(name)
@@ -125,6 +139,12 @@ while true do
         if isArenaMonitor(monitorName) then
             redraw()
         end
+
+    elseif name == "peripheral" or name == "peripheral_detach" then
+        -- Wired modem/monitor networks can briefly disappear while chunks
+        -- reload. Keep the game loop alive and adopt the new wrappers once
+        -- both arena monitors are visible again.
+        if refreshHardware() then redraw() end
 
     elseif name == "timer" and event[2] == tickTimer then
         local current = nowSeconds()
