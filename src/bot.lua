@@ -235,6 +235,12 @@ local function buildDecisionView(state, playerId)
         enemyTowers = {},
         ownTowers = {},
         ownVillagerCount = 0,
+        ownTowerHp = 0,
+        enemyTowerHp = 0,
+        weakestEnemyPrincess = nil,
+        weakestEnemyPrincessRatio = math.huge,
+        counterpushLane = nil,
+        counterpushScore = 0,
     }
 
     for _, entity in ipairs(state.entities) do
@@ -242,7 +248,29 @@ local function buildDecisionView(state, playerId)
             if entity.owner == playerId then
                 if entity.kind == "tower" then
                     view.ownTowers[#view.ownTowers + 1] = entity
+                    view.ownTowerHp = view.ownTowerHp
+                        + entity.hp / math.max(1, entity.maxHp)
+                elseif entity.kind == "unit" and not entity.passive then
+                    local advanced = playerId == 1
+                        and entity.y <= 112
+                        or entity.y >= 48
+                    if advanced then
+                        local hpRatio = (entity.hp or 0)
+                            / math.max(1, entity.maxHp or 1)
+                        local dps = 0
+                        if entity.damage and entity.damage > 0 then
+                            dps = entity.damage
+                                / math.max(0.25, entity.attackCooldown or 1)
+                        end
+                        local score = hpRatio * ((entity.maxHp or 100) / 220)
+                            + dps / 45
+                        if score > view.counterpushScore then
+                            view.counterpushScore = score
+                            view.counterpushLane = entity.x < 50 and 25 or 75
+                        end
+                    end
                 end
+
                 if entity.sourceCardId == "villager" and entity.emeraldBoost then
                     view.ownVillagerCount = view.ownVillagerCount + 1
                 end
@@ -250,6 +278,14 @@ local function buildDecisionView(state, playerId)
                 view.enemyEntities[#view.enemyEntities + 1] = entity
                 if entity.kind == "tower" then
                     view.enemyTowers[#view.enemyTowers + 1] = entity
+                    local ratio = entity.hp / math.max(1, entity.maxHp)
+                    view.enemyTowerHp = view.enemyTowerHp + ratio
+                    if entity.towerType == "princess"
+                        and ratio < view.weakestEnemyPrincessRatio
+                    then
+                        view.weakestEnemyPrincessRatio = ratio
+                        view.weakestEnemyPrincess = entity
+                    end
                 else
                     view.enemyNonTowers[#view.enemyNonTowers + 1] = entity
                 end
@@ -646,7 +682,9 @@ local function defensivePlacement(bot, card, threat)
     return clampOwnPlacement(playerId, threat.x, threat.y + back * 7)
 end
 
-local function weakestEnemyPrincess(state, playerId)
+local function weakestEnemyPrincess(state, playerId, view)
+    if view then return view.weakestEnemyPrincess end
+
     local enemy = otherPlayer(playerId)
     local best, bestRatio = nil, math.huge
 
@@ -667,17 +705,22 @@ local function weakestEnemyPrincess(state, playerId)
     return best
 end
 
-local function towerPressureState(state, playerId)
+local function towerPressureState(state, playerId, view)
     local enemyId = otherPlayer(playerId)
     local ownHp, enemyHp = 0, 0
 
-    for _, entity in ipairs(state.entities) do
-        if entity.alive and entity.kind == "tower" then
-            local ratio = entity.hp / math.max(1, entity.maxHp)
-            if entity.owner == playerId then
-                ownHp = ownHp + ratio
-            elseif entity.owner == enemyId then
-                enemyHp = enemyHp + ratio
+    if view then
+        ownHp = view.ownTowerHp
+        enemyHp = view.enemyTowerHp
+    else
+        for _, entity in ipairs(state.entities) do
+            if entity.alive and entity.kind == "tower" then
+                local ratio = entity.hp / math.max(1, entity.maxHp)
+                if entity.owner == playerId then
+                    ownHp = ownHp + ratio
+                elseif entity.owner == enemyId then
+                    enemyHp = enemyHp + ratio
+                end
             end
         end
     end
@@ -688,7 +731,14 @@ local function towerPressureState(state, playerId)
     return crownDelta * 2 + (ownHp - enemyHp) * 0.35
 end
 
-local function counterpushLane(state, playerId)
+local function counterpushLane(state, playerId, view)
+    if view then
+        if view.counterpushScore >= 1.8 then
+            return view.counterpushLane, view.counterpushScore
+        end
+        return nil, view.counterpushScore
+    end
+
     local bestLane, bestScore = nil, 0
 
     for _, entity in ipairs(state.entities) do
@@ -715,16 +765,16 @@ local function counterpushLane(state, playerId)
     return nil, bestScore
 end
 
-local function offensivePlacement(bot, state, card)
+local function offensivePlacement(bot, state, card, view)
     local playerId = bot.playerId
     local cfg = difficultyConfig(bot)
-    local targetTower = weakestEnemyPrincess(state, playerId)
+    local targetTower = weakestEnemyPrincess(state, playerId, view)
     local laneX = targetTower and targetTower.x
         or (((bot.decisionCount + bot.playerId) % 2) == 0 and 25 or 75)
     local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
 
     if cfg.counterpush and bot.mode ~= "easy" then
-        local pushLane = counterpushLane(state, playerId)
+        local pushLane = counterpushLane(state, playerId, view)
         local targetCritical = targetTower
             and targetTower.hp / math.max(1, targetTower.maxHp) <= 0.30
 
@@ -811,13 +861,13 @@ local function shouldSaveForPowerCard(bot, state, ctx, arrowScore, cfg, view)
     return bestCost ~= nil
 end
 
-local function botDefenseThreshold(bot, state, cfg)
+local function botDefenseThreshold(bot, state, cfg, view)
     cfg = cfg or difficultyConfig(bot)
     local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
     local base = state.overtime and 5.0 or (lateGame and 4.2 or 3.0)
 
     if bot.mode == "hard" and lateGame then
-        local advantage = towerPressureState(state, bot.playerId)
+        local advantage = towerPressureState(state, bot.playerId, view)
         if advantage > 0.35 then
             base = base - 0.75 -- protect the lead
         elseif advantage < -0.35 then
@@ -848,7 +898,7 @@ local function scoreCard(
     local score = 0
     local threat = ctx.primaryThreat
     local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
-    defenseThreshold = defenseThreshold or botDefenseThreshold(bot, state, cfg)
+    defenseThreshold = defenseThreshold or botDefenseThreshold(bot, state, cfg, view)
     local defending = threat and ctx.primaryThreatScore >= defenseThreshold
 
     -- Economy cards were effectively never tested because the bot kept
@@ -1054,7 +1104,7 @@ local function choosePlay(bot, state)
         return nil
     end
 
-    local defenseThreshold = botDefenseThreshold(bot, state, cfg)
+    local defenseThreshold = botDefenseThreshold(bot, state, cfg, view)
     local best = nil
     local bestScore = -math.huge
 
@@ -1091,7 +1141,7 @@ local function choosePlay(bot, state)
     then
         best.x, best.y = defensivePlacement(bot, best.card, ctx.primaryThreat)
     else
-        best.x, best.y = offensivePlacement(bot, state, best.card)
+        best.x, best.y = offensivePlacement(bot, state, best.card, view)
     end
 
     return best
