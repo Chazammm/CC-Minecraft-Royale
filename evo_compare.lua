@@ -1,8 +1,7 @@
-local Game = require("src.game")
-local Bot = require("src.bot")
 local cards = require("src.cards")
 local config = require("config")
 local benchmark = require("src.benchmark_utils")
+local Runner = require("src.headless_match")
 
 local args = { ... }
 
@@ -210,91 +209,38 @@ local function addResult(agg, result)
     end
 end
 
-local function normalizeSeed(value)
-    value = math.floor(tonumber(value) or 1) % 2147483647
-    if value <= 0 then value = value + 2147483646 end
-    return value
-end
-
-local function runMatch(subjectDeck, opponentDeck, subjectCardId, subjectOwner, useEvolution, gameplaySeed)
+local function runMatch(
+    subjectDeck,
+    opponentDeck,
+    subjectCardId,
+    subjectOwner,
+    useEvolution,
+    gameplaySeed
+)
     local deck1 = subjectOwner == 1 and subjectDeck or opponentDeck
     local deck2 = subjectOwner == 1 and opponentDeck or subjectDeck
 
-    local state = Game.new(nil, {
-        headlessSimulation = true,
+    local state = Runner.run(deck1, deck2, {
+        dt = SIM_DT,
+        gameplaySeed = gameplaySeed,
+        yieldFn = cooperativeYield,
+        yieldCheckTicks = YIELD_CHECK_TICKS,
+        timeoutReason = "EVOLUTION COMPARISON TIMEOUT",
+        configure = function(matchState)
+            -- Isolate exactly one variable: whether the tested subject card
+            -- owns the Evolution Slot. Other Evolutions are disabled in both
+            -- BASE and EVO variants.
+            matchState.players[1].evolutionCardId = nil
+            matchState.players[1].evolutionProgress = 0
+            matchState.players[2].evolutionCardId = nil
+            matchState.players[2].evolutionProgress = 0
+
+            if useEvolution then
+                matchState.players[subjectOwner].evolutionCardId =
+                    subjectCardId
+            end
+        end,
     })
-    local bot1 = Bot.new(1, deck1)
-    local bot2 = Bot.new(2, deck2)
-
-    Bot.prepare(bot1, state)
-    Bot.prepare(bot2, state)
-
-    -- The benchmark isolates exactly one variable: whether the tested subject
-    -- card owns the Evolution Slot. Any other Evo-capable cards in either deck
-    -- are deliberately prevented from evolving in both variants.
-    state.players[1].evolutionCardId = nil
-    state.players[1].evolutionProgress = 0
-    state.players[2].evolutionCardId = nil
-    state.players[2].evolutionProgress = 0
-
-    if useEvolution then
-        state.players[subjectOwner].evolutionCardId = subjectCardId
-    end
-
-    -- Use the same gameplay seed for corresponding BASE/EVO matches. Context
-    -- generation uses the private Park-Miller RNG above, so reseeding Lua's
-    -- global RNG here cannot change the decks being compared.
-    math.randomseed(normalizeSeed(gameplaySeed))
-
-    state.players[1].ready = true
-    state.players[2].ready = true
-    local started, skippedTicks = Game.startHeadlessBattle(state, SIM_DT)
-    if not started then error(skippedTicks or "Could not start headless battle", 0) end
-
-    Bot.beginMatch(bot1)
-    Bot.beginMatch(bot2)
-    bot1.enabled = true
-    bot2.enabled = true
-
-    local transitionTick = math.max(0, skippedTicks - 1)
-    if transitionTick % 2 == 0 then
-        Bot.update(bot1, state, SIM_DT)
-        Bot.update(bot2, state, SIM_DT)
-    else
-        Bot.update(bot2, state, SIM_DT)
-        Bot.update(bot1, state, SIM_DT)
-    end
-
-    local ticks = skippedTicks
-    local maxSimulationSeconds = config.MATCH.countdown
-        + config.MATCH.normalTime
-        + config.MATCH.overtimeTime
-        + 30
-    local maxTicks = math.ceil(maxSimulationSeconds / SIM_DT)
-
-    while state.phase ~= "result" and ticks < maxTicks do
-        Game.update(state, SIM_DT)
-
-        if ticks % 2 == 0 then
-            Bot.update(bot1, state, SIM_DT)
-            Bot.update(bot2, state, SIM_DT)
-        else
-            Bot.update(bot2, state, SIM_DT)
-            Bot.update(bot1, state, SIM_DT)
-        end
-
-        ticks = ticks + 1
-
-        if ticks % YIELD_CHECK_TICKS == 0 then
-            cooperativeYield(false)
-        end
-    end
-
-    cooperativeYield(false)
-
-    if state.phase ~= "result" then
-        Game.finish(state, nil, "EVOLUTION COMPARISON TIMEOUT")
-    end
 
     local score
     if state.winner == subjectOwner then
