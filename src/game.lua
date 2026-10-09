@@ -1864,15 +1864,30 @@ end
 -- visual countdown. Countdown ticks only decrement state.countdown and return;
 -- they do not change combat state. Reuse the exact normal match reset, then
 -- enter battle immediately with the same state the countdown would produce.
-function Game.startHeadlessBattle(state)
+function Game.startHeadlessBattle(state, dt)
     if not state or not state.headlessSimulation then
         return false, "HEADLESS SIMULATION REQUIRED"
     end
 
     Game.startCountdown(state)
-    state.countdown = 0
+
+    -- Reproduce the exact countdown arithmetic without executing the inert
+    -- per-tick engine loop. The returned tick count lets benchmark drivers
+    -- preserve bot-update ordering and the one final pre-combat bot update
+    -- that normally happens on the tick where countdown reaches zero.
+    dt = util.clamp(dt or config.TICK_RATE, 0, 0.25)
+    if dt <= 0 then
+        return false, "POSITIVE TICK REQUIRED"
+    end
+
+    local skippedTicks = 0
+    while state.countdown > 0 do
+        state.countdown = state.countdown - dt
+        skippedTicks = skippedTicks + 1
+    end
+
     beginBattle(state)
-    return true
+    return true, skippedTicks
 end
 
 function Game.finish(state, winner, reason)
