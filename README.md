@@ -49,7 +49,7 @@ Each monitor shows its own side at the bottom through a mirrored 180-degree view
 
 ## Current selectable cards
 
-There are currently **21 selectable cards**:
+There are currently **22 selectable cards**:
 
 1. Zombie
 2. Skeleton
@@ -61,21 +61,22 @@ There are currently **21 selectable cards**:
 8. Slime
 9. Blaze
 10. Witch
-11. Enderman
-12. Spider
-13. Snow Golem
-14. Villager
-15. Endermite
-16. Wolf
-17. Falling Anvil
-18. Nether Portal
-19. Wither Skeleton
-20. Magma Cube
-21. Pillager Outpost
+11. Evoker
+12. Enderman
+13. Spider
+14. Snow Golem
+15. Villager
+16. Endermite
+17. Wolf
+18. Falling Anvil
+19. Nether Portal
+20. Wither Skeleton
+21. Magma Cube
+22. Pillager Outpost
 
 **Guardian is currently benched as a DEV-ONLY card.** Guardian and Elder Guardian remain implemented and directly spawnable in the admin sandbox, but neither appears in normal card selection, random decks, bot/simulation card pools or the normal Evolution Slot.
 
-Nether Portal summons the internal-only Piglin unit; Piglin is not directly selectable. Magma Cube splits into the internal-only Mini Magma Cube.
+Nether Portal summons the internal-only Piglin unit; Piglin is not directly selectable. Magma Cube splits into the internal-only Mini Magma Cube. Evoker summons the internal-only Vex unit.
 
 ## Important special mechanics
 
@@ -88,6 +89,7 @@ Nether Portal summons the internal-only Piglin unit; Piglin is not directly sele
 - **Creeper**: proximity fuse; being killed before the fuse completes does not trigger the explosion
 - **Slime**: splits into two Mini Slimes on death
 - **Witch**: periodically summons Baby Zombies
+- **Evoker**: 6E ground-control caster. Its 18-range Fang attack telegraphs for 0.4s, deals 85 ground-only damage in a line, and switches to a close ring burst inside 4 range. It summons three 75-HP flying Vexes after 4s and every 14s while fewer than three are alive; each Vex deals exactly 30 damage and expires after 9s.
 - **Villager**: stationary Emerald-generation support
 - **Guardian (DEV ONLY)**: benched from the production card/Evolution pools while its water-only targeting and balance are still being developed. In admin it remains a 6E stationary water tank counter with an 18-range ramping beam, 20% charge loss on incoming hits and 5% reflected damage against flying attackers.
 - **Enderman**: teleporting melee attacker
@@ -201,7 +203,7 @@ The bot uses the normal card API and Emerald economy rather than special spawn c
 
 The lobby includes:
 
-- 21-card paginated collection
+- 22-card paginated collection
 - 8-card deck builder
 - 1 extra **Evolution Slot** below the normal deck
 - Random 8-card deck button
