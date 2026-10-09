@@ -1,13 +1,13 @@
 CC-MINECRAFT-ROYALE MECHANICS REPORT
 FORMAT_VERSION|17
-GENERATED_EPOCH_MS|1791539779202
+GENERATED_EPOCH_MS|1791539953050
 OS_VERSION|CraftOS 1.9
 CARD_COUNT|21
 HARNESS|condition_waits=true|dt=0.050|safe_x=50.0|safe_y=110.0
 CONFIG|tick=0.100|normal=150|overtime=150|emerald_rate=0.357143|building_decay=1.150
 BALANCE_SNAPSHOT|skeleton_range=15.00|skeleton_retreat=0.85|bat_damage=17.00
 EVOLUTION_SNAPSHOT|creeper_cycles=2|portal_cycles=2|mite_cycles=4|guardian_cycles=2|villager_cycles=3|golem_cycles=2|ghast_damage=130.0|ghast_range=24.0
-SUMMARY|pass=22|fail=1|error=0|total=23|runtime_cpu_s=0.0500
+SUMMARY|pass=22|fail=1|error=0|total=23|runtime_cpu_s=0.0000
 
 RESULT|boot_deck|PASS|Lobby boots with empty human decks|Human players should build/load/randomize an 8-card deck before READY.
 DATA|boot_deck|p1_deck_cards=0.0000
