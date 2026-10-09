@@ -5,7 +5,7 @@ local pixelArena = require("src.pixel_arena")
 
 local render = {}
 
-local function newBuffer(width, height, defaultFg, defaultBg)
+local function newBuffer(width, height, defaultFg, defaultBg, skipZone)
     local buffer = {
         width = width,
         height = height,
@@ -15,13 +15,19 @@ local function newBuffer(width, height, defaultFg, defaultBg)
     }
 
     for y = 1, height do
-        buffer.chars[y] = {}
-        buffer.fg[y] = {}
-        buffer.bg[y] = {}
-        for x = 1, width do
-            buffer.chars[y][x] = " "
-            buffer.fg[y][x] = defaultFg or colors.white
-            buffer.bg[y][x] = defaultBg or colors.black
+        local skipped = skipZone
+            and y >= skipZone.y1
+            and y <= skipZone.y2
+
+        if not skipped then
+            buffer.chars[y] = {}
+            buffer.fg[y] = {}
+            buffer.bg[y] = {}
+            for x = 1, width do
+                buffer.chars[y][x] = " "
+                buffer.fg[y][x] = defaultFg or colors.white
+                buffer.bg[y][x] = defaultBg or colors.black
+            end
         end
     end
 
@@ -32,6 +38,7 @@ local function setCell(buffer, x, y, char, fg, bg)
     x = math.floor(x)
     y = math.floor(y)
     if x < 1 or x > buffer.width or y < 1 or y > buffer.height then return end
+    if not buffer.chars[y] then return end
 
     buffer.chars[y][x] = (char or " "):sub(1, 1)
     if fg then buffer.fg[y][x] = fg end
@@ -1548,8 +1555,15 @@ end
 
 function render.draw(monitor, state, playerId, monitorName)
     local width, height = monitor.getSize()
-    local buffer = newBuffer(width, height, colors.white, colors.black)
     local layout = render.layoutFor(monitor)
+    local isArenaFrame = state.phase ~= "lobby" and state.phase ~= "result"
+    local buffer = newBuffer(
+        width,
+        height,
+        colors.white,
+        colors.black,
+        isArenaFrame and layout.arena or nil
+    )
 
     if state.phase == "lobby" then
         if state.players[playerId].rulesetOpen then
