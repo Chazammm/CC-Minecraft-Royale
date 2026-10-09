@@ -261,4 +261,58 @@ do
     )
 end
 
+do
+    -- Periodic ground summons falling into river water use the summoner's
+    -- valid position instead of silently disappearing.
+    local state = Game.new()
+    Game.debugLoadScenario(state, "empty")
+    assertTrue(Game.debugSpawnCard(state, 1, "evoker", 50, 87))
+    local summoner = findEntity(state, function(e)
+        return e.owner == 1 and e.sourceCardId == "evoker"
+    end)
+    assertTrue(summoner ~= nil, "Periodic-spawn fallback needs Evoker")
+
+    summoner.periodicSpawn = {
+        template = "baby_zombie",
+        interval = 10,
+        initialDelay = 0.01,
+        count = 3,
+        radius = 4,
+        maxAlive = 3,
+    }
+    summoner.periodicSpawnTimer = 0.01
+    Game.debugSetPaused(state, false)
+    Game.update(state, 0.02)
+
+    local count = 0
+    local usedFallback = false
+    for _, entity in ipairs(state.entities) do
+        if entity.summonerId == summoner.id then
+            count = count + 1
+            if math.abs(entity.x - summoner.x) < 1e-9
+                and math.abs(entity.y - summoner.y) < 1e-9
+            then
+                usedFallback = true
+            end
+        end
+    end
+    assertEq(count, 3, "All periodic ground summons must spawn")
+    assertTrue(usedFallback, "River offset must use summoner fallback")
+end
+
+do
+    local state = Game.new()
+    state.phase = "result"
+    local layout = {
+        resultButtons = {
+            rematch = { x1 = 1, y1 = 1, x2 = 3, y2 = 3 },
+            deck = { x1 = 4, y1 = 1, x2 = 6, y2 = 3 },
+            exit = { x1 = 7, y1 = 1, x2 = 9, y2 = 3 },
+        },
+    }
+    Game.handleTouch(state, 1, 8, 2, layout)
+    assertTrue(state.exitRequested, "EXIT must request outer-loop termination")
+    assertEq(state.phase, "result", "EXIT must not masquerade as lobby reset")
+end
+
 print("Audit regression tests passed")
