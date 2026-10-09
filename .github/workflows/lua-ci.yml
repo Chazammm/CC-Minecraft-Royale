@@ -36,3 +36,5 @@ jobs:
         run: lua5.4 tests/test_install_manifest.lua
       - name: Headless runner parity tests
         run: lua5.4 tests/test_headless_runner.lua
+      - name: Side symmetry tests
+        run: lua5.4 tests/test_side_symmetry.lua
