@@ -362,6 +362,31 @@ local function sampleStdDev(values, avg)
     return math.sqrt(sum / (#values - 1))
 end
 
+local T95 = {
+    [9] = 2.262, [10] = 2.228, [11] = 2.201, [12] = 2.179,
+    [13] = 2.160, [14] = 2.145, [15] = 2.131, [16] = 2.120,
+    [17] = 2.110, [18] = 2.101, [19] = 2.093, [20] = 2.086,
+    [21] = 2.080, [22] = 2.074, [23] = 2.069, [24] = 2.064,
+    [25] = 2.060, [26] = 2.056, [27] = 2.052, [28] = 2.048,
+    [29] = 2.045, [30] = 2.042,
+}
+
+local function critical95(sampleCount)
+    local df = math.max(1, sampleCount - 1)
+    if df <= 30 then
+        return T95[math.max(9, df)] or 2.262
+    elseif df <= 40 then
+        return 2.021
+    elseif df <= 60 then
+        return 2.000
+    elseif df <= 80 then
+        return 1.990
+    elseif df <= 100 then
+        return 1.984
+    end
+    return 1.960
+end
+
 local function summarize(agg)
     local matches = math.max(1, agg.matches)
     local emeralds = math.max(0, agg.emeraldSpent)
@@ -483,7 +508,7 @@ for comparisonIndex, spec in ipairs(comparisons) do
     local pairedMean = mean(pairedDeltas)
     local pairedSd = sampleStdDev(pairedDeltas, pairedMean)
     local pairedSe = pairedSd / math.sqrt(math.max(1, #pairedDeltas))
-    local ciHalf = 1.96 * pairedSe
+    local ciHalf = critical95(#pairedDeltas) * pairedSe
     local ciLow = pairedMean - ciHalf
     local ciHigh = pairedMean + ciHalf
     local signal = classify(delta, ciLow, ciHigh)
@@ -556,7 +581,7 @@ end
 
 reportPrint("HOW TO READ")
 reportPrint("DELTA_B_MINUS_A: positive means B won more often in otherwise identical deck contexts.")
-reportPrint("PAIRED_95CI: uncertainty from context-by-context A/B differences after side swapping.")
+reportPrint("PAIRED_95CI: Student-t interval from context-by-context A/B differences after side swapping.")
 reportPrint("If the entire interval is above/below zero, the edge is much more convincing than a raw mixed win rate.")
 reportPrint("NEAR-EVEN means the measured delta is under 3 percentage points and the interval crosses zero.")
 reportPrint("LEAN means an observed edge whose interval still crosses zero; collect more contexts before balancing.")
