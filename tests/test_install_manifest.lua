@@ -26,6 +26,19 @@ assert(
     installer:find('REPO,\n  targetSha', 1, true) ~= nil,
     "Installer raw-file base must use the resolved commit SHA"
 )
+assert(
+    installer:find("preflightLua", 1, true) ~= nil,
+    "Installer must syntax-check downloaded Lua before applying it"
+)
+assert(
+    installer:find("MANAGED_FILE", 1, true) ~= nil
+        and installer:find(".cc_royale_managed", 1, true) ~= nil,
+    "Installer must track managed files so removed runtime files can be cleaned"
+)
+assert(
+    installer:find("restoreSnapshot(snapshot, rollbackPaths)", 1, true) ~= nil,
+    "Installer must rollback the complete touched-file set after apply errors"
+)
 
 local managed = {}
 for path in listBody:gmatch('"([^"]+)"') do

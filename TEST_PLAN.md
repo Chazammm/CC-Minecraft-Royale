@@ -108,7 +108,7 @@ Pass condition: only the destroyed lane gains the extra deployment area, the opp
 - Then test an enemy Bat Swarm.
 - Leave a Cannon alive long enough to expire.
 
-Pass condition: Cannon is stationary, attacks ground troops, ignores flying troops and disappears after its lifetime.
+Pass condition: Cannon is stationary, attacks ground troops, ignores flying troops, loses HP continuously from lifetime decay and dies naturally when that decay/damage exhausts its HP.
 
 ## 11. Arrow Volley AoE
 

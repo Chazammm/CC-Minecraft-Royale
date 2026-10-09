@@ -261,7 +261,7 @@ Results are written to:
 
     balance_results.txt
 
-Invalid/help commands do not overwrite the previous report.
+Invalid/help commands do not overwrite the previous report. Side-swapped match pairs also reuse the same future-proof gameplay RNG seed without consuming the independent deck-sampling RNG.
 
 ## Controlled replacement analysis
 
@@ -384,9 +384,12 @@ On the arena computer:
     wget run https://raw.githubusercontent.com/Chazammm/CC-Minecraft-Royale/main/install.lua
 
 The bootstrap installer resolves `main` once and pins the entire update to that
-single immutable commit SHA before downloading managed files. It also keeps a
+single immutable commit SHA before downloading managed files. Every downloaded
+Lua file is syntax-checked before the first live write. The installer keeps a
 small recovery marker during the apply phase, preserves unrelated custom
-`startup.lua` files, and performs low-space RAM rollback on write failure.
+`startup.lua` files, tracks its managed-file set so removed/renamed runtime
+files are cleaned on later updates, and performs low-space RAM rollback for
+both ordinary write failures and unexpected filesystem exceptions.
 
 Then run:
 
@@ -414,13 +417,15 @@ Then run:
 - `src/headless_match.lua` - one authoritative headless match driver for every benchmark
 - `mechanics_test.lua` - active deterministic gameplay diagnostics + shareable report
 - `report_sync.lua` - GitHub report sync setup/manual uploader
-- `src/report_sync.lua` - authenticated single-commit report upload/history helper
+- `src/report_sync.lua` - authenticated report upload/history helper; manual sync batches all available reports into one commit
 - `tests/test_v1.lua` - legacy broad logic smoke/regression suite
 - `tests/test_audit_regressions.lua` - cross-mechanic and symmetry regressions
 - `tests/test_headless_runner.lua` - benchmark-driver parity test
 - `tests/test_platform_stubs.lua` - hardware/music/report-sync platform stubs
 - `tests/test_install_manifest.lua` - installer dependency coverage
 - `tests/test_cli_manifest.lua` - CLI and immutable music-manifest checks
+- `tests/test_side_symmetry.lua` - focused arena/bot side-symmetry checks
+- `tests/test_audit_followups.lua` - second-pass audit regressions for slows, UI, bot cadence, persistence, statistics and report batching
 
 ## Deliberate simplifications
 
