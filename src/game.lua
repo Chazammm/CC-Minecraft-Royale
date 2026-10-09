@@ -3167,15 +3167,20 @@ function Game.update(state, dt)
                     local boostSources = playerId == 1
                         and emeraldBoostSources1
                         or emeraldBoostSources2
-                    for _, entity in ipairs(boostSources or {}) do
-                        if entity.sourceCardId then
-                            local share = realizedBonus * entity.emeraldBoost / boost
-                            local cardStats = getCardStats(
-                                state,
-                                playerId,
-                                entity.sourceCardId
-                            )
-                            cardStats.emeraldBonus = cardStats.emeraldBonus + share
+                    if boostSources then
+                        for _, entity in ipairs(boostSources) do
+                            if entity.sourceCardId then
+                                local share = realizedBonus
+                                    * entity.emeraldBoost
+                                    / boost
+                                local cardStats = getCardStats(
+                                    state,
+                                    playerId,
+                                    entity.sourceCardId
+                                )
+                                cardStats.emeraldBonus =
+                                    cardStats.emeraldBonus + share
+                            end
                         end
                     end
                 end
