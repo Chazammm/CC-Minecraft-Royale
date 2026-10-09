@@ -64,6 +64,22 @@ function hardware.init()
 
         monitor.setTextScale(config.TEXT_SCALE)
         monitor.setCursorBlink(false)
+
+        local width, height = monitor.getSize()
+        if width < (config.MIN_RECOMMENDED_WIDTH or 1)
+            or height < (config.MIN_RECOMMENDED_HEIGHT or 1)
+        then
+            print((
+                "WARNING: monitor %s is %dx%d; recommended minimum is %dx%d."
+            ):format(
+                tostring(name),
+                width,
+                height,
+                config.MIN_RECOMMENDED_WIDTH or 1,
+                config.MIN_RECOMMENDED_HEIGHT or 1
+            ))
+        end
+
         monitors[playerId] = monitor
     end
 
@@ -106,11 +122,13 @@ function hardware.playSound(ctx, name, volume, pitch)
 end
 
 function hardware.clear(ctx)
-    for _, monitor in ipairs(ctx.monitors) do
-        monitor.setBackgroundColor(colors.black)
-        monitor.setTextColor(colors.white)
-        monitor.clear()
-        monitor.setCursorPos(1, 1)
+    for _, monitor in ipairs(ctx.monitors or {}) do
+        pcall(function()
+            monitor.setBackgroundColor(colors.black)
+            monitor.setTextColor(colors.white)
+            monitor.clear()
+            monitor.setCursorPos(1, 1)
+        end)
     end
 end
 
