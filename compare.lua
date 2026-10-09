@@ -2,6 +2,7 @@ local Game = require("src.game")
 local Bot = require("src.bot")
 local cards = require("src.cards")
 local config = require("config")
+local benchmark = require("src.benchmark_utils")
 
 local args = { ... }
 
@@ -150,27 +151,11 @@ else
     seed = math.floor(tonumber(args[4]) or DEFAULT_SEED)
 end
 
-local rngState = seed % 2147483647
-if rngState <= 0 then rngState = 1 end
-
-local function randomInt(maximum)
-    rngState = (rngState * 48271) % 2147483647
-    return (rngState % maximum) + 1
-end
-
-local function copy(list)
-    local out = {}
-    for i, value in ipairs(list) do out[i] = value end
-    return out
-end
+local randomInt = benchmark.newRandomInt(seed)
+local copy = benchmark.copy
 
 local function shuffle(list)
-    local out = copy(list)
-    for i = #out, 2, -1 do
-        local j = randomInt(i)
-        out[i], out[j] = out[j], out[i]
-    end
-    return out
+    return benchmark.shuffle(list, randomInt)
 end
 
 local function buildContext(cardA, cardB)
@@ -345,47 +330,9 @@ local function runMatch(subjectDeck, opponentDeck, subjectCardId, subjectOwner)
     }
 end
 
-local function mean(values)
-    if #values == 0 then return 0 end
-    local sum = 0
-    for _, value in ipairs(values) do sum = sum + value end
-    return sum / #values
-end
-
-local function sampleStdDev(values, avg)
-    if #values < 2 then return 0 end
-    local sum = 0
-    for _, value in ipairs(values) do
-        local d = value - avg
-        sum = sum + d * d
-    end
-    return math.sqrt(sum / (#values - 1))
-end
-
-local T95 = {
-    [9] = 2.262, [10] = 2.228, [11] = 2.201, [12] = 2.179,
-    [13] = 2.160, [14] = 2.145, [15] = 2.131, [16] = 2.120,
-    [17] = 2.110, [18] = 2.101, [19] = 2.093, [20] = 2.086,
-    [21] = 2.080, [22] = 2.074, [23] = 2.069, [24] = 2.064,
-    [25] = 2.060, [26] = 2.056, [27] = 2.052, [28] = 2.048,
-    [29] = 2.045, [30] = 2.042,
-}
-
-local function critical95(sampleCount)
-    local df = math.max(1, sampleCount - 1)
-    if df <= 30 then
-        return T95[math.max(9, df)] or 2.262
-    elseif df <= 40 then
-        return 2.021
-    elseif df <= 60 then
-        return 2.000
-    elseif df <= 80 then
-        return 1.990
-    elseif df <= 100 then
-        return 1.984
-    end
-    return 1.960
-end
+local mean = benchmark.mean
+local sampleStdDev = benchmark.sampleStdDev
+local critical95 = benchmark.critical95
 
 local function summarize(agg)
     local matches = math.max(1, agg.matches)
