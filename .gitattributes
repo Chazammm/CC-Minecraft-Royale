@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# DFPWM packs are binary assets; never normalize or diff them as text.
+*.dfpwm binary
