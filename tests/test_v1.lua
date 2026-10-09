@@ -420,6 +420,61 @@ assertEq(#debugState.entities, 1, "Admin spawn must create the selected unit")
 Game.debugSetPaused(debugState, false)
 assertTrue(not debugState.adminPaused, "Admin pause control must resume simulation")
 
+-- Headless benchmark mode may remove only presentation work. A deterministic
+-- projectile fight must produce exactly the same combat state as normal mode.
+local function headlessParitySnapshot(headless)
+    local options = headless and { headlessSimulation = true } or nil
+    local parityState = Game.new(nil, options)
+    Game.debugLoadScenario(parityState, "empty")
+    Game.debugSpawnCard(parityState, 1, "skeleton", 50, 100)
+    Game.debugSpawnCard(parityState, 2, "zombie", 50, 84)
+    Game.debugSetPaused(parityState, false)
+
+    for _ = 1, 80 do Game.update(parityState, 0.10) end
+
+    local snapshot = {}
+    for _, entity in ipairs(parityState.entities) do
+        snapshot[#snapshot + 1] = {
+            id = entity.id,
+            owner = entity.owner,
+            name = entity.name,
+            hp = entity.hp,
+            x = entity.x,
+            y = entity.y,
+            targetId = entity.targetId,
+            lockedTargetId = entity.lockedTargetId,
+            attackCooldownLeft = entity.attackCooldownLeft,
+        }
+    end
+
+    return parityState, snapshot
+end
+
+local normalParityState, normalParity = headlessParitySnapshot(false)
+local fastParityState, fastParity = headlessParitySnapshot(true)
+
+assertTrue(fastParityState.headlessSimulation, "Benchmark state must explicitly enable headless simulation")
+assertEq(#fastParityState.effects, 0, "Headless simulation must not allocate visual effects")
+assertEq(#normalParity, #fastParity, "Headless mode must preserve surviving entity count")
+for i = 1, #normalParity do
+    local normal = normalParity[i]
+    local fast = fastParity[i]
+    assertEq(fast.id, normal.id, "Headless mode must preserve entity ids/order")
+    assertEq(fast.owner, normal.owner, "Headless mode must preserve entity owners")
+    assertEq(fast.name, normal.name, "Headless mode must preserve entity identity")
+    assertEq(fast.hp, normal.hp, "Headless mode must preserve exact HP outcomes")
+    assertEq(fast.x, normal.x, "Headless mode must preserve exact X positions")
+    assertEq(fast.y, normal.y, "Headless mode must preserve exact Y positions")
+    assertEq(fast.targetId, normal.targetId, "Headless mode must preserve target acquisition")
+    assertEq(fast.lockedTargetId, normal.lockedTargetId, "Headless mode must preserve target locks")
+    assertEq(
+        fast.attackCooldownLeft,
+        normal.attackCooldownLeft,
+        "Headless mode must preserve attack timing"
+    )
+end
+
+
 local forwardOrderState = Game.new()
 Game.debugLoadScenario(forwardOrderState, "empty")
 Game.debugSpawnCard(forwardOrderState, 1, "zombie", 50, 80)
