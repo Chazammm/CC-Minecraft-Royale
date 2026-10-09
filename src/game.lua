@@ -1860,6 +1860,21 @@ local function beginBattle(state)
     emitSound(state, "minecraft:entity.experience_orb.pickup", 0.9, 1.0)
 end
 
+-- Automated headless benchmarks do not need to spend CPU stepping through the
+-- visual countdown. Countdown ticks only decrement state.countdown and return;
+-- they do not change combat state. Reuse the exact normal match reset, then
+-- enter battle immediately with the same state the countdown would produce.
+function Game.startHeadlessBattle(state)
+    if not state or not state.headlessSimulation then
+        return false, "HEADLESS SIMULATION REQUIRED"
+    end
+
+    Game.startCountdown(state)
+    state.countdown = 0
+    beginBattle(state)
+    return true
+end
+
 function Game.finish(state, winner, reason)
     if state.phase == "result" then return end
     state.phase = "result"
