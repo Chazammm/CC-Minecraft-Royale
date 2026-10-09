@@ -428,6 +428,10 @@ end
 local function targetAllowed(attacker, candidate)
     if not candidate.alive or candidate.owner == attacker.owner then return false end
     if candidate.flying and not attacker.canAttackAir then return false end
+    -- Ground-erupting Fang attacks cannot interact with water-only targets.
+    -- Reject them during acquisition so the Evoker never locks a Guardian it
+    -- can never damage.
+    if attacker.fangAttack and candidate.waterOnly then return false end
     if not canAttackWaterTarget(attacker, candidate) then return false end
 
     if attacker.kind == "tower" then
