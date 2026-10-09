@@ -12,6 +12,21 @@ local installer = read("install.lua")
 local listBody = installer:match("local files%s*=%s*{(.-)\n}")
 assert(listBody, "Could not parse installer file list")
 
+assert(
+    installer:find("resolveCommitSha", 1, true) ~= nil
+        and installer:find("targetSha", 1, true) ~= nil,
+    "Installer must pin one repository commit before downloading files"
+)
+assert(
+    installer:find("INSTALL_MARKER", 1, true) ~= nil
+        and installer:find(".cc_royale_installing", 1, true) ~= nil,
+    "Installer must keep an interrupted-update recovery marker"
+)
+assert(
+    installer:find('REPO,\n  targetSha', 1, true) ~= nil,
+    "Installer raw-file base must use the resolved commit SHA"
+)
+
 local managed = {}
 for path in listBody:gmatch('"([^"]+)"') do
     managed[path] = true
