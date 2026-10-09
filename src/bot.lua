@@ -326,6 +326,32 @@ local function ownEmeraldBoost(state, playerId)
 end
 
 local function unitDps(entity)
+    if entity.hybridAttack then
+        local spec = entity.hybridAttack
+        return (spec.meleeDamage or entity.damage or 0)
+            / math.max(0.25, spec.meleeCooldown or entity.attackCooldown or 1)
+    end
+
+    if entity.beam then
+        local baseDps = entity.beam.baseDps or 0
+        local maxDps = math.max(baseDps, entity.beam.maxDps or baseDps)
+        return (baseDps + maxDps) * 0.5
+    end
+
+    if entity.fangAttack then
+        return (entity.fangAttack.damage or 0)
+            / math.max(0.25, entity.attackCooldown or 1)
+    end
+
+    if entity.proximityExplosion then
+        local spec = entity.proximityExplosion
+        -- Treat one-shot burst as pressure spread over a short engagement
+        -- window instead of pretending its base entity.damage (usually zero)
+        -- represents the card.
+        return (spec.damage or 0)
+            / math.max(2.0, (spec.fuseTime or 1.5) + 1.0)
+    end
+
     if not entity.damage or entity.damage <= 0 then return 0 end
     return entity.damage / math.max(0.25, entity.attackCooldown or 1)
 end
@@ -955,6 +981,17 @@ local function scoreCard(
     elseif defending then
         score = 3 + ctx.primaryThreatScore * 0.35
 
+        -- A building-only troop (currently Iron Golem) cannot directly defend
+        -- against an incoming unit. Do not spend a high-value defensive slot
+        -- on a body which will simply walk past the threat.
+        if card.kind == "unit"
+            and card.unit
+            and card.unit.targetMode == "buildings"
+            and threat.kind == "unit"
+        then
+            return -math.huge
+        end
+
         -- Never answer a flying threat with a card that cannot actually
         -- interact with it. This covers both troops and defensive buildings.
         if threat.flying then
@@ -1189,7 +1226,10 @@ local function play(bot, state, choice)
     bot.lastAction = choice.card.name
     bot.lastX = choice.x
     bot.lastY = choice.y
-    bot.thinkTimer = 0.85 + ((bot.actions * 13 + (bot.styleSeed or 0)) % 5) * 0.07
+    -- Bot.update already scheduled the next decision using the active
+    -- difficulty/late-game/overtime cadence before choosePlay(). Keep that
+    -- timer after a successful play instead of replacing every difficulty
+    -- with the same ~0.85-1.13s post-play delay.
     return true
 end
 

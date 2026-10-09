@@ -1097,8 +1097,35 @@ function cards.evolvedCopy(cardOrId)
 end
 
 function cards.evolutionCost(cardOrId)
-    local evolved = cards.evolvedCopy(cardOrId)
-    return evolved and evolved.cost or nil
+    local card = evolutionCard(cardOrId)
+    if not card or type(card.evolution) ~= "table" then return nil end
+
+    local evo = card.evolution
+    local fallbackCost = card.cost
+
+    -- evolvedCopy() applies whole-card cost modifiers before resolving the
+    -- dedicated Evolution cost rule. Reproduce only that tiny cost-relevant
+    -- subset here so frequent affordability checks never deepcopy a full card.
+    if type(evo.card) == "table" then
+        local multipliers = evo.card.multipliers
+        if type(multipliers) == "table"
+            and type(multipliers.cost) == "number"
+            and type(fallbackCost) == "number"
+        then
+            fallbackCost = fallbackCost * multipliers.cost
+        end
+
+        local overrides = evo.card.overrides
+        if type(overrides) == "table" and overrides.cost ~= nil then
+            fallbackCost = overrides.cost
+        end
+    end
+
+    if type(evo.patch) == "table" and evo.patch.cost ~= nil then
+        fallbackCost = evo.patch.cost
+    end
+
+    return resolveEvolutionCost(card.cost, evo, fallbackCost)
 end
 
 function cards.evolutionCards(includeDevOnly)

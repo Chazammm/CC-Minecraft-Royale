@@ -188,9 +188,10 @@ local function addDeckResult(deck, owner, state)
     end
 end
 
-local function runMatch(deck1, deck2, botOrderOffset)
+local function runMatch(deck1, deck2, botOrderOffset, gameplaySeed)
     local state = Runner.run(deck1, deck2, {
         dt = SIM_DT,
+        gameplaySeed = gameplaySeed,
         botOrderOffset = botOrderOffset or 0,
         yieldFn = cooperativeYield,
         yieldCheckTicks = YIELD_CHECK_TICKS,
@@ -237,6 +238,12 @@ else
     reportPrint("Using the original fixed Deck A vs Deck B comparison.")
 end
 reportPrint("")
+reportPrint("Side-swapped pairs reuse one gameplay RNG seed; deck sampling RNG stays independent.")
+
+local function gameplaySeedForPair(pairIndex)
+    local value = (seed + pairIndex * 1000003) % 2147483646
+    return value + 1
+end
 
 local benchmarkStartedMs = os.epoch and os.epoch("utc") or nil
 local completed = 0
@@ -249,21 +256,24 @@ while completed < matchCount do
         deckA, deckB = mixedDeckPair()
     end
 
+    local pairIndex = math.floor(completed / 2) + 1
+    local gameplaySeed = gameplaySeedForPair(pairIndex)
+
     if completed + 1 == matchCount then
         -- Odd match counts cannot form a complete side-swapped pair. Randomize
         -- the final orientation so the leftover game is not always A=P1.
         local orderOffset = randomInt(2) - 1
         if randomInt(2) == 1 then
-            runMatch(deckA, deckB, orderOffset)
+            runMatch(deckA, deckB, orderOffset, gameplaySeed)
         else
-            runMatch(deckB, deckA, orderOffset)
+            runMatch(deckB, deckA, orderOffset, gameplaySeed)
         end
         completed = completed + 1
     else
-        runMatch(deckA, deckB, 0)
+        runMatch(deckA, deckB, 0, gameplaySeed)
         completed = completed + 1
 
-        runMatch(deckB, deckA, 1)
+        runMatch(deckB, deckA, 1, gameplaySeed)
         completed = completed + 1
     end
 

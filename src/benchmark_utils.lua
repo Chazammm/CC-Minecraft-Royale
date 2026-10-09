@@ -49,6 +49,8 @@ function benchmark.sampleStdDev(values, avg)
 end
 
 local T95 = {
+    [1] = 12.706, [2] = 4.303, [3] = 3.182, [4] = 2.776,
+    [5] = 2.571, [6] = 2.447, [7] = 2.365, [8] = 2.306,
     [9] = 2.262, [10] = 2.228, [11] = 2.201, [12] = 2.179,
     [13] = 2.160, [14] = 2.145, [15] = 2.131, [16] = 2.120,
     [17] = 2.110, [18] = 2.101, [19] = 2.093, [20] = 2.086,
@@ -59,20 +61,17 @@ local T95 = {
 
 function benchmark.critical95(sampleCount)
     local df = math.max(1, sampleCount - 1)
+    if df <= 30 then return T95[df] end
 
-    if df <= 30 then
-        return T95[math.max(9, df)] or 2.262
-    elseif df <= 40 then
-        return 2.021
-    elseif df <= 60 then
-        return 2.000
-    elseif df <= 80 then
-        return 1.990
-    elseif df <= 100 then
-        return 1.984
-    end
-
-    return 1.960
+    -- Cornish-Fisher expansion of the two-sided 95% Student-t quantile around
+    -- z=.975. For df>=31 this is effectively exact at the precision printed by
+    -- our reports (error is below ~0.000002 at df=31 and shrinks thereafter).
+    local z = 1.959963984540054
+    local v = df
+    return z
+        + (z^3 + z) / (4 * v)
+        + (5 * z^5 + 16 * z^3 + 3 * z) / (96 * v^2)
+        + (3 * z^7 + 19 * z^5 + 17 * z^3 - 15 * z) / (384 * v^3)
 end
 
 return benchmark

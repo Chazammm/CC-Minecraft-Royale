@@ -338,6 +338,7 @@ local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color, 
     entity.teleportCooldownLeft = 0
     entity.slowRemaining = 0
     entity.slowFactor = 1
+    entity.slowEffects = {}
     entity.periodicSpawnTimer = entity.periodicSpawn
         and (entity.periodicSpawn.initialDelay or entity.periodicSpawn.interval or 8)
         or nil
@@ -635,6 +636,112 @@ local function acquireTarget(state, entity)
 end
 
 local updateGroundPulse
+
+local function refreshMovementSlow(entity)
+    local effects = entity.slowEffects
+    if type(effects) ~= "table" or #effects == 0 then
+        if not entity.slowRemaining or entity.slowRemaining <= 0 then
+            entity.slowRemaining = 0
+            entity.slowFactor = 1
+        end
+        return
+    end
+
+    local strongest = 1
+    local strongestRemaining = 0
+    for _, effect in ipairs(effects) do
+        local remaining = math.max(0, effect.remaining or 0)
+        if remaining > 0 then
+            local factor = util.clamp(effect.factor or 1, 0, 1)
+            if factor < strongest - 1e-9 then
+                strongest = factor
+                strongestRemaining = remaining
+            elseif math.abs(factor - strongest) <= 1e-9 then
+                strongestRemaining = math.max(strongestRemaining, remaining)
+            end
+        end
+    end
+
+    entity.slowFactor = strongest
+    entity.slowRemaining = strongest < 1 and strongestRemaining or 0
+end
+
+local function updateMovementSlows(entity, dt)
+    local effects = entity.slowEffects
+    if type(effects) == "table" and #effects > 0 then
+        local write = 1
+        for read = 1, #effects do
+            local effect = effects[read]
+            effect.remaining = math.max(0, (effect.remaining or 0) - dt)
+            if effect.remaining > 1e-9 then
+                effects[write] = effect
+                write = write + 1
+            end
+        end
+        for i = write, #effects do effects[i] = nil end
+        refreshMovementSlow(entity)
+        return
+    end
+
+    -- Compatibility path for legacy/debug entities which still provide only
+    -- the old aggregate slow fields.
+    updateMovementSlows(entity, dt)
+end
+
+local function applyMovementSlow(entity, spec)
+    if not entity or type(spec) ~= "table" then return 0, false end
+
+    local factor = util.clamp(tonumber(spec.factor) or 1, 0, 1)
+    local duration = math.max(0, tonumber(spec.duration) or 0)
+    if factor >= 1 or duration <= 0 then return 0, false end
+
+    local effects = entity.slowEffects
+    if type(effects) ~= "table" then
+        effects = {}
+        entity.slowEffects = effects
+    end
+
+    -- Preserve externally-created legacy slow state by converting it into the
+    -- same paired representation before adding a new effect.
+    if #effects == 0
+        and entity.slowRemaining
+        and entity.slowRemaining > 0
+        and (entity.slowFactor or 1) < 1
+    then
+        effects[1] = {
+            factor = util.clamp(entity.slowFactor or 1, 0, 1),
+            remaining = entity.slowRemaining,
+        }
+    end
+
+    -- slowSeconds measures only duration for which this new slow adds actual
+    -- control. Equal/stronger effects which already cover part of its window
+    -- do not let a weaker hit claim or artificially extend that time.
+    local coveredByEqualOrStronger = 0
+    for _, effect in ipairs(effects) do
+        local remaining = math.max(0, effect.remaining or 0)
+        local existingFactor = util.clamp(effect.factor or 1, 0, 1)
+        if remaining > 0 and existingFactor <= factor + 1e-9 then
+            coveredByEqualOrStronger = math.max(
+                coveredByEqualOrStronger,
+                remaining
+            )
+        end
+    end
+
+    local effectiveAdded = math.max(0, duration - coveredByEqualOrStronger)
+    if effectiveAdded <= 0 then
+        refreshMovementSlow(entity)
+        return 0, false
+    end
+
+    effects[#effects + 1] = {
+        factor = factor,
+        remaining = duration,
+    }
+    refreshMovementSlow(entity)
+    return effectiveAdded, true
+end
 
 local function currentMoveSpeed(entity)
     local speed = entity.moveSpeed or 0
@@ -1785,19 +1892,24 @@ local function updateProjectiles(state, dt)
                                 or victim.id == target.id
                             )
                         if shouldSlow then
-                            local oldRemaining = victim.slowRemaining or 0
-                            local newRemaining = math.max(
-                                oldRemaining,
-                                projectile.onHitSlow.duration or 1
+                            local addedSlow, applied = applyMovementSlow(
+                                victim,
+                                projectile.onHitSlow
                             )
-                            victim.slowRemaining = newRemaining
-                            victim.slowFactor = math.min(
-                                victim.slowFactor or 1,
-                                projectile.onHitSlow.factor or 0.7
-                            )
-                            addEffect(state, "slow", victim.x, victim.y, 3.5, 0.28, projectile.owner)
+                            if applied then
+                                addEffect(
+                                    state,
+                                    "slow",
+                                    victim.x,
+                                    victim.y,
+                                    3.5,
+                                    0.28,
+                                    projectile.owner
+                                )
+                            end
 
-                            if state.phase == "battle"
+                            if addedSlow > 0
+                                and state.phase == "battle"
                                 and state.stats
                                 and projectile.sourceCardId
                             then
@@ -1807,7 +1919,7 @@ local function updateProjectiles(state, dt)
                                     projectile.sourceCardId
                                 )
                                 cardStats.slowSeconds = cardStats.slowSeconds
-                                    + math.max(0, newRemaining - oldRemaining)
+                                    + addedSlow
                             end
                         end
                     end
@@ -3419,6 +3531,26 @@ function Game.debugKillEntity(state, entityOrId)
 
     killEntity(state, entity, nil, nil)
     return true
+end
+
+function Game.debugApplySlow(state, entityOrId, factor, duration)
+    if not state or not state.adminMode then
+        return false, "ADMIN MODE REQUIRED"
+    end
+
+    local entity = entityOrId
+    if type(entityOrId) == "number" then
+        entity = getEntityById(state, entityOrId)
+    end
+    if type(entity) ~= "table" or not entity.alive then
+        return false, "ENTITY NOT FOUND"
+    end
+
+    local _, applied = applyMovementSlow(entity, {
+        factor = factor,
+        duration = duration,
+    })
+    return applied
 end
 
 function Game.debugClearUnits(state)
