@@ -3389,6 +3389,24 @@ function Game.debugSpawnCard(state, owner, cardId, x, y)
     return true
 end
 
+function Game.debugKillEntity(state, entityOrId)
+    if not state or not state.adminMode then
+        return false, "ADMIN MODE REQUIRED"
+    end
+
+    local entity = entityOrId
+    if type(entityOrId) == "number" then
+        entity = getEntityById(state, entityOrId)
+    end
+
+    if type(entity) ~= "table" or not entity.alive then
+        return false, "ENTITY NOT FOUND"
+    end
+
+    killEntity(state, entity, nil, nil)
+    return true
+end
+
 function Game.debugClearUnits(state)
     local kept = {}
     for _, entity in ipairs(state.entities) do
