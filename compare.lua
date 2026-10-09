@@ -1,8 +1,7 @@
-local Game = require("src.game")
-local Bot = require("src.bot")
 local cards = require("src.cards")
 local config = require("config")
 local benchmark = require("src.benchmark_utils")
+local Runner = require("src.headless_match")
 
 local args = { ... }
 
@@ -239,77 +238,32 @@ local function addResult(agg, result)
     agg.evolutionPlays = agg.evolutionPlays + (stat.evolutionPlays or 0)
 end
 
-local function runMatch(subjectDeck, opponentDeck, subjectCardId, subjectOwner)
+local function runMatch(
+    subjectDeck,
+    opponentDeck,
+    subjectCardId,
+    subjectOwner,
+    gameplaySeed
+)
     local deck1 = subjectOwner == 1 and subjectDeck or opponentDeck
     local deck2 = subjectOwner == 1 and opponentDeck or subjectDeck
 
-    local state = Game.new(nil, {
-        headlessSimulation = true,
+    local state = Runner.run(deck1, deck2, {
+        dt = SIM_DT,
+        gameplaySeed = gameplaySeed,
+        yieldFn = cooperativeYield,
+        yieldCheckTicks = YIELD_CHECK_TICKS,
+        timeoutReason = "COMPARISON TIMEOUT",
+        configure = function(matchState)
+            -- Isolate base-card replacement impact. Evolution power has its
+            -- own dedicated paired benchmark.
+            matchState.ruleset.evolutions = false
+            matchState.players[1].evolutionCardId = nil
+            matchState.players[1].evolutionProgress = 0
+            matchState.players[2].evolutionCardId = nil
+            matchState.players[2].evolutionProgress = 0
+        end,
     })
-    local bot1 = Bot.new(1, deck1)
-    local bot2 = Bot.new(2, deck2)
-
-    Bot.prepare(bot1, state)
-    Bot.prepare(bot2, state)
-
-    -- This benchmark isolates base-card replacement impact. Evolutions are
-    -- deliberately disabled here; Evolution power has its own paired
-    -- evo_compare benchmark.
-    state.ruleset.evolutions = false
-    state.players[1].evolutionCardId = nil
-    state.players[1].evolutionProgress = 0
-    state.players[2].evolutionCardId = nil
-    state.players[2].evolutionProgress = 0
-
-    state.players[1].ready = true
-    state.players[2].ready = true
-    local started, skippedTicks = Game.startHeadlessBattle(state, SIM_DT)
-    if not started then error(skippedTicks or "Could not start headless battle", 0) end
-
-    Bot.beginMatch(bot1)
-    Bot.beginMatch(bot2)
-    bot1.enabled = true
-    bot2.enabled = true
-
-    local transitionTick = math.max(0, skippedTicks - 1)
-    if transitionTick % 2 == 0 then
-        Bot.update(bot1, state, SIM_DT)
-        Bot.update(bot2, state, SIM_DT)
-    else
-        Bot.update(bot2, state, SIM_DT)
-        Bot.update(bot1, state, SIM_DT)
-    end
-
-    local ticks = skippedTicks
-    local maxSimulationSeconds = config.MATCH.countdown
-        + config.MATCH.normalTime
-        + config.MATCH.overtimeTime
-        + 30
-    local maxTicks = math.ceil(maxSimulationSeconds / SIM_DT)
-
-    while state.phase ~= "result" and ticks < maxTicks do
-        Game.update(state, SIM_DT)
-
-        if ticks % 2 == 0 then
-            Bot.update(bot1, state, SIM_DT)
-            Bot.update(bot2, state, SIM_DT)
-        else
-            Bot.update(bot2, state, SIM_DT)
-            Bot.update(bot1, state, SIM_DT)
-        end
-
-        ticks = ticks + 1
-
-        if ticks % YIELD_CHECK_TICKS == 0 then
-            cooperativeYield(false)
-        end
-    end
-
-    cooperativeYield(false)
-
-    if state.phase ~= "result" then
-        Game.finish(state, nil, "COMPARISON TIMEOUT")
-    end
 
     local score
     if state.winner == subjectOwner then
@@ -328,6 +282,16 @@ local function runMatch(subjectDeck, opponentDeck, subjectCardId, subjectOwner)
         elapsed = state.stats.elapsed or 0,
         cardStat = cardStat,
     }
+end
+
+local function pairedGameplaySeed(baseSeed, comparisonIndex, contextIndex, side)
+    local value = (
+        baseSeed
+        + comparisonIndex * 1000003
+        + contextIndex * 9176
+        + side * 104729
+    ) % 2147483646
+    return value + 1
 end
 
 local mean = benchmark.mean
@@ -410,10 +374,23 @@ for comparisonIndex, spec in ipairs(comparisons) do
         local deckA, deckB, opponentDeck, replacementSlot = buildContext(spec.a, spec.b)
         slotCounts[replacementSlot] = (slotCounts[replacementSlot] or 0) + 1
 
-        local aP1 = runMatch(deckA, opponentDeck, spec.a, 1)
-        local aP2 = runMatch(deckA, opponentDeck, spec.a, 2)
-        local bP1 = runMatch(deckB, opponentDeck, spec.b, 1)
-        local bP2 = runMatch(deckB, opponentDeck, spec.b, 2)
+        local seedP1 = pairedGameplaySeed(
+            seed,
+            comparisonIndex,
+            contextIndex,
+            1
+        )
+        local seedP2 = pairedGameplaySeed(
+            seed,
+            comparisonIndex,
+            contextIndex,
+            2
+        )
+
+        local aP1 = runMatch(deckA, opponentDeck, spec.a, 1, seedP1)
+        local aP2 = runMatch(deckA, opponentDeck, spec.a, 2, seedP2)
+        local bP1 = runMatch(deckB, opponentDeck, spec.b, 1, seedP1)
+        local bP2 = runMatch(deckB, opponentDeck, spec.b, 2, seedP2)
 
         addResult(aggA, aP1)
         addResult(aggA, aP2)
