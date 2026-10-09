@@ -204,6 +204,6 @@ while true do
         if tickAccumulator < 1e-9 then tickAccumulator = 0 end
 
         tickTimer = os.startTimer(config.TICK_RATE)
-        redraw()
+        if not state.adminPaused then redraw() end
     end
 end
