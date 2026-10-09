@@ -15,8 +15,6 @@ local REPORTS = {
     { kind = "evolution", path = "evolution_results.txt" },
 }
 
-local BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-
 local function trim(value)
     return tostring(value or ""):match("^%s*(.-)%s*$")
 end
@@ -46,39 +44,6 @@ local function writeAll(path, body)
     handle.write(body)
     handle.close()
     return true
-end
-
-local function base64Encode(data)
-    local out = {}
-
-    for i = 1, #data, 3 do
-        local a = data:byte(i) or 0
-        local b = data:byte(i + 1) or 0
-        local c = data:byte(i + 2) or 0
-        local n = a * 65536 + b * 256 + c
-
-        local i1 = math.floor(n / 262144) % 64 + 1
-        local i2 = math.floor(n / 4096) % 64 + 1
-        local i3 = math.floor(n / 64) % 64 + 1
-        local i4 = n % 64 + 1
-
-        out[#out + 1] = BASE64:sub(i1, i1)
-        out[#out + 1] = BASE64:sub(i2, i2)
-
-        if i + 1 <= #data then
-            out[#out + 1] = BASE64:sub(i3, i3)
-        else
-            out[#out + 1] = "="
-        end
-
-        if i + 2 <= #data then
-            out[#out + 1] = BASE64:sub(i4, i4)
-        else
-            out[#out + 1] = "="
-        end
-    end
-
-    return table.concat(out)
 end
 
 local function apiHeaders(token)
