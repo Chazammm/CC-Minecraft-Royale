@@ -5,7 +5,7 @@ local Bot = require("src.bot")
 local util = require("src.util")
 local arena = require("src.arena")
 
-local SUITE_VERSION = 17
+local SUITE_VERSION = 18
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 local EPSILON = 0.000001
@@ -1027,7 +1027,7 @@ runTest("evo_emerald_bank", "Emerald Bank keeps production and lasts 20s longer"
         "cannon",
         "arrows",
         "villager",
-        "guardian",
+        "wolf",
     }
     state.players[2].deck = cards.defaultDeck()
 
