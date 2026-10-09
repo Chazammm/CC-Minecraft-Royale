@@ -793,7 +793,9 @@ local function spawnProjectile(state, attacker, target, damageOverride, visualOv
             or "shot",
         splashRadius = attacker.projectileSplashRadius,
         splashEffect = attacker.projectileSplashEffect,
-        onHitSlow = attacker.onHitSlow and util.deepcopy(attacker.onHitSlow) or nil,
+        -- Projectile code only reads this immutable combat spec. Sharing the
+        -- entity-owned table avoids one short-lived allocation per shot.
+        onHitSlow = attacker.onHitSlow,
         slowPrimaryOnly = attacker.projectileSlowPrimaryOnly == true,
         alive = true,
     })
@@ -1254,7 +1256,8 @@ local function queueEvokerFangs(state, entity, target)
         mode = mode,
         remaining = warning,
         delay = warning,
-        spec = util.deepcopy(spec),
+        -- Pending Fang resolution treats the spec as immutable.
+        spec = spec,
     }
 
     state.pendingSpells[#state.pendingSpells + 1] = pending
@@ -2140,7 +2143,8 @@ local function castFallingAnvil(state, playerId, card, x, y)
         y = y,
         remaining = delay,
         delay = delay,
-        spell = util.deepcopy(spell),
+        -- Pending Anvil resolution treats the spell payload as immutable.
+        spell = spell,
     }
 
     addEffect(state, "anvil_warning", x, y, spell.radius or 5.5, delay, playerId)
