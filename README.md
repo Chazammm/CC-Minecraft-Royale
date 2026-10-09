@@ -375,13 +375,18 @@ Manual commands:
 
 ## Battle music
 
-Battle music is shuffled and streamed as 48 kHz mono DFPWM from the repository's split music packs. When two speakers are available, SFX and music use separate devices. Streaming has reconnect/retry handling for interrupted HTTP requests.
+Battle music is shuffled and streamed as 48 kHz mono DFPWM from two immutable, commit-pinned music packs. The large binaries are intentionally not kept in the current main working tree, so fresh shallow checkouts and CI stay lightweight while old installed manifests can never drift to incompatible pack bytes. When two speakers are available, SFX and music use separate devices. Streaming has reconnect/retry handling for interrupted HTTP requests.
 
 ## Install / update
 
 On the arena computer:
 
     wget run https://raw.githubusercontent.com/Chazammm/CC-Minecraft-Royale/main/install.lua
+
+The bootstrap installer resolves `main` once and pins the entire update to that
+single immutable commit SHA before downloading managed files. It also keeps a
+small recovery marker during the apply phase, preserves unrelated custom
+`startup.lua` files, and performs low-space RAM rollback on write failure.
 
 Then run:
 
@@ -404,10 +409,18 @@ Then run:
 - `src/music.lua` - streamed battle music controller
 - `simulate.lua` - automated balance benchmark
 - `compare.lua` - paired controlled card replacement analysis
+- `evo_compare.lua` - paired base-vs-Evolution analysis
+- `src/benchmark_utils.lua` - shared deterministic benchmark RNG/statistics
+- `src/headless_match.lua` - one authoritative headless match driver for every benchmark
 - `mechanics_test.lua` - active deterministic gameplay diagnostics + shareable report
 - `report_sync.lua` - GitHub report sync setup/manual uploader
-- `src/report_sync.lua` - authenticated report upload/history helper
-- `tests/test_v1.lua` - automated logic regression/smoke tests
+- `src/report_sync.lua` - authenticated single-commit report upload/history helper
+- `tests/test_v1.lua` - legacy broad logic smoke/regression suite
+- `tests/test_audit_regressions.lua` - cross-mechanic and symmetry regressions
+- `tests/test_headless_runner.lua` - benchmark-driver parity test
+- `tests/test_platform_stubs.lua` - hardware/music/report-sync platform stubs
+- `tests/test_install_manifest.lua` - installer dependency coverage
+- `tests/test_cli_manifest.lua` - CLI and immutable music-manifest checks
 
 ## Deliberate simplifications
 
