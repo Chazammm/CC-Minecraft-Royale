@@ -996,7 +996,7 @@ runTest("evo_elder_guardian", "Benched Elder Guardian remains fully functional i
     local elderAcquiredAt17 = elder.targetId == zombie.id
     local beamDamageAt17 = zombieStartHp - zombie.hp
 
-    elder.alive = false
+    local elderKilled = Game.debugKillEntity(state, elder.id)
     Game.update(state, DEFAULT_DT)
     local restoredFactor = zombie.globalMoveSpeedFactor
 
@@ -1016,6 +1016,7 @@ runTest("evo_elder_guardian", "Benched Elder Guardian remains fully functional i
     addData(data, "enemy_move_factor_with_elder", slowedFactor)
     addData(data, "elder_acquired_target_at_17", elderAcquiredAt17)
     addData(data, "beam_damage_at_17", beamDamageAt17)
+    addData(data, "elder_debug_kill_succeeded", elderKilled)
     addData(data, "enemy_move_factor_after_elder_death", restoredFactor)
 
     return base
@@ -1033,6 +1034,7 @@ runTest("evo_elder_guardian", "Benched Elder Guardian remains fully functional i
         and math.abs((slowedFactor or 0) - 0.95) <= EPSILON
         and elderAcquiredAt17
         and beamDamageAt17 > 0
+        and elderKilled
         and math.abs((restoredFactor or 0) - 1.0) <= EPSILON,
         "Guardian/Elder must be unavailable to normal deck/Evo selection while remaining fully functional through admin/dev spawns.",
         data
