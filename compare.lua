@@ -135,7 +135,7 @@ if args[2] == nil or string.lower(tostring(args[2])) == "all" then
 else
     local a = tostring(args[2])
     local b = tostring(args[3] or "")
-    if not cards.get(a) or not cards.get(b) or a == b then
+    if not cards.isSelectable(a) or not cards.isSelectable(b) or a == b then
         nativePrint("ERROR: Custom comparison needs two different selectable card IDs.")
         printUsage()
         return
