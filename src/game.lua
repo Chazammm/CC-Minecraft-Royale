@@ -1260,12 +1260,8 @@ local function resolveEvokerFangs(state, pending)
         end
     end
 
-    if state.phase == "battle" and state.stats and pending.cardId then
-        local cardStats = getCardStats(state, pending.owner, pending.cardId)
-        cardStats.targetsHit = cardStats.targetsHit + #targets
-    end
-
     local battleAtStart = state.phase == "battle"
+    local processedTargets = 0
     for _, target in ipairs(targets) do
         damageEntity(
             state,
@@ -1275,7 +1271,13 @@ local function resolveEvokerFangs(state, pending)
             pending.cardId,
             pending.sourceEntityId
         )
+        processedTargets = processedTargets + 1
         if battleAtStart and state.phase ~= "battle" then break end
+    end
+
+    if battleAtStart and state.stats and pending.cardId then
+        local cardStats = getCardStats(state, pending.owner, pending.cardId)
+        cardStats.targetsHit = cardStats.targetsHit + processedTargets
     end
 
     addFangEffect(state, "evoker_fangs_impact", pending, 0.45)
@@ -2112,26 +2114,33 @@ local function resolveFallingAnvil(state, pending)
             and entity.owner ~= pending.owner
             and (not spell.groundOnly or not entity.flying)
         then
-            local distance = util.distance(pending.x, pending.y, entity.x, entity.y)
-            if distance <= (spell.radius or 5.5) then
+            local radius = spell.radius or 5.5
+            if util.distanceSquared(
+                pending.x,
+                pending.y,
+                entity.x,
+                entity.y
+            ) <= radius * radius then
                 targets[#targets + 1] = entity
             end
         end
     end
 
-    if state.phase == "battle" and state.stats then
-        local cardStats = getCardStats(state, pending.owner, pending.cardId)
-        cardStats.targetsHit = cardStats.targetsHit + #targets
-    end
-
     local battleAtStart = state.phase == "battle"
+    local processedTargets = 0
     for _, target in ipairs(targets) do
         local damage = spell.damage or 0
         if target.kind == "tower" then
             damage = damage * (spell.towerMultiplier or 1)
         end
         damageEntity(state, target, damage, pending.owner, pending.cardId)
+        processedTargets = processedTargets + 1
         if battleAtStart and state.phase ~= "battle" then break end
+    end
+
+    if battleAtStart and state.stats then
+        local cardStats = getCardStats(state, pending.owner, pending.cardId)
+        cardStats.targetsHit = cardStats.targetsHit + processedTargets
     end
 
     addEffect(
@@ -2184,26 +2193,30 @@ local function castArrows(state, playerId, card, x, y)
     local targets = {}
     for _, entity in ipairs(state.entities) do
         if entity.alive and entity.owner ~= playerId then
-            local distance = util.distance(x, y, entity.x, entity.y)
-            if distance <= card.spell.radius then
+            local radius = card.spell.radius
+            if util.distanceSquared(x, y, entity.x, entity.y)
+                <= radius * radius
+            then
                 table.insert(targets, entity)
             end
         end
     end
 
-    if state.phase == "battle" and state.stats then
-        local cardStats = getCardStats(state, playerId, card.id)
-        cardStats.targetsHit = cardStats.targetsHit + #targets
-    end
-
     local battleAtStart = state.phase == "battle"
+    local processedTargets = 0
     for _, target in ipairs(targets) do
         local damage = card.spell.damage
         if target.kind == "tower" then
             damage = damage * (card.spell.towerMultiplier or 1)
         end
         damageEntity(state, target, damage, playerId, card.id)
+        processedTargets = processedTargets + 1
         if battleAtStart and state.phase ~= "battle" then break end
+    end
+
+    if battleAtStart and state.stats then
+        local cardStats = getCardStats(state, playerId, card.id)
+        cardStats.targetsHit = cardStats.targetsHit + processedTargets
     end
 
     emitSound(state, "minecraft:entity.arrow.shoot", 0.7, 1.1)
