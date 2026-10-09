@@ -2203,6 +2203,7 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
         return false, "NOT PLAYABLE"
     end
 
+    local battlePlay = state.phase == "battle"
     local cardId = player.hand[slot]
     local card = cards.get(cardId)
     if not card then
@@ -2244,7 +2245,7 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
     end
 
     local evolutionCycles = nil
-    if state.phase == "battle"
+    if battlePlay
         and Game.rulesetEnabled(state, "evolutions")
         and player.evolutionCardId == card.id
         and cards.hasEvolution(card.id)
@@ -2276,7 +2277,7 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
 
     player.emeralds = player.emeralds - playCost
 
-    if state.phase == "battle" and state.stats then
+    if battlePlay and state.stats then
         local playerStats = state.stats.players[playerId]
         local cardStats = getCardStats(state, playerId, card.id)
         playerStats.cardsPlayed = playerStats.cardsPlayed + 1
@@ -2293,7 +2294,7 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
 
     local deploymentFeedback = card.name .. " DEPLOYED"
 
-    if state.phase == "battle"
+    if battlePlay
         and Game.rulesetEnabled(state, "evolutions")
         and player.evolutionCardId == card.id
         and cards.hasEvolution(card.id)
