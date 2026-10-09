@@ -922,12 +922,20 @@ local function explodeProximityUnit(state, entity)
     )
 
     local victims = {}
+    local radius = spec.radius or 8
+    local radiusSq = radius * radius
     for _, candidate in ipairs(state.entities) do
-        if candidate.alive and candidate.id ~= entity.id and candidate.owner ~= entity.owner then
-            local d = util.distance(entity.x, entity.y, candidate.x, candidate.y)
-            if d <= (spec.radius or 8) then
-                table.insert(victims, candidate)
-            end
+        if candidate.alive
+            and candidate.id ~= entity.id
+            and candidate.owner ~= entity.owner
+            and util.distanceSquared(
+                entity.x,
+                entity.y,
+                candidate.x,
+                candidate.y
+            ) <= radiusSq
+        then
+            table.insert(victims, candidate)
         end
     end
 
@@ -956,12 +964,18 @@ local function handleDeathAbilities(state, entity)
         addEffect(state, "explosion", entity.x, entity.y, entity.deathDamage.radius, 0.45, entity.owner)
 
         local victims = {}
+        local radiusSq = entity.deathDamage.radius * entity.deathDamage.radius
         for _, candidate in ipairs(state.entities) do
-            if candidate.alive and candidate.owner ~= entity.owner then
-                local d = util.distance(entity.x, entity.y, candidate.x, candidate.y)
-                if d <= entity.deathDamage.radius then
-                    table.insert(victims, candidate)
-                end
+            if candidate.alive
+                and candidate.owner ~= entity.owner
+                and util.distanceSquared(
+                    entity.x,
+                    entity.y,
+                    candidate.x,
+                    candidate.y
+                ) <= radiusSq
+            then
+                table.insert(victims, candidate)
             end
         end
 
@@ -1284,12 +1298,13 @@ local function resolveEvokerFangs(state, pending)
         then
             local hit = false
             if pending.mode == "ring" then
-                hit = util.distance(
+                local ringRadius = spec.ringRadius or 5
+                hit = util.distanceSquared(
                     pending.x,
                     pending.y,
                     candidate.x,
                     candidate.y
-                ) <= (spec.ringRadius or 5)
+                ) <= ringRadius * ringRadius
             else
                 hit = pointToSegmentDistance(
                     candidate.x,
@@ -1718,12 +1733,19 @@ local function updateProjectiles(state, dt)
 
                     local victims = {}
                     if projectile.splashRadius then
+                        local splashSq =
+                            projectile.splashRadius * projectile.splashRadius
                         for _, candidate in ipairs(state.entities) do
-                            if candidate.alive and candidate.owner ~= projectile.owner then
-                                local d = util.distance(target.x, target.y, candidate.x, candidate.y)
-                                if d <= projectile.splashRadius then
-                                    table.insert(victims, candidate)
-                                end
+                            if candidate.alive
+                                and candidate.owner ~= projectile.owner
+                                and util.distanceSquared(
+                                    target.x,
+                                    target.y,
+                                    candidate.x,
+                                    candidate.y
+                                ) <= splashSq
+                            then
+                                table.insert(victims, candidate)
                             end
                         end
                         addEffect(
