@@ -1265,6 +1265,11 @@ function Bot.update(bot, state, dt)
     if choice then play(bot, state, choice) end
 end
 
+function Bot.debugCounterpushLane(state, playerId)
+    local view = buildDecisionView(state, playerId)
+    return counterpushLane(state, playerId, view)
+end
+
 function Bot.status(bot, state)
     local player = state.players[bot.playerId]
     return {
