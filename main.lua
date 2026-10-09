@@ -111,6 +111,11 @@ while true do
         if playerId then
             local layout = render.layoutFor(hw.monitors[playerId])
             Game.handleTouch(state, playerId, x, y, layout)
+            if state.exitRequested then
+                Music.stop(music, true)
+                hardware.clear(hw)
+                break
+            end
             syncBot()
             redraw()
         end
