@@ -316,14 +316,14 @@ local function unitDps(entity)
 end
 
 local function nearestOwnTowerDistance(view, entity)
-    local best = math.huge
+    local bestSq = math.huge
     for _, candidate in ipairs(view.ownTowers) do
         local dx = candidate.x - entity.x
         local dy = candidate.y - entity.y
-        local d = math.sqrt(dx * dx + dy * dy)
-        if d < best then best = d end
+        local d2 = dx * dx + dy * dy
+        if d2 < bestSq then bestSq = d2 end
     end
-    return best
+    return bestSq < math.huge and math.sqrt(bestSq) or math.huge
 end
 
 local function isApproachingHalf(playerId, y)
@@ -377,6 +377,7 @@ end
 local function bestArrowTarget(state, playerId, view)
     local arrow = ARROW_CARD
     local radius = arrow and arrow.spell and arrow.spell.radius or 12
+    local radiusSq = radius * radius
     local best, bestScore = nil, 0
 
     for _, center in ipairs(view.enemyNonTowers) do
@@ -385,7 +386,7 @@ local function bestArrowTarget(state, playerId, view)
         for _, target in ipairs(view.enemyNonTowers) do
             local dx = center.x - target.x
             local dy = center.y - target.y
-            if math.sqrt(dx * dx + dy * dy) <= radius then
+            if dx * dx + dy * dy <= radiusSq then
                 if target.sourceCardId == "villager" and target.emeraldBoost then
                     score = score + 9
                 elseif target.name == "Bat Swarm" then
@@ -476,12 +477,14 @@ local function predictedAnvilPosition(state, entity, delay)
         attackRange = entity.hybridAttack.meleeRange or attackRange
     end
 
-    local initialDistance = math.sqrt((target.x - x)^2 + (target.y - y)^2)
+    local initialDx = target.x - x
+    local initialDy = target.y - y
+    local attackStop = attackRange + 0.75
 
     -- A troop already fighting is much more likely to still be near its
     -- current position than a marching troop. This is especially useful for
     -- tanks/buildings being stalled at a bridge or tower.
-    if initialDistance <= attackRange + 0.75 then
+    if initialDx * initialDx + initialDy * initialDy <= attackStop * attackStop then
         return x, y, 0.90
     end
 
@@ -520,12 +523,16 @@ local function predictedAnvilPosition(state, entity, delay)
 end
 
 local function anvilOverlapsPending(state, playerId, x, y, radius)
+    local overlapRadius = radius * 1.25
+    local overlapSq = overlapRadius * overlapRadius
+
     for _, pending in ipairs(state.pendingSpells or {}) do
         if pending.owner == playerId
             and pending.kind == "falling_anvil"
         then
-            local d = math.sqrt((pending.x - x)^2 + (pending.y - y)^2)
-            if d <= radius * 1.25 then return true end
+            local dx = pending.x - x
+            local dy = pending.y - y
+            if dx * dx + dy * dy <= overlapSq then return true end
         end
     end
     return false
@@ -539,6 +546,7 @@ local function bestAnvilTarget(state, playerId, view)
     local radius = spell.radius or 5.5
     local delay = spell.delay or 2.7
     local damage = spell.damage or 0
+    local radiusSq = radius * radius
     local bestX, bestY, bestScore = nil, nil, 0
 
     local predicted = {}
@@ -570,8 +578,9 @@ local function bestAnvilTarget(state, playerId, view)
                             and targetPrediction.confidence
                             or 1
 
-                        local d = math.sqrt((cx - tx)^2 + (cy - ty)^2)
-                        if d <= radius then
+                        local dx = cx - tx
+                        local dy = cy - ty
+                        if dx * dx + dy * dy <= radiusSq then
                             hitCount = hitCount + 1
                             if confidence >= 0.80 then
                                 reliableHits = reliableHits + 1
