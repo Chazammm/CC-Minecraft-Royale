@@ -1821,6 +1821,7 @@ function Game.startCountdown(state)
     state.adminScenario = nil
     state.countdown = config.MATCH.countdown
     state.entities = {}
+    state.entityById = {}
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
@@ -3007,6 +3008,7 @@ end
 
 local function clearSimulation(state)
     state.entities = {}
+    state.entityById = {}
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
