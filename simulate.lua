@@ -168,9 +168,6 @@ local function cardReport(cardId)
     return out
 end
 
-    return false
-end
-
 local function addDeckResult(deck, owner, state)
     local won = state.winner == owner
     local drew = state.winner == nil
