@@ -691,6 +691,10 @@ end
 
 local function getEntityById(state, id)
     if not id then return nil end
+    if state.entityById then
+        local entity = state.entityById[id]
+        return entity and entity.alive and entity or nil
+    end
     for _, entity in ipairs(state.entities) do
         if entity.id == id and entity.alive then return entity end
     end
