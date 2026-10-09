@@ -40,15 +40,15 @@ local function loadPresets()
 end
 
 local function savePresets(presets)
-    if not fs
-        or not fs.open
-        or not fs.exists
-        or not fs.delete
-        or not fs.move
-        or not textutils
-        or not textutils.serialize
-    then
+    if not fs or not fs.open or not textutils or not textutils.serialize then
         return nil
+    end
+
+    -- A partially available filesystem API is a real persistence failure, not
+    -- the "plain Lua/no filesystem" case where presets intentionally remain
+    -- memory-only.
+    if not fs.exists or not fs.delete or not fs.move then
+        return false
     end
 
     local tempPath = PRESET_FILE .. ".tmp"
