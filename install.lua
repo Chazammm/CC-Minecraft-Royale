@@ -15,6 +15,7 @@ local files = {
   "src/hardware.lua",
   "src/game.lua",
   "src/bot.lua",
+  "src/benchmark_utils.lua",
   "src/music.lua",
   "src/music_manifest.lua",
   "src/render.lua",
