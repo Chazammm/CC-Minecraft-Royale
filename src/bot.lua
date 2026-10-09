@@ -1080,7 +1080,7 @@ function Bot.update(bot, state, dt)
     if state.phase == "battle" and state.tiebreaker then return end
     if state.phase == "admin" and state.adminPaused then return end
 
-    if state.phase == "battle" then
+    if state.phase == "battle" and not state.headlessSimulation then
         observeOpponent(bot, state)
     end
 
@@ -1095,6 +1095,13 @@ function Bot.update(bot, state, dt)
 
     bot.thinkTimer = bot.thinkTimer - dt
     if bot.thinkTimer > 0 then return end
+
+    -- Benchmark states only need opponent memory at decision time. Catching up
+    -- the chronological play history here produces the same decision input
+    -- while avoiding two observer passes on every 0.10s simulation tick.
+    if state.phase == "battle" and state.headlessSimulation then
+        observeOpponent(bot, state)
+    end
 
     bot.decisionCount = bot.decisionCount + 1
     local cfg = difficultyConfig(bot)
