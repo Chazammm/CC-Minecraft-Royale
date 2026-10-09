@@ -30,5 +30,7 @@ jobs:
         run: lua5.4 tests/test_platform_stubs.lua
       - name: Audit regression tests
         run: lua5.4 tests/test_audit_regressions.lua
+      - name: CLI and manifest tests
+        run: lua5.4 tests/test_cli_manifest.lua
       - name: Installer manifest tests
         run: lua5.4 tests/test_install_manifest.lua
