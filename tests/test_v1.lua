@@ -2596,6 +2596,7 @@ assertTrue(
 colors.toBlit = oldToBlit
 end
 
+(function()
 -- A terminal AoE hit must stop the battle immediately. Targets later in
 -- the same pre-collected AoE list must not keep taking post-result damage, and
 -- the lethal instant spell itself must still be counted as a completed play.
@@ -2703,6 +2704,7 @@ local exitLayout = {
 Game.handleTouch(exitState, 1, 8, 2, exitLayout)
 assertTrue(exitState.exitRequested, "EXIT must request termination")
 assertEq(exitState.phase, "result", "EXIT must not masquerade as a lobby reset")
+end)()
 
 local packOffsets = { [1] = 0, [2] = 0 }
 local totalMusicBytes = 0
