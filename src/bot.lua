@@ -104,6 +104,20 @@ local function copyDeck(deck)
     return out
 end
 
+local function deckStyleSeed(deck)
+    -- Stable bot personality derived only from deck contents/order. The same
+    -- deck must make the same deterministic micro-decisions on P1 and P2.
+    local hash = 17
+    for i, cardId in ipairs(deck or NORMAL_DECK) do
+        hash = (hash * 131 + i * 17) % 2147483647
+        cardId = tostring(cardId or "")
+        for j = 1, #cardId do
+            hash = (hash * 33 + cardId:byte(j)) % 2147483647
+        end
+    end
+    return hash
+end
+
 local function newMemory()
     return {
         observedPlays = {},
@@ -186,6 +200,7 @@ end
 
 function Bot.prepare(bot, state)
     local player = state.players[bot.playerId]
+    bot.styleSeed = deckStyleSeed(bot.deck)
     player.deck = copyDeck(bot.deck)
 
     player.hand = {}
@@ -782,7 +797,7 @@ local function offensivePlacement(bot, state, card, view)
     local cfg = difficultyConfig(bot)
     local targetTower = weakestEnemyPrincess(state, playerId, view)
     local laneX = targetTower and targetTower.x
-        or (((bot.decisionCount + bot.playerId) % 2) == 0 and 25 or 75)
+        or (((bot.decisionCount + (bot.styleSeed or 0)) % 2) == 0 and 25 or 75)
     local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
 
     if cfg.counterpush and bot.mode ~= "easy" then
@@ -1049,7 +1064,7 @@ local function scoreCard(
     end
 
     score = score - playCost * 0.12
-    score = score + (((bot.decisionCount * 7 + slot * 3 + bot.playerId) % 5) * 0.08)
+    score = score + (((bot.decisionCount * 7 + slot * 3 + (bot.styleSeed or 0)) % 5) * 0.08)
     return score
 end
 
@@ -1174,7 +1189,7 @@ local function play(bot, state, choice)
     bot.lastAction = choice.card.name
     bot.lastX = choice.x
     bot.lastY = choice.y
-    bot.thinkTimer = 0.85 + ((bot.actions * 13 + bot.playerId) % 5) * 0.07
+    bot.thinkTimer = 0.85 + ((bot.actions * 13 + (bot.styleSeed or 0)) % 5) * 0.07
     return true
 end
 
@@ -1184,6 +1199,7 @@ function Bot.new(playerId, deck)
         enabled = false,
         mode = "normal",
         deck = copyDeck(deck),
+        styleSeed = deckStyleSeed(deck),
         thinkTimer = 0.75,
         decisionCount = 0,
         actions = 0,
@@ -1259,7 +1275,7 @@ function Bot.update(bot, state, dt)
         or ((state.timeLeft and state.timeLeft <= 60) and cfg.lateThink or cfg.think)
 
     local jitter = bot.mode == "hard" and 0.035 or (bot.mode == "easy" and 0.11 or 0.08)
-    bot.thinkTimer = baseThink + ((bot.decisionCount * 11 + bot.playerId) % 6) * jitter
+    bot.thinkTimer = baseThink + ((bot.decisionCount * 11 + (bot.styleSeed or 0)) % 6) * jitter
 
     local choice = choosePlay(bot, state)
     if choice then play(bot, state, choice) end
