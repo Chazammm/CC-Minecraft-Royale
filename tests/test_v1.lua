@@ -2596,6 +2596,114 @@ assertTrue(
 colors.toBlit = oldToBlit
 end
 
+-- A terminal AoE hit must stop the battle immediately. Targets later in
+-- the same pre-collected AoE list must not keep taking post-result damage, and
+-- the lethal instant spell itself must still be counted as a completed play.
+local terminalAoeState = Game.new(nil, { headlessSimulation = true })
+terminalAoeState.players[1].deck = cards.defaultDeck()
+terminalAoeState.players[2].deck = cards.defaultDeck()
+local terminalStarted = Game.startHeadlessBattle(terminalAoeState, config.TICK_RATE)
+assertTrue(terminalStarted, "Terminal AoE regression match must start")
+
+local enemyKing, enemyPrincess
+local enemyKingIndex, enemyPrincessIndex
+for i, entity in ipairs(terminalAoeState.entities) do
+    if entity.owner == 2 and entity.kind == "tower" then
+        if entity.towerType == "king" then
+            enemyKing, enemyKingIndex = entity, i
+        elseif not enemyPrincess then
+            enemyPrincess, enemyPrincessIndex = entity, i
+        end
+    end
+end
+assertTrue(enemyKing ~= nil and enemyPrincess ~= nil, "Terminal AoE test needs enemy towers")
+
+-- Put the King before another tower in entity order and overlap both targets.
+terminalAoeState.entities[enemyKingIndex], terminalAoeState.entities[enemyPrincessIndex]
+    = terminalAoeState.entities[enemyPrincessIndex], terminalAoeState.entities[enemyKingIndex]
+enemyKing.x, enemyKing.y = 50, 50
+enemyPrincess.x, enemyPrincess.y = 50, 50
+enemyKing.hp = 1
+local princessHpBefore = enemyPrincess.hp
+
+terminalAoeState.players[1].emeralds = terminalAoeState.players[1].maxEmeralds
+terminalAoeState.players[1].hand[1] = "arrows"
+local arrowsPlaysBefore = terminalAoeState.stats.players[1].cardsPlayed
+local terminalCast = Game.playCardFromSlot(terminalAoeState, 1, 1, 50, 50)
+assertTrue(terminalCast, "Terminal Arrow Volley must cast successfully")
+assertEq(terminalAoeState.phase, "result", "Lethal Arrow Volley must end the match")
+assertEq(
+    enemyPrincess.hp,
+    princessHpBefore,
+    "AoE processing must stop once a real battle reaches result"
+)
+assertEq(
+    terminalAoeState.stats.players[1].cardsPlayed,
+    arrowsPlaysBefore + 1,
+    "Lethal instant spell must still count as a completed card play"
+)
+assertEq(
+    terminalAoeState.stats.players[1].cards.arrows.plays,
+    1,
+    "Lethal Arrow Volley telemetry must include the finishing play"
+)
+
+-- Periodic ground summons must fall back to their summoner when a circular
+-- offset lands in open river water instead of silently losing a summon.
+local spawnFallbackState = Game.new()
+Game.debugLoadScenario(spawnFallbackState, "empty")
+local spawnedEvoker = Game.debugSpawnCard(spawnFallbackState, 1, "evoker", 50, 87)
+assertTrue(spawnedEvoker, "Periodic-spawn fallback test must spawn Evoker")
+local fallbackSummoner
+for _, entity in ipairs(spawnFallbackState.entities) do
+    if entity.sourceCardId == "evoker" then
+        fallbackSummoner = entity
+        break
+    end
+end
+assertTrue(fallbackSummoner ~= nil, "Periodic-spawn fallback test needs summoner")
+fallbackSummoner.periodicSpawn = {
+    template = "baby_zombie",
+    interval = 10,
+    initialDelay = 0.01,
+    count = 3,
+    radius = 4,
+    maxAlive = 3,
+}
+fallbackSummoner.periodicSpawnTimer = 0.01
+Game.debugSetPaused(spawnFallbackState, false)
+Game.update(spawnFallbackState, 0.02)
+
+local fallbackSummons = 0
+local usedFallbackPosition = false
+for _, entity in ipairs(spawnFallbackState.entities) do
+    if entity.summonerId == fallbackSummoner.id then
+        fallbackSummons = fallbackSummons + 1
+        if math.abs(entity.x - fallbackSummoner.x) < 0.000001
+            and math.abs(entity.y - fallbackSummoner.y) < 0.000001
+        then
+            usedFallbackPosition = true
+        end
+    end
+end
+assertEq(fallbackSummons, 3, "All periodic ground summons must spawn")
+assertTrue(usedFallbackPosition, "Invalid river offset must use summoner fallback position")
+
+-- Result EXIT is distinct from DECK/LOBBY: it asks the outer main program to
+-- terminate instead of silently performing another lobby reset.
+local exitState = Game.new()
+exitState.phase = "result"
+local exitLayout = {
+    resultButtons = {
+        rematch = { x1 = 1, y1 = 1, x2 = 3, y2 = 3 },
+        deck = { x1 = 4, y1 = 1, x2 = 6, y2 = 3 },
+        exit = { x1 = 7, y1 = 1, x2 = 9, y2 = 3 },
+    },
+}
+Game.handleTouch(exitState, 1, 8, 2, exitLayout)
+assertTrue(exitState.exitRequested, "EXIT must request termination")
+assertEq(exitState.phase, "result", "EXIT must not masquerade as a lobby reset")
+
 local packOffsets = { [1] = 0, [2] = 0 }
 local totalMusicBytes = 0
 for i, track in ipairs(musicManifest.tracks) do
