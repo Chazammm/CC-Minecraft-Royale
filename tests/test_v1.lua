@@ -1696,7 +1696,7 @@ for _, entity in ipairs(featureBattle.entities) do
     if entity.kind == "tower" and entity.towerType == "princess" then
         assertEq(entity.maxHp, 1501, "Princess Tower must use the latest five-percent HP nerf")
         assertEq(entity.damage, 80, "Princess Tower must use the latest two-percent damage nerf")
-        assertEq(entity.attackRange, 30, "Princess Tower range must use the defensive range buff")
+        assertEq(entity.attackRange, 42.5, "Princess Tower must use the bridge-exit defensive range")
         sawPrincess = true
     elseif entity.kind == "tower" and entity.towerType == "king" then
         assertEq(entity.maxHp, 2565, "King Tower must use five-percent HP nerf")
