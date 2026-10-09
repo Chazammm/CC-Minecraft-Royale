@@ -5,7 +5,7 @@ local Bot = require("src.bot")
 local util = require("src.util")
 local arena = require("src.arena")
 
-local SUITE_VERSION = 19
+local SUITE_VERSION = 20
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 local EPSILON = 0.000001
@@ -1452,6 +1452,232 @@ runTest("evo_mega_mite", "Mega Mite keeps all stats except five-times HP", funct
         and mega.visualVariant == "mega_mite"
         and math.abs(state.players[1].emeralds - 9) <= EPSILON,
         "Mega Mite must cost the normal 1E and preserve every Endermite combat stat except max HP, which is exactly 5x.",
+        data
+end)
+
+runTest("evoker_fangs_vex", "Evoker uses line/ring fangs and summons 30-damage Vexes", function()
+    local data = {}
+    local evokerCard = cards.get("evoker")
+    local vexTemplate = cards.getInternalUnit("vex")
+
+    if not evokerCard or not vexTemplate then
+        return false, "Evoker or Vex card data is missing.", data
+    end
+
+    -- Long-range cast: the Fang line should hit multiple grounded enemies
+    -- exactly once, while a flying unit standing on the same line is ignored.
+    local lineState = newAdminState("empty")
+    local evokerOk = Game.debugSpawnCard(lineState, 1, "evoker", SAFE_X, SAFE_Y)
+    local zombieOk = Game.debugSpawnCard(lineState, 2, "zombie", SAFE_X, SAFE_Y - 14)
+    local skeletonOk = Game.debugSpawnCard(lineState, 2, "skeleton", SAFE_X + 1, SAFE_Y - 7)
+    local blazeOk = Game.debugSpawnCard(lineState, 2, "blaze", SAFE_X, SAFE_Y - 8)
+
+    local evoker = findEntity(lineState, function(e)
+        return e.alive and e.owner == 1 and e.name == "Evoker"
+    end)
+    local zombie = findEntity(lineState, function(e)
+        return e.alive and e.owner == 2 and e.name == "Zombie"
+    end)
+    local skeleton = findEntity(lineState, function(e)
+        return e.alive and e.owner == 2 and e.name == "Skeleton"
+    end)
+    local blaze = findEntity(lineState, function(e)
+        return e.alive and e.owner == 2 and e.name == "Blaze"
+    end)
+
+    if not evokerOk or not zombieOk or not skeletonOk or not blazeOk
+        or not evoker or not zombie or not skeleton or not blaze
+    then
+        return false, "Could not create Evoker Fang line scenario.", data
+    end
+
+    for _, target in ipairs({ zombie, skeleton, blaze }) do
+        target.passive = true
+        target.targetMode = "none"
+        target.moveSpeed = 0
+        target.damage = 0
+    end
+    evoker.moveSpeed = 0
+    evoker.targetId = zombie.id
+
+    local zombieStart = zombie.hp
+    local skeletonStart = skeleton.hp
+    local blazeStart = blaze.hp
+
+    Game.update(lineState, 0.05)
+    local lineQueued = #lineState.pendingSpells == 1
+        and lineState.pendingSpells[1].kind == "evoker_fangs"
+        and lineState.pendingSpells[1].mode == "line"
+    local warningVisible = findEntity and false
+    for _, effect in ipairs(lineState.effects) do
+        if effect.kind == "evoker_fangs_warning" then
+            warningVisible = true
+            break
+        end
+    end
+
+    step(lineState, 0.30, DEFAULT_DT)
+    local harmlessDuringWarning = math.abs(zombie.hp - zombieStart) <= EPSILON
+        and math.abs(skeleton.hp - skeletonStart) <= EPSILON
+        and math.abs(blaze.hp - blazeStart) <= EPSILON
+
+    step(lineState, 0.15, DEFAULT_DT)
+    local zombieLineDamage = zombieStart - zombie.hp
+    local skeletonLineDamage = skeletonStart - skeleton.hp
+    local blazeLineDamage = blazeStart - blaze.hp
+    local lineImpactVisible = false
+    for _, effect in ipairs(lineState.effects) do
+        if effect.kind == "evoker_fangs_impact" then
+            lineImpactVisible = true
+            break
+        end
+    end
+
+    -- Close target: Evoker should switch to a ring burst centered on itself.
+    local ringState = newAdminState("empty")
+    Game.debugSpawnCard(ringState, 1, "evoker", SAFE_X, SAFE_Y)
+    Game.debugSpawnCard(ringState, 2, "zombie", SAFE_X + 3, SAFE_Y)
+    Game.debugSpawnCard(ringState, 2, "skeleton", SAFE_X, SAFE_Y - 4)
+    Game.debugSpawnCard(ringState, 2, "wither_skeleton", SAFE_X + 7, SAFE_Y)
+    Game.debugSpawnCard(ringState, 2, "blaze", SAFE_X + 2, SAFE_Y - 2)
+
+    local ringEvoker = findEntity(ringState, function(e)
+        return e.alive and e.owner == 1 and e.name == "Evoker"
+    end)
+    local closeZombie = findEntity(ringState, function(e)
+        return e.alive and e.owner == 2 and e.name == "Zombie"
+    end)
+    local closeSkeleton = findEntity(ringState, function(e)
+        return e.alive and e.owner == 2 and e.name == "Skeleton"
+    end)
+    local farWither = findEntity(ringState, function(e)
+        return e.alive and e.owner == 2 and e.name == "Wither Skeleton"
+    end)
+    local closeBlaze = findEntity(ringState, function(e)
+        return e.alive and e.owner == 2 and e.name == "Blaze"
+    end)
+
+    if not ringEvoker or not closeZombie or not closeSkeleton or not farWither or not closeBlaze then
+        return false, "Could not create Evoker Fang ring scenario.", data
+    end
+
+    for _, target in ipairs({ closeZombie, closeSkeleton, farWither, closeBlaze }) do
+        target.passive = true
+        target.targetMode = "none"
+        target.moveSpeed = 0
+        target.damage = 0
+    end
+    ringEvoker.moveSpeed = 0
+    ringEvoker.targetId = closeZombie.id
+
+    local closeZombieStart = closeZombie.hp
+    local closeSkeletonStart = closeSkeleton.hp
+    local farWitherStart = farWither.hp
+    local closeBlazeStart = closeBlaze.hp
+
+    Game.update(ringState, 0.05)
+    local ringQueued = #ringState.pendingSpells == 1
+        and ringState.pendingSpells[1].mode == "ring"
+    step(ringState, 0.45, DEFAULT_DT)
+
+    local closeZombieDamage = closeZombieStart - closeZombie.hp
+    local closeSkeletonDamage = closeSkeletonStart - closeSkeleton.hp
+    local farWitherDamage = farWitherStart - farWither.hp
+    local closeBlazeDamage = closeBlazeStart - closeBlaze.hp
+
+    -- Summoning: first wave at 4s, exactly three living Vexes, all using the
+    -- user-approved 30 damage and nine-second lifetime.
+    local summonState = newAdminState("empty")
+    Game.debugSpawnCard(summonState, 1, "evoker", SAFE_X, SAFE_Y)
+    local summoner = findEntity(summonState, function(e)
+        return e.alive and e.owner == 1 and e.name == "Evoker"
+    end)
+    if not summoner then
+        return false, "Could not create Evoker summon scenario.", data
+    end
+
+    summoner.passive = true
+    summoner.targetMode = "none"
+
+    step(summonState, 3.90, DEFAULT_DT)
+    local vexBeforeFour = countEntities(summonState, function(e)
+        return e.alive and e.owner == 1 and e.name == "Vex"
+    end)
+
+    step(summonState, 0.15, DEFAULT_DT)
+    local vexes = {}
+    for _, entity in ipairs(summonState.entities) do
+        if entity.alive and entity.owner == 1 and entity.name == "Vex" then
+            vexes[#vexes + 1] = entity
+        end
+    end
+
+    local vexStatsCorrect = #vexes == 3
+    for _, vex in ipairs(vexes) do
+        vexStatsCorrect = vexStatsCorrect
+            and vex.flying == true
+            and math.abs((vex.damage or 0) - 30) <= EPSILON
+            and math.abs((vex.maxHp or 0) - 75) <= EPSILON
+            and math.abs((vex.attackCooldown or 0) - 0.80) <= EPSILON
+            and math.abs((vex.moveSpeed or 0) - 11.5) <= EPSILON
+            and vex.remainingLifetime
+            and vex.remainingLifetime <= 9.0
+            and vex.remainingLifetime > 8.7
+    end
+
+    step(summonState, 9.10, DEFAULT_DT)
+    local vexAfterLifetime = countEntities(summonState, function(e)
+        return e.alive and e.owner == 1 and e.name == "Vex"
+    end)
+
+    step(summonState, 4.90, DEFAULT_DT)
+    local secondWave = countEntities(summonState, function(e)
+        return e.alive and e.owner == 1 and e.name == "Vex"
+    end)
+
+    addData(data, "evoker_cost", evokerCard.cost)
+    addData(data, "fang_damage", evokerCard.unit.fangAttack.damage)
+    addData(data, "fang_warning_s", evokerCard.unit.fangAttack.warning)
+    addData(data, "line_cast_queued", lineQueued)
+    addData(data, "fang_warning_visible", warningVisible)
+    addData(data, "warning_was_harmless", harmlessDuringWarning)
+    addData(data, "zombie_line_damage", zombieLineDamage)
+    addData(data, "skeleton_line_damage", skeletonLineDamage)
+    addData(data, "flying_blaze_line_damage", blazeLineDamage)
+    addData(data, "line_impact_visible", lineImpactVisible)
+    addData(data, "ring_cast_queued", ringQueued)
+    addData(data, "close_zombie_ring_damage", closeZombieDamage)
+    addData(data, "close_skeleton_ring_damage", closeSkeletonDamage)
+    addData(data, "outside_ring_damage", farWitherDamage)
+    addData(data, "flying_blaze_ring_damage", closeBlazeDamage)
+    addData(data, "vexes_before_4s", vexBeforeFour)
+    addData(data, "first_vex_wave_count", #vexes)
+    addData(data, "vex_damage", vexTemplate.damage)
+    addData(data, "vex_hp", vexTemplate.maxHp)
+    addData(data, "vex_lifetime_s", vexTemplate.lifetime)
+    addData(data, "vexes_after_lifetime", vexAfterLifetime)
+    addData(data, "second_vex_wave_count", secondWave)
+
+    return evokerCard.cost == 6
+        and evokerCard.unit.fangAttack.damage == 85
+        and vexTemplate.damage == 30
+        and lineQueued
+        and warningVisible
+        and harmlessDuringWarning
+        and math.abs(zombieLineDamage - 85) <= EPSILON
+        and math.abs(skeletonLineDamage - 85) <= EPSILON
+        and math.abs(blazeLineDamage) <= EPSILON
+        and lineImpactVisible
+        and ringQueued
+        and math.abs(closeZombieDamage - 85) <= EPSILON
+        and math.abs(closeSkeletonDamage - 85) <= EPSILON
+        and math.abs(farWitherDamage) <= EPSILON
+        and math.abs(closeBlazeDamage) <= EPSILON
+        and vexBeforeFour == 0
+        and vexStatsCorrect
+        and vexAfterLifetime == 0
+        and secondWave == 3,
+        "Evoker must telegraph 85-damage ground-only Fang line/ring casts and summon three 30-damage Vexes on its 4s/14s cadence.",
         data
 end)
 
