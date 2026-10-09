@@ -49,6 +49,59 @@ function arena.distanceToGroundReach(x, y)
     return math.max(0, distance)
 end
 
+function arena.groundReachPoint(entity, target)
+    local x, y = target.x, target.y
+    if not arena.isRiver(y) or inBridge(x) then return x, y end
+
+    local candidates = {
+        { x = x, y = A.riverTop - 0.01 },
+        { x = x, y = A.riverBottom + 0.01 },
+    }
+
+    for _, center in ipairs(A.bridgeCenters) do
+        candidates[#candidates + 1] = {
+            x = center - A.bridgeHalfWidth,
+            y = y,
+        }
+        candidates[#candidates + 1] = {
+            x = center + A.bridgeHalfWidth,
+            y = y,
+        }
+    end
+
+    local best = candidates[1]
+    local bestTargetD2 = math.huge
+    local bestTravelD2 = math.huge
+
+    for _, candidate in ipairs(candidates) do
+        local targetD2 = util.distanceSquared(
+            candidate.x,
+            candidate.y,
+            x,
+            y
+        )
+        local travelD2 = entity and util.distanceSquared(
+            entity.x,
+            entity.y,
+            candidate.x,
+            candidate.y
+        ) or 0
+
+        if targetD2 < bestTargetD2 - 1e-9
+            or (
+                math.abs(targetD2 - bestTargetD2) <= 1e-9
+                and travelD2 < bestTravelD2
+            )
+        then
+            best = candidate
+            bestTargetD2 = targetD2
+            bestTravelD2 = travelD2
+        end
+    end
+
+    return best.x, best.y
+end
+
 function arena.isBridge(x, y)
     return arena.isRiver(y) and inBridge(x)
 end
@@ -133,6 +186,14 @@ end
 function arena.navigationPoint(entity, target)
     if entity.flying then
         return target.x, target.y
+    end
+
+    -- Ground attackers that are allowed to engage a water-only target must
+    -- path to the closest terrain point from which that target is reachable,
+    -- rather than trying to walk directly into open river water.
+    if target.waterOnly and not entity.waterOnly then
+        local reachX, reachY = arena.groundReachPoint(entity, target)
+        target = { x = reachX, y = reachY }
     end
 
     local es = sideOfRiver(entity.y)
