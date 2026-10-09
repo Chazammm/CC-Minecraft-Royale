@@ -6,10 +6,14 @@ function util.clamp(v, lo, hi)
     return v
 end
 
-function util.distance(x1, y1, x2, y2)
+function util.distanceSquared(x1, y1, x2, y2)
     local dx = x2 - x1
     local dy = y2 - y1
-    return math.sqrt(dx * dx + dy * dy)
+    return dx * dx + dy * dy
+end
+
+function util.distance(x1, y1, x2, y2)
+    return math.sqrt(util.distanceSquared(x1, y1, x2, y2))
 end
 
 function util.deepcopy(value)
