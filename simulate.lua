@@ -2,6 +2,7 @@ local Game = require("src.game")
 local Bot = require("src.bot")
 local cards = require("src.cards")
 local config = require("config")
+local benchmark = require("src.benchmark_utils")
 
 local args = { ... }
 
@@ -93,27 +94,11 @@ local seed = math.floor(tonumber(args[3]) or 1337)
 -- passed validation. "simulate help" and invalid commands must preserve it.
 liveHandle = fs and fs.open(resultPath, "w") or nil
 
-local rngState = seed % 2147483647
-if rngState <= 0 then rngState = 1 end
-
-local function randomInt(maximum)
-    rngState = (rngState * 48271) % 2147483647
-    return (rngState % maximum) + 1
-end
-
-local function copy(list)
-    local out = {}
-    for i, value in ipairs(list) do out[i] = value end
-    return out
-end
+local randomInt = benchmark.newRandomInt(seed)
+local copy = benchmark.copy
 
 local function shuffle(list)
-    local out = copy(list)
-    for i = #out, 2, -1 do
-        local j = randomInt(i)
-        out[i], out[j] = out[j], out[i]
-    end
-    return out
+    return benchmark.shuffle(list, randomInt)
 end
 
 local ALL_CARDS = {}
