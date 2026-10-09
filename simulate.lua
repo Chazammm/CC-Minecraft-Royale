@@ -303,6 +303,7 @@ else
 end
 reportPrint("")
 
+local benchmarkStartedMs = os.epoch and os.epoch("utc") or nil
 local completed = 0
 while completed < matchCount do
     local deckA, deckB
@@ -342,6 +343,16 @@ reportPrint(("P1 wins: %d (%.1f%%)"):format(report.p1Wins, report.p1Wins / repor
 reportPrint(("P2 wins: %d (%.1f%%)"):format(report.p2Wins, report.p2Wins / report.matches * 100))
 reportPrint(("Draws:   %d (%.1f%%)"):format(report.draws, report.draws / report.matches * 100))
 reportPrint(("Avg match: %.1fs"):format(report.totalTime / report.matches))
+if benchmarkStartedMs and os.epoch then
+    local runtimeSeconds = math.max(
+        0.001,
+        (os.epoch("utc") - benchmarkStartedMs) / 1000
+    )
+    reportPrint(("Real runtime: %.1fs   Throughput: %.2f matches/s"):format(
+        runtimeSeconds,
+        report.matches / runtimeSeconds
+    ))
+end
 
 local rows = {}
 for _, card in ipairs(cards.list) do
