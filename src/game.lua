@@ -706,11 +706,17 @@ local updateGroundPulse
 
 local function refreshMovementSlow(entity)
     local effects = entity.slowEffects
-    if type(effects) ~= "table" or #effects == 0 then
+    if type(effects) ~= "table" then
         if not entity.slowRemaining or entity.slowRemaining <= 0 then
             entity.slowRemaining = 0
             entity.slowFactor = 1
         end
+        return
+    end
+
+    if #effects == 0 then
+        entity.slowRemaining = 0
+        entity.slowFactor = 1
         return
     end
 
