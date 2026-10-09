@@ -59,7 +59,7 @@ P1 wins: 444 (44.4%)
 P2 wins: 476 (47.6%)
 Draws:   80 (8.0%)
 Avg match: 293.7s
-Real runtime: 130.3s   Throughput: 7.67 matches/s
+Real runtime: 131.0s   Throughput: 7.63 matches/s
 
 CARD BALANCE
 Card             Score  P/M   U/E   T/E   Flag
