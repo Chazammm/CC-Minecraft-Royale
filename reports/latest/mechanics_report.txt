@@ -1,13 +1,13 @@
 CC-MINECRAFT-ROYALE MECHANICS REPORT
-FORMAT_VERSION|17
-GENERATED_EPOCH_MS|1791539953050
+FORMAT_VERSION|19
+GENERATED_EPOCH_MS|1791540246599
 OS_VERSION|CraftOS 1.9
 CARD_COUNT|21
 HARNESS|condition_waits=true|dt=0.050|safe_x=50.0|safe_y=110.0
 CONFIG|tick=0.100|normal=150|overtime=150|emerald_rate=0.357143|building_decay=1.150
 BALANCE_SNAPSHOT|skeleton_range=15.00|skeleton_retreat=0.85|bat_damage=17.00
 EVOLUTION_SNAPSHOT|creeper_cycles=2|portal_cycles=2|mite_cycles=4|guardian_cycles=2|villager_cycles=3|golem_cycles=2|ghast_damage=130.0|ghast_range=24.0
-SUMMARY|pass=22|fail=1|error=0|total=23|runtime_cpu_s=0.0000
+SUMMARY|pass=23|fail=0|error=0|total=23|runtime_cpu_s=0.0500
 
 RESULT|boot_deck|PASS|Lobby boots with empty human decks|Human players should build/load/randomize an 8-card deck before READY.
 DATA|boot_deck|p1_deck_cards=0.0000
@@ -120,7 +120,15 @@ DATA|evo_elder_guardian|elder_acquired_target_at_17=true
 DATA|evo_elder_guardian|beam_damage_at_17=24.3906
 DATA|evo_elder_guardian|enemy_move_factor_after_elder_death=1.0000
 
-RESULT|evo_emerald_bank|FAIL|Emerald Bank keeps production and lasts 20s longer|Emerald Bank did not deploy on its ready play.
+RESULT|evo_emerald_bank|PASS|Emerald Bank keeps production and lasts 20s longer|Emerald Bank must preserve Villager economy output while gaining 5% HP and exactly 20 seconds of lifetime.
+DATA|evo_emerald_bank|configured_cycles=3.0000
+DATA|evo_emerald_bank|bank_hp=194.2500
+DATA|evo_emerald_bank|base_villager_hp=185.0000
+DATA|evo_emerald_bank|bank_lifetime_s=70.0000
+DATA|evo_emerald_bank|base_villager_lifetime_s=50.0000
+DATA|evo_emerald_bank|bank_emerald_boost=0.6160
+DATA|evo_emerald_bank|expected_emerald_gain_0_25s=0.1443
+DATA|evo_emerald_bank|realized_emerald_gain_0_25s=0.1443
 
 RESULT|evo_charged_creeper|PASS|Charged Creeper has larger blue blast|Charged Creeper must deal double base damage, expand gameplay AoE from 8 to 12 and use the large blue explosion effect.
 DATA|evo_charged_creeper|configured_cycles=2.0000
