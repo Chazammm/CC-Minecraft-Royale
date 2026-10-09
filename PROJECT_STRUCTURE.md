@@ -35,9 +35,17 @@ platform integration, and benchmark tooling can evolve independently.
 - `evo_compare.lua` — base-vs-evolution benchmark.
 - `src/benchmark_utils.lua` — shared deterministic RNG/shuffle/statistics
   helpers used by benchmark tools.
+- `src/headless_match.lua` — authoritative deterministic headless match loop
+  shared by simulate/compare/evo_compare.
 - `mechanics_test.lua` — in-game mechanics diagnostics.
-- `tests/test_v1.lua` — Lua smoke/regression suite.
+- `tests/test_v1.lua` — legacy broad Lua smoke/regression suite.
+- `tests/test_audit_regressions.lua` — focused cross-mechanic regressions.
+- `tests/test_headless_runner.lua` — proves the shared runner preserves the
+  historical tick/bot update order.
 - `tests/test_platform_stubs.lua` — stubbed CC:Tweaked platform tests.
+- `tests/test_install_manifest.lua` — verifies installed entry points include
+  every recursively required project module.
+- `tests/test_cli_manifest.lua` — CLI safety and immutable music metadata.
 
 ## Reporting
 
@@ -48,7 +56,8 @@ platform integration, and benchmark tooling can evolve independently.
 
 ## Assets and third-party code
 
-- `assets/` — battle-music packs.
+- `assets/` — music workflow documentation. Large DFPWM packs are referenced
+  by immutable historical Git URLs instead of living on current main.
 - `lib/pixelbox_lite.lua` — bundled PixelBox dependency.
 
 ## Maintenance rules
@@ -57,10 +66,13 @@ platform integration, and benchmark tooling can evolve independently.
    state and never invent combat behavior.
 2. Headless simulation must preserve the same combat decisions/timing as live
    play unless a benchmark-only optimization is proven equivalent.
-3. New benchmark helpers shared by two or more CLI tools belong in
+3. The actual benchmark match loop belongs only in `src/headless_match.lua`;
+   simulate/compare/evo_compare configure that runner instead of cloning it.
+4. New RNG/statistics helpers shared by benchmark CLIs belong in
    `src/benchmark_utils.lua`.
-4. Runtime-generated files belong in `.gitignore`; uploaded reports belong
+5. Runtime-generated files belong in `.gitignore`; uploaded reports belong
    under `reports/`.
-5. Every behavior fix should get a regression test where practical.
-6. Dev-only cards must not enter the normal selectable card pool or standard
+6. Every behavior fix should get a regression test where practical. New
+   focused tests should go into separate files instead of growing test_v1.lua.
+7. Dev-only cards must not enter the normal selectable card pool or standard
    comparison tooling.
