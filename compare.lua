@@ -243,7 +243,8 @@ local function runMatch(
     opponentDeck,
     subjectCardId,
     subjectOwner,
-    gameplaySeed
+    gameplaySeed,
+    botOrderOffset
 )
     local deck1 = subjectOwner == 1 and subjectDeck or opponentDeck
     local deck2 = subjectOwner == 1 and opponentDeck or subjectDeck
@@ -251,6 +252,7 @@ local function runMatch(
     local state = Runner.run(deck1, deck2, {
         dt = SIM_DT,
         gameplaySeed = gameplaySeed,
+        botOrderOffset = botOrderOffset or 0,
         yieldFn = cooperativeYield,
         yieldCheckTicks = YIELD_CHECK_TICKS,
         timeoutReason = "COMPARISON TIMEOUT",
@@ -387,10 +389,10 @@ for comparisonIndex, spec in ipairs(comparisons) do
             2
         )
 
-        local aP1 = runMatch(deckA, opponentDeck, spec.a, 1, seedP1)
-        local aP2 = runMatch(deckA, opponentDeck, spec.a, 2, seedP2)
-        local bP1 = runMatch(deckB, opponentDeck, spec.b, 1, seedP1)
-        local bP2 = runMatch(deckB, opponentDeck, spec.b, 2, seedP2)
+        local aP1 = runMatch(deckA, opponentDeck, spec.a, 1, seedP1, 0)
+        local aP2 = runMatch(deckA, opponentDeck, spec.a, 2, seedP2, 1)
+        local bP1 = runMatch(deckB, opponentDeck, spec.b, 1, seedP1, 0)
+        local bP2 = runMatch(deckB, opponentDeck, spec.b, 2, seedP2, 1)
 
         addResult(aggA, aP1)
         addResult(aggA, aP2)
