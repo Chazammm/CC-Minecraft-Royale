@@ -308,6 +308,10 @@ local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color, 
         and (entity.groundPulse.initialDelay or entity.groundPulse.interval or 2)
         or nil
 
+    if entity.globalEnemyMoveSlow or state.globalMovementAuraActive then
+        state.globalMovementAuraDirty = true
+    end
+
     table.insert(state.entities, entity)
     return entity
 end
@@ -351,6 +355,10 @@ local function spawnBuilding(state, owner, card, x, y)
         and (entity.periodicSpawn.initialDelay or entity.periodicSpawn.interval or 8)
         or nil
     entity.periodicSpawnTotal = 0
+
+    if entity.globalEnemyMoveSlow then
+        state.globalMovementAuraDirty = true
+    end
 
     table.insert(state.entities, entity)
     return entity
@@ -580,6 +588,13 @@ local function currentMoveSpeed(entity)
 end
 
 local function updateGlobalMovementAuras(state)
+    -- Aura values only change when an aura source is spawned/dies or when a
+    -- new unit appears while an aura is already active. Avoid a full entity
+    -- scan on every 0.10s combat tick in the overwhelmingly common no-aura
+    -- case.
+    if not state.globalMovementAuraDirty then return end
+    state.globalMovementAuraDirty = false
+
     local slow1, slow2 = 0, 0
     local anyAura = false
 
@@ -595,9 +610,6 @@ local function updateGlobalMovementAuras(state)
         end
     end
 
-    -- Most production matches have no global movement aura at all. Once no
-    -- aura has ever been active, there is nothing to reset on every tick.
-    if not anyAura and not state.globalMovementAuraActive then return end
     state.globalMovementAuraActive = anyAura
 
     for _, entity in ipairs(state.entities) do
@@ -846,6 +858,7 @@ local function explodeProximityUnit(state, entity)
     entity.alive = false
     entity.fuseRemaining = nil
 
+    local battleAtStart = state.phase == "battle"
     for _, victim in ipairs(victims) do
         damageEntity(
             state,
@@ -855,6 +868,7 @@ local function explodeProximityUnit(state, entity)
             entity.sourceCardId,
             entity.id
         )
+        if battleAtStart and state.phase ~= "battle" then break end
     end
 end
 
@@ -872,6 +886,7 @@ local function handleDeathAbilities(state, entity)
             end
         end
 
+        local battleAtStart = state.phase == "battle"
         for _, victim in ipairs(victims) do
             damageEntity(
                 state,
@@ -881,6 +896,7 @@ local function handleDeathAbilities(state, entity)
                 entity.sourceCardId,
                 entity.id
             )
+            if battleAtStart and state.phase ~= "battle" then break end
         end
     end
 
@@ -921,6 +937,9 @@ end
 killEntity = function(state, entity, sourceOwner, sourceCardId)
     if not entity.alive then return end
     entity.alive = false
+    if entity.globalEnemyMoveSlow then
+        state.globalMovementAuraDirty = true
+    end
 
     if state.phase == "battle" and sourceOwner and sourceCardId and state.stats then
         local playerStats = state.stats.players[sourceOwner]
@@ -1022,6 +1041,13 @@ local function updatePeriodicSpawn(state, entity, dt)
         local angle = ((i - 1) / math.max(1, count)) * math.pi * 2
         local sx = util.clamp(entity.x + math.cos(angle) * radius, 2, config.ARENA.width - 2)
         local sy = util.clamp(entity.y + math.sin(angle) * radius, 2, config.ARENA.height - 2)
+
+        -- A circular offset can land beside a bridge in water. The
+        -- summoner itself already occupies a valid tile, so ground summons
+        -- fall back to the summoner position instead of silently vanishing.
+        if not template.flying and not arena.isWalkable(template, sx, sy) then
+            sx, sy = entity.x, entity.y
+        end
 
         if template.flying or arena.isWalkable(template, sx, sy) then
             local summoned = spawnUnitFromStats(
@@ -1192,6 +1218,7 @@ local function resolveEvokerFangs(state, pending)
         cardStats.targetsHit = cardStats.targetsHit + #targets
     end
 
+    local battleAtStart = state.phase == "battle"
     for _, target in ipairs(targets) do
         damageEntity(
             state,
@@ -1201,6 +1228,7 @@ local function resolveEvokerFangs(state, pending)
             pending.cardId,
             pending.sourceEntityId
         )
+        if battleAtStart and state.phase ~= "battle" then break end
     end
 
     addFangEffect(state, "evoker_fangs_impact", pending, 0.45)
@@ -1760,6 +1788,9 @@ function Game.new(soundCallback, options)
         timeLeft = config.MATCH.normalTime,
         overtime = false,
         tiebreaker = false,
+        exitRequested = false,
+        globalMovementAuraActive = false,
+        globalMovementAuraDirty = false,
         destroyedSideTowers = {
             [1] = { left = false, right = false },
             [2] = { left = false, right = false },
@@ -1802,6 +1833,9 @@ function Game.resetLobby(state)
     state.resultReason = nil
     state.overtime = false
     state.tiebreaker = false
+    state.exitRequested = false
+    state.globalMovementAuraActive = false
+    state.globalMovementAuraDirty = false
     state.destroyedSideTowers = {
         [1] = { left = false, right = false },
         [2] = { left = false, right = false },
@@ -1842,6 +1876,9 @@ function Game.startCountdown(state)
     state.resultReason = nil
     state.overtime = false
     state.tiebreaker = false
+    state.exitRequested = false
+    state.globalMovementAuraActive = false
+    state.globalMovementAuraDirty = false
     state.destroyedSideTowers = {
         [1] = { left = false, right = false },
         [2] = { left = false, right = false },
@@ -1942,6 +1979,8 @@ local function startTiebreaker(state)
         end
     end
     state.entities = towers
+    state.globalMovementAuraActive = false
+    state.globalMovementAuraDirty = false
     state.entityById = {}
     for _, tower in ipairs(towers) do
         state.entityById[tower.id] = tower
@@ -2032,12 +2071,14 @@ local function resolveFallingAnvil(state, pending)
         cardStats.targetsHit = cardStats.targetsHit + #targets
     end
 
+    local battleAtStart = state.phase == "battle"
     for _, target in ipairs(targets) do
         local damage = spell.damage or 0
         if target.kind == "tower" then
             damage = damage * (spell.towerMultiplier or 1)
         end
         damageEntity(state, target, damage, pending.owner, pending.cardId)
+        if battleAtStart and state.phase ~= "battle" then break end
     end
 
     addEffect(
@@ -2102,12 +2143,14 @@ local function castArrows(state, playerId, card, x, y)
         cardStats.targetsHit = cardStats.targetsHit + #targets
     end
 
+    local battleAtStart = state.phase == "battle"
     for _, target in ipairs(targets) do
         local damage = card.spell.damage
         if target.kind == "tower" then
             damage = damage * (card.spell.towerMultiplier or 1)
         end
         damageEntity(state, target, damage, playerId, card.id)
+        if battleAtStart and state.phase ~= "battle" then break end
     end
 
     emitSound(state, "minecraft:entity.arrow.shoot", 0.7, 1.1)
@@ -2877,7 +2920,7 @@ function Game.handleTouch(state, playerId, x, y, layout)
         elseif hit(layout.resultButtons.deck, x, y) then
             Game.resetLobby(state)
         elseif hit(layout.resultButtons.exit, x, y) then
-            Game.resetLobby(state)
+            state.exitRequested = true
         end
     end
 end
@@ -2940,15 +2983,20 @@ function Game.update(state, dt)
         end
         local emeraldRate = config.MATCH.emeraldPerSecond * multiplier
 
-        for playerId = 1, 2 do
-            local player = state.players[playerId]
-            local boost = 0
-
-            for _, entity in ipairs(state.entities) do
-                if entity.alive and entity.owner == playerId and entity.emeraldBoost then
-                    boost = boost + entity.emeraldBoost
+        local emeraldBoost1, emeraldBoost2 = 0, 0
+        for _, entity in ipairs(state.entities) do
+            if entity.alive and entity.emeraldBoost then
+                if entity.owner == 1 then
+                    emeraldBoost1 = emeraldBoost1 + entity.emeraldBoost
+                elseif entity.owner == 2 then
+                    emeraldBoost2 = emeraldBoost2 + entity.emeraldBoost
                 end
             end
+        end
+
+        for playerId = 1, 2 do
+            local player = state.players[playerId]
+            local boost = playerId == 1 and emeraldBoost1 or emeraldBoost2
 
             local baseGain = emeraldRate * dt
             local bonusGain = baseGain * boost
@@ -3209,6 +3257,8 @@ function Game.debugClearUnits(state)
         end
     end
     state.entities = kept
+    state.globalMovementAuraActive = false
+    state.globalMovementAuraDirty = false
     state.entityById = {}
     for _, entity in ipairs(kept) do
         state.entityById[entity.id] = entity
