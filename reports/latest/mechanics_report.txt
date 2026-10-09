@@ -1,13 +1,13 @@
 CC-MINECRAFT-ROYALE MECHANICS REPORT
-FORMAT_VERSION|19
-GENERATED_EPOCH_MS|1791540246599
+FORMAT_VERSION|20
+GENERATED_EPOCH_MS|1791542522405
 OS_VERSION|CraftOS 1.9
-CARD_COUNT|21
+CARD_COUNT|22
 HARNESS|condition_waits=true|dt=0.050|safe_x=50.0|safe_y=110.0
 CONFIG|tick=0.100|normal=150|overtime=150|emerald_rate=0.357143|building_decay=1.150
 BALANCE_SNAPSHOT|skeleton_range=15.00|skeleton_retreat=0.85|bat_damage=17.00
 EVOLUTION_SNAPSHOT|creeper_cycles=2|portal_cycles=2|mite_cycles=4|guardian_cycles=2|villager_cycles=3|golem_cycles=2|ghast_damage=130.0|ghast_range=24.0
-SUMMARY|pass=23|fail=0|error=0|total=23|runtime_cpu_s=0.0500
+SUMMARY|pass=24|fail=0|error=0|total=24|runtime_cpu_s=0.0500
 
 RESULT|boot_deck|PASS|Lobby boots with empty human decks|Human players should build/load/randomize an 8-card deck before READY.
 DATA|boot_deck|p1_deck_cards=0.0000
@@ -41,7 +41,7 @@ DATA|evolution_ruleset|progress_after_play=2.0000
 DATA|evolution_ruleset|telemetry_evolution_plays=0.0000
 
 RESULT|admin_evolution_spawn|PASS|Admin directly spawns Evolution forms|Admin card pages must include every Evolution as a direct sandbox spawn, bypassing cycles and Emerald cost.
-DATA|admin_evolution_spawn|admin_catalog_entries=28.0000
+DATA|admin_evolution_spawn|admin_catalog_entries=29.0000
 DATA|admin_evolution_spawn|admin_evolution_entries=6.0000
 DATA|admin_evolution_spawn|charged_creeper_spawned=true
 DATA|admin_evolution_spawn|ghast_portal_spawned=true
@@ -173,6 +173,30 @@ DATA|evo_mega_mite|base_cooldown=0.8500
 DATA|evo_mega_mite|mega_cooldown=0.8500
 DATA|evo_mega_mite|visual_variant=mega_mite
 DATA|evo_mega_mite|emeralds_after_play=9.0000
+
+RESULT|evoker_fangs_vex|PASS|Evoker uses line/ring fangs and summons 30-damage Vexes|Evoker must telegraph 85-damage ground-only Fang line/ring casts and summon three 30-damage Vexes on its 4s/14s cadence.
+DATA|evoker_fangs_vex|evoker_cost=6.0000
+DATA|evoker_fangs_vex|fang_damage=85.0000
+DATA|evoker_fangs_vex|fang_warning_s=0.4000
+DATA|evoker_fangs_vex|line_cast_queued=true
+DATA|evoker_fangs_vex|fang_warning_visible=true
+DATA|evoker_fangs_vex|warning_was_harmless=true
+DATA|evoker_fangs_vex|zombie_line_damage=85.0000
+DATA|evoker_fangs_vex|skeleton_line_damage=85.0000
+DATA|evoker_fangs_vex|flying_blaze_line_damage=0.0000
+DATA|evoker_fangs_vex|line_impact_visible=true
+DATA|evoker_fangs_vex|ring_cast_queued=true
+DATA|evoker_fangs_vex|close_zombie_ring_damage=85.0000
+DATA|evoker_fangs_vex|close_skeleton_ring_damage=85.0000
+DATA|evoker_fangs_vex|outside_ring_damage=0.0000
+DATA|evoker_fangs_vex|flying_blaze_ring_damage=0.0000
+DATA|evoker_fangs_vex|vexes_before_4s=0.0000
+DATA|evoker_fangs_vex|first_vex_wave_count=3.0000
+DATA|evoker_fangs_vex|vex_damage=30.0000
+DATA|evoker_fangs_vex|vex_hp=75.0000
+DATA|evoker_fangs_vex|vex_lifetime_s=9.0000
+DATA|evoker_fangs_vex|vexes_after_lifetime=0.0000
+DATA|evoker_fangs_vex|second_vex_wave_count=3.0000
 
 RESULT|tower_bridge_range|PASS|Princess Tower engages just after bridge exit|Princess Tower should stay off while a troop is at the bridge exit, then acquire it roughly two arena units into its lane; King range stays unchanged.
 DATA|tower_bridge_range|princess_range=42.5000
