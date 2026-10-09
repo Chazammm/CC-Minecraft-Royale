@@ -55,52 +55,52 @@ The unused cards change every shuffle; pairs are replayed with sides swapped.
   1000 / 1000
 
 GLOBAL
-P1 wins: 443 (44.3%)
+P1 wins: 444 (44.4%)
 P2 wins: 476 (47.6%)
-Draws:   81 (8.1%)
+Draws:   80 (8.0%)
 Avg match: 293.7s
-Real runtime: 136.0s   Throughput: 7.35 matches/s
+Real runtime: 130.3s   Throughput: 7.67 matches/s
 
 CARD BALANCE
 Card             Score  P/M   U/E   T/E   Flag
-Bat Swarm         59.0 10.5 130.2   1.0 WATCH+
-Nether Portal     58.7  7.4 120.6   4.5 WATCH+
-Enderman          57.7  4.1  77.9   8.2 WATCH+
+Bat Swarm         58.9 10.5 130.1   1.0 WATCH+
+Nether Portal     58.6  7.4 120.6   4.5 WATCH+
+Enderman          57.9  4.1  77.9   8.2 WATCH+
 Skeleton          56.8  8.1  82.4   1.6 WATCH+
-Evoker            54.6  3.6 116.7   5.2 OK    
-Magma Cube        54.3  8.5  84.9   1.4 OK    
-Slime             53.2  8.6  84.3   1.7 OK    
+Evoker            54.8  3.6 116.8   5.2 OK    
+Magma Cube        54.1  8.5  84.9   1.4 OK    
 Zombie            53.1  8.7 104.9   1.9 OK    
-Wither Skeleton   51.0  8.6 104.7   1.5 OK    
+Slime             53.0  8.6  84.3   1.7 OK    
+Wither Skeleton   51.2  8.6 104.7   1.5 OK    
 Wolf              50.6  8.0  97.3   1.5 OK    
-Blaze             50.2  5.7 104.1   4.1 OK    
-Arrow Volley      49.9  3.2  88.3   0.2 OK    
+Blaze             50.1  5.7 104.0   4.1 OK    
+Arrow Volley      49.7  3.2  88.0   0.2 OK    
 Villager          49.7  0.5   0.0   0.0 OK    
-Pillager Outpost  49.0  3.8  85.6   0.0 OK    
-Cannon            48.2  3.7 111.9   0.0 OK    
-Spider            48.0 10.6  80.2   0.9 OK    
-Witch             47.2  5.4  69.1   2.5 OK    
+Pillager Outpost  49.1  3.8  85.5   0.0 OK    
+Cannon            48.3  3.7 111.8   0.0 OK    
+Spider            47.9 10.6  80.1   0.9 OK    
+Witch             47.3  5.4  69.1   2.5 OK    
 Falling Anvil     46.2  9.4  92.2   0.9 OK    
-Snow Golem        45.2  8.7  64.9   0.9 OK    
-Creeper           44.0  3.7  79.3   0.2 WATCH-
-Endermite         43.7 10.9  45.1   0.5 WATCH-
-Iron Golem        29.8  5.5  12.1   1.2 WATCH-
+Snow Golem        45.4  8.7  65.0   0.9 OK    
+Creeper           43.8  3.7  79.3   0.2 WATCH-
+Endermite         43.7 10.9  45.0   0.5 WATCH-
+Iron Golem        29.9  5.5  12.1   1.3 WATCH-
 
 UTILITY
 Card             BonusE  Slow/s  Hits/Play
 Nether Portal      0.00    0.58      0.00
 Evoker             0.00    0.00      5.07
-Arrow Volley       0.00    0.00      3.45
+Arrow Volley       0.00    0.00      3.44
 Villager           3.75    0.00      0.00
 Falling Anvil      0.00    0.00      1.39
-Snow Golem         0.00    6.59      0.00
+Snow Golem         0.00    6.60      0.00
 
 EVOLUTIONS
 Card             Slot% Evo/SM  Evo% Cycles EvoCost
 Nether Portal     44.7   2.14  28.4      2     3.0
 Villager          50.6   0.00   0.0      3     7.0
-Creeper           47.0   0.87  25.3      2     4.0
-Endermite         51.3   1.83  16.7      4     1.0
+Creeper           47.0   0.87  25.4      2     4.0
+Endermite         51.3   1.83  16.6      4     1.0
 Iron Golem        55.4   1.54  27.4      2     5.0
 
 HOW TO READ
