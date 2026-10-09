@@ -344,6 +344,8 @@ function Music.pump(controller)
         if not queued then return false end
 
         controller.pending = nil
+        controller.error = nil
+        controller.consecutiveFailures = 0
         return true
     end
 
@@ -390,8 +392,8 @@ function Music.pump(controller)
     )
 
     if not okPlay then
-        controller.error = tostring(queued)
         controller.pending = decoded
+        scheduleRetry(controller, queued, 0.75)
         return false
     end
 
