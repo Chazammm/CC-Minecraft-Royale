@@ -46,16 +46,21 @@ local function centered(b, y, text, fg, bg)
     writeText(b, x, y, text, fg, bg)
 end
 
-local function flush(b, monitor)
+local function flush(b, monitor, skipZone)
     for y = 1, b.height do
-        local chars, fg, bg = {}, {}, {}
-        for x = 1, b.width do
-            chars[x] = b.chars[y][x]
-            fg[x] = colors.toBlit(b.fg[y][x])
-            bg[x] = colors.toBlit(b.bg[y][x])
+        local skipped = skipZone
+            and y >= skipZone.y1
+            and y <= skipZone.y2
+        if not skipped then
+            local chars, fg, bg = {}, {}, {}
+            for x = 1, b.width do
+                chars[x] = b.chars[y][x]
+                fg[x] = colors.toBlit(b.fg[y][x])
+                bg[x] = colors.toBlit(b.bg[y][x])
+            end
+            monitor.setCursorPos(1, y)
+            monitor.blit(table.concat(chars), table.concat(fg), table.concat(bg))
         end
-        monitor.setCursorPos(1, y)
-        monitor.blit(table.concat(chars), table.concat(fg), table.concat(bg))
     end
 end
 
@@ -196,7 +201,7 @@ function render.draw(monitor, state, viewerId, ui)
     )
 
     local pageSize = 16
-    local spawnCatalog = cards.adminSpawnCards()
+    local spawnCatalog = ui.spawnCatalog or cards.adminSpawnCards()
     local pages = math.max(1, math.ceil(#spawnCatalog / pageSize))
     local page = math.max(1, math.min(pages, ui.cardPage or 1))
 
@@ -228,7 +233,7 @@ function render.draw(monitor, state, viewerId, ui)
         end
     end
 
-    flush(b, monitor)
+    flush(b, monitor, layout.arena)
     pixelArena.draw(monitor, state, viewerId, layout.arena)
 end
 
