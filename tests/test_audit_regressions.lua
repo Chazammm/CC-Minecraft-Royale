@@ -317,4 +317,45 @@ do
     assertEq(state.phase, "result", "EXIT must not masquerade as lobby reset")
 end
 
+do
+    local state = Game.new()
+    Game.debugLoadScenario(state, "empty")
+
+    local riverY = (config.ARENA.riverTop + config.ARENA.riverBottom) / 2
+    local guardianX = config.ARENA.bridgeCenters[1]
+        + config.ARENA.bridgeHalfWidth
+        + 3
+
+    assertTrue(
+        Game.debugSpawnCard(state, 1, "evo:guardian", guardianX, riverY),
+        "Debug-kill aura regression needs Elder Guardian"
+    )
+    assertTrue(
+        Game.debugSpawnCard(state, 2, "zombie", guardianX, riverY - 17),
+        "Debug-kill aura regression needs enemy Zombie"
+    )
+
+    local elder, zombie
+    for _, entity in ipairs(state.entities) do
+        if entity.alive and entity.name == "Elder Guardian" then elder = entity end
+        if entity.alive and entity.owner == 2 and entity.name == "Zombie" then zombie = entity end
+    end
+    assertTrue(elder and zombie, "Debug-kill aura regression needs both entities")
+
+    Game.update(state, 0.10)
+    assertEq(
+        zombie.globalMoveSpeedFactor,
+        0.95,
+        "Living Elder Guardian must apply global slow"
+    )
+
+    local killed = Game.debugKillEntity(state, elder.id)
+    assertTrue(killed, "Admin debug kill must use the real entity cleanup path")
+    assertEq(
+        zombie.globalMoveSpeedFactor,
+        1,
+        "Debug-killing Elder Guardian must immediately clear its global aura"
+    )
+end
+
 print("Audit regression tests passed")
