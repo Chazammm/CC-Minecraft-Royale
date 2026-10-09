@@ -188,9 +188,10 @@ local function addDeckResult(deck, owner, state)
     end
 end
 
-local function runMatch(deck1, deck2)
+local function runMatch(deck1, deck2, botOrderOffset)
     local state = Runner.run(deck1, deck2, {
         dt = SIM_DT,
+        botOrderOffset = botOrderOffset or 0,
         yieldFn = cooperativeYield,
         yieldCheckTicks = YIELD_CHECK_TICKS,
         timeoutReason = "SIMULATION TIMEOUT",
@@ -251,17 +252,18 @@ while completed < matchCount do
     if completed + 1 == matchCount then
         -- Odd match counts cannot form a complete side-swapped pair. Randomize
         -- the final orientation so the leftover game is not always A=P1.
+        local orderOffset = randomInt(2) - 1
         if randomInt(2) == 1 then
-            runMatch(deckA, deckB)
+            runMatch(deckA, deckB, orderOffset)
         else
-            runMatch(deckB, deckA)
+            runMatch(deckB, deckA, orderOffset)
         end
         completed = completed + 1
     else
-        runMatch(deckA, deckB)
+        runMatch(deckA, deckB, 0)
         completed = completed + 1
 
-        runMatch(deckB, deckA)
+        runMatch(deckB, deckA, 1)
         completed = completed + 1
     end
 
