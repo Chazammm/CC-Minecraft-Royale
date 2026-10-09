@@ -21,6 +21,7 @@ local ui = {
         or cards.list[1].id,
     cardPage = 1,
     bot = bot,
+    spawnCatalog = initialSpawnCatalog,
 }
 
 Game.debugLoadScenario(state, "full")
@@ -81,7 +82,7 @@ local function handleTouch(monitorName, x, y)
     end
 
     local pageSize = 16
-    local spawnCatalog = cards.adminSpawnCards()
+    local spawnCatalog = initialSpawnCatalog
     local pages = math.max(1, math.ceil(#spawnCatalog / pageSize))
 
     if hit(layout.cardPageButtons.prev, x, y) then
@@ -124,6 +125,8 @@ end
 
 local tickTimer = os.startTimer(config.TICK_RATE)
 local lastTick = nowSeconds()
+local tickAccumulator = 0
+local MAX_CATCHUP_STEPS = 5
 
 redraw()
 
@@ -165,12 +168,29 @@ while true do
 
     elseif name == "timer" and e[2] == tickTimer then
         local current = nowSeconds()
-        local dt = current - lastTick
+        local elapsed = current - lastTick
         lastTick = current
-        if dt <= 0 then dt = config.TICK_RATE end
+        if elapsed <= 0 then elapsed = config.TICK_RATE end
 
-        Game.update(state, dt)
-        Bot.update(bot, state, dt)
+        -- Keep the sandbox on the same bounded fixed timestep as the real
+        -- game. Previously Game.update clamped a long frame to 0.25s while
+        -- Bot.update received the full wall-clock dt, letting the admin bot
+        -- think/generate Emeralds faster than the simulated world after lag.
+        local maxCatchup = config.TICK_RATE * MAX_CATCHUP_STEPS
+        tickAccumulator = math.min(tickAccumulator + elapsed, maxCatchup)
+
+        local steps = 0
+        while tickAccumulator + 1e-9 >= config.TICK_RATE
+            and steps < MAX_CATCHUP_STEPS
+        do
+            Game.update(state, config.TICK_RATE)
+            Bot.update(bot, state, config.TICK_RATE)
+            tickAccumulator = tickAccumulator - config.TICK_RATE
+            steps = steps + 1
+        end
+
+        if tickAccumulator < 1e-9 then tickAccumulator = 0 end
+
         tickTimer = os.startTimer(config.TICK_RATE)
         redraw()
     end
