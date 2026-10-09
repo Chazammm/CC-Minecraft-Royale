@@ -10,8 +10,8 @@ local function normalizedGameplaySeed(seed)
     return value
 end
 
-local function updateBots(bot1, bot2, state, dt, tick)
-    if tick % 2 == 0 then
+local function updateBots(bot1, bot2, state, dt, tick, orderOffset)
+    if (tick + (orderOffset or 0)) % 2 == 0 then
         Bot.update(bot1, state, dt)
         Bot.update(bot2, state, dt)
     else
@@ -44,6 +44,7 @@ end
 function Runner.run(deck1, deck2, options)
     options = options or {}
     local dt = options.dt or config.TICK_RATE or 0.10
+    local botOrderOffset = math.floor(tonumber(options.botOrderOffset) or 0) % 2
 
     if options.gameplaySeed ~= nil then
         math.randomseed(normalizedGameplaySeed(options.gameplaySeed))
@@ -80,7 +81,7 @@ function Runner.run(deck1, deck2, options)
     -- that exact timer/memory step even though headless mode skips inert
     -- countdown engine updates.
     local transitionTick = math.max(0, skippedTicks - 1)
-    updateBots(bot1, bot2, state, dt, transitionTick)
+    updateBots(bot1, bot2, state, dt, transitionTick, botOrderOffset)
 
     local ticks = skippedTicks
     local maxSimulationSeconds =
@@ -93,7 +94,7 @@ function Runner.run(deck1, deck2, options)
 
     while state.phase ~= "result" and ticks < maxTicks do
         Game.update(state, dt)
-        updateBots(bot1, bot2, state, dt, ticks)
+        updateBots(bot1, bot2, state, dt, ticks, botOrderOffset)
         ticks = ticks + 1
 
         if options.yieldFn
