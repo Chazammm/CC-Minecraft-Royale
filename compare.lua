@@ -278,16 +278,26 @@ local function runMatch(subjectDeck, opponentDeck, subjectCardId, subjectOwner)
 
     state.players[1].ready = true
     state.players[2].ready = true
-    local started, startErr = Game.startHeadlessBattle(state)
-    if not started then error(startErr or "Could not start headless battle", 0) end
+    local started, skippedTicks = Game.startHeadlessBattle(state, SIM_DT)
+    if not started then error(skippedTicks or "Could not start headless battle", 0) end
 
     Bot.beginMatch(bot1)
     Bot.beginMatch(bot2)
     bot1.enabled = true
     bot2.enabled = true
 
-    local ticks = 0
-    local maxSimulationSeconds = config.MATCH.normalTime
+    local transitionTick = math.max(0, skippedTicks - 1)
+    if transitionTick % 2 == 0 then
+        Bot.update(bot1, state, SIM_DT)
+        Bot.update(bot2, state, SIM_DT)
+    else
+        Bot.update(bot2, state, SIM_DT)
+        Bot.update(bot1, state, SIM_DT)
+    end
+
+    local ticks = skippedTicks
+    local maxSimulationSeconds = config.MATCH.countdown
+        + config.MATCH.normalTime
         + config.MATCH.overtimeTime
         + 30
     local maxTicks = math.ceil(maxSimulationSeconds / SIM_DT)
