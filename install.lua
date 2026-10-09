@@ -129,6 +129,18 @@ end
 
 print("")
 print("Install complete.")
+
+local mechanicsVersion = "unknown"
+if fs.exists("mechanics_test.lua") then
+  local handle = fs.open("mechanics_test.lua", "r")
+  if handle then
+    local body = handle.readAll()
+    handle.close()
+    mechanicsVersion = body:match("local%s+SUITE_VERSION%s*=%s*(%d+)") or "unknown"
+  end
+end
+print("Installed mechanics suite: FORMAT_VERSION " .. mechanicsVersion)
+
 print("Run: diagnose")
 print("Then: main")
 print("Admin sandbox: admin")
