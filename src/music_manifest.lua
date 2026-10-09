@@ -2,15 +2,15 @@ return {
     packs = {
         [1] = {
             path = "assets/battle_music_1.dfpwm",
-            remoteUrl = "https://raw.githubusercontent.com/Chazammm/CC-Minecraft-Royale/main/assets/battle_music_1.dfpwm",
+            remoteUrl = "https://raw.githubusercontent.com/Chazammm/CC-Minecraft-Royale/efcbc44f0440ad45d5f54448a89237e638e4aefe/assets/battle_music_1.dfpwm",
             size = 17476124,
-            version = "hq48-part1",
+            version = "hq48-part1-efcbc44f0440",
         },
         [2] = {
             path = "assets/battle_music_2.dfpwm",
-            remoteUrl = "https://raw.githubusercontent.com/Chazammm/CC-Minecraft-Royale/main/assets/battle_music_2.dfpwm",
+            remoteUrl = "https://raw.githubusercontent.com/Chazammm/CC-Minecraft-Royale/efcbc44f0440ad45d5f54448a89237e638e4aefe/assets/battle_music_2.dfpwm",
             size = 19552553,
-            version = "hq48-part2",
+            version = "hq48-part2-efcbc44f0440",
         },
     },
 
