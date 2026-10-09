@@ -475,19 +475,30 @@ end
 
 local function findNearest(state, entity, filter, maxRange)
     local best = nil
-    local bestDistance = math.huge
+    local bestDistanceSq = math.huge
+    local maxRangeSq = maxRange and maxRange * maxRange or nil
 
     for _, candidate in ipairs(state.entities) do
-        if candidate.id ~= entity.id and targetAllowed(entity, candidate) and (not filter or filter(candidate)) then
-            local d = util.distance(entity.x, entity.y, candidate.x, candidate.y)
-            if (not maxRange or d <= maxRange) and d < bestDistance then
-                bestDistance = d
+        if candidate.id ~= entity.id
+            and targetAllowed(entity, candidate)
+            and (not filter or filter(candidate))
+        then
+            local d2 = util.distanceSquared(
+                entity.x,
+                entity.y,
+                candidate.x,
+                candidate.y
+            )
+            if (not maxRangeSq or d2 <= maxRangeSq)
+                and d2 < bestDistanceSq
+            then
+                bestDistanceSq = d2
                 best = candidate
             end
         end
     end
 
-    return best, bestDistance
+    return best, best and math.sqrt(bestDistanceSq) or math.huge
 end
 
 local function preferredTowerObjective(state, entity)
@@ -510,9 +521,14 @@ local function preferredTowerObjective(state, entity)
                 if candidateLane == lane then
                     lanePrincess = candidate
                 else
-                    local d = util.distance(entity.x, entity.y, candidate.x, candidate.y)
-                    if d < fallbackDistance then
-                        fallbackDistance = d
+                    local d2 = util.distanceSquared(
+                        entity.x,
+                        entity.y,
+                        candidate.x,
+                        candidate.y
+                    )
+                    if d2 < fallbackDistance then
+                        fallbackDistance = d2
                         fallbackPrincess = candidate
                     end
                 end
@@ -699,6 +715,24 @@ end
 local damageEntity
 local killEntity
 
+local function deactivateEntity(state, entity)
+    if not entity or not entity.alive then return false end
+    entity.alive = false
+
+    if entity.globalEnemyMoveSlow then
+        state.globalMovementAuraDirty = true
+        -- Aura removal should affect units which have not moved yet in this
+        -- same combat tick, not one tick later.
+        updateGlobalMovementAuras(state)
+    end
+
+    return true
+end
+
+local function despawnEntity(state, entity)
+    return deactivateEntity(state, entity)
+end
+
 local function spawnProjectile(state, attacker, target, damageOverride, visualOverride)
     table.insert(state.projectiles, {
         x = attacker.x,
@@ -734,8 +768,9 @@ damageEntity = function(
 )
     if not target or not target.alive then return end
 
+    damage = math.max(0, damage or 0)
     local actualDamage = math.min(
-        math.max(0, damage or 0),
+        damage,
         math.max(0, target.hp or 0)
     )
 
@@ -771,7 +806,7 @@ damageEntity = function(
         end
     end
 
-    target.hp = target.hp - (damage or 0)
+    target.hp = target.hp - damage
 
     -- Guardian spikes only punish the flying entity which actually caused the
     -- hit. Spells and Crown Towers have no flying source entity and therefore
@@ -855,7 +890,7 @@ local function explodeProximityUnit(state, entity)
     -- Mark the Creeper dead directly. This is a self-detonation, not a normal
     -- death-trigger ability, so getting killed before the fuse completes does
     -- not cause an explosion.
-    entity.alive = false
+    deactivateEntity(state, entity)
     entity.fuseRemaining = nil
 
     local battleAtStart = state.phase == "battle"
@@ -935,11 +970,7 @@ local function handleDeathAbilities(state, entity)
 end
 
 killEntity = function(state, entity, sourceOwner, sourceCardId)
-    if not entity.alive then return end
-    entity.alive = false
-    if entity.globalEnemyMoveSlow then
-        state.globalMovementAuraDirty = true
-    end
+    if not deactivateEntity(state, entity) then return end
 
     if state.phase == "battle" and sourceOwner and sourceCardId and state.stats then
         local playerStats = state.stats.players[sourceOwner]
@@ -1092,27 +1123,43 @@ updateGroundPulse = function(state, entity, dt)
     if entity.groundPulseTimer > 0 then return end
 
     local radius = spec.radius or 8
+    local radiusSq = radius * radius
     local pulseDamage = spec.damage or 20
     local hitCount = 0
+    local victims = {}
 
+    -- Snapshot victims before applying damage. A lethal pulse may split a
+    -- Slime/Magma Cube, but newborn split units did not exist when the stomp
+    -- happened and must not be hit by that same pulse.
     for _, victim in ipairs(state.entities) do
         if victim.alive
             and victim.owner ~= entity.owner
             and victim.kind == "unit"
             and not victim.flying
             and not victim.waterOnly
-            and util.distance(entity.x, entity.y, victim.x, victim.y) <= radius
+            and util.distanceSquared(
+                entity.x,
+                entity.y,
+                victim.x,
+                victim.y
+            ) <= radiusSq
         then
-            damageEntity(
-                state,
-                victim,
-                pulseDamage,
-                entity.owner,
-                entity.sourceCardId,
-                entity.id
-            )
-            hitCount = hitCount + 1
+            victims[#victims + 1] = victim
         end
+    end
+
+    local battleAtStart = state.phase == "battle"
+    for _, victim in ipairs(victims) do
+        damageEntity(
+            state,
+            victim,
+            pulseDamage,
+            entity.owner,
+            entity.sourceCardId,
+            entity.id
+        )
+        hitCount = hitCount + 1
+        if battleAtStart and state.phase ~= "battle" then break end
     end
 
     addEffect(
@@ -1335,7 +1382,7 @@ local function updateCombatEntity(state, entity, dt)
             -- timed despawn behavior. Only buildings use HP decay.
             entity.remainingLifetime = entity.remainingLifetime - dt
             if entity.remainingLifetime <= 0 then
-                entity.alive = false
+                despawnEntity(state, entity)
                 addEffect(
                     state,
                     entity.emeraldBoost and "emerald" or "death",
@@ -2991,12 +3038,15 @@ function Game.update(state, dt)
         local emeraldRate = config.MATCH.emeraldPerSecond * multiplier
 
         local emeraldBoost1, emeraldBoost2 = 0, 0
+        local emeraldBoostSources = { [1] = {}, [2] = {} }
         for _, entity in ipairs(state.entities) do
             if entity.alive and entity.emeraldBoost then
                 if entity.owner == 1 then
                     emeraldBoost1 = emeraldBoost1 + entity.emeraldBoost
+                    emeraldBoostSources[1][#emeraldBoostSources[1] + 1] = entity
                 elseif entity.owner == 2 then
                     emeraldBoost2 = emeraldBoost2 + entity.emeraldBoost
+                    emeraldBoostSources[2][#emeraldBoostSources[2] + 1] = entity
                 end
             end
         end
@@ -3027,14 +3077,14 @@ function Game.update(state, dt)
                 -- created each living boost unit. This makes Villager useful
                 -- in balance reports even though it deals no damage.
                 if realizedBonus > 0 and boost > 0 then
-                    for _, entity in ipairs(state.entities) do
-                        if entity.alive
-                            and entity.owner == playerId
-                            and entity.emeraldBoost
-                            and entity.sourceCardId
-                        then
+                    for _, entity in ipairs(emeraldBoostSources[playerId]) do
+                        if entity.sourceCardId then
                             local share = realizedBonus * entity.emeraldBoost / boost
-                            local cardStats = getCardStats(state, playerId, entity.sourceCardId)
+                            local cardStats = getCardStats(
+                                state,
+                                playerId,
+                                entity.sourceCardId
+                            )
                             cardStats.emeraldBonus = cardStats.emeraldBonus + share
                         end
                     end
@@ -3122,6 +3172,7 @@ local function clearSimulation(state)
     state.effects = {}
     state.pendingSpells = {}
     state.nextEntityId = 1
+    state.combatTick = 0
     state.globalMovementAuraActive = false
     state.globalMovementAuraDirty = false
 end
