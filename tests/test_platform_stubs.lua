@@ -151,6 +151,126 @@ do
 end
 
 do
+    -- Report sync should update history + latest in one Git commit through the
+    -- Git Data API instead of creating two Contents-API commits.
+    local oldHttp = http
+    local oldFs = fs
+    local oldTextutils = textutils
+
+    local getUrls = {}
+    local writeCalls = {}
+    local blobIndex = 0
+
+    local function response(body, code)
+        return {
+            getResponseCode = function() return code or 200 end,
+            readAll = function() return body end,
+            close = function() end,
+        }
+    end
+
+    fs = {
+        exists = function(path) return path == "balance_results.txt" end,
+        isDir = function() return false end,
+        open = function(path, mode)
+            if path == "balance_results.txt" and mode == "r" then
+                return {
+                    readAll = function() return "REPORT BODY" end,
+                    close = function() end,
+                }
+            end
+            return nil
+        end,
+        getName = function(path)
+            return path:match("([^/]+)$")
+        end,
+    }
+
+    textutils = {
+        serializeJSON = function() return "PAYLOAD" end,
+        unserializeJSON = function(body)
+            if body == "REF" then
+                return { object = { sha = "parent-sha" } }
+            elseif body == "PARENT" then
+                return { tree = { sha = "base-tree" } }
+            elseif body == "BLOB1" then
+                return { sha = "blob-one" }
+            elseif body == "BLOB2" then
+                return { sha = "blob-two" }
+            elseif body == "TREE" then
+                return { sha = "new-tree" }
+            elseif body == "COMMIT" then
+                return { sha = "new-commit" }
+            elseif body == "{}" then
+                return {}
+            end
+            return nil, "unexpected fake JSON"
+        end,
+    }
+
+    http = {
+        get = function(options)
+            local url = type(options) == "table" and options.url or options
+            getUrls[#getUrls + 1] = url
+            if url:find("/git/ref/heads/main", 1, true) then
+                return response("REF", 200)
+            elseif url:find("/git/commits/parent-sha", 1, true) then
+                return response("PARENT", 200)
+            end
+            return nil, "unexpected GET"
+        end,
+        post = function(options)
+            writeCalls[#writeCalls + 1] = {
+                method = options.method,
+                url = options.url,
+            }
+
+            if options.url:find("/git/blobs", 1, true) then
+                blobIndex = blobIndex + 1
+                return response(blobIndex == 1 and "BLOB1" or "BLOB2", 201)
+            elseif options.url:find("/git/trees", 1, true) then
+                return response("TREE", 201)
+            elseif options.url:find("/git/commits", 1, true) then
+                return response("COMMIT", 201)
+            elseif options.url:find("/git/refs/heads/main", 1, true)
+                and options.method == "PATCH"
+            then
+                return response("{}", 200)
+            end
+            return nil, "unexpected write"
+        end,
+    }
+
+    package.loaded["src.report_sync"] = nil
+    local ReportSync = require("src.report_sync")
+    local ok, result = ReportSync.upload(
+        "balance",
+        "balance_results.txt",
+        "dummy-token-value-long-enough",
+        "12345"
+    )
+    assertTrue(ok, "Report sync Git Data transaction must succeed")
+    assertEq(result.commitSha, "new-commit", "Report sync must expose commit SHA")
+    assertEq(#getUrls, 2, "Report sync needs branch + parent reads")
+    assertEq(#writeCalls, 5, "Two blobs + tree + commit + ref update expected")
+
+    local patchCount = 0
+    for _, call in ipairs(writeCalls) do
+        if call.method == "PATCH" then patchCount = patchCount + 1 end
+        assertTrue(
+            not call.url:find("/contents/", 1, true),
+            "Report sync must not use one-commit-per-file Contents API"
+        )
+    end
+    assertEq(patchCount, 1, "Report sync must advance main exactly once")
+
+    package.loaded["src.report_sync"] = nil
+    http = oldHttp
+    fs = oldFs
+    textutils = oldTextutils
+end
+
+do
     package.loaded["src.benchmark_utils"] = nil
     local benchmark = require("src.benchmark_utils")
     local randomInt = benchmark.newRandomInt(1337)
