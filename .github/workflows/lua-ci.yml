@@ -21,3 +21,5 @@ jobs:
         run: find . -name '*.lua' -print0 | xargs -0 -n1 luac5.4 -p
       - name: V1 smoke tests
         run: lua5.4 tests/test_v1.lua
+      - name: Platform stub tests
+        run: lua5.4 tests/test_platform_stubs.lua
