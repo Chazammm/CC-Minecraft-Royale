@@ -215,7 +215,8 @@ local function runMatch(
     subjectCardId,
     subjectOwner,
     useEvolution,
-    gameplaySeed
+    gameplaySeed,
+    botOrderOffset
 )
     local deck1 = subjectOwner == 1 and subjectDeck or opponentDeck
     local deck2 = subjectOwner == 1 and opponentDeck or subjectDeck
@@ -223,6 +224,7 @@ local function runMatch(
     local state = Runner.run(deck1, deck2, {
         dt = SIM_DT,
         gameplaySeed = gameplaySeed,
+        botOrderOffset = botOrderOffset or 0,
         yieldFn = cooperativeYield,
         yieldCheckTicks = YIELD_CHECK_TICKS,
         timeoutReason = "EVOLUTION COMPARISON TIMEOUT",
@@ -343,10 +345,10 @@ for evolutionIndex, cardId in ipairs(evolutionCards) do
         local seedP1 = randomInt(2147483000)
         local seedP2 = randomInt(2147483000)
 
-        local baseP1 = runMatch(subjectDeck, opponentDeck, cardId, 1, false, seedP1)
-        local evoP1 = runMatch(subjectDeck, opponentDeck, cardId, 1, true, seedP1)
-        local baseP2 = runMatch(subjectDeck, opponentDeck, cardId, 2, false, seedP2)
-        local evoP2 = runMatch(subjectDeck, opponentDeck, cardId, 2, true, seedP2)
+        local baseP1 = runMatch(subjectDeck, opponentDeck, cardId, 1, false, seedP1, 0)
+        local evoP1 = runMatch(subjectDeck, opponentDeck, cardId, 1, true, seedP1, 0)
+        local baseP2 = runMatch(subjectDeck, opponentDeck, cardId, 2, false, seedP2, 1)
+        local evoP2 = runMatch(subjectDeck, opponentDeck, cardId, 2, true, seedP2, 1)
 
         addResult(aggBase, baseP1)
         addResult(aggBase, baseP2)
