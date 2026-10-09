@@ -232,6 +232,23 @@ local function addBeamEffect(state, source, target)
     })
 end
 
+local function addFangEffect(state, kind, pending, ttl)
+    local lifetime = ttl or 0.35
+    table.insert(state.effects, {
+        kind = kind,
+        x = pending.x,
+        y = pending.y,
+        x2 = pending.x2,
+        y2 = pending.y2,
+        mode = pending.mode,
+        radius = pending.spec and pending.spec.ringRadius or 5,
+        width = pending.spec and pending.spec.lineHalfWidth or 2.4,
+        ttl = lifetime,
+        duration = lifetime,
+        owner = pending.owner,
+    })
+end
+
 local function makeBaseEntity(state, owner, kind, x, y)
     local entity = {
         id = state.nextEntityId,
@@ -1057,7 +1074,117 @@ updateGroundPulse = function(state, entity, dt)
     entity.groundPulseTimer = spec.interval or 2
 end
 
+local function pointToSegmentDistance(px, py, x1, y1, x2, y2)
+    local dx = x2 - x1
+    local dy = y2 - y1
+    local lengthSq = dx * dx + dy * dy
+    if lengthSq <= 0.000001 then
+        return util.distance(px, py, x1, y1)
+    end
+
+    local t = ((px - x1) * dx + (py - y1) * dy) / lengthSq
+    t = util.clamp(t, 0, 1)
+    local nx = x1 + dx * t
+    local ny = y1 + dy * t
+    return util.distance(px, py, nx, ny)
+end
+
+local function queueEvokerFangs(state, entity, target)
+    local spec = entity.fangAttack
+    if not spec or target.flying or target.waterOnly then return false end
+
+    local targetDistance = util.distance(entity.x, entity.y, target.x, target.y)
+    local closeRange = spec.closeRange or 4
+    local mode = targetDistance <= closeRange and "ring" or "line"
+    local warning = spec.warning or 0.4
+
+    local pending = {
+        kind = "evoker_fangs",
+        owner = entity.owner,
+        cardId = entity.sourceCardId,
+        sourceEntityId = entity.id,
+        x = entity.x,
+        y = entity.y,
+        x2 = target.x,
+        y2 = target.y,
+        mode = mode,
+        remaining = warning,
+        delay = warning,
+        spec = util.deepcopy(spec),
+    }
+
+    state.pendingSpells[#state.pendingSpells + 1] = pending
+    addFangEffect(state, "evoker_fangs_warning", pending, warning)
+    emitSound(state, "minecraft:entity.evoker.prepare_attack", 0.55, 1.0)
+    return true
+end
+
+local function resolveEvokerFangs(state, pending)
+    local spec = pending.spec or {}
+    local damage = spec.damage or 85
+    local targets = {}
+
+    for _, candidate in ipairs(state.entities) do
+        if candidate.alive
+            and candidate.owner ~= pending.owner
+            and not candidate.flying
+            and not candidate.waterOnly
+            and (
+                candidate.kind == "unit"
+                or candidate.kind == "building"
+                or candidate.kind == "tower"
+            )
+        then
+            local hit = false
+            if pending.mode == "ring" then
+                hit = util.distance(
+                    pending.x,
+                    pending.y,
+                    candidate.x,
+                    candidate.y
+                ) <= (spec.ringRadius or 5)
+            else
+                hit = pointToSegmentDistance(
+                    candidate.x,
+                    candidate.y,
+                    pending.x,
+                    pending.y,
+                    pending.x2,
+                    pending.y2
+                ) <= (spec.lineHalfWidth or 2.4)
+            end
+
+            if hit then targets[#targets + 1] = candidate end
+        end
+    end
+
+    if state.phase == "battle" and state.stats and pending.cardId then
+        local cardStats = getCardStats(state, pending.owner, pending.cardId)
+        cardStats.targetsHit = cardStats.targetsHit + #targets
+    end
+
+    for _, target in ipairs(targets) do
+        damageEntity(
+            state,
+            target,
+            damage,
+            pending.owner,
+            pending.cardId,
+            pending.sourceEntityId
+        )
+    end
+
+    addFangEffect(state, "evoker_fangs_impact", pending, 0.45)
+    emitSound(state, "minecraft:entity.evoker_fangs.attack", 0.75, 1.0)
+end
+
 local function performAttack(state, entity, target)
+    if entity.fangAttack then
+        queueEvokerFangs(state, entity, target)
+        entity.attackCooldownLeft = entity.attackCooldown or 2.4
+        return
+    end
+
     if entity.hybridAttack then
         local spec = entity.hybridAttack
 
@@ -1833,6 +1960,8 @@ local function updatePendingSpells(state, dt)
         if pending.remaining <= 0 then
             if pending.kind == "falling_anvil" then
                 resolveFallingAnvil(state, pending)
+            elseif pending.kind == "evoker_fangs" then
+                resolveEvokerFangs(state, pending)
             end
         else
             kept[#kept + 1] = pending
