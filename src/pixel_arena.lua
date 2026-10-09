@@ -212,6 +212,32 @@ local SPRITES = {
             ".P...P.",
         },
     },
+    evoker = {
+        -- Gray Illager head, heavy brows and dark robe with gold trim.
+        rows = {
+            "..SSSSS..",
+            ".SDSSSDS.",
+            ".SSKKKSS.",
+            "..SSNSS..",
+            "...SS....",
+            "..KKKKK..",
+            ".KKYKYKK.",
+            ".KKKKKKK.",
+            "..KKYKK..",
+            "..K...K..",
+        },
+    },
+    vex = {
+        -- Small pale-blue flying attacker with bright wings and red eyes.
+        rows = {
+            "W..A..W",
+            ".WAAAW.",
+            "..ARA..",
+            "..AAA..",
+            ".A.A.A.",
+            "A..A..A",
+        },
+    },
     enderman = {
         -- 6x12: full 2x3 head texel block, then extremely long limbs.
         -- Keeping purple confined to the filled head avoids Pixelbox colour bleed.
@@ -439,6 +465,8 @@ local NAME_TO_SPRITE = {
     ["Baby Zombie"] = "baby_zombie",
     ["Blaze"] = "blaze",
     ["Witch"] = "witch",
+    ["Evoker"] = "evoker",
+    ["Vex"] = "vex",
     ["Enderman"] = "enderman",
     ["Spider"] = "spider",
     ["Snow Golem"] = "snow_golem",
@@ -927,6 +955,55 @@ local function drawGuardianBeam(box, playerId, effect)
     end
 end
 
+local function drawEvokerFangs(box, playerId, effect, impact)
+    if effect.mode == "ring" then
+        drawRingEffect(
+            box,
+            playerId,
+            effect,
+            impact and colors.white or colors.yellow
+        )
+
+        local cx, cy = worldToPixel(box, playerId, effect.x, effect.y)
+        local rx = math.max(2, worldRadiusX(box, effect.radius or 5))
+        local ry = math.max(2, worldRadiusY(box, effect.radius or 5))
+        for i = 0, 7 do
+            local angle = (i / 8) * math.pi * 2
+            local x = cx + math.cos(angle) * rx
+            local y = cy + math.sin(angle) * ry
+            put(box, x, y, impact and colors.lightGray or colors.orange)
+            if impact then put(box, x, y - 1, colors.white) end
+        end
+        return
+    end
+
+    local x1, y1 = worldToPixel(box, playerId, effect.x, effect.y)
+    local x2, y2 = worldToPixel(
+        box,
+        playerId,
+        effect.x2 or effect.x,
+        effect.y2 or effect.y
+    )
+    local color = impact and colors.white or colors.yellow
+    drawLine(box, x1, y1, x2, y2, color)
+
+    local dx, dy = x2 - x1, y2 - y1
+    local length = math.sqrt(dx * dx + dy * dy)
+    if length < 1 then return end
+
+    local nx, ny = -dy / length, dx / length
+    local teeth = math.max(3, math.floor(length / 4))
+    for i = 1, teeth do
+        local t = i / (teeth + 1)
+        local x = x1 + dx * t
+        local y = y1 + dy * t
+        local spread = impact and 2 or 1
+        put(box, x, y, color)
+        put(box, x + nx * spread, y + ny * spread, impact and colors.lightGray or colors.orange)
+        put(box, x - nx * spread, y - ny * spread, impact and colors.lightGray or colors.orange)
+    end
+end
+
 local function drawEffect(box, playerId, effect)
     if effect.kind == "arrows" then
         drawArrowVolley(box, playerId, effect)
@@ -963,6 +1040,13 @@ local function drawEffect(box, playerId, effect)
         drawGuardianBeam(box, playerId, effect)
     elseif effect.kind == "guardian_spike" then
         drawSparkle(box, playerId, effect, colors.cyan)
+    elseif effect.kind == "evoker_summon" then
+        drawRingEffect(box, playerId, effect, colors.lightBlue)
+        drawSparkle(box, playerId, effect, colors.white)
+    elseif effect.kind == "evoker_fangs_warning" then
+        drawEvokerFangs(box, playerId, effect, false)
+    elseif effect.kind == "evoker_fangs_impact" then
+        drawEvokerFangs(box, playerId, effect, true)
     elseif effect.kind == "slow" then
         drawRingEffect(box, playerId, effect, colors.cyan)
     elseif effect.kind == "emerald" then
