@@ -455,6 +455,57 @@ local fastParityState, fastParity = headlessParitySnapshot(true)
 
 assertTrue(fastParityState.headlessSimulation, "Benchmark state must explicitly enable headless simulation")
 assertEq(#fastParityState.effects, 0, "Headless simulation must not allocate visual effects")
+
+-- The benchmark may skip countdown updates only because those ticks are inert.
+-- Verify the direct headless start produces the same battle-start state.
+local countdownStartState = Game.new(nil, { headlessSimulation = true })
+local directStartState = Game.new(nil, { headlessSimulation = true })
+countdownStartState.players[1].deck = cards.defaultDeck()
+countdownStartState.players[2].deck = cards.defaultDeck()
+directStartState.players[1].deck = cards.defaultDeck()
+directStartState.players[2].deck = cards.defaultDeck()
+
+Game.startCountdown(countdownStartState)
+for _ = 1, math.ceil(config.MATCH.countdown / config.TICK_RATE) + 2 do
+    if countdownStartState.phase == "battle" then break end
+    Game.update(countdownStartState, config.TICK_RATE)
+end
+
+local directStarted = Game.startHeadlessBattle(directStartState)
+assertTrue(directStarted, "Headless benchmark must support direct battle start")
+assertEq(countdownStartState.phase, "battle", "Normal countdown reference must reach battle")
+assertEq(directStartState.phase, countdownStartState.phase, "Direct headless start must preserve phase")
+assertEq(directStartState.timeLeft, countdownStartState.timeLeft, "Direct headless start must preserve match clock")
+assertEq(directStartState.combatTick, countdownStartState.combatTick, "Direct headless start must preserve combat tick")
+assertEq(directStartState.nextEntityId, countdownStartState.nextEntityId, "Direct headless start must preserve entity ids")
+assertEq(directStartState.stats.elapsed, countdownStartState.stats.elapsed, "Direct headless start must preserve elapsed stats")
+assertEq(#directStartState.entities, #countdownStartState.entities, "Direct headless start must create the same towers")
+
+for playerId = 1, 2 do
+    local directPlayer = directStartState.players[playerId]
+    local countdownPlayer = countdownStartState.players[playerId]
+    assertEq(directPlayer.emeralds, countdownPlayer.emeralds, "Direct headless start must preserve starting Emeralds")
+    for slot = 1, 4 do
+        assertEq(directPlayer.hand[slot], countdownPlayer.hand[slot], "Direct headless start must preserve starting hand")
+    end
+    for slot = 1, #countdownPlayer.queue do
+        assertEq(directPlayer.queue[slot], countdownPlayer.queue[slot], "Direct headless start must preserve card queue")
+    end
+end
+
+for i = 1, #countdownStartState.entities do
+    local directTower = directStartState.entities[i]
+    local countdownTower = countdownStartState.entities[i]
+    assertEq(directTower.id, countdownTower.id, "Direct headless start must preserve tower ids")
+    assertEq(directTower.owner, countdownTower.owner, "Direct headless start must preserve tower owners")
+    assertEq(directTower.towerType, countdownTower.towerType, "Direct headless start must preserve tower types")
+    assertEq(directTower.hp, countdownTower.hp, "Direct headless start must preserve tower HP")
+    assertEq(directTower.x, countdownTower.x, "Direct headless start must preserve tower X")
+    assertEq(directTower.y, countdownTower.y, "Direct headless start must preserve tower Y")
+end
+
+local rejectedDirectStart = Game.startHeadlessBattle(Game.new())
+assertTrue(not rejectedDirectStart, "Direct battle start must stay headless-only")
 assertEq(#normalParity, #fastParity, "Headless mode must preserve surviving entity count")
 for i = 1, #normalParity do
     local normal = normalParity[i]
