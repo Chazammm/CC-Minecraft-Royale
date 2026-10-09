@@ -132,7 +132,9 @@ do
     -- A Diamond Golem stomp snapshots its victims. If it kills a Slime, the
     -- newborn Mini Slimes must not be damaged by the same historical pulse.
     local state = Game.new()
-    Game.debugLoadScenario(state, "empty")
+    -- Keep an enemy Crown Tower alive so the building-targeting Golem walks
+    -- through the Slime instead of idling in an otherwise empty scenario.
+    Game.debugLoadScenario(state, "king")
     assertTrue(Game.debugSpawnCard(state, 1, "evo:iron_golem", 50, 110))
     assertTrue(Game.debugSpawnCard(state, 2, "slime", 50, 103))
 
