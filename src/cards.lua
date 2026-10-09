@@ -51,7 +51,7 @@ cards.list = {
         kind = "unit",
         color = colors.lightGray,
         unit = {
-            maxHp = 1377,
+            maxHp = 1514.7,
             damage = 110,
             moveSpeed = 4.2,
             attackRange = 3.0,
@@ -64,15 +64,15 @@ cards.list = {
             cycles = 2,
             name = "Diamond Golem",
             color = colors.cyan,
-            description = "5% more HP. While walking, every 2s it stomps for 20 damage to nearby grounded enemy units.",
+            description = "7.5% more HP than the Iron Golem. While walking, every 2s it stomps for 25 damage to nearby grounded enemy units.",
             statMultipliers = {
-                maxHp = 1.05,
+                maxHp = 1.075,
             },
             abilities = {
                 visualVariant = "diamond_golem",
                 groundPulse = {
                     interval = 2.0,
-                    damage = 20,
+                    damage = 25,
                     radius = 8.0,
                     effect = "diamond_quake",
                 },
