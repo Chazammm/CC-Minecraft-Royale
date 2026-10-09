@@ -36,28 +36,50 @@ local files = {
 local LEGACY_STAGE_DIR = ".cc_royale_update"
 local LEGACY_BACKUP_DIR = ".cc_royale_backup"
 local INSTALL_MARKER = ".cc_royale_installing"
+local MANAGED_FILE = ".cc_royale_managed"
+
+local function safeExists(path)
+  local ok, exists = pcall(fs.exists, path)
+  return ok and exists == true
+end
+
+local function safeDelete(path)
+  if not safeExists(path) then return true end
+  local ok = pcall(fs.delete, path)
+  return ok
+end
 
 local function ensureDir(path)
   local dir = fs.getDir(path)
-  if dir ~= "" and not fs.exists(dir) then
-    fs.makeDir(dir)
+  if dir ~= "" and not safeExists(dir) then
+    local ok, err = pcall(fs.makeDir, dir)
+    if not ok then return false, err end
   end
+  return true
 end
 
 local function readFile(path)
-  if not fs.exists(path) or fs.isDir(path) then return nil end
-  local handle = fs.open(path, "r")
-  if not handle then return nil end
-  local body = handle.readAll()
-  handle.close()
+  if not safeExists(path) then return nil end
+
+  if fs.isDir then
+    local okDir, isDir = pcall(fs.isDir, path)
+    if not okDir or isDir then return nil end
+  end
+
+  local okOpen, handle = pcall(fs.open, path, "r")
+  if not okOpen or not handle then return nil end
+  local okRead, body = pcall(handle.readAll)
+  pcall(handle.close)
+  if not okRead then return nil end
   return body
 end
 
 local function writeFile(path, body)
-  ensureDir(path)
+  local dirOk, dirErr = ensureDir(path)
+  if not dirOk then return false, dirErr end
 
-  local handle = fs.open(path, "w")
-  if not handle then
+  local okOpen, handle = pcall(fs.open, path, "w")
+  if not okOpen or not handle then
     return false, "Could not open " .. path .. " for writing"
   end
 
@@ -69,6 +91,21 @@ local function writeFile(path, body)
   end
 
   return true
+end
+
+local function readManagedFiles()
+  local out = {}
+  local raw = readFile(MANAGED_FILE)
+  if not raw then return out end
+
+  for path in raw:gmatch("[^\r\n]+") do
+    if path ~= "" then out[#out + 1] = path end
+  end
+  return out
+end
+
+local function managedBody(paths)
+  return table.concat(paths, "\n") .. (#paths > 0 and "\n" or "")
 end
 
 local existingStartup = readFile("startup.lua")
@@ -150,16 +187,16 @@ local function downloadBody(base, path)
   return body
 end
 
-local function restoreSnapshot(snapshot, appliedFiles)
+local function restoreSnapshot(snapshot, rollbackPaths)
   -- Delete updated files first. This guarantees that the old installation,
   -- which demonstrably fit before the update, has enough disk space to return.
-  for _, path in ipairs(appliedFiles) do
-    if fs.exists(path) then
-      fs.delete(path)
+  for _, path in ipairs(rollbackPaths) do
+    if not safeDelete(path) then
+      return false, "Could not clear " .. path .. " during rollback"
     end
   end
 
-  for _, path in ipairs(appliedFiles) do
+  for _, path in ipairs(rollbackPaths) do
     local oldBody = snapshot[path]
     if oldBody ~= false then
       local ok, err = writeFile(path, oldBody)
@@ -173,6 +210,24 @@ local function restoreSnapshot(snapshot, appliedFiles)
   return true
 end
 
+local function preflightLua(path, body)
+  if path:sub(-4) ~= ".lua" then return true end
+
+  local chunk, err
+  if load then
+    chunk, err = load(body, "@" .. path, "t", {})
+  elseif loadstring then
+    chunk, err = loadstring(body, "@" .. path)
+  else
+    return false, "Lua compiler is unavailable for syntax preflight"
+  end
+
+  if not chunk then
+    return false, ("Syntax error in %s: %s"):format(path, tostring(err))
+  end
+  return true
+end
+
 print("CC-Minecraft Royale installer")
 print("--------------------------------")
 
@@ -181,14 +236,14 @@ if not http then
 end
 
 -- Reclaim any disk space left behind by the old full-disk staging installer.
-if fs.exists(LEGACY_STAGE_DIR) then
-  fs.delete(LEGACY_STAGE_DIR)
+if not safeDelete(LEGACY_STAGE_DIR) then
+  error("Could not remove legacy update directory: " .. LEGACY_STAGE_DIR, 0)
 end
-if fs.exists(LEGACY_BACKUP_DIR) then
-  fs.delete(LEGACY_BACKUP_DIR)
+if not safeDelete(LEGACY_BACKUP_DIR) then
+  error("Could not remove legacy backup directory: " .. LEGACY_BACKUP_DIR, 0)
 end
 
-if fs.exists(INSTALL_MARKER) then
+if safeExists(INSTALL_MARKER) then
   local interruptedSha = readFile(INSTALL_MARKER) or "unknown"
   print("Interrupted previous update detected (" .. interruptedSha .. ").")
   print("Reinstalling every managed file from one pinned commit.")
@@ -218,71 +273,131 @@ for _, path in ipairs(files) do
   if shouldApply(path) then
     local body, err = downloadBody(base, path)
     if not body then error(err, 0) end
+
+    local syntaxOk, syntaxErr = preflightLua(path, body)
+    if not syntaxOk then error(syntaxErr, 0) end
     downloaded[path] = body
   end
 end
 
 print("")
-print("All files downloaded. Applying low-space atomic update...")
+print("All files downloaded and Lua syntax preflight passed.")
+print("Applying low-space atomic update...")
 
 local markerOk, markerErr = writeFile(INSTALL_MARKER, targetSha)
 if not markerOk then
   error("Could not create install recovery marker: " .. tostring(markerErr), 0)
 end
 
--- Keep the previous text files in RAM during the write phase. This provides a
--- full rollback without ever storing an on-disk backup copy.
-local snapshot = {}
+-- Keep previous managed text files in RAM during the write phase. This provides
+-- rollback without storing a second on-disk project copy.
+local previousManaged = readManagedFiles()
+local currentManagedSet = {}
 local appliedFiles = {}
 for _, path in ipairs(files) do
   if shouldApply(path) then
-    local oldBody = readFile(path)
-    snapshot[path] = oldBody ~= nil and oldBody or false
+    currentManagedSet[path] = true
     appliedFiles[#appliedFiles + 1] = path
   end
 end
 
-local appliedCount = 0
-for _, path in ipairs(appliedFiles) do
-  -- Delete just this old file before writing its replacement. Peak disk usage
-  -- is therefore approximately the installed project size, not 2x the size.
-  if fs.exists(path) then
-    fs.delete(path)
+-- Files removed/renamed by newer releases should not live forever on existing
+-- arena computers. Never treat a user-customized startup.lua as stale.
+local staleFiles = {}
+for _, path in ipairs(previousManaged) do
+  if not currentManagedSet[path]
+      and not (path == "startup.lua" and preserveCustomStartup)
+  then
+    staleFiles[#staleFiles + 1] = path
   end
-
-  local ok, err = writeFile(path, downloaded[path])
-  if not ok then
-    print("")
-    print(("APPLY FAILED at %s - restoring previous installation...")
-      :format(path))
-
-    -- Include the current path in rollback even if the failed write left a
-    -- partial file behind.
-    local restored, restoreErr = restoreSnapshot(snapshot, appliedFiles)
-    if not restored then
-      error(
-        "Update failed: " .. tostring(err)
-        .. "\nRollback also failed: " .. tostring(restoreErr)
-        .. "\nRecovery marker retained at " .. INSTALL_MARKER,
-        0
-      )
-    end
-
-    if fs.exists(INSTALL_MARKER) then fs.delete(INSTALL_MARKER) end
-    error("Update failed and was rolled back: " .. tostring(err), 0)
-  end
-
-  appliedCount = appliedCount + 1
 end
 
-if fs.exists(INSTALL_MARKER) then fs.delete(INSTALL_MARKER) end
+local rollbackPaths = {}
+local rollbackSeen = {}
+local function addRollbackPath(path)
+  if not rollbackSeen[path] then
+    rollbackSeen[path] = true
+    rollbackPaths[#rollbackPaths + 1] = path
+  end
+end
+for _, path in ipairs(appliedFiles) do addRollbackPath(path) end
+for _, path in ipairs(staleFiles) do addRollbackPath(path) end
+
+local snapshot = {}
+for _, path in ipairs(rollbackPaths) do
+  local oldBody = readFile(path)
+  snapshot[path] = oldBody ~= nil and oldBody or false
+end
+local oldManagedBody = readFile(MANAGED_FILE)
+
+local appliedCount = 0
+local applyOk, applyErr = pcall(function()
+  for _, path in ipairs(appliedFiles) do
+    -- Delete just this old file before writing its replacement. Peak disk usage
+    -- is therefore approximately the installed project size, not 2x the size.
+    if not safeDelete(path) then
+      error("Could not remove old file before update: " .. path, 0)
+    end
+
+    local ok, err = writeFile(path, downloaded[path])
+    if not ok then
+      error(("Could not write %s: %s"):format(path, tostring(err)), 0)
+    end
+    appliedCount = appliedCount + 1
+  end
+
+  for _, path in ipairs(staleFiles) do
+    if not safeDelete(path) then
+      error("Could not remove obsolete managed file: " .. path, 0)
+    end
+  end
+
+  local manifestOk, manifestErr = writeFile(
+    MANAGED_FILE,
+    managedBody(appliedFiles)
+  )
+  if not manifestOk then
+    error("Could not update managed-file manifest: " .. tostring(manifestErr), 0)
+  end
+end)
+
+if not applyOk then
+  print("")
+  print("APPLY FAILED - restoring previous installation...")
+
+  local restored, restoreErr = restoreSnapshot(snapshot, rollbackPaths)
+  local metadataRestored = safeDelete(MANAGED_FILE)
+  if metadataRestored and oldManagedBody ~= nil then
+    metadataRestored = select(1, writeFile(MANAGED_FILE, oldManagedBody))
+  end
+
+  if not restored or not metadataRestored then
+    error(
+      "Update failed: " .. tostring(applyErr)
+      .. "\nRollback also failed: " .. tostring(restoreErr or "managed metadata")
+      .. "\nRecovery marker retained at " .. INSTALL_MARKER,
+      0
+    )
+  end
+
+  safeDelete(INSTALL_MARKER)
+  error("Update failed and was rolled back: " .. tostring(applyErr), 0)
+end
+
+if not safeDelete(INSTALL_MARKER) then
+  error(
+    "Install completed but recovery marker could not be removed: "
+      .. INSTALL_MARKER,
+    0
+  )
+end
 
 print("")
 print(("Install complete. Updated %d files."):format(appliedCount))
 print("Installed commit: " .. targetSha:sub(1, 12))
 
 local mechanicsVersion = "unknown"
-if fs.exists("mechanics_test.lua") then
+if safeExists("mechanics_test.lua") then
   local handle = fs.open("mechanics_test.lua", "r")
   if handle then
     local body = handle.readAll()

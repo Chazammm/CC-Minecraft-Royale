@@ -117,7 +117,7 @@ local function decodeGithub(body, context)
     return decoded
 end
 
-local function commitFiles(token, files, message)
+local function commitFilesOnce(token, files, message)
     -- Git Data API lets history + latest move in one commit, avoiding two
     -- report-only commits for every benchmark upload.
     local ok, code, body = githubGet(
@@ -239,6 +239,20 @@ local function commitFiles(token, files, message)
     end
 
     return true, commit.sha
+end
+
+local function commitFiles(token, files, message)
+    local ok, result = commitFilesOnce(token, files, message)
+    if ok then return true, result end
+
+    -- A report upload may race with a normal code push or another report.
+    -- The non-force ref update fails safely; rebuild once on the new HEAD
+    -- instead of making the user manually rerun the whole benchmark sync.
+    if tostring(result):find("Could not advance", 1, true) then
+        return commitFilesOnce(token, files, message)
+    end
+
+    return false, result
 end
 
 local function epochStamp()
@@ -372,22 +386,66 @@ function M.syncAll()
     if not token then return false, tokenErr end
 
     local stamp = epochStamp()
-    local uploaded = {}
+    local pending = {}
+    local commitEntries = {}
     local failures = {}
 
     for _, report in ipairs(REPORTS) do
         if fs.exists(report.path) and not fs.isDir(report.path) then
-            local ok, result = M.upload(report.kind, report.path, token, stamp)
-            if ok then
-                uploaded[#uploaded + 1] = result
+            local content, readErr = readAll(report.path)
+            if content then
+                local fileName = fs.getName(report.path)
+                local historyPath =
+                    ("reports/history/%s/%s_%s"):format(
+                        report.kind,
+                        stamp,
+                        fileName
+                    )
+                local latestPath = "reports/latest/" .. fileName
+
+                commitEntries[#commitEntries + 1] = {
+                    path = historyPath,
+                    content = content,
+                }
+                commitEntries[#commitEntries + 1] = {
+                    path = latestPath,
+                    content = content,
+                }
+                pending[#pending + 1] = {
+                    kind = report.kind,
+                    localPath = report.path,
+                    historyPath = historyPath,
+                    latestPath = latestPath,
+                    stamp = stamp,
+                }
             else
-                failures[#failures + 1] = report.path .. ": " .. tostring(result)
+                failures[#failures + 1] =
+                    report.path .. ": " .. tostring(readErr)
             end
         end
     end
 
-    if #uploaded == 0 and #failures == 0 then
+    if #pending == 0 and #failures == 0 then
         return false, "No report files found yet."
+    end
+
+    local uploaded = {}
+    if #pending > 0 then
+        local ok, commitOrErr = commitFiles(
+            token,
+            commitEntries,
+            ("Sync report batch %s"):format(stamp)
+        )
+
+        if ok then
+            for _, result in ipairs(pending) do
+                result.commitSha = commitOrErr
+                uploaded[#uploaded + 1] = result
+            end
+        else
+            failures[#failures + 1] =
+                "GitHub batch commit: " .. tostring(commitOrErr)
+        end
     end
 
     return #failures == 0, {
