@@ -9,7 +9,7 @@ local function read(path)
 end
 
 local installer = read("install.lua")
-local listBody = installer:match("local files%s*=%s*{(.-)%n}")
+local listBody = installer:match("local files%s*=%s*{(.-)\n}")
 assert(listBody, "Could not parse installer file list")
 
 local managed = {}
