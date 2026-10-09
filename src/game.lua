@@ -14,29 +14,97 @@ local function emptyPresets()
     }
 end
 
-local function loadPresets()
-    local presets = emptyPresets()
-    if not fs or not fs.exists or not fs.exists(PRESET_FILE) then return presets end
+local PRESET_TEMP_FILE = PRESET_FILE .. ".tmp"
+local PRESET_BACKUP_FILE = PRESET_FILE .. ".bak"
 
-    local handle = fs.open(PRESET_FILE, "r")
-    if not handle then return presets end
-    local raw = handle.readAll()
-    handle.close()
+local function presetPathExists(path)
+    if not fs or not fs.exists then return false end
+    local ok, exists = pcall(fs.exists, path)
+    return ok and exists == true
+end
+
+local function safePresetDelete(path)
+    if not presetPathExists(path) then return true end
+    local ok = pcall(fs.delete, path)
+    return ok
+end
+
+local function readPresetBody(path)
+    if not presetPathExists(path) then return nil end
+
+    if fs.isDir then
+        local okDir, isDir = pcall(fs.isDir, path)
+        if not okDir or isDir then return nil end
+    end
+
+    local okOpen, handle = pcall(fs.open, path, "r")
+    if not okOpen or not handle then return nil end
+
+    local okRead, raw = pcall(handle.readAll)
+    pcall(handle.close)
+    if not okRead then return nil end
+    return raw
+end
+
+local function decodePresets(raw)
+    if type(raw) ~= "string"
+        or not textutils
+        or not textutils.unserialize
+    then
+        return nil
+    end
 
     local ok, decoded = pcall(textutils.unserialize, raw)
-    if ok and type(decoded) == "table" then
-        for playerId = 1, 2 do
-            if type(decoded[playerId]) == "table" then
-                for slot = 1, 3 do
-                    if cards.isValidDeck(decoded[playerId][slot]) then
-                        presets[playerId][slot] = util.deepcopy(decoded[playerId][slot])
-                    end
+    if not ok or type(decoded) ~= "table" then return nil end
+
+    local presets = emptyPresets()
+    for playerId = 1, 2 do
+        if type(decoded[playerId]) == "table" then
+            for slot = 1, 3 do
+                if cards.isValidDeck(decoded[playerId][slot]) then
+                    presets[playerId][slot] =
+                        util.deepcopy(decoded[playerId][slot])
                 end
             end
         end
     end
-
     return presets
+end
+
+local function loadPresets()
+    if not fs or not fs.open or not fs.exists then
+        return emptyPresets()
+    end
+
+    local candidates = {
+        PRESET_FILE,
+        PRESET_BACKUP_FILE,
+        PRESET_TEMP_FILE,
+    }
+
+    for index, path in ipairs(candidates) do
+        local presets = decodePresets(readPresetBody(path))
+        if presets then
+            if index > 1 and fs.move and fs.delete then
+                -- Recover a fully serialized transaction left behind by a
+                -- reboot/power loss between old->backup and temp->final.
+                safePresetDelete(PRESET_FILE)
+                local promoted = pcall(fs.move, path, PRESET_FILE)
+                if promoted then
+                    safePresetDelete(PRESET_BACKUP_FILE)
+                    safePresetDelete(PRESET_TEMP_FILE)
+                end
+            elseif index == 1 then
+                -- A valid final file wins; stale transaction debris can be
+                -- discarded without risking the recovered presets.
+                safePresetDelete(PRESET_BACKUP_FILE)
+                safePresetDelete(PRESET_TEMP_FILE)
+            end
+            return presets
+        end
+    end
+
+    return emptyPresets()
 end
 
 local function savePresets(presets)
@@ -51,46 +119,45 @@ local function savePresets(presets)
         return false
     end
 
-    local tempPath = PRESET_FILE .. ".tmp"
-    local backupPath = PRESET_FILE .. ".bak"
-    if fs.exists(tempPath) then fs.delete(tempPath) end
-    if fs.exists(backupPath) then fs.delete(backupPath) end
+    if not safePresetDelete(PRESET_TEMP_FILE)
+        or not safePresetDelete(PRESET_BACKUP_FILE)
+    then
+        return false
+    end
 
-    local handle = fs.open(tempPath, "w")
-    if not handle then return false end
+    local okOpen, handle = pcall(fs.open, PRESET_TEMP_FILE, "w")
+    if not okOpen or not handle then return false end
 
     local ok, serialized = pcall(textutils.serialize, presets)
-    if ok then
-        ok = pcall(handle.write, serialized)
-    end
+    if ok then ok = pcall(handle.write, serialized) end
     pcall(handle.close)
 
     if not ok then
-        if fs.exists(tempPath) then fs.delete(tempPath) end
+        safePresetDelete(PRESET_TEMP_FILE)
         return false
     end
 
     -- Move the old valid file aside only after the replacement has been fully
     -- written. A failed final move can then restore the previous presets.
-    if fs.exists(PRESET_FILE) then
-        local movedOld = pcall(fs.move, PRESET_FILE, backupPath)
+    if presetPathExists(PRESET_FILE) then
+        local movedOld = pcall(fs.move, PRESET_FILE, PRESET_BACKUP_FILE)
         if not movedOld then
-            fs.delete(tempPath)
+            safePresetDelete(PRESET_TEMP_FILE)
             return false
         end
     end
 
-    local movedNew = pcall(fs.move, tempPath, PRESET_FILE)
+    local movedNew = pcall(fs.move, PRESET_TEMP_FILE, PRESET_FILE)
     if not movedNew then
-        if fs.exists(PRESET_FILE) then fs.delete(PRESET_FILE) end
-        if fs.exists(backupPath) then
-            pcall(fs.move, backupPath, PRESET_FILE)
+        safePresetDelete(PRESET_FILE)
+        if presetPathExists(PRESET_BACKUP_FILE) then
+            pcall(fs.move, PRESET_BACKUP_FILE, PRESET_FILE)
         end
-        if fs.exists(tempPath) then fs.delete(tempPath) end
+        safePresetDelete(PRESET_TEMP_FILE)
         return false
     end
 
-    if fs.exists(backupPath) then fs.delete(backupPath) end
+    safePresetDelete(PRESET_BACKUP_FILE)
     return true
 end
 

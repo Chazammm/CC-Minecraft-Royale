@@ -5,28 +5,58 @@ local pixelArena = require("src.pixel_arena")
 
 local render = {}
 
-local function newBuffer(width, height, defaultFg, defaultBg, skipZone)
-    local buffer = {
-        width = width,
-        height = height,
-        chars = {},
-        fg = {},
-        bg = {},
-    }
+local layoutCache = setmetatable({}, { __mode = "k" })
+local bufferCache = setmetatable({}, { __mode = "k" })
+
+local function newBuffer(
+    width,
+    height,
+    defaultFg,
+    defaultBg,
+    skipZone,
+    reusable
+)
+    local buffer = reusable
+    if not buffer
+        or buffer.width ~= width
+        or buffer.height ~= height
+    then
+        buffer = {
+            width = width,
+            height = height,
+            chars = {},
+            fg = {},
+            bg = {},
+            flushChars = {},
+            flushFg = {},
+            flushBg = {},
+        }
+    end
+
+    buffer.width = width
+    buffer.height = height
 
     for y = 1, height do
         local skipped = skipZone
             and y >= skipZone.y1
             and y <= skipZone.y2
 
-        if not skipped then
-            buffer.chars[y] = {}
-            buffer.fg[y] = {}
-            buffer.bg[y] = {}
+        if skipped then
+            buffer.chars[y] = nil
+            buffer.fg[y] = nil
+            buffer.bg[y] = nil
+        else
+            local chars = buffer.chars[y] or {}
+            local fg = buffer.fg[y] or {}
+            local bg = buffer.bg[y] or {}
+            buffer.chars[y] = chars
+            buffer.fg[y] = fg
+            buffer.bg[y] = bg
+
             for x = 1, width do
-                buffer.chars[y][x] = " "
-                buffer.fg[y][x] = defaultFg or colors.white
-                buffer.bg[y][x] = defaultBg or colors.black
+                chars[x] = " "
+                fg[x] = defaultFg or colors.white
+                bg[x] = defaultBg or colors.black
             end
         end
     end
@@ -77,9 +107,12 @@ local function flush(buffer, monitor, skipZone)
             and y <= skipZone.y2
 
         if not skipped then
-            local chars = {}
-            local fg = {}
-            local bg = {}
+            local chars = buffer.flushChars[y] or {}
+            local fg = buffer.flushFg[y] or {}
+            local bg = buffer.flushBg[y] or {}
+            buffer.flushChars[y] = chars
+            buffer.flushFg[y] = fg
+            buffer.flushBg[y] = bg
 
             for x = 1, buffer.width do
                 chars[x] = buffer.chars[y][x]
@@ -95,6 +128,14 @@ end
 
 function render.layoutFor(monitor)
     local width, height = monitor.getSize()
+    local cached = layoutCache[monitor]
+    if cached
+        and cached.width == width
+        and cached.height == height
+    then
+        return cached
+    end
+
     local handHeight = math.min(8, math.max(6, math.floor(height * 0.16)))
     local arenaBottom = height - handHeight
 
@@ -167,7 +208,29 @@ function render.layoutFor(monitor)
             y2 = height - 2,
         },
         resultButtons = {},
+        compactLobby = height < 52,
     }
+
+    if layout.compactLobby then
+        -- The collection/deck/evolution area ends at row 38. On the advertised
+        -- 42-row minimum, compress the lower controls to one row each instead
+        -- of letting their old three-row boxes overlap deck/evolution touches.
+        layout.infoButton.y1 = height - 3
+        layout.infoButton.y2 = height - 3
+        layout.modeButton.y1 = height - 2
+        layout.modeButton.y2 = height - 2
+        layout.rulesetButton.y1 = height - 2
+        layout.rulesetButton.y2 = height - 2
+        layout.botDifficultyButton.y1 = height - 1
+        layout.botDifficultyButton.y2 = height - 1
+        layout.readyButton.y1 = height
+        layout.readyButton.y2 = height
+        layout.rulesetBackButton.y1 = height
+        layout.rulesetBackButton.y2 = height
+        layout.opponentStatusY = height - 1
+    else
+        layout.opponentStatusY = layout.readyButton.y1 - 2
+    end
 
     local collectionStartY = 5
     local collectionCellH = 5
@@ -281,6 +344,7 @@ function render.layoutFor(monitor)
         y2 = height - 1,
     }
 
+    layoutCache[monitor] = layout
     return layout
 end
 
@@ -1445,7 +1509,7 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
     if state.gameMode ~= "bot" then
         centered(
             buffer,
-            layout.readyButton.y1 - 2,
+            layout.opponentStatusY or (layout.readyButton.y1 - 2),
             opponentText,
             opponentReady and colors.lime or colors.red,
             colors.black
@@ -1562,8 +1626,10 @@ function render.draw(monitor, state, playerId, monitorName)
         height,
         colors.white,
         colors.black,
-        isArenaFrame and layout.arena or nil
+        isArenaFrame and layout.arena or nil,
+        bufferCache[monitor]
     )
+    bufferCache[monitor] = buffer
 
     if state.phase == "lobby" then
         if state.players[playerId].rulesetOpen then

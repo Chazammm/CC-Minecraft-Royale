@@ -5,14 +5,41 @@ local pixelArena = require("src.pixel_arena")
 
 local render = {}
 
-local function newBuffer(width, height)
-    local b = { width = width, height = height, chars = {}, fg = {}, bg = {} }
+local layoutCache = setmetatable({}, { __mode = "k" })
+local bufferCache = setmetatable({}, { __mode = "k" })
+
+local function newBuffer(width, height, skipZone, reusable)
+    local b = reusable
+    if not b or b.width ~= width or b.height ~= height then
+        b = {
+            width = width,
+            height = height,
+            chars = {},
+            fg = {},
+            bg = {},
+            flushChars = {},
+            flushFg = {},
+            flushBg = {},
+        }
+    end
+
     for y = 1, height do
-        b.chars[y], b.fg[y], b.bg[y] = {}, {}, {}
-        for x = 1, width do
-            b.chars[y][x] = " "
-            b.fg[y][x] = colors.white
-            b.bg[y][x] = colors.black
+        local skipped = skipZone
+            and y >= skipZone.y1
+            and y <= skipZone.y2
+
+        if skipped then
+            b.chars[y], b.fg[y], b.bg[y] = nil, nil, nil
+        else
+            local chars = b.chars[y] or {}
+            local fg = b.fg[y] or {}
+            local bg = b.bg[y] or {}
+            b.chars[y], b.fg[y], b.bg[y] = chars, fg, bg
+            for x = 1, width do
+                chars[x] = " "
+                fg[x] = colors.white
+                bg[x] = colors.black
+            end
         end
     end
     return b
@@ -21,6 +48,7 @@ end
 local function setCell(b, x, y, ch, fg, bg)
     x, y = math.floor(x), math.floor(y)
     if x < 1 or x > b.width or y < 1 or y > b.height then return end
+    if not b.chars[y] then return end
     b.chars[y][x] = (ch or " "):sub(1, 1)
     if fg then b.fg[y][x] = fg end
     if bg then b.bg[y][x] = bg end
@@ -52,7 +80,10 @@ local function flush(b, monitor, skipZone)
             and y >= skipZone.y1
             and y <= skipZone.y2
         if not skipped then
-            local chars, fg, bg = {}, {}, {}
+            local chars = b.flushChars[y] or {}
+            local fg = b.flushFg[y] or {}
+            local bg = b.flushBg[y] or {}
+            b.flushChars[y], b.flushFg[y], b.flushBg[y] = chars, fg, bg
             for x = 1, b.width do
                 chars[x] = b.chars[y][x]
                 fg[x] = colors.toBlit(b.fg[y][x])
@@ -79,6 +110,10 @@ end
 
 function render.layoutFor(monitor)
     local w, h = monitor.getSize()
+    local cached = layoutCache[monitor]
+    if cached and cached.width == w and cached.height == h then
+        return cached
+    end
 
     local layout = {
         width = w,
@@ -108,6 +143,7 @@ function render.layoutFor(monitor)
         }
     end
 
+    layoutCache[monitor] = layout
     return layout
 end
 
@@ -158,8 +194,9 @@ local scenarioIds = { "full", "princess", "king", "single_tower", "empty" }
 
 function render.draw(monitor, state, viewerId, ui)
     local w, h = monitor.getSize()
-    local b = newBuffer(w, h)
     local layout = render.layoutFor(monitor)
+    local b = newBuffer(w, h, layout.arena, bufferCache[monitor])
+    bufferCache[monitor] = b
 
     centered(b, 1, "ADMIN SANDBOX", colors.orange, colors.black)
     local botStatus = ui.bot and ui.bot.enabled

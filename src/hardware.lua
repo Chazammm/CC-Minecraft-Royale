@@ -42,6 +42,10 @@ function hardware.init()
         monitorNames[2] = found[2]
     end
 
+    if monitorNames[1] == monitorNames[2] then
+        error("Player 1 and Player 2 must use two different monitor peripherals.")
+    end
+
     local monitors = {}
     for playerId = 1, 2 do
         local name = monitorNames[playerId]
