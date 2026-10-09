@@ -35,17 +35,43 @@ local function hit(z, x, y)
     return z and x >= z.x1 and x <= z.x2 and y >= z.y1 and y <= z.y2
 end
 
+local lastRenderError = nil
+
+local function reportRenderError(err)
+    local message = tostring(err or "unknown render error")
+    if message == lastRenderError then return end
+    lastRenderError = message
+    if printError then
+        printError("Admin render error: " .. message)
+    else
+        print("Admin render error: " .. message)
+    end
+end
+
 local function redraw()
     for viewerId = 1, 2 do
-        local ok = pcall(render.draw, hw.monitors[viewerId], state, viewerId, ui)
-        if not ok then return false end
+        local ok, err = pcall(
+            render.draw,
+            hw.monitors[viewerId],
+            state,
+            viewerId,
+            ui
+        )
+        if not ok then
+            reportRenderError(err)
+            return false
+        end
     end
+    lastRenderError = nil
     return true
 end
 
 local function refreshHardware()
     local ok, refreshed = pcall(hardware.init)
-    if not ok or not refreshed then return false end
+    if not ok or not refreshed then
+        reportRenderError(ok and "hardware rediscovery failed" or refreshed)
+        return false
+    end
     hw = refreshed
     return true
 end
