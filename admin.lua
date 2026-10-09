@@ -37,8 +37,17 @@ end
 
 local function redraw()
     for viewerId = 1, 2 do
-        render.draw(hw.monitors[viewerId], state, viewerId, ui)
+        local ok = pcall(render.draw, hw.monitors[viewerId], state, viewerId, ui)
+        if not ok then return false end
     end
+    return true
+end
+
+local function refreshHardware()
+    local ok, refreshed = pcall(hardware.init)
+    if not ok or not refreshed then return false end
+    hw = refreshed
+    return true
 end
 
 local function handleTouch(monitorName, x, y)
@@ -143,6 +152,9 @@ while true do
 
     elseif name == "monitor_resize" then
         redraw()
+
+    elseif name == "peripheral" or name == "peripheral_detach" then
+        if refreshHardware() then redraw() end
 
     elseif name == "key" then
         if e[2] == keys.space then
