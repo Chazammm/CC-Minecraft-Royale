@@ -263,7 +263,8 @@ local function runMatch(subjectDeck, opponentDeck, subjectCardId, subjectOwner, 
 
     state.players[1].ready = true
     state.players[2].ready = true
-    Game.startCountdown(state)
+    local started, startErr = Game.startHeadlessBattle(state)
+    if not started then error(startErr or "Could not start headless battle", 0) end
 
     Bot.beginMatch(bot1)
     Bot.beginMatch(bot2)
@@ -271,8 +272,7 @@ local function runMatch(subjectDeck, opponentDeck, subjectCardId, subjectOwner, 
     bot2.enabled = true
 
     local ticks = 0
-    local maxSimulationSeconds = config.MATCH.countdown
-        + config.MATCH.normalTime
+    local maxSimulationSeconds = config.MATCH.normalTime
         + config.MATCH.overtimeTime
         + 30
     local maxTicks = math.ceil(maxSimulationSeconds / SIM_DT)
@@ -295,7 +295,7 @@ local function runMatch(subjectDeck, opponentDeck, subjectCardId, subjectOwner, 
         end
     end
 
-    cooperativeYield(true)
+    cooperativeYield(false)
 
     if state.phase ~= "result" then
         Game.finish(state, nil, "EVOLUTION COMPARISON TIMEOUT")
