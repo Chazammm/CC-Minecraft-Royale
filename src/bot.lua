@@ -200,12 +200,13 @@ function Bot.prepare(bot, state)
     player.evolutionProgress = 0
     player.evolutionSelecting = false
 
-    if not Game.validateEvolutionSelection(state, bot.playerId) then
-        for _, cardId in ipairs(player.deck) do
-            if cards.isSelectable(cardId) and cards.hasEvolution(cardId) then
-                player.evolutionCardId = cardId
-                break
-            end
+    -- Bot Evolution choice must depend only on its own deck, not on a
+    -- previous human selection left on that player slot in the lobby.
+    player.evolutionCardId = nil
+    for _, cardId in ipairs(player.deck) do
+        if cards.isSelectable(cardId) and cards.hasEvolution(cardId) then
+            player.evolutionCardId = cardId
+            break
         end
     end
 
@@ -251,9 +252,9 @@ local function buildDecisionView(state, playerId)
                     view.ownTowerHp = view.ownTowerHp
                         + entity.hp / math.max(1, entity.maxHp)
                 elseif entity.kind == "unit" and not entity.passive then
-                    local advanced = playerId == 1
-                        and entity.y <= 112
-                        or entity.y >= 48
+                    local advanced =
+                        (playerId == 1 and entity.y <= 112)
+                        or (playerId == 2 and entity.y >= 48)
                     if advanced then
                         local hpRatio = (entity.hp or 0)
                             / math.max(1, entity.maxHp or 1)
@@ -747,7 +748,9 @@ local function counterpushLane(state, playerId, view)
             and entity.kind == "unit"
             and not entity.passive
         then
-            local advanced = playerId == 1 and entity.y <= 112 or entity.y >= 48
+            local advanced =
+                (playerId == 1 and entity.y <= 112)
+                or (playerId == 2 and entity.y >= 48)
             if advanced then
                 local hpRatio = (entity.hp or 0) / math.max(1, entity.maxHp or 1)
                 local score = hpRatio * ((entity.maxHp or 100) / 220)
