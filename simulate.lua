@@ -211,7 +211,9 @@ local function addDeckResult(deck, owner, state)
 end
 
 local function runMatch(deck1, deck2)
-    local state = Game.new()
+    local state = Game.new(nil, {
+        headlessSimulation = true,
+    })
     local bot1 = Bot.new(1, deck1)
     local bot2 = Bot.new(2, deck2)
 
