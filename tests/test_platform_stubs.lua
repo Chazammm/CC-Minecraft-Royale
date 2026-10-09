@@ -150,4 +150,36 @@ do
     http = oldHttp
 end
 
+do
+    package.loaded["src.benchmark_utils"] = nil
+    local benchmark = require("src.benchmark_utils")
+    local randomInt = benchmark.newRandomInt(1337)
+
+    local expected = { 8, 8, 5, 6, 10 }
+    for i = 1, #expected do
+        assertEq(
+            randomInt(10),
+            expected[i],
+            "Shared benchmark RNG must preserve the historical sequence"
+        )
+    end
+
+    local original = { "a", "b", "c", "d" }
+    local copied = benchmark.copy(original)
+    assertTrue(copied ~= original, "Benchmark copy must allocate a new list")
+    assertEq(copied[3], "c", "Benchmark copy must preserve list order")
+
+    assertEq(benchmark.mean({ 2, 4, 6 }), 4, "Benchmark mean must stay stable")
+    assertEq(
+        benchmark.sampleStdDev({ 2, 4, 6 }, 4),
+        2,
+        "Benchmark sample standard deviation must stay stable"
+    )
+    assertEq(
+        benchmark.critical95(10),
+        2.262,
+        "Benchmark 95% critical value must stay stable for ten samples"
+    )
+end
+
 print("Platform stub tests passed")
