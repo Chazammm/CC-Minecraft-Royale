@@ -263,20 +263,6 @@ local function buildDecisionView(state, playerId)
     return view
 end
 
-local function ownedVillagerCount(state, playerId)
-    local count = 0
-    for _, entity in ipairs(state.entities) do
-        if entity.alive
-            and entity.owner == playerId
-            and entity.sourceCardId == "villager"
-            and entity.emeraldBoost
-        then
-            count = count + 1
-        end
-    end
-    return count
-end
-
 local function ownEmeraldBoost(state, playerId)
     local boost = 0
     for _, entity in ipairs(state.entities) do
@@ -360,22 +346,22 @@ local function bestArrowTarget(state, playerId, view)
         local score = 0
 
         for _, target in ipairs(view.enemyNonTowers) do
-                    local dx = center.x - target.x
-                    local dy = center.y - target.y
-                    if math.sqrt(dx * dx + dy * dy) <= radius then
-                        if target.sourceCardId == "villager" and target.emeraldBoost then
-                            score = score + 9
-                        elseif target.name == "Bat Swarm" then
-                            score = score + 1.4
-                        elseif target.name == "Endermite" or target.name == "Baby Zombie" then
-                            score = score + 1.0
-                        elseif (target.hp or 9999) <= 185 then
-                            score = score + 1.25
-                        else
-                            score = score + 0.35
-                        end
-                    end
+            local dx = center.x - target.x
+            local dy = center.y - target.y
+            if math.sqrt(dx * dx + dy * dy) <= radius then
+                if target.sourceCardId == "villager" and target.emeraldBoost then
+                    score = score + 9
+                elseif target.name == "Bat Swarm" then
+                    score = score + 1.4
+                elseif target.name == "Endermite" or target.name == "Baby Zombie" then
+                    score = score + 1.0
+                elseif (target.hp or 9999) <= 185 then
+                    score = score + 1.25
+                else
+                    score = score + 0.35
+                end
             end
+        end
 
         if score > bestScore then
             bestScore = score
@@ -1018,17 +1004,50 @@ local function choosePlay(bot, state)
     local view = buildDecisionView(state, bot.playerId)
     local ctx = battlefield(state, bot.playerId, view)
 
+    local hasArrows = handHasCard(player, "arrows")
+    local saveNeedsArrowScore = cfg.saveForPower
+    if saveNeedsArrowScore then
+        local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
+        if ctx.primaryThreat
+            and ctx.primaryThreatScore >= (lateGame and 4.5 or 3)
+        then
+            -- shouldSaveForPowerCard returns before consulting arrowScore in
+            -- this exact situation.
+            saveNeedsArrowScore = false
+        end
+    end
+
     local arrowX, arrowY, arrowScore = nil, nil, 0
-    if cfg.saveForPower or handHasCard(player, "arrows") then
+    local playableArrows = hasArrows
+    if playableArrows and not saveNeedsArrowScore then
+        local arrowCost = Game.getCardPlayCost(
+            state,
+            bot.playerId,
+            "arrows"
+        ) or (ARROW_CARD and ARROW_CARD.cost) or math.huge
+        playableArrows = player.emeralds + 0.0001 >= arrowCost
+    end
+    if saveNeedsArrowScore or playableArrows then
         arrowX, arrowY, arrowScore = bestArrowTarget(state, bot.playerId, view)
     end
 
     -- Anvil prediction is one of the most expensive decision passes. Its
-    -- result is only consumed when Falling Anvil is actually in the current
-    -- four-card hand, so skipping it otherwise is behaviorally identical.
+    -- result is only consumed when Falling Anvil is both in hand and
+    -- affordable; scoreCard rejects it before reading anvilScore otherwise.
     local anvilX, anvilY, anvilScore = nil, nil, 0
     if handHasCard(player, "falling_anvil") then
-        anvilX, anvilY, anvilScore = bestAnvilTarget(state, bot.playerId, view)
+        local anvilCost = Game.getCardPlayCost(
+            state,
+            bot.playerId,
+            "falling_anvil"
+        ) or (ANVIL_CARD and ANVIL_CARD.cost) or math.huge
+        if player.emeralds + 0.0001 >= anvilCost then
+            anvilX, anvilY, anvilScore = bestAnvilTarget(
+                state,
+                bot.playerId,
+                view
+            )
+        end
     end
 
     if shouldSaveForPowerCard(bot, state, ctx, arrowScore, cfg, view) then
