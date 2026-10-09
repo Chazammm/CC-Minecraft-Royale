@@ -2023,11 +2023,17 @@ local function resolveFallingAnvil(state, pending)
 end
 
 local function updatePendingSpells(state, dt)
+    -- Keep a stable reference while compacting in place. Resolving a spell can
+    -- end the match (for example, an Anvil killing the King Tower), and
+    -- Game.finish() deliberately replaces state.pendingSpells with a fresh
+    -- empty table. In that case this update must stop immediately instead of
+    -- indexing the newly emptied table with the old count.
+    local pendingSpells = state.pendingSpells
     local write = 1
-    local count = #state.pendingSpells
+    local count = #pendingSpells
 
     for read = 1, count do
-        local pending = state.pendingSpells[read]
+        local pending = pendingSpells[read]
         pending.remaining = pending.remaining - dt
         if pending.remaining <= 0 then
             if pending.kind == "falling_anvil" then
@@ -2035,13 +2041,17 @@ local function updatePendingSpells(state, dt)
             elseif pending.kind == "evoker_fangs" then
                 resolveEvokerFangs(state, pending)
             end
+
+            if state.pendingSpells ~= pendingSpells then
+                return
+            end
         else
-            state.pendingSpells[write] = pending
+            pendingSpells[write] = pending
             write = write + 1
         end
     end
 
-    for i = write, count do state.pendingSpells[i] = nil end
+    for i = write, count do pendingSpells[i] = nil end
 end
 
 local function castArrows(state, playerId, card, x, y)
