@@ -342,6 +342,7 @@ do
     end
     assertTrue(elder and zombie, "Debug-kill aura regression needs both entities")
 
+    Game.debugSetPaused(state, false)
     Game.update(state, 0.10)
     assertEq(
         zombie.globalMoveSpeedFactor,
