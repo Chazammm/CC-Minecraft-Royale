@@ -40,16 +40,58 @@ local function loadPresets()
 end
 
 local function savePresets(presets)
-    if not fs or not fs.open or not textutils or not textutils.serialize then
+    if not fs
+        or not fs.open
+        or not fs.exists
+        or not fs.delete
+        or not fs.move
+        or not textutils
+        or not textutils.serialize
+    then
         return nil
     end
 
-    local handle = fs.open(PRESET_FILE, "w")
+    local tempPath = PRESET_FILE .. ".tmp"
+    local backupPath = PRESET_FILE .. ".bak"
+    if fs.exists(tempPath) then fs.delete(tempPath) end
+    if fs.exists(backupPath) then fs.delete(backupPath) end
+
+    local handle = fs.open(tempPath, "w")
     if not handle then return false end
 
-    local ok = pcall(handle.write, textutils.serialize(presets))
-    handle.close()
-    return ok
+    local ok, serialized = pcall(textutils.serialize, presets)
+    if ok then
+        ok = pcall(handle.write, serialized)
+    end
+    pcall(handle.close)
+
+    if not ok then
+        if fs.exists(tempPath) then fs.delete(tempPath) end
+        return false
+    end
+
+    -- Move the old valid file aside only after the replacement has been fully
+    -- written. A failed final move can then restore the previous presets.
+    if fs.exists(PRESET_FILE) then
+        local movedOld = pcall(fs.move, PRESET_FILE, backupPath)
+        if not movedOld then
+            fs.delete(tempPath)
+            return false
+        end
+    end
+
+    local movedNew = pcall(fs.move, tempPath, PRESET_FILE)
+    if not movedNew then
+        if fs.exists(PRESET_FILE) then fs.delete(PRESET_FILE) end
+        if fs.exists(backupPath) then
+            pcall(fs.move, backupPath, PRESET_FILE)
+        end
+        if fs.exists(tempPath) then fs.delete(tempPath) end
+        return false
+    end
+
+    if fs.exists(backupPath) then fs.delete(backupPath) end
+    return true
 end
 
 local function randomDeck()
