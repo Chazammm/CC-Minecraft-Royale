@@ -114,23 +114,43 @@ local function nowSeconds()
     return os.clock()
 end
 
+local lastRenderError = nil
+
+local function reportRenderError(err)
+    local message = tostring(err or "unknown render error")
+    if message == lastRenderError then return end
+    lastRenderError = message
+    if printError then
+        printError("Arena render error: " .. message)
+    else
+        print("Arena render error: " .. message)
+    end
+end
+
 local function redraw()
     for playerId = 1, 2 do
-        local ok = pcall(
+        local ok, err = pcall(
             render.draw,
             hw.monitors[playerId],
             state,
             playerId,
             hw.monitorNames[playerId]
         )
-        if not ok then return false end
+        if not ok then
+            reportRenderError(err)
+            return false
+        end
     end
+    lastRenderError = nil
     return true
 end
 
 local function refreshHardware()
     local ok, refreshed = pcall(hardware.init)
-    if not ok or not refreshed then return false end
+    if not ok or not refreshed then
+        reportRenderError(ok and "hardware rediscovery failed" or refreshed)
+        return false
+    end
 
     hw = refreshed
     music.speaker = hw.musicSpeaker
