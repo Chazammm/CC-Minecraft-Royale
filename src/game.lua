@@ -205,6 +205,7 @@ local function emitSound(state, name, volume, pitch)
 end
 
 local function addEffect(state, kind, x, y, radius, ttl, owner)
+    if state.headlessSimulation then return end
     local lifetime = ttl or 0.3
     table.insert(state.effects, {
         kind = kind,
@@ -218,6 +219,7 @@ local function addEffect(state, kind, x, y, radius, ttl, owner)
 end
 
 local function addBeamEffect(state, source, target)
+    if state.headlessSimulation then return end
     local lifetime = 0.12
     table.insert(state.effects, {
         kind = "guardian_beam",
@@ -233,6 +235,7 @@ local function addBeamEffect(state, source, target)
 end
 
 local function addFangEffect(state, kind, pending, ttl)
+    if state.headlessSimulation then return end
     local lifetime = ttl or 0.35
     table.insert(state.effects, {
         kind = kind,
@@ -264,6 +267,8 @@ local function makeBaseEntity(state, owner, kind, x, y)
         attackCooldownLeft = 0,
     }
     state.nextEntityId = state.nextEntityId + 1
+    state.entityById = state.entityById or {}
+    state.entityById[entity.id] = entity
     return entity
 end
 
@@ -381,6 +386,17 @@ end
 
 local function getEntityById(state, id)
     if not id then return nil end
+
+    -- All engine-created entities are indexed by id. This avoids repeated
+    -- linear scans for target locks and projectile tracking in headless
+    -- benchmarks without changing target selection or combat timing.
+    if state.entityById then
+        local entity = state.entityById[id]
+        if entity and entity.alive then return entity end
+        return nil
+    end
+
+    -- Compatibility fallback for any externally constructed legacy state.
     for _, entity in ipairs(state.entities) do
         if entity.id == id and entity.alive then
             return entity
@@ -1642,28 +1658,54 @@ local function updateProjectiles(state, dt)
         end
     end
 
-    local kept = {}
-    for _, projectile in ipairs(state.projectiles) do
-        if projectile.alive then table.insert(kept, projectile) end
+    local write = 1
+    local count = #state.projectiles
+    for read = 1, count do
+        local projectile = state.projectiles[read]
+        if projectile.alive then
+            state.projectiles[write] = projectile
+            write = write + 1
+        end
     end
-    state.projectiles = kept
+    for i = write, count do state.projectiles[i] = nil end
 end
 
 local function updateEffects(state, dt)
-    local kept = {}
-    for _, effect in ipairs(state.effects) do
-        effect.ttl = effect.ttl - dt
-        if effect.ttl > 0 then table.insert(kept, effect) end
+    if state.headlessSimulation then
+        -- Visual effects are intentionally absent in headless benchmarks.
+        return
     end
-    state.effects = kept
+
+    local write = 1
+    local count = #state.effects
+    for read = 1, count do
+        local effect = state.effects[read]
+        effect.ttl = effect.ttl - dt
+        if effect.ttl > 0 then
+            state.effects[write] = effect
+            write = write + 1
+        end
+    end
+    for i = write, count do state.effects[i] = nil end
 end
 
 local function cleanupEntities(state)
-    local kept = {}
-    for _, entity in ipairs(state.entities) do
-        if entity.alive then table.insert(kept, entity) end
+    local write = 1
+    local count = #state.entities
+    state.entityById = state.entityById or {}
+
+    for read = 1, count do
+        local entity = state.entities[read]
+        if entity.alive then
+            state.entities[write] = entity
+            state.entityById[entity.id] = entity
+            write = write + 1
+        else
+            state.entityById[entity.id] = nil
+        end
     end
-    state.entities = kept
+
+    for i = write, count do state.entities[i] = nil end
 end
 
 local function resetPlayersForMatch(state)
@@ -1686,7 +1728,10 @@ local function createTowers(state)
     end
 end
 
-function Game.new(soundCallback)
+function Game.new(soundCallback, options)
+    options = options or {}
+    local headlessSimulation = options.headlessSimulation == true
+
     local state = {
         phase = "lobby",
         players = {
@@ -1694,6 +1739,7 @@ function Game.new(soundCallback)
             [2] = newPlayer(2),
         },
         entities = {},
+        entityById = {},
         projectiles = {},
         effects = {},
         pendingSpells = {},
@@ -1709,7 +1755,8 @@ function Game.new(soundCallback)
         },
         winner = nil,
         resultReason = nil,
-        sound = soundCallback,
+        sound = headlessSimulation and nil or soundCallback,
+        headlessSimulation = headlessSimulation,
         adminMode = false,
         adminPaused = false,
         adminScenario = nil,
@@ -1719,7 +1766,9 @@ function Game.new(soundCallback)
         ruleset = util.deepcopy(config.RULESET_DEFAULTS or {
             evolutions = true,
         }),
-        deckPresets = loadPresets(),
+        -- Preset IO is irrelevant to automated matches and was previously
+        -- repeated once per simulated game.
+        deckPresets = headlessSimulation and emptyPresets() or loadPresets(),
         stats = newMatchStats(),
     }
 
@@ -1732,6 +1781,7 @@ end
 function Game.resetLobby(state)
     state.phase = "lobby"
     state.entities = {}
+    state.entityById = {}
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
@@ -1850,6 +1900,10 @@ local function startTiebreaker(state)
         end
     end
     state.entities = towers
+    state.entityById = {}
+    for _, tower in ipairs(towers) do
+        state.entityById[tower.id] = tower
+    end
 
     setFeedback(state.players[1], "TIEBREAKER - ALL TOWERS LOSE HP", 3)
     setFeedback(state.players[2], "TIEBREAKER - ALL TOWERS LOSE HP", 3)
@@ -3099,6 +3153,10 @@ function Game.debugClearUnits(state)
         end
     end
     state.entities = kept
+    state.entityById = {}
+    for _, entity in ipairs(kept) do
+        state.entityById[entity.id] = entity
+    end
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
