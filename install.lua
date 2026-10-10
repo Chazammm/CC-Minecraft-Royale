@@ -21,6 +21,7 @@ local files = {
   "src/game.lua",
   "src/bot.lua",
   "src/benchmark_utils.lua",
+  "src/report_output.lua",
   "src/headless_match.lua",
   "src/music.lua",
   "src/music_manifest.lua",
@@ -44,6 +45,12 @@ local LEGACY_BACKUP_DIR = ".cc_royale_backup"
 local INSTALL_MARKER = ".cc_royale_installing"
 local MANAGED_FILE = ".cc_royale_managed"
 local VERSION_FILE = ".cc_royale_version"
+-- Only explicitly retired project-owned paths may ever be deleted as stale.
+-- Manifest entries are not authoritative ownership: a corrupt/edited manifest
+-- must never permit deletion of player saves, credentials or arbitrary files.
+-- When removing a shipped file in a future release, add its exact old path here.
+local RETIRED_MANAGED_FILES = {}
+
 local HTTP_TIMEOUT = 15
 local STARTUP_MARKER = "-- CC-MINECRAFT-ROYALE-MANAGED-STARTUP"
 
@@ -127,6 +134,12 @@ local function isSafeManagedPath(path)
   return true
 end
 
+local function safeStalePath(path, currentManagedSet)
+  return isSafeManagedPath(path)
+    and RETIRED_MANAGED_FILES[path] == true
+    and not currentManagedSet[path]
+end
+
 local function readManagedFiles()
   local out = {}
   local raw = readFile(MANAGED_FILE)
@@ -176,7 +189,7 @@ local function resolveCommitSha()
     BRANCH
   )
 
-  local response, err = http.get({
+  local response, err, failedResponse = http.get({
     url = url,
     headers = {
       ["Accept"] = "application/vnd.github+json",
@@ -185,6 +198,9 @@ local function resolveCommitSha()
     timeout = HTTP_TIMEOUT,
   })
   if not response then
+    if failedResponse and failedResponse.close then
+      pcall(failedResponse.close)
+    end
     return nil, "Could not resolve repository HEAD: " .. tostring(err)
   end
 
@@ -214,11 +230,14 @@ local function downloadBody(base, path)
   local url = base .. path
   write(("Downloading %-24s ... "):format(path))
 
-  local response, err = http.get({
+  local response, err, failedResponse = http.get({
     url = url,
     timeout = HTTP_TIMEOUT,
   })
   if not response then
+    if failedResponse and failedResponse.close then
+      pcall(failedResponse.close)
+    end
     print("FAILED")
     return nil, (
       "Could not download %s\n%s\n"
@@ -365,7 +384,11 @@ for _, path in ipairs(previousManaged) do
   if not currentManagedSet[path]
       and not (path == "startup.lua" and preserveCustomStartup)
   then
-    staleFiles[#staleFiles + 1] = path
+    if safeStalePath(path, currentManagedSet) then
+      staleFiles[#staleFiles + 1] = path
+    else
+      print("Preserving unrecognized old manifest path: " .. tostring(path))
+    end
   end
 end
 
