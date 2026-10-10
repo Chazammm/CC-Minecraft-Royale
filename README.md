@@ -479,3 +479,18 @@ Diagnostics and all generated benchmark/mechanics reports include that
 `CODE_REVISION`, so results can be tied to the exact installed code. Report
 deduplication reads `reports/latest` from an immutable commit SHA instead of
 the moving `main` raw URL.
+
+### Audit findings and release verification
+
+All issues from the 2026-10-10 third audit have stable IDs in
+[`docs/AUDIT_REGISTER.md`](docs/AUDIT_REGISTER.md). Fixed defects/risks have
+specific automated regression tests; performance hypotheses and physical
+hardware checks are tracked separately. See [`QUALITY_GATE.md`](QUALITY_GATE.md)
+for evidence requirements and the release checklist. The GitHub PR template
+asks every subsequent change to document reproduction, parity and CI evidence.
+
+Benchmark commands now stage output as `*.tmp` and promote it to the normal
+report filename only after the run completes. If a rename fails, the previous
+complete report is restored. A stale `*.bak` is recovered at the start of the
+next invocation. Incomplete runs therefore do not silently replace valid
+reports. The repository sync runs only for successfully published results.
