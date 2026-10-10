@@ -576,4 +576,84 @@ do
     fs = oldFs
 end
 
+do
+    -- A failed pinned-raw dedupe request may include a CC:Tweaked failure
+    -- response handle. It must always be consumed/closed before falling back
+    -- to a normal upload attempt.
+    local oldHttp = http
+    local oldFs = fs
+    local oldTextutils = textutils
+    local oldReportSync = package.loaded["src.report_sync"]
+
+    local closed = 0
+    local function response(body, code)
+        return {
+            getResponseCode = function() return code or 200 end,
+            readAll = function() return body end,
+            close = function() closed = closed + 1 end,
+        }
+    end
+
+    fs = {
+        exists = function(path) return path == "balance_results.txt" end,
+        isDir = function() return false end,
+        open = function(path, mode)
+            if path == "balance_results.txt" and mode == "r" then
+                return {
+                    readAll = function() return "REPORT" end,
+                    close = function() end,
+                }
+            end
+            return nil
+        end,
+        getName = function(path) return path:match("([^/]+)$") end,
+    }
+
+    textutils = {
+        serializeJSON = function() return "{}" end,
+        unserializeJSON = function(body)
+            if body == "REF" then
+                return { object = { sha = "snapshot-sha" } }
+            end
+            return nil, "unexpected"
+        end,
+    }
+
+    local branchReads = 0
+    http = {
+        get = function(options)
+            local url = type(options) == "table" and options.url or options
+            if url:find("/git/ref/heads/main", 1, true) then
+                branchReads = branchReads + 1
+                if branchReads == 1 then return response("REF", 200) end
+                return nil, "offline"
+            end
+            if url:find("raw.githubusercontent.com", 1, true) then
+                return nil, "HTTP 503", response("FAILED", 503)
+            end
+            return nil, "offline"
+        end,
+        post = function() return nil, "offline" end,
+    }
+
+    package.loaded["src.report_sync"] = nil
+    local ReportSync = require("src.report_sync")
+    local ok = ReportSync.upload(
+        "balance",
+        "balance_results.txt",
+        "dummy-token-value-long-enough",
+        "123"
+    )
+    assertTrue(not ok, "Offline fallback upload should fail in this fixture")
+    assertTrue(
+        closed >= 2,
+        "Pinned raw failure response plus branch response must be closed"
+    )
+
+    package.loaded["src.report_sync"] = oldReportSync
+    http = oldHttp
+    fs = oldFs
+    textutils = oldTextutils
+end
+
 print("Platform stub tests passed")
