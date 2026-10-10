@@ -350,6 +350,7 @@ reportPrint(("Contexts/comparison: %d   Comparisons: %d   Total matches: %d   Se
 reportPrint("Each context uses the same 7-card shell, same opponent deck and same replacement slot.")
 reportPrint("Evolutions are disabled so this remains a pure BASE-card replacement benchmark.")
 reportPrint("A and B each play once as P1 and once as P2. Compared cards are excluded from all other slots.")
+reportPrint("Paired deterministic gameplay seeds are retained for future random combat mechanics; current combat itself is deterministic.")
 reportPrint("")
 
 local completedMatches = 0

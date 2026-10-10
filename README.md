@@ -462,3 +462,8 @@ behavior unchanged.
 The normal and admin monitor renderers now share their low-level buffer/text/
 blit implementation through `src/ui_buffer.lua`, eliminating duplicated UI
 plumbing while preserving their separate layouts.
+
+
+Benchmark note: headless runs retain an explicit gameplay-seed interface for
+future stochastic mechanics, but the current combat engine has no random combat
+branches. Deck/context sampling uses its own deterministic RNG.

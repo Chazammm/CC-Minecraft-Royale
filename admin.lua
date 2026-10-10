@@ -72,6 +72,10 @@ local function redraw()
     return true
 end
 
+local function isArenaMonitor(name)
+    return name == hw.monitorNames[1] or name == hw.monitorNames[2]
+end
+
 local function refreshHardware()
     local ok, refreshed = pcall(hardware.init)
     if not ok or not refreshed then
@@ -183,7 +187,7 @@ while true do
         handleTouch(e[2], e[3], e[4])
 
     elseif name == "monitor_resize" then
-        redraw()
+        if isArenaMonitor(e[2]) then redraw() end
 
     elseif name == "peripheral" or name == "peripheral_detach" then
         if refreshHardware() then redraw() end

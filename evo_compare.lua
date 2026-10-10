@@ -315,7 +315,7 @@ reportPrint(("Contexts/evolution: %d   Evolutions: %d   Total matches: %d   Seed
 ))
 reportPrint("Each context compares the exact same subject deck and opponent deck with side swapping.")
 reportPrint("BASE disables all Evolution Slots. EVO enables only the tested card's Evolution Slot.")
-reportPrint("Corresponding BASE/EVO matches are reseeded with the same gameplay RNG seed.")
+reportPrint("Corresponding BASE/EVO matches use the same deterministic gameplay seed; current combat has no random branches.")
 reportPrint("This measures the raw contribution of that Evolution Slot, not its opportunity cost versus another Evolution.")
 reportPrint("")
 

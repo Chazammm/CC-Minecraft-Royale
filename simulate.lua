@@ -238,7 +238,7 @@ else
     reportPrint("Using the original fixed Deck A vs Deck B comparison.")
 end
 reportPrint("")
-reportPrint("Side-swapped pairs reuse one gameplay RNG seed; deck sampling RNG stays independent.")
+reportPrint("Side-swapped pairs reuse one deterministic gameplay seed; current combat has no random branches, while deck sampling RNG stays independent.")
 
 local function gameplaySeedForPair(pairIndex)
     local value = (seed + pairIndex * 1000003) % 2147483646
