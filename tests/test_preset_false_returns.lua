@@ -28,6 +28,7 @@ local function fixture(files, opts)
         isDir=function()return false end,
         open=function(p,mode)
             if mode=="r" then
+                if opts.unreadablePath==p then return nil end
                 if stored[p]==nil then return nil end
                 return {readAll=function()return stored[p] end,close=function()end}
             end
@@ -148,6 +149,25 @@ do
     eq(presets.save(deck),false,"valid backup with invalid final blocks overwrite")
     eq(stored["deck_presets.db.bak"],"VALID_BACKUP",
         "valid backup survived attempted save")
+end
+
+-- Do not destroy an unreadable recovery candidate just because its body
+-- could not be decoded; on a real computer this may be I/O failure.
+do
+    local stored=fixture({["deck_presets.db.bak"]="VALID_BACKUP"},
+        {unreadablePath="deck_presets.db.bak"})
+    eq(presets.save(deck),false,"unreadable orphan backup must be protected")
+    eq(stored["deck_presets.db.bak"],"VALID_BACKUP",
+        "unreadable backup must not be deleted")
+end
+
+-- A clearly corrupt orphan temporary transaction is also nonrecoverable.
+-- Do not leave players locked out of saving fresh decks.
+do
+    local stored=fixture({["deck_presets.db.tmp"]="CORRUPTED"})
+    eq(presets.save(deck),true,"invalid orphan temp may be replaced")
+    eq(stored["deck_presets.db"],"NEW_VALID",
+        "fresh valid final replaces invalid orphan temp")
 end
 
 fs,textutils=oldFs,oldTextutils
