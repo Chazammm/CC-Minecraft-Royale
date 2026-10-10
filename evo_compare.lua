@@ -232,6 +232,7 @@ local function runMatch(
             -- Isolate exactly one variable: whether the tested subject card
             -- owns the Evolution Slot. Other Evolutions are disabled in both
             -- BASE and EVO variants.
+            matchState.ruleset.evolutions = true
             matchState.players[1].evolutionCardId = nil
             matchState.players[1].evolutionProgress = 0
             matchState.players[2].evolutionCardId = nil

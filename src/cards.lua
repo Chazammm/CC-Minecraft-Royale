@@ -1004,7 +1004,7 @@ local function applyExactStats(target, stats)
     end
 end
 
-local function resolveEvolutionCost(baseCost, evo, fallbackCost)
+local function resolveEvolutionCostRaw(baseCost, evo, fallbackCost)
     local cost = tonumber(fallbackCost) or tonumber(baseCost) or 0
     local hasExplicitCostRule = false
 
@@ -1048,7 +1048,11 @@ local function resolveEvolutionCost(baseCost, evo, fallbackCost)
         cost = tonumber(fallbackCost) or tonumber(baseCost) or 0
     end
 
-    return math.max(0, cost)
+    return cost
+end
+
+local function resolveEvolutionCost(baseCost, evo, fallbackCost)
+    return math.max(0, resolveEvolutionCostRaw(baseCost, evo, fallbackCost))
 end
 
 function cards.evolvedCopy(cardOrId)
@@ -1207,7 +1211,13 @@ function cards.validate()
     end
 
     local function validateSpawnReference(label, spec)
-        if type(spec) ~= "table" or spec.template == nil then return end
+        if spec == nil then return end
+        if type(spec) ~= "table" then
+            error("Invalid card data: " .. label .. " must be a table", 0)
+        end
+        if spec.template == nil then
+            error("Invalid card data: " .. label .. ".template is required", 0)
+        end
         if not cards.internalUnits[spec.template] then
             error(
                 "Invalid card data: " .. label
@@ -1223,6 +1233,155 @@ function cards.validate()
         finite(label .. "." .. key, value)
         if value < 0 then
             error("Invalid card data: " .. label .. "." .. key .. " must be >= 0", 0)
+        end
+    end
+
+    local function positiveField(label, payload, key)
+        local value = payload[key]
+        if value == nil then return end
+        finite(label .. "." .. key, value)
+        if value <= 0 then
+            error("Invalid card data: " .. label .. "." .. key .. " must be > 0", 0)
+        end
+    end
+
+    local function integerField(label, payload, key, allowZero)
+        local value = payload[key]
+        if value == nil then return end
+        finite(label .. "." .. key, value)
+        local minimum = allowZero and 0 or 1
+        if value < minimum or value ~= math.floor(value) then
+            error(
+                "Invalid card data: " .. label .. "." .. key
+                    .. " must be an integer >= " .. tostring(minimum),
+                0
+            )
+        end
+    end
+
+    local function mechanicTable(label, payload, key)
+        local value = payload[key]
+        if value == nil then return nil end
+        if type(value) ~= "table" then
+            error("Invalid card data: " .. label .. "." .. key .. " must be a table", 0)
+        end
+        return value
+    end
+
+    local function validateMechanics(label, payload)
+        local spawn = mechanicTable(label, payload, "periodicSpawn")
+        if spawn then
+            validateSpawnReference(label .. ".periodicSpawn", spawn)
+            positiveField(label .. ".periodicSpawn", spawn, "interval")
+            nonNegativeField(label .. ".periodicSpawn", spawn, "initialDelay")
+            integerField(label .. ".periodicSpawn", spawn, "count", false)
+            nonNegativeField(label .. ".periodicSpawn", spawn, "radius")
+            integerField(label .. ".periodicSpawn", spawn, "maxAlive", false)
+            integerField(label .. ".periodicSpawn", spawn, "maxTotal", false)
+        end
+
+        local split = mechanicTable(label, payload, "splitOnDeath")
+        if split then
+            validateSpawnReference(label .. ".splitOnDeath", split)
+            integerField(label .. ".splitOnDeath", split, "count", false)
+        end
+
+        local slow = mechanicTable(label, payload, "onHitSlow")
+        if slow then
+            finite(label .. ".onHitSlow.factor", slow.factor)
+            if slow.factor < 0 or slow.factor > 1 then
+                error("Invalid card data: " .. label .. ".onHitSlow.factor must be 0..1", 0)
+            end
+            positiveField(label .. ".onHitSlow", slow, "duration")
+        end
+
+        local explosion = mechanicTable(label, payload, "proximityExplosion")
+        if explosion then
+            nonNegativeField(label .. ".proximityExplosion", explosion, "triggerRange")
+            nonNegativeField(label .. ".proximityExplosion", explosion, "cancelRange")
+            positiveField(label .. ".proximityExplosion", explosion, "fuseTime")
+            nonNegativeField(label .. ".proximityExplosion", explosion, "radius")
+            nonNegativeField(label .. ".proximityExplosion", explosion, "damage")
+            if explosion.triggerRange ~= nil
+                and explosion.cancelRange ~= nil
+                and explosion.cancelRange < explosion.triggerRange
+            then
+                error(
+                    "Invalid card data: " .. label
+                        .. ".proximityExplosion.cancelRange must be >= triggerRange",
+                    0
+                )
+            end
+        end
+
+        local pulse = mechanicTable(label, payload, "groundPulse")
+        if pulse then
+            positiveField(label .. ".groundPulse", pulse, "interval")
+            nonNegativeField(label .. ".groundPulse", pulse, "damage")
+            nonNegativeField(label .. ".groundPulse", pulse, "radius")
+            nonNegativeField(label .. ".groundPulse", pulse, "initialDelay")
+        end
+
+        local beam = mechanicTable(label, payload, "beam")
+        if beam then
+            nonNegativeField(label .. ".beam", beam, "baseDps")
+            nonNegativeField(label .. ".beam", beam, "maxDps")
+            positiveField(label .. ".beam", beam, "rampSeconds")
+            positiveField(label .. ".beam", beam, "tick")
+            nonNegativeField(label .. ".beam", beam, "chargeLossOnHit")
+            if beam.baseDps ~= nil and beam.maxDps ~= nil
+                and beam.maxDps < beam.baseDps
+            then
+                error("Invalid card data: " .. label .. ".beam.maxDps must be >= baseDps", 0)
+            end
+        end
+
+        local teleport = mechanicTable(label, payload, "teleport")
+        if teleport then
+            nonNegativeField(label .. ".teleport", teleport, "minRange")
+            nonNegativeField(label .. ".teleport", teleport, "maxRange")
+            positiveField(label .. ".teleport", teleport, "cooldown")
+            nonNegativeField(label .. ".teleport", teleport, "stopRange")
+            if teleport.minRange ~= nil and teleport.maxRange ~= nil
+                and teleport.maxRange < teleport.minRange
+            then
+                error("Invalid card data: " .. label .. ".teleport.maxRange must be >= minRange", 0)
+            end
+        end
+
+        local fangs = mechanicTable(label, payload, "fangAttack")
+        if fangs then
+            nonNegativeField(label .. ".fangAttack", fangs, "damage")
+            nonNegativeField(label .. ".fangAttack", fangs, "warning")
+            nonNegativeField(label .. ".fangAttack", fangs, "closeRange")
+            nonNegativeField(label .. ".fangAttack", fangs, "ringRadius")
+            nonNegativeField(label .. ".fangAttack", fangs, "lineHalfWidth")
+        end
+
+        local hybrid = mechanicTable(label, payload, "hybridAttack")
+        if hybrid then
+            nonNegativeField(label .. ".hybridAttack", hybrid, "meleeRange")
+            nonNegativeField(label .. ".hybridAttack", hybrid, "meleeDamage")
+            positiveField(label .. ".hybridAttack", hybrid, "meleeCooldown")
+            nonNegativeField(label .. ".hybridAttack", hybrid, "rangedDamage")
+            positiveField(label .. ".hybridAttack", hybrid, "rangedCooldown")
+        end
+
+        nonNegativeField(label, payload, "projectileSplashRadius")
+        nonNegativeField(label, payload, "emeraldBoost")
+
+        if payload.globalEnemyMoveSlow ~= nil then
+            finite(label .. ".globalEnemyMoveSlow", payload.globalEnemyMoveSlow)
+            if payload.globalEnemyMoveSlow < 0 or payload.globalEnemyMoveSlow > 0.95 then
+                error("Invalid card data: " .. label .. ".globalEnemyMoveSlow must be 0..0.95", 0)
+            end
+        end
+
+        if payload.spikeReflectFlying ~= nil then
+            finite(label .. ".spikeReflectFlying", payload.spikeReflectFlying)
+            if payload.spikeReflectFlying < 0 or payload.spikeReflectFlying > 1 then
+                error("Invalid card data: " .. label .. ".spikeReflectFlying must be 0..1", 0)
+            end
         end
     end
 
@@ -1260,8 +1419,7 @@ function cards.validate()
             nonNegativeField(label, payload, "towerMultiplier")
         end
 
-        validateSpawnReference(label .. ".periodicSpawn", payload.periodicSpawn)
-        validateSpawnReference(label .. ".splitOnDeath", payload.splitOnDeath)
+        validateMechanics(label, payload)
     end
 
     for index, card in ipairs(cards.all) do
@@ -1308,15 +1466,65 @@ function cards.validate()
                 error("Invalid card data: " .. card.id .. " Evolution cycles invalid", 0)
             end
 
-            local evoCost = cards.evolutionCost(card)
-            finite(card.id .. ".evolution.cost", evoCost)
-            if evoCost < 0 then
+            local evo = card.evolution
+            local function optionalFiniteCost(name, value)
+                if value == nil then return end
+                finite(name, value)
+            end
+
+            optionalFiniteCost(card.id .. ".evolution.costMultiplier", evo.costMultiplier)
+            optionalFiniteCost(card.id .. ".evolution.costDelta", evo.costDelta)
+            if evo.costMultiplier ~= nil and evo.costMultiplier < 0 then
+                error("Invalid card data: " .. card.id .. ".evolution.costMultiplier must be >= 0", 0)
+            end
+
+            if type(evo.cost) == "number" then
+                finite(card.id .. ".evolution.cost", evo.cost)
+            elseif evo.cost ~= nil then
+                if type(evo.cost) ~= "table" then
+                    error("Invalid card data: " .. card.id .. ".evolution.cost must be a number or table", 0)
+                end
+                optionalFiniteCost(card.id .. ".evolution.cost.multiplier", evo.cost.multiplier)
+                optionalFiniteCost(card.id .. ".evolution.cost.delta", evo.cost.delta)
+                optionalFiniteCost(card.id .. ".evolution.cost.set", evo.cost.set)
+                if evo.cost.multiplier ~= nil and evo.cost.multiplier < 0 then
+                    error("Invalid card data: " .. card.id .. ".evolution.cost.multiplier must be >= 0", 0)
+                end
+            end
+
+            local fallbackCost = card.cost
+            if type(evo.card) == "table" then
+                local multipliers = evo.card.multipliers
+                if type(multipliers) == "table" and multipliers.cost ~= nil then
+                    finite(card.id .. ".evolution.card.multipliers.cost", multipliers.cost)
+                    if multipliers.cost < 0 then
+                        error("Invalid card data: " .. card.id .. ".evolution.card.multipliers.cost must be >= 0", 0)
+                    end
+                    fallbackCost = fallbackCost * multipliers.cost
+                end
+                local overrides = evo.card.overrides
+                if type(overrides) == "table" and overrides.cost ~= nil then
+                    finite(card.id .. ".evolution.card.overrides.cost", overrides.cost)
+                    fallbackCost = overrides.cost
+                end
+            end
+            if type(evo.patch) == "table" and evo.patch.cost ~= nil then
+                finite(card.id .. ".evolution.patch.cost", evo.patch.cost)
+                fallbackCost = evo.patch.cost
+            end
+
+            local rawEvoCost = resolveEvolutionCostRaw(card.cost, evo, fallbackCost)
+            finite(card.id .. ".evolution.resolvedCost", rawEvoCost)
+            if rawEvoCost < 0 then
                 error(
                     "Invalid card data: " .. card.id
-                        .. ".evolution.cost must be >= 0",
+                        .. " Evolution cost resolves below zero",
                     0
                 )
             end
+
+            local evoCost = cards.evolutionCost(card)
+            finite(card.id .. ".evolution.cost", evoCost)
 
             local abilities = card.evolution.abilities
             if type(abilities) == "table" then
@@ -1350,19 +1558,7 @@ function cards.validate()
         if type(id) ~= "string" or id == "" or type(unit) ~= "table" then
             error("Invalid internal unit data", 0)
         end
-        finite("internalUnits." .. id .. ".maxHp", unit.maxHp)
-        if unit.maxHp <= 0 then
-            error("Invalid internal unit data: " .. id .. ".maxHp must be > 0", 0)
-        end
-        if unit.attackCooldown ~= nil then
-            finite("internalUnits." .. id .. ".attackCooldown", unit.attackCooldown)
-            if unit.attackCooldown <= 0 then
-                error(
-                    "Invalid internal unit data: " .. id .. ".attackCooldown must be > 0",
-                    0
-                )
-            end
-        end
+        validatePayload("internalUnits." .. id, unit, "unit")
     end
 
     return true

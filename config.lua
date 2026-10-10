@@ -96,6 +96,48 @@ function config.validate(candidate)
     end
 
     positive("TEXT_SCALE", cfg.TEXT_SCALE)
+    if cfg.TEXT_SCALE < 0.5 or cfg.TEXT_SCALE > 5
+        or math.abs(cfg.TEXT_SCALE * 2 - math.floor(cfg.TEXT_SCALE * 2 + 0.5)) > 1e-9
+    then
+        error("Invalid config: TEXT_SCALE must be 0.5..5 in 0.5 steps", 0)
+    end
+
+    local monitorNames = cfg.MONITOR_NAMES
+    if type(monitorNames) ~= "table" then
+        error("Invalid config: MONITOR_NAMES must be a table", 0)
+    end
+    local monitor1, monitor2 = monitorNames[1], monitorNames[2]
+    if (monitor1 == nil) ~= (monitor2 == nil) then
+        error("Invalid config: MONITOR_NAMES must set both monitors or neither", 0)
+    end
+    if monitor1 ~= nil then
+        if type(monitor1) ~= "string" or monitor1 == ""
+            or type(monitor2) ~= "string" or monitor2 == ""
+        then
+            error("Invalid config: MONITOR_NAMES entries must be non-empty strings", 0)
+        end
+        if monitor1 == monitor2 then
+            error("Invalid config: MONITOR_NAMES must name two different monitors", 0)
+        end
+    end
+
+    positive("MIN_RECOMMENDED_WIDTH", cfg.MIN_RECOMMENDED_WIDTH)
+    positive("MIN_RECOMMENDED_HEIGHT", cfg.MIN_RECOMMENDED_HEIGHT)
+    if cfg.MIN_RECOMMENDED_WIDTH ~= math.floor(cfg.MIN_RECOMMENDED_WIDTH)
+        or cfg.MIN_RECOMMENDED_HEIGHT ~= math.floor(cfg.MIN_RECOMMENDED_HEIGHT)
+    then
+        error("Invalid config: recommended monitor dimensions must be integers", 0)
+    end
+
+    if type(cfg.RULESET_DEFAULTS) ~= "table"
+        or type(cfg.RULESET_DEFAULTS.evolutions) ~= "boolean"
+    then
+        error("Invalid config: RULESET_DEFAULTS.evolutions must be boolean", 0)
+    end
+    if type(cfg.DEBUG) ~= "boolean" then
+        error("Invalid config: DEBUG must be boolean", 0)
+    end
+
     positive("TICK_RATE", cfg.TICK_RATE)
     if cfg.TICK_RATE > 0.25 then
         error("Invalid config: TICK_RATE must be <= 0.25 seconds", 0)
@@ -169,6 +211,9 @@ function config.validate(candidate)
     positive("TOWERS.kingRange", cfg.TOWERS and cfg.TOWERS.kingRange)
 
     if cfg.MUSIC then
+        if cfg.MUSIC.enabled ~= nil and type(cfg.MUSIC.enabled) ~= "boolean" then
+            error("Invalid config: MUSIC.enabled must be boolean", 0)
+        end
         finiteNumber("MUSIC.volume", cfg.MUSIC.volume)
         if cfg.MUSIC.volume < 0 or cfg.MUSIC.volume > 3 then
             error("Invalid config: MUSIC.volume must be between 0 and 3", 0)

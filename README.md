@@ -435,3 +435,10 @@ Then run:
 - Balance is intentionally iterative and is validated with repeated bot simulations plus real-monitor testing
 
 See `TEST_PLAN.md` for the recommended in-game verification order.
+
+
+### Runtime hardening
+
+Card definitions are schema-validated at startup, including nested mechanics and
+raw Evolution-cost rules. Configuration validation rejects monitor text scales
+or partial monitor-name settings that CC:Tweaked cannot apply.

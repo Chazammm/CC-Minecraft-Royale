@@ -90,19 +90,41 @@ local function allLocalPacksAvailable()
     return true
 end
 
-local function remotePacksAvailable()
-    if not http or not http.request or not manifest.packs then return false end
+local function remotePackAvailable(pack)
+    return pack
+        and http
+        and http.request
+        and type(pack.remoteUrl) == "string"
+        and pack.remoteUrl ~= ""
+end
+
+local function allPacksHaveSource()
+    if not manifest.packs then return false end
     for _, pack in pairs(manifest.packs) do
-        if not pack.remoteUrl then return false end
+        if not localPackAvailable(pack) and not remotePackAvailable(pack) then
+            return false
+        end
     end
     return true
+end
+
+local function rememberAbandonedRequest(controller, pending)
+    controller.abandonedRequests = controller.abandonedRequests or {}
+    local serial = pending.serial or controller.requestSerial or 0
+    controller.abandonedRequests[pending.url] = serial
+
+    local minimumSerial = serial - 16
+    for url, oldSerial in pairs(controller.abandonedRequests) do
+        if oldSerial < minimumSerial then
+            controller.abandonedRequests[url] = nil
+        end
+    end
 end
 
 local function abandonPendingRequest(controller)
     local pending = controller.httpPending
     if not pending then return end
-    controller.abandonedRequests = controller.abandonedRequests or {}
-    controller.abandonedRequests[pending.url] = true
+    rememberAbandonedRequest(controller, pending)
     controller.httpPending = nil
 end
 
@@ -145,6 +167,7 @@ local function requestRemoteRange(controller, track, relativeOffset)
 
     controller.httpPending = {
         url = url,
+        serial = controller.requestSerial,
         startByte = startByte,
         trackIndex = controller.currentTrackIndex,
         relativeOffset = relativeOffset,
@@ -217,7 +240,7 @@ function Music.new(speaker, speakerName)
         active = false,
         available = speaker ~= nil
             and ok
-            and (allLocalPacksAvailable() or remotePacksAvailable()),
+            and allPacksHaveSource(),
         handle = nil,
         remaining = 0,
         bytesRead = 0,
@@ -240,12 +263,9 @@ function Music.new(speaker, speakerName)
 end
 
 function Music.refreshAvailability(controller)
-    local localReady = allLocalPacksAvailable()
-    local remoteReady = remotePacksAvailable()
-
     controller.available = controller.speaker ~= nil
         and controller.dfpwm ~= nil
-        and (localReady or remoteReady)
+        and allPacksHaveSource()
 
     if not controller.available then
         controller.error = "BATTLE MUSIC SOURCE UNAVAILABLE"

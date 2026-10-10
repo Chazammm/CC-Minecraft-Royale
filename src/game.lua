@@ -25,6 +25,10 @@ end
 
 local function safePresetDelete(path)
     if not presetPathExists(path) then return true end
+    if fs.isDir then
+        local okDir, isDir = pcall(fs.isDir, path)
+        if not okDir or isDir then return false end
+    end
     local ok = pcall(fs.delete, path)
     return ok
 end

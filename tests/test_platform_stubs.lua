@@ -514,4 +514,44 @@ do
     textutils = oldTextutils
 end
 
+do
+    -- Availability is per pack: a local first pack plus remote second pack is
+    -- a valid mixed source set.
+    local oldHttp = http
+    local oldFs = fs
+    local oldManifest = package.loaded["src.music_manifest"]
+    local oldMusic = package.loaded["src.music"]
+    local oldPreload = package.preload["cc.audio.dfpwm"]
+    local oldDfpwm = package.loaded["cc.audio.dfpwm"]
+
+    fs = {
+        exists = function(path) return path == "local-pack.dfpwm" end,
+        getSize = function() return 10 end,
+    }
+    http = { request = function() return true end }
+    package.loaded["src.music_manifest"] = {
+        packs = {
+            [1] = { path = "local-pack.dfpwm", size = 10 },
+            [2] = { path = "missing-pack.dfpwm", size = 20, remoteUrl = "https://example.invalid/p2" },
+        },
+        tracks = {},
+    }
+    package.loaded["src.music"] = nil
+    package.loaded["cc.audio.dfpwm"] = nil
+    package.preload["cc.audio.dfpwm"] = function()
+        return { make_decoder = function() return function(x) return x end end }
+    end
+
+    local Music = require("src.music")
+    local controller = Music.new({ playAudio = function() return true end }, "speaker")
+    assertTrue(controller.available, "Mixed local/remote music packs must be available")
+
+    package.loaded["src.music"] = oldMusic
+    package.loaded["src.music_manifest"] = oldManifest
+    package.loaded["cc.audio.dfpwm"] = oldDfpwm
+    package.preload["cc.audio.dfpwm"] = oldPreload
+    http = oldHttp
+    fs = oldFs
+end
+
 print("Platform stub tests passed")

@@ -427,4 +427,36 @@ do
     )
 end
 
+do
+    local badScale = util.deepcopy(config)
+    badScale.TEXT_SCALE = 0.7
+    assertTrue(not pcall(config.validate, badScale), "Non-half-step text scale must fail")
+
+    local halfMonitor = util.deepcopy(config)
+    halfMonitor.MONITOR_NAMES = { "monitor_a", nil }
+    assertTrue(
+        not pcall(config.validate, halfMonitor),
+        "MONITOR_NAMES must configure both arena monitors or neither"
+    )
+end
+
+do
+    local original = cards.get("endermite").evolution.cost
+    cards.get("endermite").evolution.cost = -2
+    local ok = pcall(cards.validate)
+    cards.get("endermite").evolution.cost = original
+    assertTrue(not ok, "Negative raw Evolution cost must be rejected")
+    assertTrue(cards.validate(), "Cards must validate after restoring Evolution cost")
+end
+
+do
+    local zombie = cards.get("zombie")
+    local old = zombie.unit.onHitSlow
+    zombie.unit.onHitSlow = { factor = -1, duration = 1 }
+    local ok = pcall(cards.validate)
+    zombie.unit.onHitSlow = old
+    assertTrue(not ok, "Invalid nested mechanic values must be rejected")
+    assertTrue(cards.validate(), "Cards must validate after restoring mechanic data")
+end
+
 print("Audit regression tests passed")

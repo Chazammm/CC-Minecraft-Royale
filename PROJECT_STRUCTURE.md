@@ -82,3 +82,11 @@ platform integration, and benchmark tooling can evolve independently.
    focused tests should go into separate files instead of growing test_v1.lua.
 7. Dev-only cards must not enter the normal selectable card pool or standard
    comparison tooling.
+
+
+## Runtime invariants
+
+- Card and internal-unit payloads are validated before play, including nested
+  combat mechanics and raw Evolution-cost rules.
+- CI keeps the primary Lua 5.4 suite and adds a Lua 5.2 compatibility guard for
+  Cobalt-oriented syntax/core behavior.
