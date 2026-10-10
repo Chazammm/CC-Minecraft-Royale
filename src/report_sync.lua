@@ -407,10 +407,18 @@ end
 -- rename. Treat it as a readable fallback until a subsequent setup restores
 -- it; never replace a present but unreadable active token implicitly.
 local function readStoredToken()
+    local primary, primaryErr = nil, nil
     if fs.exists(TOKEN_FILE) then
-        return readAll(TOKEN_FILE)
+        primary, primaryErr = readAll(TOKEN_FILE)
+        if primary and #trim(primary) >= 20 then return primary end
     end
-    return readAll(TOKEN_FILE .. ".bak")
+
+    -- A crash or partial write may leave a truncated active credential
+    -- alongside the last good, verified backup. Prefer a usable backup
+    -- rather than treating the damaged primary as the only possible token.
+    local backup, backupErr = readAll(TOKEN_FILE .. ".bak")
+    if backup and #trim(backup) >= 20 then return backup end
+    return primary or backup, primaryErr or backupErr
 end
 
 function M.isConfigured()
