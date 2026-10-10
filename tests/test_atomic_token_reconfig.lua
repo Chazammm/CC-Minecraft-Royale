@@ -13,6 +13,10 @@ local function check(ok,msg)
 end
 local function scenario(mode)
     local files={[TOKEN]=oldToken.."\n"}
+    if mode=="corrupt_active_backup" then
+        files[TOKEN]="TRUNCATED"
+        files[TOKEN..".bak"]=oldToken.."\n"
+    end
     local localDir=true
     fs={
         getDir=function()return ".cc_royale" end,
@@ -40,7 +44,9 @@ local function scenario(mode)
             local buffer=""
             return {
                 write=function(s)
-                    if mode=="write_false" then return false end
+                    if mode=="write_false" or mode=="corrupt_active_backup" then
+                        return false
+                    end
                     if mode=="truncated_write" then s=s:sub(1,5) end
                     buffer=buffer..s
                 end,
@@ -66,13 +72,22 @@ local function scenario(mode)
     if mode=="normal" then
         check(ok==true,"normal token replacement rejected: "..tostring(msg))
         check(files[TOKEN]==newToken.."\n","new token not committed")
+    elseif mode=="corrupt_active_backup" then
+        check(ok==false,"corrupt-primary reconfiguration failure must fail")
+        check(Sync.readToken()==oldToken,
+            "reconfiguration must not destroy valid recovery backup")
+        check(files[TOKEN..".bak"]==oldToken.."\n",
+            "valid previous credential backup was lost")
     else
         check(ok==false,mode.." must reject failed replacement")
         check(files[TOKEN]==oldToken.."\n",
             mode.." erased or modified previous working credential")
     end
 end
-for _,mode in ipairs({"write_false","truncated_write","noop_promotion","normal"}) do
+for _,mode in ipairs({
+    "write_false","truncated_write","noop_promotion",
+    "corrupt_active_backup","normal",
+}) do
     scenario(mode)
 end
 fs,http,textutils,write,read=oldFs,oldHttp,oldTextutils,oldWrite,oldRead
