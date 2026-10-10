@@ -89,6 +89,26 @@ parity tests. Failure simulations do not replace real power-loss,
 speaker/monitor or low-disk hardware testing. Full details:
 `docs/TRANSACTION_INTEGRITY_AUDIT_20261010.md`.
 
+## Repeated audit loop — 2026-10-10 (baseline `ac9e8952301b`)
+
+This sequence continued through multiple new red-before-fix reproductions, then
+stopped after an independent **125-case recovery matrix** plus all existing
+gameplay/CI regressions ran green. These tests do not prove global
+bug-freedom or real-world power-loss safety.
+
+| ID | Category / severity | Reproduction / evidence | Resolution | Regression / status |
+| --- | --- | --- | --- | --- |
+| AF-024 | CONFIRMED P2, degraded active GitHub token | After interrupted credential publication a truncated active token could coexist with a valid `.bak`. `readStoredToken()` preferred the unreadable/too-short primary and disabled uploading; token setup could also discard the good backup. Red CI `38075884598`, `38075960940`. | Prefer valid backup only when active token is missing/degraded; recover it before transaction cleanup, and assert preservation of usable content rather than a particular backup pathname. | `tests/test_token_corrupt_active_fallback.lua`, `tests/test_atomic_token_reconfig.lua` — FIXED_CI |
+| AF-025 | CONFIRMED P1, preset recovery after transient I/O failure | `presets.load()` could delete a temporarily unreadable primary `deck_presets.db` when restoring a valid `.tmp` or `.bak`, potentially losing newer contents. Red CI `38076121962`. | Return recoverable backup to memory, but do not promote/destructively clear an unreadable existing primary. | `tests/test_preset_false_returns.lua` — FIXED_CI |
+| AF-026 | CONFIRMED P1, report backup lost on unreadable primary | `reportOutput.start()` deleted a saved report `.bak` if the primary existed, without verifying it was readable. Red CI `38076184415`. | Reject unsafe report start, preserve primary and backup until the active report can actually be read. | `tests/test_report_transaction_integrity.lua` — FIXED_CI |
+| AF-027 | CONFIRMED P2, recovery cleanup erased unreadable copies | Successfully recovering a valid preset `.tmp` could discard an unreadable `.bak`, despite not knowing whether it contained older recoverable data. Red CI `38076254476`. | Only remove stale deck recovery artifacts after verifying they can be read. | `tests/test_preset_false_returns.lua`, `tests/test_preset_recovery_matrix.lua` — FIXED_CI |
+
+The matrix enumerates **125 combinations** of absent/valid A/valid B/
+corrupt/unreadable final, temporary and backup files, checking recovery
+priority, preservation of unreadable entries and no loss of the only
+recoverable deck. Tested on **Lua 5.2 and 5.4** as a permanent CI step.
+Full scope and stopping criteria: `docs/ITERATIVE_AUDIT_20261010.md`.
+
 ## Open follow-ups — not confirmed gameplay bugs
 
 | ID | Classification | Evidence / limitation | Next action and acceptance condition |
