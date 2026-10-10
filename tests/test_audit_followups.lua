@@ -532,7 +532,11 @@ do
     assertEq(#result.uploaded, 4, "All four reports should share the batch")
     assertEq(#result.failures, 0, "Batch report sync should have no failures")
     assertEq(rawGetCount, 4, "Batch sync should compare each remote latest once")
-    assertEq(getCount, 2, "Batch sync should read branch and parent only once")
+    assertEq(
+        getCount,
+        3,
+        "Batch sync should read one dedupe snapshot plus commit branch/parent"
+    )
     assertEq(blobCount, 8, "Four changed reports need history + latest blobs")
     assertEq(treeCount, 1, "Batch sync should create one tree")
     assertEq(commitCount, 1, "Batch sync should create one commit")

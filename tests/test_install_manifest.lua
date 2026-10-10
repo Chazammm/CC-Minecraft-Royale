@@ -92,6 +92,14 @@ for _, path in ipairs(entrypoints) do
 end
 
 assert(
+    managed["src/version.lua"],
+    "Installed revision helper must be shipped"
+)
+assert(
+    installer:find(".cc_royale_version", 1, true) ~= nil,
+    "Installer must persist the pinned commit revision"
+)
+assert(
     managed["src/spatial.lua"],
     "Spatial index module must be installed"
 )

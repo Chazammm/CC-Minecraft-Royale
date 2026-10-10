@@ -72,6 +72,22 @@ do
         2,
         "Monitor-to-player mapping must survive sorted discovery"
     )
+    assertTrue(
+        hardware.shouldRefreshForPeripheral(
+            hw,
+            "peripheral_detach",
+            "monitor_a"
+        ),
+        "Active arena monitor detach must trigger rediscovery"
+    )
+    assertTrue(
+        not hardware.shouldRefreshForPeripheral(
+            hw,
+            "peripheral",
+            "unrelated_modem"
+        ),
+        "Unrelated peripheral attach must not trigger full rediscovery"
+    )
 
     -- clear() must tolerate disappearing/broken monitor methods without
     -- crashing the outer shutdown/reconnect path.
@@ -255,8 +271,8 @@ do
     assertEq(result.commitSha, "new-commit", "Report sync must expose commit SHA")
     assertEq(
         #getUrls,
-        3,
-        "Report sync needs latest comparison plus branch + parent reads"
+        4,
+        "Report sync needs pinned latest snapshot plus commit branch/parent reads"
     )
     assertEq(#writeCalls, 5, "Two blobs + tree + commit + ref update expected")
 

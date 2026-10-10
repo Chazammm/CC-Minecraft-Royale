@@ -2,6 +2,7 @@ local cards = require("src.cards")
 local config = require("config")
 local benchmark = require("src.benchmark_utils")
 local Runner = require("src.headless_match")
+local version = require("src.version")
 
 local args = { ... }
 
@@ -340,6 +341,7 @@ local totalMatches = #comparisons * contextCount * 4
 liveHandle = fs and fs.open(RESULT_PATH, "w") or nil
 
 reportPrint("CC-Minecraft Royale controlled replacement analysis")
+reportPrint("CODE_REVISION|" .. version.read())
 reportPrint(("Tick: %.2fs"):format(SIM_DT))
 reportPrint(("Contexts/comparison: %d   Comparisons: %d   Total matches: %d   Seed: %d"):format(
     contextCount,

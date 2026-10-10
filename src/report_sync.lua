@@ -7,10 +7,9 @@ local BRANCH = "main"
 local TOKEN_DIR = ".cc_royale"
 local TOKEN_FILE = TOKEN_DIR .. "/github_token.txt"
 local API_BASE = ("https://api.github.com/repos/%s/%s"):format(OWNER, REPO)
-local RAW_BASE = ("https://raw.githubusercontent.com/%s/%s/%s/"):format(
+local RAW_ROOT = ("https://raw.githubusercontent.com/%s/%s/"):format(
     OWNER,
-    REPO,
-    BRANCH
+    REPO
 )
 
 local REPORTS = {
@@ -113,14 +112,21 @@ local function githubWrite(token, method, url, payload)
     return false, code, responseBody ~= "" and responseBody or tostring(err)
 end
 
-local function remoteLatestMatches(path, content)
+local function remoteLatestMatches(path, content, revision)
     if not http or not http.get then return false end
+    if type(revision) ~= "string" or revision == "" then return false end
 
-    local response = http.get({
-        url = RAW_BASE .. path,
+    local response, _, failedResponse = http.get({
+        url = RAW_ROOT .. revision .. "/" .. path,
         timeout = 10,
     })
-    if not response then return false end
+    if not response then
+        -- CC:Tweaked may return an HTTP failure handle even when the primary
+        -- response is nil. Consume/close it so repeated sync attempts cannot
+        -- leak response handles.
+        responseDetails(failedResponse)
+        return false
+    end
 
     local code = response.getResponseCode
         and select(1, response.getResponseCode())
@@ -142,6 +148,17 @@ local function decodeGithub(body, context)
             .. " JSON error: " .. tostring(decodeErr)
     end
     return decoded
+end
+
+local function branchHeadSha(token)
+    local ok, code, body = githubGet(
+        token,
+        API_BASE .. "/git/ref/heads/" .. BRANCH
+    )
+    if not ok or code ~= 200 then return nil end
+
+    local ref = decodeGithub(body, "branch ref")
+    return ref and ref.object and ref.object.sha or nil
 end
 
 local function commitFilesOnce(token, files, message)
@@ -395,7 +412,8 @@ function M.upload(kind, localPath, token, stamp)
     local historyPath = ("reports/history/%s/%s_%s"):format(kind, stamp, fileName)
     local latestPath = "reports/latest/" .. fileName
 
-    if remoteLatestMatches(latestPath, content) then
+    local snapshotSha = branchHeadSha(token)
+    if snapshotSha and remoteLatestMatches(latestPath, content, snapshotSha) then
         return true, {
             kind = kind,
             localPath = localPath,
@@ -441,6 +459,7 @@ function M.syncAll()
     if not token then return false, tokenErr end
 
     local stamp = epochStamp()
+    local snapshotSha = branchHeadSha(token)
     local pending = {}
     local skipped = {}
     local commitEntries = {}
@@ -459,7 +478,9 @@ function M.syncAll()
                     )
                 local latestPath = "reports/latest/" .. fileName
 
-                if remoteLatestMatches(latestPath, content) then
+                if snapshotSha
+                    and remoteLatestMatches(latestPath, content, snapshotSha)
+                then
                     skipped[#skipped + 1] = {
                         kind = report.kind,
                         localPath = report.path,

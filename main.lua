@@ -214,10 +214,14 @@ while true do
         end
 
     elseif name == "peripheral" or name == "peripheral_detach" then
-        -- Wired modem/monitor networks can briefly disappear while chunks
-        -- reload. Keep the game loop alive and adopt the new wrappers once
-        -- both arena monitors are visible again.
-        if refreshHardware() then redraw() end
+        -- Ignore unrelated modem/inventory/etc. events. Arena monitors and
+        -- speakers still trigger rediscovery so chunk/network reconnects are
+        -- adopted without restarting the game.
+        if hardware.shouldRefreshForPeripheral(hw, name, event[2])
+            and refreshHardware()
+        then
+            redraw()
+        end
 
     elseif name == "timer" and event[2] == tickTimer then
         local phaseBeforeTick = state.phase

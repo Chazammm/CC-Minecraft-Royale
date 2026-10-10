@@ -5,6 +5,7 @@ deck_presets.db.tmp
 deck_presets.db.bak
 .cc_royale_installing
 .cc_royale_managed
+.cc_royale_version
 
 # Local benchmark outputs (GitHub-synced copies live under reports/)
 balance_results.txt

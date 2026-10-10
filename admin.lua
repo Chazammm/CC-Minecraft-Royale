@@ -190,7 +190,11 @@ while true do
         if isArenaMonitor(e[2]) then redraw() end
 
     elseif name == "peripheral" or name == "peripheral_detach" then
-        if refreshHardware() then redraw() end
+        if hardware.shouldRefreshForPeripheral(hw, name, e[2])
+            and refreshHardware()
+        then
+            redraw()
+        end
 
     elseif name == "key" then
         if e[2] == keys.space then

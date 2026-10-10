@@ -3,6 +3,7 @@ local cards = require("src.cards")
 local config = require("config")
 local benchmark = require("src.benchmark_utils")
 local Runner = require("src.headless_match")
+local version = require("src.version")
 
 local args = { ... }
 
@@ -225,6 +226,7 @@ local function mixedDeckPair()
 end
 
 reportPrint("CC-Minecraft Royale balance benchmark")
+reportPrint("CODE_REVISION|" .. version.read())
 reportPrint(("Mode: %s   Matches: %d   Seed: %d   Tick: %.2fs"):format(
     string.upper(mode),
     matchCount,

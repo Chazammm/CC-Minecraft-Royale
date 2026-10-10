@@ -8,6 +8,7 @@ local files = {
   "admin.lua",
   "startup.lua",
   "src/util.lua",
+  "src/version.lua",
   "src/cards.lua",
   "lib/pixelbox_lite.lua",
   "src/pixel_arena.lua",
@@ -40,6 +41,7 @@ local LEGACY_STAGE_DIR = ".cc_royale_update"
 local LEGACY_BACKUP_DIR = ".cc_royale_backup"
 local INSTALL_MARKER = ".cc_royale_installing"
 local MANAGED_FILE = ".cc_royale_managed"
+local VERSION_FILE = ".cc_royale_version"
 local HTTP_TIMEOUT = 15
 local STARTUP_MARKER = "-- CC-MINECRAFT-ROYALE-MANAGED-STARTUP"
 
@@ -379,6 +381,7 @@ for _, path in ipairs(rollbackPaths) do
   snapshot[path] = oldBody ~= nil and oldBody or false
 end
 local oldManagedBody = readFile(MANAGED_FILE)
+local oldVersionBody = readFile(VERSION_FILE)
 
 local appliedCount = 0
 local applyOk, applyErr = pcall(function()
@@ -419,6 +422,19 @@ local applyOk, applyErr = pcall(function()
   if not manifestOk then
     error("Could not update managed-file manifest: " .. tostring(manifestErr), 0)
   end
+
+  local versionDeleted, versionDeleteErr = safeDeleteManagedFile(VERSION_FILE)
+  if not versionDeleted then
+    error(
+      "Could not replace install-version metadata: "
+        .. tostring(versionDeleteErr or "delete failed"),
+      0
+    )
+  end
+  local versionOk, versionErr = writeFile(VERSION_FILE, targetSha .. "\n")
+  if not versionOk then
+    error("Could not write install-version metadata: " .. tostring(versionErr), 0)
+  end
 end)
 
 if not applyOk then
@@ -426,10 +442,18 @@ if not applyOk then
   print("APPLY FAILED - restoring previous installation...")
 
   local restored, restoreErr = restoreSnapshot(snapshot, rollbackPaths)
-  local metadataRestored = safeDelete(MANAGED_FILE)
-  if metadataRestored and oldManagedBody ~= nil then
-    metadataRestored = select(1, writeFile(MANAGED_FILE, oldManagedBody))
+
+  local managedRestored = select(1, safeDeleteManagedFile(MANAGED_FILE))
+  if managedRestored and oldManagedBody ~= nil then
+    managedRestored = select(1, writeFile(MANAGED_FILE, oldManagedBody))
   end
+
+  local versionRestored = select(1, safeDeleteManagedFile(VERSION_FILE))
+  if versionRestored and oldVersionBody ~= nil then
+    versionRestored = select(1, writeFile(VERSION_FILE, oldVersionBody))
+  end
+
+  local metadataRestored = managedRestored and versionRestored
 
   if not restored or not metadataRestored then
     error(

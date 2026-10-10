@@ -472,3 +472,10 @@ branches. Deck/context sampling uses its own deterministic RNG.
 Refactor parity tests now verify that cleanup/respawn cycles cannot reorder
 ordered Spatial AoE relative to `state.entities`, and that the shared UI buffer
 retains skip-zone and dirty-row behavior in both generic and admin rendering.
+
+
+Installed builds now persist their pinned Git commit in `.cc_royale_version`.
+Diagnostics and all generated benchmark/mechanics reports include that
+`CODE_REVISION`, so results can be tied to the exact installed code. Report
+deduplication reads `reports/latest` from an immutable commit SHA instead of
+the moving `main` raw URL.

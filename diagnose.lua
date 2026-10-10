@@ -1,10 +1,12 @@
 local config = require("config")
 local hardware = require("src.hardware")
+local version = require("src.version")
 local function line()
   print("----------------------------------------")
 end
 
 print("CC-Minecraft Royale - Hardware Diagnostic")
+print("Installed revision: " .. version.read())
 line()
 
 local names = peripheral.getNames()

@@ -115,3 +115,11 @@ preset transaction paths occupied by directories.
 Entity payloads are not allowed to override engine-owned identity, ownership,
 position, target-lock or Spatial-index fields. This is enforced both by card
 schema validation and defensively by the spawn copier.
+
+
+- `src/version.lua` reads the installer-written `.cc_royale_version`
+  revision used by diagnostics and reports.
+- Peripheral reconnect handling filters unrelated peripheral events before
+  running full monitor/speaker rediscovery.
+- Report dedupe compares against a raw URL pinned to a resolved branch commit,
+  and closes HTTP failure handles defensively.

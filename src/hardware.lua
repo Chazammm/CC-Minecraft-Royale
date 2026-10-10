@@ -110,6 +110,44 @@ function hardware.init()
     }
 end
 
+local function listContains(list, name)
+    for _, value in ipairs(list or {}) do
+        if value == name then return true end
+    end
+    return false
+end
+
+function hardware.shouldRefreshForPeripheral(ctx, eventName, peripheralName)
+    if not ctx or type(peripheralName) ~= "string" then return false end
+
+    if listContains(ctx.monitorNames, peripheralName)
+        or listContains(ctx.speakerNames, peripheralName)
+    then
+        return true
+    end
+
+    -- A detached peripheral which was not part of the active hardware set
+    -- cannot affect the arena. For newly attached devices, inspect the type
+    -- only after the peripheral exists.
+    if eventName ~= "peripheral" then return false end
+
+    local ok, pType = pcall(peripheral.getType, peripheralName)
+    if not ok then return false end
+
+    if pType == "speaker" then
+        return true
+    end
+
+    if pType == "monitor" then
+        -- With explicit monitor names, an unrelated extra monitor is
+        -- irrelevant. Auto-discovery must re-evaluate the topology.
+        local explicit = config.MONITOR_NAMES[1] and config.MONITOR_NAMES[2]
+        return not explicit
+    end
+
+    return false
+end
+
 function hardware.playerForMonitor(ctx, monitorName)
     for playerId = 1, 2 do
         if ctx.monitorNames[playerId] == monitorName then
