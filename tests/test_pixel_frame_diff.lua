@@ -97,6 +97,21 @@ for owner=1,2 do
     assert(record.calls>count,"Unit movement must not be missed by frame cache")
     checks=checks+1
 
+    -- Regression: moving back onto the previously cached coordinates must
+    -- repaint the old/new footprints. A stale snapshot could otherwise match
+    -- the old pixels and leave the intermediate movement frame on screen.
+    count=record.calls
+    for _,entity in ipairs(state.entities) do
+        if entity.owner==owner and entity.sourceCardId=="creeper" then
+            entity.x=entity.x-20
+            entity.y=entity.y+7
+        end
+    end
+    pixelArena.draw(monitor,state,owner,rect)
+    oracle("movement round trip")
+    assert(record.calls>count,"Returning sprite must repaint intermediate pixels")
+    checks=checks+1
+
     -- Even an identical canvas MUST be redrawn after countdown text was
     -- overlaid directly onto the terminal during a phase transition.
     count=record.calls
