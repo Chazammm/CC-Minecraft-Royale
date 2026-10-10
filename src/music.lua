@@ -111,7 +111,12 @@ local function openRemoteRange(track, relativeOffset)
         ["Accept"] = "application/octet-stream",
     }
     local url = pack.remoteUrl .. "?v=" .. tostring(pack.version or pack.size or "1")
-    local response, err = http.get(url, headers, true)
+    local response, err = http.get({
+        url = url,
+        headers = headers,
+        binary = true,
+        timeout = (config.MUSIC and config.MUSIC.httpTimeout) or 6,
+    })
     if not response then return nil, tostring(err or "MUSIC HTTP FAILED") end
 
     if response.getResponseCode then
