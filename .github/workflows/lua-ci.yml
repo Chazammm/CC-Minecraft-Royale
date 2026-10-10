@@ -77,6 +77,12 @@ jobs:
         run: |
           lua5.2 tests/test_report_token_write_failures.lua
           lua5.4 tests/test_report_token_write_failures.lua
+      - name: Atomic persistence fault injection - silent writes and renames
+        run: |
+          lua5.2 tests/test_preset_transaction_integrity.lua
+          lua5.4 tests/test_preset_transaction_integrity.lua
+          lua5.2 tests/test_atomic_token_reconfig.lua
+          lua5.4 tests/test_atomic_token_reconfig.lua
       - name: Music seek failure and no-progress fault injection
         run: |
           lua5.2 tests/test_music_seek_failures.lua
