@@ -67,6 +67,12 @@ jobs:
         run: |
           lua5.2 tests/test_preset_false_returns.lua
           lua5.4 tests/test_preset_false_returns.lua
+      - name: Installer and GitHub credential filesystem fault injection
+        run: |
+          lua5.2 tests/test_installer_false_returns.lua
+          lua5.4 tests/test_installer_false_returns.lua
+          lua5.2 tests/test_report_logout_false.lua
+          lua5.4 tests/test_report_logout_false.lua
       - name: Music seek failure and no-progress fault injection
         run: |
           lua5.2 tests/test_music_seek_failures.lua
