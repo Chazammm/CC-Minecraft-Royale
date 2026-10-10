@@ -1,3 +1,9 @@
+-- Refuse to load mixed-version modules after an interrupted installation.
+-- Also guards manual 'main'/'admin' launches which bypass startup.lua.
+if fs and fs.exists and fs.exists(".cc_royale_installing") then
+    error("CC-Minecraft Royale update incomplete: rerun install.lua before launching", 0)
+end
+
 local config = require("config")
 local hardware = require("src.hardware")
 local Game = require("src.game")
