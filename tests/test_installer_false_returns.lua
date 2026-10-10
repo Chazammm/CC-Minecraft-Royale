@@ -28,7 +28,7 @@ do
     assert(files[".cc_royale_update"]~=nil,"legacy stage was not removed")
 end
 
-do
+for _,markerFailure in ipairs({"false_return","silent_truncate"}) do
     local stored={["main.lua"]="VALUABLE_CURRENT"}
     fs={
         exists=function(p)return stored[p]~=nil end,
@@ -46,7 +46,8 @@ do
             return {
                 write=function(v)
                     if p==".cc_royale_installing" then
-                        return false -- silent out-of-space style failure
+                        if markerFailure=="false_return" then return false end
+                        return nil -- falsely successful but discarded write
                     end
                     buffer=buffer..tostring(v)
                 end,
@@ -79,7 +80,7 @@ do
     }
     write=function()end
     local ok,err=pcall(dofile,"install.lua")
-    assert(not ok,"installer must stop on marker write() returning false")
+    assert(not ok,"installer must stop on failed or silently empty marker: "..markerFailure)
     includes(err,"Could not create install recovery marker")
     assert(stored["main.lua"]=="VALUABLE_CURRENT",
         "no managed file may be replaced without recovery marker")
