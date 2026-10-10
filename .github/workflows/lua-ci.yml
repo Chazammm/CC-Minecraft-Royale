@@ -63,6 +63,10 @@ jobs:
         run: lua5.4 tests/test_audit_fixes_20261010.lua
       - name: Audit register and release quality gate
         run: lua5.4 tests/test_release_gate.lua
+      - name: Deep-audit preset filesystem false-return tests
+        run: |
+          lua5.2 tests/test_preset_false_returns.lua
+          lua5.4 tests/test_preset_false_returns.lua
       - name: Full in-game mechanics suite
         run: lua5.4 tests/test_mechanics_full_ci.lua
       - name: Anvil candidate grid / exhaustive parity
