@@ -59,8 +59,17 @@ function reportOutput.start(path)
     -- Previous power loss after old->backup: restore the completed old report.
     if exists(backup) and not exists(path) then
         if not isFile(backup) then return nil, "Report backup is a directory" end
+        local backupContents = readExact(backup)
+        if backupContents == nil then
+            return nil, "Previous complete report backup cannot be read"
+        end
         local restored, err = moveFile(backup, path)
-        if not restored then return nil, err end
+        if not restored or readExact(path) ~= backupContents
+            or exists(backup)
+        then
+            -- A no-op 'successful' move must not delete the last good copy.
+            return nil, err or "Previous report restore was not verified"
+        end
     end
 
     -- If the destination exists, a lingering backup is no longer needed.
