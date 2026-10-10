@@ -48,8 +48,10 @@ platform integration, and benchmark tooling can evolve independently.
 - `tests/test_cli_manifest.lua` — CLI safety and immutable music metadata.
 - `tests/test_side_symmetry.lua` — arena/bot/scheduler side-symmetry contracts.
 - `tests/test_audit_followups.lua` — slow stacking, compact lobby layout,
-  preset recovery, bot cadence, statistics, deterministic tie behavior and
-  batch-report regressions.
+  preset recovery, bot cadence, cache lifecycles, statistics, deterministic
+  tie behavior and batch-report regressions.
+- `tests/test_recovery_hardening.lua` — interrupted-installer and preset
+  recovery hardening regressions.
 
 ## Reporting
 

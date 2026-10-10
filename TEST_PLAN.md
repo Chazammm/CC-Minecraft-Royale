@@ -6,7 +6,7 @@ Run these in order. Do not try to validate everything in one match; isolating on
 
 - Build two separate 3x4 Advanced Monitor walls.
 - Run the game.
-- Confirm both monitors render at text scale 0.5.
+- Confirm both monitors render at the configured `config.TEXT_SCALE` (default 0.5).
 - Confirm one says PLAYER 1 and the other PLAYER 2.
 - Confirm the displayed monitor peripheral names match the intended sides.
 - If they are reversed, set config.MONITOR_NAMES explicitly.
