@@ -388,8 +388,15 @@ function M.clearToken()
         return false, "Token path is a directory; refusing recursive delete"
     end
 
-    local ok, err = pcall(fs.delete, TOKEN_FILE)
-    if not ok then return false, tostring(err) end
+    local ok, result = pcall(fs.delete, TOKEN_FILE)
+    if not ok then return false, tostring(result) end
+    if result == false then
+        return false, "Filesystem refused to delete the local GitHub token"
+    end
+    -- Avoid telling the user the credential was removed while it remains.
+    if fs.exists(TOKEN_FILE) then
+        return false, "Token still exists after deletion attempt"
+    end
     return true
 end
 
