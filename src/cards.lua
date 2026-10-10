@@ -1193,4 +1193,126 @@ function cards.isValidDeck(deck)
     return true
 end
 
+function cards.validate()
+    local seen = {}
+
+    local function finite(name, value)
+        if type(value) ~= "number"
+            or value ~= value
+            or value == math.huge
+            or value == -math.huge
+        then
+            error("Invalid card data: " .. name .. " must be finite", 0)
+        end
+    end
+
+    local function validateSpawnReference(label, spec)
+        if type(spec) ~= "table" or spec.template == nil then return end
+        if not cards.internalUnits[spec.template] then
+            error(
+                "Invalid card data: " .. label
+                    .. " references unknown internal unit " .. tostring(spec.template),
+                0
+            )
+        end
+    end
+
+    local function validatePayload(label, payload, kind)
+        if type(payload) ~= "table" then
+            error("Invalid card data: " .. label .. " payload missing", 0)
+        end
+
+        if kind == "unit" or kind == "building" then
+            finite(label .. ".maxHp", payload.maxHp)
+            if payload.maxHp <= 0 then
+                error("Invalid card data: " .. label .. ".maxHp must be > 0", 0)
+            end
+
+            if payload.attackCooldown ~= nil then
+                finite(label .. ".attackCooldown", payload.attackCooldown)
+                if payload.attackCooldown <= 0 then
+                    error(
+                        "Invalid card data: " .. label .. ".attackCooldown must be > 0",
+                        0
+                    )
+                end
+            end
+        end
+
+        validateSpawnReference(label .. ".periodicSpawn", payload.periodicSpawn)
+        validateSpawnReference(label .. ".splitOnDeath", payload.splitOnDeath)
+    end
+
+    for index, card in ipairs(cards.all) do
+        local label = "card[" .. tostring(index) .. "]"
+        if type(card.id) ~= "string" or card.id == "" then
+            error("Invalid card data: " .. label .. " needs a non-empty id", 0)
+        end
+        if seen[card.id] then
+            error("Invalid card data: duplicate card id " .. card.id, 0)
+        end
+        seen[card.id] = true
+
+        finite(card.id .. ".cost", card.cost)
+        if card.cost < 0 then
+            error("Invalid card data: " .. card.id .. ".cost must be >= 0", 0)
+        end
+
+        if card.kind ~= "unit"
+            and card.kind ~= "building"
+            and card.kind ~= "spell"
+        then
+            error("Invalid card data: " .. card.id .. " has unknown kind", 0)
+        end
+
+        local payload = activePayload(card)
+        validatePayload(card.id, payload, card.kind)
+
+        if card.evolution then
+            local cycles = cards.evolutionCycles(card)
+            if cycles == nil or cycles < 0 then
+                error("Invalid card data: " .. card.id .. " Evolution cycles invalid", 0)
+            end
+
+            local evoCost = cards.evolutionCost(card)
+            finite(card.id .. ".evolution.cost", evoCost)
+
+            local abilities = card.evolution.abilities
+            if type(abilities) == "table" then
+                validateSpawnReference(
+                    card.id .. ".evolution.periodicSpawn",
+                    abilities.periodicSpawn
+                )
+                validateSpawnReference(
+                    card.id .. ".evolution.splitOnDeath",
+                    abilities.splitOnDeath
+                )
+            end
+        end
+    end
+
+    for id, unit in pairs(cards.internalUnits) do
+        if type(id) ~= "string" or id == "" or type(unit) ~= "table" then
+            error("Invalid internal unit data", 0)
+        end
+        finite("internalUnits." .. id .. ".maxHp", unit.maxHp)
+        if unit.maxHp <= 0 then
+            error("Invalid internal unit data: " .. id .. ".maxHp must be > 0", 0)
+        end
+        if unit.attackCooldown ~= nil then
+            finite("internalUnits." .. id .. ".attackCooldown", unit.attackCooldown)
+            if unit.attackCooldown <= 0 then
+                error(
+                    "Invalid internal unit data: " .. id .. ".attackCooldown must be > 0",
+                    0
+                )
+            end
+        end
+    end
+
+    return true
+end
+
+cards.validate()
+
 return cards

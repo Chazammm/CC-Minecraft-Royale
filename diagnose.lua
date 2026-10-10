@@ -1,4 +1,5 @@
 local config = require("config")
+local hardware = require("src.hardware")
 local function line()
   print("----------------------------------------")
 end
@@ -69,12 +70,17 @@ elseif #monitors < 2 then
   print("The game needs TWO monitor peripherals.")
   print("Check that each 3x4 wall is one multiblock and that")
   print("both are exposed to the same wired network.")
-elseif #monitors > 2
-    and not (config.MONITOR_NAMES[1] and config.MONITOR_NAMES[2])
-then
-  print("More than two monitors found.")
-  print("Set config.MONITOR_NAMES to the exact two arena monitors.")
-else
-  print("Basic monitor requirement satisfied.")
+end
+
+line()
+local runtimeOk, runtimeOrErr = pcall(hardware.init)
+if runtimeOk then
+  print("Runtime hardware validation: PASS")
+  print("Arena monitor P1: " .. tostring(runtimeOrErr.monitorNames[1]))
+  print("Arena monitor P2: " .. tostring(runtimeOrErr.monitorNames[2]))
   print("You can now run: main")
+else
+  print("Runtime hardware validation: FAILED")
+  print(tostring(runtimeOrErr))
+  print("Fix the configuration/peripherals above before running main.")
 end

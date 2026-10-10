@@ -147,6 +147,40 @@ do
 
     assertTrue(Game.debugKillEntity(state, villager.id), "Villager debug kill must work")
     assertNear(state.emeraldBoost[1], 0, 1e-9, "Death must unregister Emerald boost immediately")
+
+    assertTrue(
+        Game.debugSpawnCard(state, 1, "villager", 55, 120),
+        "Admin clear regression needs another Villager"
+    )
+    assertTrue(state.emeraldBoost[1] > 0, "Second Villager must register before CLEAR")
+    Game.debugClearUnits(state)
+    assertNear(
+        state.emeraldBoost[1],
+        0,
+        1e-9,
+        "Admin CLEAR must remove cached Emerald generation"
+    )
+    assertEq(
+        next(state.emeraldBoostSources[1]),
+        nil,
+        "Admin CLEAR must remove cached Emerald boost sources"
+    )
+end
+
+-- Config validation must reject settings that the runtime cannot simulate
+-- consistently while leaving the live config object untouched.
+do
+    local invalidTick = util.deepcopy(config)
+    invalidTick.TICK_RATE = 0.50
+    local okTick = pcall(config.validate, invalidTick)
+    assertTrue(not okTick, "TICK_RATE above Game.update's 0.25s ceiling must be rejected")
+
+    local invalidEconomy = util.deepcopy(config)
+    invalidEconomy.MATCH.emeraldStart = invalidEconomy.MATCH.emeraldMax + 1
+    local okEconomy = pcall(config.validate, invalidEconomy)
+    assertTrue(not okEconomy, "emeraldStart above emeraldMax must be rejected")
+
+    assertTrue(config.validate(), "Live config must remain valid after candidate checks")
 end
 
 -- Strong and weak slows must retain their own durations. A later weak slow may

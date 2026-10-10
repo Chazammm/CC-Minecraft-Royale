@@ -37,6 +37,8 @@ local LEGACY_STAGE_DIR = ".cc_royale_update"
 local LEGACY_BACKUP_DIR = ".cc_royale_backup"
 local INSTALL_MARKER = ".cc_royale_installing"
 local MANAGED_FILE = ".cc_royale_managed"
+local HTTP_TIMEOUT = 15
+local STARTUP_MARKER = "-- CC-MINECRAFT-ROYALE-MANAGED-STARTUP"
 
 local function safeExists(path)
   local ok, exists = pcall(fs.exists, path)
@@ -93,13 +95,28 @@ local function writeFile(path, body)
   return true
 end
 
+local function isSafeManagedPath(path)
+  if type(path) ~= "string" or path == "" then return false end
+  if path:sub(1, 1) == "/" or path:find("\\", 1, true) then return false end
+  if path:find(":", 1, true) then return false end
+  for part in path:gmatch("[^/]+") do
+    if part == "." or part == ".." then return false end
+    if not part:match("^[%w%._%-]+$") then return false end
+  end
+  return true
+end
+
 local function readManagedFiles()
   local out = {}
   local raw = readFile(MANAGED_FILE)
   if not raw then return out end
 
   for path in raw:gmatch("[^\r\n]+") do
-    if path ~= "" then out[#out + 1] = path end
+    if isSafeManagedPath(path) then
+      out[#out + 1] = path
+    elseif path ~= "" then
+      print("Ignoring unsafe managed-file entry: " .. tostring(path))
+    end
   end
   return out
 end
@@ -109,10 +126,16 @@ local function managedBody(paths)
 end
 
 local existingStartup = readFile("startup.lua")
+local legacyManagedStartup = table.concat({
+  "-- Optional startup entry point for a dedicated arena computer.",
+  "-- Remove/rename this file if you do not want the game to auto-start on reboot.",
+  'shell.run("main.lua")',
+}, "\n")
 local managedStartup = existingStartup ~= nil
   and (
-    existingStartup:find('shell.run("main.lua")', 1, true)
-    or existingStartup:find("shell.run('main.lua')", 1, true)
+    existingStartup:find(STARTUP_MARKER, 1, true)
+    or existingStartup == legacyManagedStartup
+    or existingStartup == legacyManagedStartup .. "\n"
   )
 local preserveCustomStartup = existingStartup ~= nil and not managedStartup
 
@@ -127,9 +150,13 @@ local function resolveCommitSha()
     BRANCH
   )
 
-  local response, err = http.get(url, {
-    ["Accept"] = "application/vnd.github+json",
-    ["User-Agent"] = "CC-Minecraft-Royale",
+  local response, err = http.get({
+    url = url,
+    headers = {
+      ["Accept"] = "application/vnd.github+json",
+      ["User-Agent"] = "CC-Minecraft-Royale",
+    },
+    timeout = HTTP_TIMEOUT,
   })
   if not response then
     return nil, "Could not resolve repository HEAD: " .. tostring(err)
@@ -161,7 +188,10 @@ local function downloadBody(base, path)
   local url = base .. path
   write(("Downloading %-24s ... "):format(path))
 
-  local response, err = http.get(url)
+  local response, err = http.get({
+    url = url,
+    timeout = HTTP_TIMEOUT,
+  })
   if not response then
     print("FAILED")
     return nil, (
