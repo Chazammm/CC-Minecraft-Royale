@@ -92,5 +92,37 @@ do
     "failed restore must not delete only good report")
 end
 
+-- If the current complete report is temporarily unreadable, a leftover
+-- good backup must never be deleted by the next run's startup cleanup.
+do
+  local files={
+    ["balance_results.txt"]="COMPLETE_PRIMARY_STILL_ON_DISK",
+    ["balance_results.txt.bak"]="COMPLETE_RECOVERY_BACKUP",
+  }
+  fs={
+    exists=function(p)return files[p]~=nil end,
+    isDir=function()return false end,
+    delete=function(p)files[p]=nil end,
+    move=function(from,to)
+      files[to]=files[from]
+      files[from]=nil
+    end,
+    open=function(p,m)
+      if m=="r" then
+        if p=="balance_results.txt" then return nil end
+        if files[p]==nil then return nil end
+        return {readAll=function()return files[p]end,close=function()end}
+      end
+      return {write=function()end,close=function()end}
+    end,
+  }
+  local writer=output.start("balance_results.txt")
+  eq(writer,nil,"unreadable active report must block unsafe startup cleanup")
+  eq(files["balance_results.txt.bak"],"COMPLETE_RECOVERY_BACKUP",
+    "good recovery backup must be retained while primary is unreadable")
+  eq(files["balance_results.txt"],"COMPLETE_PRIMARY_STILL_ON_DISK",
+    "unreadable active report must remain untouched")
+end
+
 fs=originalFs
 print("Report publishing integrity oracle passed: "..checks)
