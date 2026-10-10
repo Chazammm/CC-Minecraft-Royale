@@ -1185,6 +1185,47 @@ local function canvasChanged(box, cached)
     return different
 end
 
+-- Cheap conservative invalidation: whenever any live entity changes
+-- position/order, full conversion is necessary often enough that comparing
+-- 110x120 pixels first is wasted work. The stored positions are bounded by
+-- the live roster (not a growing ID map), and never gate frame correctness:
+-- on a stationary roster canvasChanged still observes animation, effects,
+-- projectiles, HP bars and other visual state.
+local function rosterMoved(state, cached)
+    local previous = cached.previousPositions
+    local moved = previous == nil
+    if not previous then
+        previous = {}
+        cached.previousPositions = previous
+    end
+    local n = 0
+    for _, entity in ipairs(state.entities) do
+        if entity.alive then
+            n = n + 1
+            local saved = previous[n]
+            if not saved then
+                saved = {}
+                previous[n] = saved
+                moved = true
+            end
+            if saved.id ~= entity.id
+                or saved.x ~= entity.x
+                or saved.y ~= entity.y
+            then
+                moved = true
+                saved.id = entity.id
+                saved.x = entity.x
+                saved.y = entity.y
+            end
+        end
+    end
+    if #previous ~= n then
+        moved = true
+        for i = n + 1, #previous do previous[i] = nil end
+    end
+    return moved
+end
+
 function pixelArena.draw(monitor, state, playerId, rect, forceFullEncode)
     local box, cached = getSurface(monitor, rect)
 
@@ -1240,7 +1281,8 @@ function pixelArena.draw(monitor, state, playerId, rect, forceFullEncode)
     -- written outside the PixelBox renderer.
     -- Optional diagnostic oracle: bypass the frame cache entirely to
     -- compare cached and exhaustive PixelBox output under the SAME state.
-    if forceFrame or forceFullEncode or canvasChanged(box, cached) then
+    local moved = rosterMoved(state, cached)
+    if forceFrame or forceFullEncode or moved or canvasChanged(box, cached) then
         box:render()
     end
 end
