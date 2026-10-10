@@ -192,6 +192,52 @@ end
 
 renderStress(0)
 renderStress(30)
+
+-- Same-process A/B against the original exhaustive PixelBox encoder. The
+-- optional forceFullEncode flag bypasses ONLY the frame identity cache, not
+-- draw logic, animation, texel conversion or terminal row deduplication.
+local function pairedFrameProfile(unitCount, moving)
+    local state = Game.new(nil, {headlessSimulation=true})
+    Game.debugLoadScenario(state, "full")
+    local movingUnit = nil
+    for i=1,unitCount do
+        local owner = (i%2)+1
+        local x=12+(i%6)*14
+        local y=24+math.floor((i-1)/6)*14
+        assert(Game.debugSpawnCard(state,owner,"zombie",x,y))
+    end
+    for _,entity in ipairs(state.entities) do
+        if entity.sourceCardId=="zombie" then
+            movingUnit=entity
+            break
+        end
+    end
+
+    local fastMonitor, oracleMonitor = {}, {}
+    pixelArena.draw(fastMonitor,state,1,rect)
+    pixelArena.draw(oracleMonitor,state,1,rect,true)
+    local iterations=36
+    local fastCpu, oracleCpu = 0, 0
+    for i=1,iterations do
+        if moving and movingUnit then
+            movingUnit.x=30 + math.sin(i * 0.55) * 9
+        end
+        local t=os.clock()
+        pixelArena.draw(fastMonitor,state,1,rect)
+        fastCpu=fastCpu+(os.clock()-t)
+        t=os.clock()
+        pixelArena.draw(oracleMonitor,state,1,rect,true)
+        oracleCpu=oracleCpu+(os.clock()-t)
+    end
+    local scenario=(moving and "moving_" or "static_")..unitCount
+    printMetric("pixelbox_cached_"..scenario,iterations,fastCpu)
+    printMetric("pixelbox_exhaustive_"..scenario,iterations,oracleCpu)
+    print(("PROFILE|pixelbox_ratio_%s|cached_over_exhaustive=%.3f"):format(
+        scenario, fastCpu/math.max(oracleCpu,0.000001)))
+end
+pairedFrameProfile(0,false)
+pairedFrameProfile(30,false)
+pairedFrameProfile(30,true)
 window = oldWindow
 
 print("Performance profile complete (no gameplay files modified).")
