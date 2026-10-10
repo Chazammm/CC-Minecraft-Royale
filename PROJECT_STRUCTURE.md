@@ -123,3 +123,19 @@ schema validation and defensively by the spawn copier.
   running full monitor/speaker rediscovery.
 - Report dedupe compares against a raw URL pinned to a resolved branch commit,
   and closes HTTP failure handles defensively.
+
+## Audit and release quality tracking
+
+- `docs/AUDIT_REGISTER.md` — confirmed findings, preventive risks,
+  optimization candidates, reproduction and automated/hardware evidence.
+- `QUALITY_GATE.md` — required triage, regression, parity, performance and
+  release verification steps.
+- `.github/pull_request_template.md` — review checklist for follow-up code.
+- `tests/test_audit_fixes_20261010.lua` — installer safety, report crash
+  recovery, stream faults, navigation and HP invariants.
+- `tests/test_release_gate.lua` — checks every fixed audit entry names at
+  least one real regression file included in CI.
+- `src/report_output.lua` — transactional local benchmark report publication.
+
+**Important:** Linux CI uses synthetic platform stubs; it cannot declare
+monitor, music playback or ATM10 server behavior hardware-verified.
