@@ -1168,6 +1168,10 @@ runTest("evo_charged_creeper", "Charged Creeper has larger blue blast", function
         zombie.moveSpeed = 0
         zombie.damage = 0
         zombie.attackCooldownLeft = 999
+        -- Measure full 580-damage output, not HP lost by a 523-HP target.
+        -- Real combat clamps HP to zero on overkill (correct behavior).
+        zombie.maxHp = math.max(zombie.maxHp, 1000)
+        zombie.hp = zombie.maxHp
     end
 
     local nearStart = nearZombie.hp
@@ -1463,7 +1467,6 @@ runTest("evoker_fangs_vex", "Evoker uses line/ring fangs and summons 30-damage V
     local lineState = newAdminState("empty")
     local evokerOk = Game.debugSpawnCard(lineState, 1, "evoker", SAFE_X, SAFE_Y)
     local zombieOk = Game.debugSpawnCard(lineState, 2, "zombie", SAFE_X, SAFE_Y - 14)
-    local skeletonOk = Game.debugSpawnCard(lineState, 2, "skeleton", SAFE_X + 1, SAFE_Y - 7)
     local blazeOk = Game.debugSpawnCard(lineState, 2, "blaze", SAFE_X, SAFE_Y - 8)
 
     local evoker = findEntity(lineState, function(e)
@@ -1472,20 +1475,17 @@ runTest("evoker_fangs_vex", "Evoker uses line/ring fangs and summons 30-damage V
     local zombie = findEntity(lineState, function(e)
         return e.alive and e.owner == 2 and e.name == "Zombie"
     end)
-    local skeleton = findEntity(lineState, function(e)
-        return e.alive and e.owner == 2 and e.name == "Skeleton"
-    end)
     local blaze = findEntity(lineState, function(e)
         return e.alive and e.owner == 2 and e.name == "Blaze"
     end)
 
-    if not evokerOk or not zombieOk or not skeletonOk or not blazeOk
-        or not evoker or not zombie or not skeleton or not blaze
+    if not evokerOk or not zombieOk or not blazeOk
+        or not evoker or not zombie or not blaze
     then
         return false, "Could not create Evoker Fang line scenario.", data
     end
 
-    for _, target in ipairs({ zombie, skeleton, blaze }) do
+    for _, target in ipairs({ zombie, blaze }) do
         target.passive = true
         target.targetMode = "none"
         target.moveSpeed = 0
@@ -1495,13 +1495,35 @@ runTest("evoker_fangs_vex", "Evoker uses line/ring fangs and summons 30-damage V
     evoker.targetId = zombie.id
 
     local zombieStart = zombie.hp
-    local skeletonStart = skeleton.hp
     local blazeStart = blaze.hp
 
+    -- Queue the cast before introducing a nearer Skeleton. Normal units now
+    -- retarget closer enemies until their first committed attack, so placing
+    -- the Skeleton at setup time made the Evoker correctly target it instead
+    -- of the distant Zombie. A Fang line must still hit ground enemies which
+    -- enter the telegraphed path during its warning window.
     Game.update(lineState, 0.05)
     local lineQueued = #lineState.pendingSpells == 1
         and lineState.pendingSpells[1].kind == "evoker_fangs"
         and lineState.pendingSpells[1].mode == "line"
+        and lineState.pendingSpells[1].x2 == zombie.x
+        and lineState.pendingSpells[1].y2 == zombie.y
+
+    local skeletonOk = Game.debugSpawnCard(
+        lineState, 2, "skeleton", SAFE_X + 1, SAFE_Y - 7
+    )
+    local skeleton = findEntity(lineState, function(e)
+        return e.alive and e.owner == 2 and e.name == "Skeleton"
+    end)
+    if not skeletonOk or not skeleton then
+        return false, "Could not add Skeleton inside warned Fang line.", data
+    end
+    skeleton.passive = true
+    skeleton.targetMode = "none"
+    skeleton.moveSpeed = 0
+    skeleton.damage = 0
+    local skeletonStart = skeleton.hp
+
     local warningVisible = findEntity and false
     for _, effect in ipairs(lineState.effects) do
         if effect.kind == "evoker_fangs_warning" then
