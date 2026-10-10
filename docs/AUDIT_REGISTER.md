@@ -63,7 +63,7 @@ close OP-001, OP-002 or OP-003; no speedup has been implemented or validated.
 See [`PERFORMANCE_OPTIMIZATION_20261010.md`](PERFORMANCE_OPTIMIZATION_20261010.md)
 for the precise changes, seeded match controls, and same-process
 PixelBox cached-vs-exhaustive A/B measurements. The Anvil scoring grid has
-183 exhaustive-oracle comparisons, and both monitor perspectives have 34
+183 exhaustive-oracle comparisons, and both monitor perspectives have 38
 pixel-image checks including appearance and expiry of stationary effects.
 
 Under Lua 5.4 CI, Anvil-heavy decisions were approximately 16% cheaper;
