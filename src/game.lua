@@ -1000,7 +1000,7 @@ damageEntity = function(
         end
     end
 
-    target.hp = target.hp - damage
+    target.hp = math.max(0, target.hp - damage)
 
     -- Guardian spikes only punish the flying entity which actually caused the
     -- hit. Spells and Crown Towers have no flying source entity and therefore
