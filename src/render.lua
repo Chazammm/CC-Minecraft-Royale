@@ -149,10 +149,6 @@ function render.layoutFor(monitor)
         collectionCards = {},
         collectionPageButtons = {},
         deckSlots = {},
-        -- Preset/loadout controls remain implemented in Game.lua but are
-        -- intentionally hidden from the normal lobby. This space is now used
-        -- by the Evolution Slot.
-        presetButtons = {},
         evolutionSlot = {
             x1 = 1,
             x2 = math.floor(width * 0.72),
@@ -278,40 +274,6 @@ function render.layoutFor(monitor)
         }
     end
 
-    local presetY1 = 36
-    local presetY2 = 38
-
-    layout.presetButtons.prev = {
-        x1 = 1,
-        x2 = math.floor(width * 0.20),
-        y1 = presetY1,
-        y2 = presetY1,
-    }
-    layout.presetButtons.slot = {
-        x1 = math.floor(width * 0.20) + 1,
-        x2 = math.floor(width * 0.80),
-        y1 = presetY1,
-        y2 = presetY1,
-    }
-    layout.presetButtons.next = {
-        x1 = math.floor(width * 0.80) + 1,
-        x2 = width,
-        y1 = presetY1,
-        y2 = presetY1,
-    }
-
-    local bottomKeys = { "save", "load", "random" }
-    for i, key in ipairs(bottomKeys) do
-        local x1 = math.floor((i - 1) * width / 3) + 1
-        local x2 = math.floor(i * width / 3)
-        layout.presetButtons[key] = {
-            x1 = x1,
-            x2 = x2,
-            y1 = presetY2,
-            y2 = presetY2,
-        }
-    end
-
     local cardWidth = math.floor(width / 4)
     for slot = 1, 4 do
         local x1 = (slot - 1) * cardWidth + 1
@@ -400,12 +362,9 @@ local function drawStatus(buffer, state, playerId)
     local score = tostring(player.towersDestroyed) .. " - " .. tostring(opponent.towersDestroyed)
     writeText(buffer, math.max(1, buffer.width - #score + 1), 1, score, colors.white, colors.black)
 
-    local emeraldBoost = 0
-    for _, entity in ipairs(state.entities) do
-        if entity.alive and entity.owner == playerId and entity.emeraldBoost then
-            emeraldBoost = emeraldBoost + entity.emeraldBoost
-        end
-    end
+    local emeraldBoost = state.emeraldBoost
+        and (state.emeraldBoost[playerId] or 0)
+        or 0
 
     local emeraldText = string.format("EMERALDS %.1f/%.0f", player.emeralds, player.maxEmeralds)
     if emeraldBoost > 0 then
