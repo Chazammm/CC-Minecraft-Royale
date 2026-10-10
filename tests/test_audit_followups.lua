@@ -591,10 +591,17 @@ do
     http = {
         get = function(options)
             local url = type(options) == "table" and options.url or options
+            if url:find("/git/ref/heads/main", 1, true) then
+                return unchangedResponse("REF", 200)
+            end
             if url:find("raw.githubusercontent.com", 1, true) then
+                assertTrue(
+                    url:find("/snapshot-sha/", 1, true) ~= nil,
+                    "Unchanged dedupe must read raw report from pinned snapshot SHA"
+                )
                 return unchangedResponse(reportBody, 200)
             end
-            error("Unchanged report must not reach Git Data reads")
+            error("Unchanged report must not reach commit Git Data reads")
         end,
         post = function()
             writes = writes + 1
@@ -603,7 +610,12 @@ do
     }
     textutils = {
         serializeJSON = function() return "{}" end,
-        unserializeJSON = function() return {} end,
+        unserializeJSON = function(body)
+            if body == "REF" then
+                return { object = { sha = "snapshot-sha" } }
+            end
+            return {}
+        end,
     }
 
     package.loaded["src.report_sync"] = nil
