@@ -72,30 +72,48 @@ function arena.groundReachPoint(entity, target)
     local best = candidates[1]
     local bestTargetD2 = math.huge
     local bestTravelD2 = math.huge
+    local fallbackTravelD2 = math.huge
 
+    local reach = nil
+    if entity then
+        reach = entity.attackRange or 0
+        if entity.hybridAttack then
+            reach = entity.hybridAttack.meleeRange or reach
+        elseif entity.proximityExplosion then
+            reach = entity.proximityExplosion.triggerRange or reach
+        end
+    end
+
+    -- The attacker only needs an accessible point within its *attack reach*.
+    -- Prefer the near bank/bridge instead of navigating across the entire
+    -- river to the mathematically closest point to the water mob.
     for _, candidate in ipairs(candidates) do
-        local targetD2 = util.distanceSquared(
-            candidate.x,
-            candidate.y,
-            x,
-            y
-        )
+        local targetD2 = util.distanceSquared(candidate.x, candidate.y, x, y)
         local travelD2 = entity and util.distanceSquared(
-            entity.x,
-            entity.y,
-            candidate.x,
-            candidate.y
+            entity.x, entity.y, candidate.x, candidate.y
         ) or 0
 
-        if targetD2 < bestTargetD2 - 1e-9
-            or (
-                math.abs(targetD2 - bestTargetD2) <= 1e-9
-                and travelD2 < bestTravelD2
-            )
+        if reach and targetD2 <= (reach + 0.001)^2 then
+            if bestTravelD2 == math.huge
+                or travelD2 < bestTravelD2 - 1e-9
+                or (math.abs(travelD2 - bestTravelD2) <= 1e-9
+                    and targetD2 < bestTargetD2)
+            then
+                best = candidate
+                bestTravelD2 = travelD2
+                bestTargetD2 = targetD2
+            end
+        elseif bestTravelD2 == math.huge
+            and (targetD2 < bestTargetD2 - 1e-9
+                or (math.abs(targetD2 - bestTargetD2) <= 1e-9
+                    and travelD2 < fallbackTravelD2))
         then
+            -- If reach is unspecified (legacy/debug) or no point is in
+            -- range, retain closest-target behavior and prefer the near bank
+            -- on an equal-distance tie. Otherwise pathing crosses the river.
             best = candidate
             bestTargetD2 = targetD2
-            bestTravelD2 = travelD2
+            fallbackTravelD2 = travelD2
         end
     end
 

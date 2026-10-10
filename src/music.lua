@@ -121,6 +121,20 @@ local function rememberAbandonedRequest(controller, pending)
     end
 end
 
+local function isOwnStreamUrl(url)
+    if type(url) ~= "string" then return false end
+    for _, pack in pairs(manifest.packs or {}) do
+        local base = pack.remoteUrl
+        if type(base) == "string"
+            and url:sub(1, #base) == base
+            and url:find("ccrq=", #base + 1, true)
+        then
+            return true
+        end
+    end
+    return false
+end
+
 local function abandonPendingRequest(controller)
     local pending = controller.httpPending
     if not pending then return end
@@ -169,6 +183,8 @@ local function requestRemoteRange(controller, track, relativeOffset)
         url = url,
         serial = controller.requestSerial,
         startByte = startByte,
+        endByte = lastByte,
+        requestedAt = os.epoch and os.epoch("utc") / 1000 or os.clock(),
         trackIndex = controller.currentTrackIndex,
         relativeOffset = relativeOffset,
     }
@@ -370,6 +386,17 @@ end
 function Music.pump(controller)
     if not controller.active or not controller.available then return false end
 
+    -- An async HTTP request should eventually produce http_success/failure,
+    -- but do not let a lost event stall music for the entire match.
+    if controller.httpPending then
+        local timeout = ((config.MUSIC and config.MUSIC.httpTimeout) or 6) + 2
+        local started = controller.httpPending.requestedAt or nowSeconds()
+        if nowSeconds() - started >= timeout then
+            abandonPendingRequest(controller)
+            scheduleRetry(controller, "MUSIC HTTP TIMEOUT", 1.5)
+        end
+    end
+
     -- CC:Tweaked speakers buffer one playAudio call at a time. Keep at most
     -- one decoded chunk pending and wait for speaker_audio_empty before adding
     -- another. Large chunks are substantially less prone to stutter.
@@ -457,7 +484,13 @@ local function handleHttpSuccess(controller, url, response)
     end
 
     local pending = controller.httpPending
-    if not pending or pending.url ~= url then return false end
+    if not pending or pending.url ~= url then
+        if isOwnStreamUrl(url) then
+            if response and response.close then pcall(response.close) end
+            return true
+        end
+        return false
+    end
     controller.httpPending = nil
 
     if not controller.active then
@@ -481,21 +514,40 @@ local function handleHttpSuccess(controller, url, response)
         return true
     end
 
-    -- Verify the requested byte offset when a 206 server supplies
-    -- Content-Range. A proxy/cache returning a mismatched segment would
-    -- otherwise silently decode another part of the music pack.
-    if code == 206 and response and response.getResponseHeaders then
-        local okHeaders, headers = pcall(response.getResponseHeaders)
+    -- Require a coherent Content-Range for a partial response. Missing or
+    -- malformed metadata is unsafe: it may decode the wrong offset as audio.
+    if code == 206 then
+        local okHeaders, headers = false, nil
+        if response and response.getResponseHeaders then
+            okHeaders, headers = pcall(response.getResponseHeaders)
+        end
+        local range = nil
         if okHeaders and type(headers) == "table" then
-            local range = headers["Content-Range"] or headers["content-range"]
-            local actualStart = type(range) == "string"
-                and tonumber(range:match("^bytes%s+(%d+)%-"))
-                or nil
-            if actualStart and actualStart ~= pending.startByte then
-                if response.close then pcall(response.close) end
-                scheduleRetry(controller, "MUSIC HTTP RANGE MISMATCH", 1.5)
-                return true
+            for key, value in pairs(headers) do
+                if type(key) == "string"
+                    and key:lower() == "content-range"
+                then
+                    range = value
+                    break
+                end
             end
+        end
+        local first, last, total
+        if type(range) == "string" then
+            first, last, total = range:match("^bytes%s+(%d+)%-(%d+)/(%d+)%s*$")
+        end
+        first, last, total = tonumber(first), tonumber(last), tonumber(total)
+        if not first
+            or not last
+            or not total
+            or first ~= pending.startByte
+            or last ~= pending.endByte
+            or last < first
+            or last >= total
+        then
+            if response and response.close then pcall(response.close) end
+            scheduleRetry(controller, "MUSIC HTTP RANGE MISMATCH", 1.5)
+            return true
         end
     end
 
@@ -515,7 +567,13 @@ local function handleHttpFailure(controller, url, err, response)
     end
 
     local pending = controller.httpPending
-    if not pending or pending.url ~= url then return false end
+    if not pending or pending.url ~= url then
+        if isOwnStreamUrl(url) then
+            if response and response.close then pcall(response.close) end
+            return true
+        end
+        return false
+    end
     controller.httpPending = nil
     if response and response.close then pcall(response.close) end
 

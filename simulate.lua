@@ -4,6 +4,7 @@ local config = require("config")
 local benchmark = require("src.benchmark_utils")
 local Runner = require("src.headless_match")
 local version = require("src.version")
+local reportOutput = require("src.report_output")
 
 local args = { ... }
 
@@ -37,6 +38,7 @@ local function cooperativeYield(force)
 end
 local nativePrint = print
 local liveHandle = nil
+local liveError = nil
 
 local function reportPrint(...)
     local parts = {}
@@ -93,7 +95,7 @@ local seed = math.floor(tonumber(args[3]) or 1337)
 
 -- Only replace the previous report after all command-line arguments have
 -- passed validation. "simulate help" and invalid commands must preserve it.
-liveHandle = fs and fs.open(resultPath, "w") or nil
+liveHandle, liveError = reportOutput.start(resultPath)
 
 local randomInt = benchmark.newRandomInt(seed)
 local copy = benchmark.copy
@@ -419,8 +421,11 @@ reportPrint("WATCH+/- means investigate, not automatic nerf/buff.")
 reportPrint("")
 reportPrint("Recommended benchmark: simulate 500 mixed")
 
+local reportCommitted, reportCommitError = false, liveError
 if liveHandle then
-    liveHandle.close()
+    reportCommitted, reportCommitError = reportOutput.commit(resultPath, liveHandle)
+end
+if reportCommitted then
     nativePrint("")
     nativePrint("Saved full report to: " .. resultPath)
     nativePrint("View it with: type " .. resultPath)
@@ -442,5 +447,5 @@ if liveHandle then
     end
 else
     nativePrint("")
-    nativePrint("WARNING: Could not create " .. resultPath)
+    nativePrint("WARNING: Previous complete report preserved; new output not committed: " .. tostring(reportCommitError))
 end

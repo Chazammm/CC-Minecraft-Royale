@@ -733,6 +733,10 @@ local function predictedAnvilPosition(state, entity, delay)
         y = y,
         owner = entity.owner,
         flying = entity.flying,
+        waterOnly = entity.waterOnly,
+        attackRange = entity.attackRange,
+        hybridAttack = entity.hybridAttack,
+        proximityExplosion = entity.proximityExplosion,
     }
     local steps = 6
     local stepTime = delay / steps
@@ -752,8 +756,20 @@ local function predictedAnvilPosition(state, entity, delay)
         if travelBudget <= 0 then break end
 
         local step = math.min(length, speed * stepTime, travelBudget)
-        probe.x = probe.x + dx / length * step
-        probe.y = probe.y + dy / length * step
+        local nx = probe.x + dx / length * step
+        local ny = probe.y + dy / length * step
+
+        -- Match live movement's river/bridge collision fallbacks: predicting
+        -- impossible water shortcuts caused the bot to miss Falling Anvils.
+        if arena.isWalkable(probe, nx, ny) then
+            probe.x, probe.y = nx, ny
+        elseif arena.isWalkable(probe, nx, probe.y) then
+            probe.x = nx
+        elseif arena.isWalkable(probe, probe.x, ny) then
+            probe.y = ny
+        else
+            break
+        end
     end
 
     return probe.x, probe.y, 0.82
@@ -1520,6 +1536,11 @@ end
 function Bot.debugCounterpushLane(state, playerId)
     local view = buildDecisionView(state, playerId)
     return counterpushLane(state, playerId, view)
+end
+
+-- Deterministic probe used by terrain/collision regression tests.
+function Bot.debugPredictedAnvilPosition(state, entity, delay)
+    return predictedAnvilPosition(state, entity, delay)
 end
 
 function Bot.debugArrowTarget(state, playerId)
