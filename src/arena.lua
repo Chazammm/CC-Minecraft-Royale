@@ -72,6 +72,7 @@ function arena.groundReachPoint(entity, target)
     local best = candidates[1]
     local bestTargetD2 = math.huge
     local bestTravelD2 = math.huge
+    local fallbackTravelD2 = math.huge
 
     local reach = nil
     if entity then
@@ -103,11 +104,16 @@ function arena.groundReachPoint(entity, target)
                 bestTargetD2 = targetD2
             end
         elseif bestTravelD2 == math.huge
-            and targetD2 < bestTargetD2 - 1e-9
+            and (targetD2 < bestTargetD2 - 1e-9
+                or (math.abs(targetD2 - bestTargetD2) <= 1e-9
+                    and travelD2 < fallbackTravelD2))
         then
-            -- Legacy closest-target fallback when no candidate is reachable.
+            -- If reach is unspecified (legacy/debug) or no point is in
+            -- range, retain closest-target behavior and prefer the near bank
+            -- on an equal-distance tie. Otherwise pathing crosses the river.
             best = candidate
             bestTargetD2 = targetD2
+            fallbackTravelD2 = travelD2
         end
     end
 
