@@ -212,7 +212,9 @@ do
         get = function(options)
             local url = type(options) == "table" and options.url or options
             getUrls[#getUrls + 1] = url
-            if url:find("/git/ref/heads/main", 1, true) then
+            if url:find("raw.githubusercontent.com", 1, true) then
+                return response("OLDER REPORT BODY", 200)
+            elseif url:find("/git/ref/heads/main", 1, true) then
                 return response("REF", 200)
             elseif url:find("/git/commits/parent-sha", 1, true) then
                 return response("PARENT", 200)
@@ -251,7 +253,11 @@ do
     )
     assertTrue(ok, "Report sync Git Data transaction must succeed")
     assertEq(result.commitSha, "new-commit", "Report sync must expose commit SHA")
-    assertEq(#getUrls, 2, "Report sync needs branch + parent reads")
+    assertEq(
+        #getUrls,
+        3,
+        "Report sync needs latest comparison plus branch + parent reads"
+    )
     assertEq(#writeCalls, 5, "Two blobs + tree + commit + ref update expected")
 
     local patchCount = 0

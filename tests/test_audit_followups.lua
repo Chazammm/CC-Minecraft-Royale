@@ -788,8 +788,6 @@ do
                 expected[#expected + 1] = entity.id
             end
         end
-        table.sort(expected)
-
         assertEq(#actual, #expected, "Spatial fuzz candidate count mismatch")
         for i = 1, #expected do
             assertEq(actual[i], expected[i], "Spatial fuzz candidate order/content mismatch")

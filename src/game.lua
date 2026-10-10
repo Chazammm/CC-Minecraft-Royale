@@ -446,9 +446,10 @@ local function rebuildSpatialIndex(state)
         buckets = { [1] = {}, [2] = {} },
     }
 
-    for _, entity in ipairs(state.entities or {}) do
+    for order, entity in ipairs(state.entities or {}) do
         entity._spatialKey = nil
         entity._spatialOwner = nil
+        entity._spatialOrder = order
         if entity.alive then
             indexSpatialEntity(state, entity)
         end
@@ -486,7 +487,12 @@ local function spatialCandidatesInBounds(
         end
     end
 
-    table.sort(out, function(a, b) return a.id < b.id end)
+    table.sort(out, function(a, b)
+        local ao = a._spatialOrder or a.id
+        local bo = b._spatialOrder or b.id
+        if ao == bo then return a.id < b.id end
+        return ao < bo
+    end)
     return out
 end
 
@@ -505,6 +511,7 @@ end
 local function makeBaseEntity(state, owner, kind, x, y)
     local entity = {
         id = state.nextEntityId,
+        _spatialOrder = #(state.entities or {}) + 1,
         owner = owner,
         kind = kind,
         x = x,
