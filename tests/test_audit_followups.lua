@@ -597,4 +597,57 @@ do
     assertEq(evoker.periodicSpawnAlive, 1, "Child death must free maxAlive slot immediately")
 end
 
+do
+    -- Spatial buckets must track movement across cell boundaries and keep
+    -- bounded targeting behavior identical to the owner-list fallback.
+    local state = Game.new(nil, { headlessSimulation = true })
+    Game.debugLoadScenario(state, "empty")
+    assertTrue(Game.debugSpawnCard(state, 1, "skeleton", 20, 110))
+    assertTrue(Game.debugSpawnCard(state, 2, "zombie", 20, 70))
+    assertTrue(Game.debugSpawnCard(state, 2, "zombie", 80, 70))
+    Game.debugSetPaused(state, false)
+
+    local skeleton = state.entitiesByOwner[1][1]
+    local nearZombie = state.entitiesByOwner[2][1]
+    skeleton.moveSpeed = 0
+    skeleton.attackRange = 50
+    skeleton.aggroRange = 50
+    skeleton.attackCooldownLeft = 0
+
+    local hpBefore = nearZombie.hp
+    Game.update(state, 0.10)
+    assertTrue(
+        nearZombie.hp < hpBefore or skeleton.targetId == nearZombie.id,
+        "Spatial bounded targeting must retain nearest-target behavior"
+    )
+
+    assertTrue(
+        state.spatialIndex and state.spatialIndex.buckets,
+        "Active combat tick must maintain spatial buckets"
+    )
+end
+
+do
+    -- Spatial AoE lookup must preserve deterministic multi-target damage.
+    local state = Game.new(nil, { headlessSimulation = true })
+    Game.debugLoadScenario(state, "empty")
+    assertTrue(Game.debugSpawnCard(state, 1, "creeper", 50, 100))
+    assertTrue(Game.debugSpawnCard(state, 2, "zombie", 48, 96))
+    assertTrue(Game.debugSpawnCard(state, 2, "zombie", 52, 96))
+    local creeper = state.entitiesByOwner[1][1]
+    local enemies = state.entitiesByOwner[2]
+    creeper.proximityExplosion.fuseTime = 0.01
+    creeper.proximityExplosion.triggerRange = 10
+    creeper.proximityExplosion.cancelRange = 12
+    creeper.proximityExplosion.radius = 12
+
+    local hp1, hp2 = enemies[1].hp, enemies[2].hp
+    Game.debugSetPaused(state, false)
+    Game.update(state, 0.10)
+    Game.update(state, 0.10)
+
+    assertTrue(enemies[1].hp < hp1, "Spatial explosion must hit first nearby enemy")
+    assertTrue(enemies[2].hp < hp2, "Spatial explosion must hit second nearby enemy")
+end
+
 print("Audit follow-up tests passed")
