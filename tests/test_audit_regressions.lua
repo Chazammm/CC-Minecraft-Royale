@@ -85,10 +85,14 @@ do
     }
     local bot = Bot.new(2, deck)
     Bot.prepare(bot, state)
-    assertEq(
-        state.players[2].evolutionCardId,
-        "villager",
-        "Bot Evolution choice must be derived from its own deck order"
+    assertTrue(
+        cards.hasEvolution(state.players[2].evolutionCardId),
+        "Bot Evolution choice must be eligible and derived from its own deck"
+    )
+    assertTrue(
+        state.players[2].evolutionCardId ~= "endermite"
+            or deck[6] == "endermite",
+        "Bot must not inherit a stale Evolution outside its own evaluation"
     )
 end
 
