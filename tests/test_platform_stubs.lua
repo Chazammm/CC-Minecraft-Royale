@@ -302,4 +302,79 @@ do
     )
 end
 
+do
+    -- If a proxy ignores an HTTP Range request, music must not synchronously
+    -- read/discard a huge response body just to seek to a later track.
+    local oldHttp = http
+    local oldFs = fs
+    local oldEpoch = os.epoch
+    local oldManifest = package.loaded["src.music_manifest"]
+    local oldMusic = package.loaded["src.music"]
+    local oldPreload = package.preload["cc.audio.dfpwm"]
+    local oldDfpwm = package.loaded["cc.audio.dfpwm"]
+
+    local reads = 0
+    local closes = 0
+
+    fs = {
+        exists = function() return false end,
+    }
+    http = {
+        get = function()
+            return {
+                getResponseCode = function() return 200 end,
+                read = function()
+                    reads = reads + 1
+                    return string.rep("x", 16)
+                end,
+                close = function() closes = closes + 1 end,
+            }
+        end,
+    }
+    os.epoch = function() return 123456789 end
+
+    package.loaded["src.music_manifest"] = {
+        packs = {
+            [1] = {
+                path = "missing.dfpwm",
+                remoteUrl = "https://example.invalid/music.dfpwm",
+                size = 100000,
+                version = "test",
+            },
+        },
+        tracks = {
+            { id = 1, pack = 1, offset = 50000, bytes = 1000 },
+        },
+        chunkBytes = 16384,
+        volume = 0.25,
+    }
+    package.loaded["src.music"] = nil
+    package.loaded["cc.audio.dfpwm"] = nil
+    package.preload["cc.audio.dfpwm"] = function()
+        return {
+            make_decoder = function()
+                return function(data) return data end
+            end,
+        }
+    end
+
+    local Music = require("src.music")
+    local controller = Music.new({
+        playAudio = function() return true end,
+    }, "speaker_range_test")
+
+    local started = Music.start(controller)
+    assertTrue(not started, "Ignored Range response must fail gracefully")
+    assertEq(reads, 0, "Ignored Range response must not discard body bytes to seek")
+    assertTrue(closes > 0, "Ignored Range response must be closed")
+
+    package.loaded["src.music"] = oldMusic
+    package.loaded["src.music_manifest"] = oldManifest
+    package.loaded["cc.audio.dfpwm"] = oldDfpwm
+    package.preload["cc.audio.dfpwm"] = oldPreload
+    os.epoch = oldEpoch
+    http = oldHttp
+    fs = oldFs
+end
+
 print("Platform stub tests passed")

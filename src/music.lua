@@ -129,10 +129,12 @@ local function openRemoteRange(track, relativeOffset)
         end
 
         if startByte > 0 and code == 200 then
-            if not seekTo(response, startByte) then
-                response.close()
-                return nil, "MUSIC STREAM SKIP FAILED"
-            end
+            -- A proxy/CDN which ignores Range would otherwise make the game
+            -- synchronously read and discard up to ~20 MB just to reach the
+            -- requested track offset. Treat that source as temporarily
+            -- unsuitable and let normal retry/track-skip logic recover.
+            response.close()
+            return nil, "MUSIC HTTP RANGE UNSUPPORTED"
         end
     end
 

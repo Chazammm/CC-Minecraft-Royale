@@ -182,7 +182,7 @@ The first gameplay Evolutions are enabled:
 - **Emerald Bank** — Villager, 3 cycles, same 7E cost. Keeps the exact 61.6% Emerald-generation boost, gains 5% HP (185 -> 194.25) and lasts 70s instead of 50s.
 - **Diamond Golem** — Iron Golem, 2 cycles, same 5E cost. The base Iron Golem now has 1514.7 HP (+10% from 1377); Diamond Golem gains another 7.5% on top (1628.3025 HP). While it is actually walking, each accumulated 2.0s of movement triggers a stomp, creating a visible local quake that deals 25 damage in 8 radius to enemy grounded units only. Standing still to attack a building or Crown Tower pauses the stomp timer; flying and water-only units are ignored.
 
-VS BOT automatically selects the first evolution-capable card in its deck when one exists and respects the configured evolved Emerald cost.
+VS BOT deterministically scores every evolution-capable card in its deck and assigns the Evolution Slot to the strongest estimated upgrade. The estimate includes direct/special damage, summons, economy and utility, and respects the configured evolved Emerald cost.
 
 ## Game modes
 
@@ -304,7 +304,7 @@ The report contains PASS/FAIL status plus measured values (spawn times, HP decay
 
 ## Evolution balance testing
 
-Normal balance simulations already execute real Evolution gameplay. `Bot.prepare()` assigns the single Evolution Slot to the first eligible card in that bot's deck, and every play still goes through the normal `Game.playCardFromSlot()` path. This means cycles, changed Emerald cost, evolved stats, summons, splash, slow and other abilities are part of `simulate` and ordinary `compare` matches.
+Normal balance simulations already execute real Evolution gameplay. `Bot.prepare()` deterministically selects the highest-valued eligible Evolution for that deck, and every play still goes through the normal `Game.playCardFromSlot()` path. This means cycles, changed Emerald cost, evolved stats, summons, splash, slow and other abilities are part of `simulate` and ordinary `compare` matches.
 
 The mixed simulator reports an additional **EVOLUTIONS** table:
 
@@ -351,7 +351,7 @@ Enter a **fine-grained GitHub personal access token** restricted to `Chazammm/CC
 
 It is not part of the installer and is never committed to the repository.
 
-After setup, `mechanics_test`, `simulate`, and `compare` automatically upload their completed report. Reports are organized as:
+After setup, `mechanics_test`, `simulate`, `compare`, and `evo_compare` automatically upload their completed report. Reports are organized as:
 
     reports/latest/mechanics_report.txt
     reports/latest/balance_results.txt
@@ -425,7 +425,7 @@ Then run:
 - `tests/test_install_manifest.lua` - installer dependency coverage
 - `tests/test_cli_manifest.lua` - CLI and immutable music-manifest checks
 - `tests/test_side_symmetry.lua` - focused arena/bot side-symmetry checks
-- `tests/test_audit_followups.lua` - second-pass audit regressions for slows, UI, bot cadence, persistence, statistics and report batching
+- `tests/test_audit_followups.lua` - second-pass audit regressions for slows, UI, bot cadence, persistence, statistics, cache lifecycles and report batching\n- `tests/test_recovery_hardening.lua` - installer/preset recovery regressions including interrupted-update retry behavior
 
 ## Deliberate simplifications
 
