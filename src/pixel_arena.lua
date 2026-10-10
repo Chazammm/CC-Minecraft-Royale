@@ -525,6 +525,30 @@ local function getSurface(monitor, rect)
             h = h,
             window = win,
             box = pixelbox.new(win, colors.green),
+            lastBlitLines = {},
+        }
+
+        -- PixelBox still calculates the exact same image every frame, but
+        -- unchanged text rows need not be transmitted to the monitor again.
+        -- A thin terminal proxy handles this without modifying the bundled
+        -- third-party PixelBox library or affecting its color selection.
+        local cursorX, cursorY = 1, 1
+        cached.box.term = {
+            setCursorPos = function(x, y)
+                cursorX, cursorY = x, y
+            end,
+            blit = function(chars, foreground, background)
+                local signature = chars .. "\0" .. foreground .. "\0" .. background
+                if cursorX ~= 1 or cached.lastBlitLines[cursorY] ~= signature then
+                    win.setCursorPos(cursorX, cursorY)
+                    win.blit(chars, foreground, background)
+                    if cursorX == 1 then
+                        cached.lastBlitLines[cursorY] = signature
+                    else
+                        cached.lastBlitLines[cursorY] = nil
+                    end
+                end
+            end,
         }
         cache[monitor] = cached
     end
@@ -1130,6 +1154,15 @@ end
 
 function pixelArena.draw(monitor, state, playerId, rect)
     local box, cached = getSurface(monitor, rect)
+
+    -- The countdown writes its overlay directly to the physical monitor.
+    -- Force a full refresh when entering battle so cached rows cannot leave
+    -- countdown digits visible, even if the background is otherwise static.
+    if cached.lastPhase ~= state.phase then
+        cached.lastBlitLines = {}
+        cached.lastPhase = state.phase
+    end
+
     restoreTerrain(box, cached)
     local frameClock = (os.clock and os.clock() or 0)
     local drawEntities = orderedEntities(state)

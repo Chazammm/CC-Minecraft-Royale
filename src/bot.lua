@@ -2,6 +2,7 @@ local config = require("config")
 local cards = require("src.cards")
 local arena = require("src.arena")
 local Game = require("src.game")
+local spatial = require("src.spatial")
 
 local Bot = {}
 
@@ -605,10 +606,24 @@ local function bestArrowTarget(state, playerId, view)
     for _, center in ipairs(view.enemyNonTowers) do
         local score = 0
 
-        for _, target in ipairs(view.enemyNonTowers) do
+        -- The spatial index trims distant entities before scoring. Its sorted
+        -- snapshot uses the same state.entities order as the original nested
+        -- scan, preserving exact scores and tie selection.
+        local nearby = spatial.candidatesInRadius(
+            state,
+            otherPlayer(playerId),
+            center.x,
+            center.y,
+            radius
+        )
+        for _, target in ipairs(nearby) do
             local dx = center.x - target.x
             local dy = center.y - target.y
-            if dx * dx + dy * dy <= radiusSq then
+            if target.alive
+                and target.owner ~= playerId
+                and target.kind ~= "tower"
+                and dx * dx + dy * dy <= radiusSq
+            then
                 if target.sourceCardId == "villager" and target.emeraldBoost then
                     score = score + 9
                 elseif target.name == "Bat Swarm" then
@@ -1505,6 +1520,11 @@ end
 function Bot.debugCounterpushLane(state, playerId)
     local view = buildDecisionView(state, playerId)
     return counterpushLane(state, playerId, view)
+end
+
+function Bot.debugArrowTarget(state, playerId)
+    local view = buildDecisionView(state, playerId)
+    return bestArrowTarget(state, playerId, view)
 end
 
 function Bot.status(bot, state)

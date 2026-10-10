@@ -481,6 +481,24 @@ local function handleHttpSuccess(controller, url, response)
         return true
     end
 
+    -- Verify the requested byte offset when a 206 server supplies
+    -- Content-Range. A proxy/cache returning a mismatched segment would
+    -- otherwise silently decode another part of the music pack.
+    if code == 206 and response and response.getResponseHeaders then
+        local okHeaders, headers = pcall(response.getResponseHeaders)
+        if okHeaders and type(headers) == "table" then
+            local range = headers["Content-Range"] or headers["content-range"]
+            local actualStart = type(range) == "string"
+                and tonumber(range:match("^bytes%s+(%d+)%-"))
+                or nil
+            if actualStart and actualStart ~= pending.startByte then
+                if response.close then pcall(response.close) end
+                scheduleRetry(controller, "MUSIC HTTP RANGE MISMATCH", 1.5)
+                return true
+            end
+        end
+    end
+
     controller.handle = response
     controller.source = "stream"
     controller.error = nil

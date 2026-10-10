@@ -1186,11 +1186,33 @@ function cards.defaultDeck()
 end
 
 function cards.isValidDeck(deck)
-    if type(deck) ~= "table" or #deck ~= 8 then return false end
+    if type(deck) ~= "table" then return false end
+
+    -- Lua's # operator is undefined for tables with holes. A corrupt preset
+    -- must not pass validation by providing eight visible slots plus hidden
+    -- indices/keys, or by exploiting an ambiguous array boundary.
+    local count = 0
+    for key in pairs(deck) do
+        if type(key) ~= "number"
+            or key ~= math.floor(key)
+            or key < 1
+            or key > 8
+        then
+            return false
+        end
+        count = count + 1
+    end
+    if count ~= 8 then return false end
 
     local seen = {}
-    for _, id in ipairs(deck) do
-        if not cards.isSelectable(id) or seen[id] then return false end
+    for slot = 1, 8 do
+        local id = deck[slot]
+        if type(id) ~= "string"
+            or not cards.isSelectable(id)
+            or seen[id]
+        then
+            return false
+        end
         seen[id] = true
     end
 

@@ -3,10 +3,12 @@ local REPO = "CC-Minecraft-Royale"
 local BRANCH = "main"
 
 local files = {
-  "config.lua",
+  -- Install the recovery-aware startup entry first: even an interruption
+  -- before main/admin were updated will stop normal reboot into mixed files.
+  "startup.lua",
   "main.lua",
   "admin.lua",
-  "startup.lua",
+  "config.lua",
   "src/util.lua",
   "src/version.lua",
   "src/cards.lua",
@@ -128,7 +130,12 @@ end
 local function readManagedFiles()
   local out = {}
   local raw = readFile(MANAGED_FILE)
-  if not raw then return out end
+  if not raw then
+    if safeExists(MANAGED_FILE) then
+      error("Cannot read existing managed-file manifest; refusing unsafe update", 0)
+    end
+    return out
+  end
 
   for path in raw:gmatch("[^\r\n]+") do
     if isSafeManagedPath(path) then
@@ -336,11 +343,9 @@ print("")
 print("All files downloaded and Lua syntax preflight passed.")
 print("Applying low-space atomic update...")
 
-local markerOk, markerErr = writeFile(INSTALL_MARKER, targetSha)
-if not markerOk then
-  error("Could not create install recovery marker: " .. tostring(markerErr), 0)
-end
-
+-- Snapshot first, and create the recovery marker only after every previous
+-- managed file has been read successfully. A permission/read error must never
+-- masquerade as a missing file during rollback.
 -- Keep previous managed text files in RAM during the write phase. This provides
 -- rollback without storing a second on-disk project copy.
 local previousManaged = readManagedFiles()
@@ -377,11 +382,34 @@ for _, path in ipairs(staleFiles) do addRollbackPath(path) end
 
 local snapshot = {}
 for _, path in ipairs(rollbackPaths) do
-  local oldBody = readFile(path)
-  snapshot[path] = oldBody ~= nil and oldBody or false
+  if safeExists(path) then
+    if safeIsDir(path) then
+      error("Cannot snapshot managed directory " .. path, 0)
+    end
+    local oldBody = readFile(path)
+    if oldBody == nil then
+      error("Cannot snapshot managed file " .. path .. "; refusing update", 0)
+    end
+    snapshot[path] = oldBody
+  else
+    snapshot[path] = false
+  end
 end
+
 local oldManagedBody = readFile(MANAGED_FILE)
+if safeExists(MANAGED_FILE) and oldManagedBody == nil then
+  error("Cannot snapshot managed-file manifest; refusing update", 0)
+end
 local oldVersionBody = readFile(VERSION_FILE)
+if safeExists(VERSION_FILE) and oldVersionBody == nil then
+  error("Cannot snapshot install version; refusing update", 0)
+end
+
+-- All rollback inputs are now verified. Only now permit destructive writes.
+local markerOk, markerErr = writeFile(INSTALL_MARKER, targetSha)
+if not markerOk then
+  error("Could not create install recovery marker: " .. tostring(markerErr), 0)
+end
 
 local appliedCount = 0
 local applyOk, applyErr = pcall(function()

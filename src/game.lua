@@ -926,6 +926,10 @@ local function spawnProjectile(state, attacker, target, damageOverride, visualOv
         x = attacker.x,
         y = attacker.y,
         targetId = target.id,
+        -- Splash projectiles finish their flight even when their primary
+        -- target dies. These coordinates track the last live target position.
+        lastTargetX = target.x,
+        lastTargetY = target.y,
         owner = attacker.owner,
         sourceCardId = attacker.sourceCardId,
         sourceEntityId = attacker.id,
@@ -1686,14 +1690,13 @@ local function updateCombatEntity(state, entity, dt)
         end
     end
 
-    -- Units marching toward a tower may be pulled by a closer valid target.
-    -- Normal troops can be distracted by nearby enemies. Building-only troops
-    -- such as the Iron Golem may only be pulled by actual buildings, which
-    -- allows defensive Cannons to kite them toward the middle of the arena.
+    -- Until the first committed attack, troops can be distracted by a
+    -- closer valid enemy even when their current target is another troop.
+    -- After locking, no retargeting happens until that target becomes invalid.
+    -- Building-only troops may only be distracted by buildings.
     if target
         and entity.kind == "unit"
         and not entity.lockedTargetId
-        and target.kind == "tower"
     then
         local pullTarget, pullDistance
 
@@ -1900,6 +1903,21 @@ local function updateProjectiles(state, dt)
     for _, projectile in ipairs(state.projectiles) do
         if projectile.alive then
             local target = getEntityById(state, projectile.targetId)
+            if target then
+                projectile.lastTargetX = target.x
+                projectile.lastTargetY = target.y
+            elseif projectile.splashRadius
+                and projectile.lastTargetX
+                and projectile.lastTargetY
+            then
+                -- A fireball is already in flight: land at the last known
+                -- position, preserving AoE on other surviving enemies.
+                target = {
+                    x = projectile.lastTargetX,
+                    y = projectile.lastTargetY,
+                }
+            end
+
             if not target then
                 projectile.alive = false
             else
