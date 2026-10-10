@@ -38,6 +38,7 @@ local function cooperativeYield(force)
 end
 local nativePrint = print
 local liveHandle = nil
+local liveError = nil
 
 local function reportPrint(...)
     local parts = {}
