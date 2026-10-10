@@ -207,6 +207,32 @@ local function addFangEffect(state, kind, pending, ttl)
     })
 end
 
+local RESERVED_ENTITY_FIELDS = {
+    id = true,
+    owner = true,
+    kind = true,
+    x = true,
+    y = true,
+    alive = true,
+    targetId = true,
+    lockedTargetId = true,
+    attackCooldownLeft = true,
+    sourceCardId = true,
+    summonerId = true,
+    summonerAliveTracked = true,
+    _spatialKey = true,
+    _spatialOwner = true,
+    _spatialOrder = true,
+}
+
+local function applyEntityStats(entity, stats)
+    for key, value in pairs(util.deepcopy(stats or {})) do
+        if not RESERVED_ENTITY_FIELDS[key] then
+            entity[key] = value
+        end
+    end
+end
+
 local function makeBaseEntity(state, owner, kind, x, y)
     local entity = {
         id = state.nextEntityId,
@@ -269,9 +295,7 @@ end
 local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color, sourceCardId)
     local entity = makeBaseEntity(state, owner, "unit", x, y)
 
-    for k, v in pairs(util.deepcopy(stats)) do
-        entity[k] = v
-    end
+    applyEntityStats(entity, stats)
 
     entity.name = name or "Unit"
     entity.icon = icon or "?"
@@ -334,9 +358,7 @@ end
 
 local function spawnBuilding(state, owner, card, x, y)
     local entity = makeBaseEntity(state, owner, "building", x, y)
-    for k, v in pairs(util.deepcopy(card.building)) do
-        entity[k] = v
-    end
+    applyEntityStats(entity, card.building)
 
     entity.name = card.name
     entity.icon = card.icon

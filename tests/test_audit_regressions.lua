@@ -459,4 +459,63 @@ do
     assertTrue(cards.validate(), "Cards must validate after restoring mechanic data")
 end
 
+do
+    -- Card payloads must never override engine-owned entity identity/index
+    -- fields, and spawn code must remain safe even if a table is mutated after
+    -- initial module validation.
+    local zombie = cards.get("zombie")
+    local oldOwner = zombie.unit.owner
+    zombie.unit.owner = 2
+    assertTrue(
+        not pcall(cards.validate),
+        "Reserved entity payload field must be rejected"
+    )
+
+    local state = Game.new(nil, { headlessSimulation = true })
+    Game.debugLoadScenario(state, "empty")
+    local ok = Game.debugSpawnCard(state, 1, "zombie", 50, 110)
+    assertTrue(ok, "Runtime reserved-field defense setup spawn failed")
+    local spawned = state.entitiesByOwner[1][1]
+    assertEq(spawned.owner, 1, "Runtime payload must not override entity owner")
+    zombie.unit.owner = oldOwner
+    assertTrue(cards.validate(), "Cards must validate after reserved field restore")
+end
+
+do
+    local zombie = cards.get("zombie")
+
+    local oldMode = zombie.unit.targetMode
+    zombie.unit.targetMode = "building"
+    assertTrue(not pcall(cards.validate), "Unknown targetMode must fail")
+    zombie.unit.targetMode = oldMode
+
+    local oldFlying = zombie.unit.flying
+    zombie.unit.flying = "false"
+    assertTrue(not pcall(cards.validate), "Non-boolean flying must fail")
+    zombie.unit.flying = oldFlying
+
+    local oldCount = zombie.spawnCount
+    zombie.spawnCount = 1.5
+    assertTrue(not pcall(cards.validate), "Fractional spawnCount must fail")
+    zombie.spawnCount = oldCount
+
+    assertTrue(cards.validate(), "Cards must validate after schema restore")
+end
+
+do
+    local badPocket = util.deepcopy(config)
+    badPocket.ARENA.pocketCenterGap = badPocket.ARENA.width
+    assertTrue(
+        not pcall(config.validate, badPocket),
+        "Impossible pocket geometry must be rejected"
+    )
+
+    local badPrincess = util.deepcopy(config)
+    badPrincess.ARENA.enemyPrincessYTop = badPrincess.ARENA.riverTop
+    assertTrue(
+        not pcall(config.validate, badPrincess),
+        "Princess deployment boundary may not overlap river"
+    )
+end
+
 print("Audit regression tests passed")

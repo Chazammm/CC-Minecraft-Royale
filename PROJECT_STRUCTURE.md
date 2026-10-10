@@ -110,3 +110,8 @@ sandbox can rebuild authoritatively because it permits direct entity edits.
 Refactor parity guards additionally cover entity-order compaction/respawn,
 spatial candidate pruning, shared UI dirty-row behavior, admin rendering, and
 preset transaction paths occupied by directories.
+
+
+Entity payloads are not allowed to override engine-owned identity, ownership,
+position, target-lock or Spatial-index fields. This is enforced both by card
+schema validation and defensively by the spawn copier.

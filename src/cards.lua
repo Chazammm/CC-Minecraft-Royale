@@ -1200,6 +1200,35 @@ end
 function cards.validate()
     local seen = {}
 
+    local reservedPayloadFields = {
+        id = true,
+        owner = true,
+        kind = true,
+        x = true,
+        y = true,
+        alive = true,
+        targetId = true,
+        lockedTargetId = true,
+        attackCooldownLeft = true,
+        sourceCardId = true,
+        summonerId = true,
+        summonerAliveTracked = true,
+        _spatialKey = true,
+        _spatialOwner = true,
+        _spatialOrder = true,
+    }
+
+    local validTargetModes = {
+        any = true,
+        buildings = true,
+        none = true,
+    }
+
+    local validPlacements = {
+        anywhere = true,
+        water = true,
+    }
+
     local function finite(name, value)
         if type(value) ~= "number"
             or value ~= value
@@ -1390,6 +1419,42 @@ function cards.validate()
             error("Invalid card data: " .. label .. " payload missing", 0)
         end
 
+        for key in pairs(reservedPayloadFields) do
+            if payload[key] ~= nil then
+                error(
+                    "Invalid card data: " .. label .. "." .. key
+                        .. " is reserved by the entity engine",
+                    0
+                )
+            end
+        end
+
+        local booleanFields = {
+            "flying",
+            "canAttackAir",
+            "passive",
+            "waterOnly",
+        }
+        for _, key in ipairs(booleanFields) do
+            if payload[key] ~= nil and type(payload[key]) ~= "boolean" then
+                error(
+                    "Invalid card data: " .. label .. "." .. key
+                        .. " must be boolean",
+                    0
+                )
+            end
+        end
+
+        if payload.targetMode ~= nil
+            and not validTargetModes[payload.targetMode]
+        then
+            error(
+                "Invalid card data: " .. label
+                    .. ".targetMode must be any, buildings or none",
+                0
+            )
+        end
+
         if kind == "unit" or kind == "building" then
             finite(label .. ".maxHp", payload.maxHp)
             if payload.maxHp <= 0 then
@@ -1412,6 +1477,8 @@ function cards.validate()
             nonNegativeField(label, payload, "aggroRange")
             nonNegativeField(label, payload, "lifetime")
             nonNegativeField(label, payload, "projectileSpeed")
+            nonNegativeField(label, payload, "preferredMinRange")
+            nonNegativeField(label, payload, "retreatSpeedMultiplier")
         elseif kind == "spell" then
             nonNegativeField(label, payload, "damage")
             nonNegativeField(label, payload, "radius")
@@ -1442,6 +1509,20 @@ function cards.validate()
             and card.kind ~= "spell"
         then
             error("Invalid card data: " .. card.id .. " has unknown kind", 0)
+        end
+
+        if card.spawnCount ~= nil then
+            integerField(card.id, card, "spawnCount", false)
+        end
+        if card.spawnRadius ~= nil then
+            nonNegativeField(card.id, card, "spawnRadius")
+        end
+        if card.placement ~= nil and not validPlacements[card.placement] then
+            error(
+                "Invalid card data: " .. card.id
+                    .. ".placement must be anywhere, water or nil",
+                0
+            )
         end
 
         local payload = activePayload(card)
@@ -1545,6 +1626,21 @@ function cards.validate()
             finite(card.id .. ".evolved.cost", evolved.cost)
             if evolved.cost < 0 then
                 error("Invalid card data: " .. card.id .. ".evolved.cost must be >= 0", 0)
+            end
+            if evolved.spawnCount ~= nil then
+                integerField(card.id .. ".evolved", evolved, "spawnCount", false)
+            end
+            if evolved.spawnRadius ~= nil then
+                nonNegativeField(card.id .. ".evolved", evolved, "spawnRadius")
+            end
+            if evolved.placement ~= nil
+                and not validPlacements[evolved.placement]
+            then
+                error(
+                    "Invalid card data: " .. card.id
+                        .. ".evolved.placement invalid",
+                    0
+                )
             end
             validatePayload(
                 card.id .. ".evolved",

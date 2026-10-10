@@ -1136,7 +1136,9 @@ function pixelArena.draw(monitor, state, playerId, rect)
 
     if playerId == 1 then
         for _, entity in ipairs(drawEntities) do
-            drawSprite(box, entity, playerId, frameClock)
+            if entity.alive then
+                drawSprite(box, entity, playerId, frameClock)
+            end
         end
     else
         -- Mirroring reverses world Y. Preserve ID order for exact same-Y ties
@@ -1149,7 +1151,9 @@ function pixelArena.draw(monitor, state, playerId, rect)
                 first = first - 1
             end
             for j = first, i do
-                drawSprite(box, drawEntities[j], playerId, frameClock)
+                if drawEntities[j].alive then
+                    drawSprite(box, drawEntities[j], playerId, frameClock)
+                end
             end
             i = first - 1
         end

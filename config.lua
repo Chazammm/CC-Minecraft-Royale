@@ -168,6 +168,39 @@ function config.validate(candidate)
         error("Invalid config: river bounds must be ordered inside the arena", 0)
     end
 
+    local pocketFields = {
+        "enemyPrincessYTop",
+        "enemyPrincessYBottom",
+        "pocketPastTower",
+        "pocketCenterGap",
+    }
+    for _, key in ipairs(pocketFields) do
+        if cfg.ARENA[key] ~= nil then
+            nonNegative("ARENA." .. key, cfg.ARENA[key])
+        end
+    end
+
+    local top = cfg.ARENA.enemyPrincessYTop or 28
+    local bottom = cfg.ARENA.enemyPrincessYBottom
+        or (cfg.ARENA.height - top)
+    local centerGap = cfg.ARENA.pocketCenterGap or 6
+    local pastTower = cfg.ARENA.pocketPastTower or 4
+    if top >= cfg.ARENA.riverTop
+        or bottom <= cfg.ARENA.riverBottom
+        or top >= bottom
+    then
+        error(
+            "Invalid config: enemy Princess Y bounds must sit outside the river",
+            0
+        )
+    end
+    if centerGap >= cfg.ARENA.width / 2 then
+        error("Invalid config: pocketCenterGap is too large", 0)
+    end
+    if pastTower >= cfg.ARENA.riverTop then
+        error("Invalid config: pocketPastTower is too large", 0)
+    end
+
     if type(cfg.ARENA.bridgeCenters) ~= "table"
         or #cfg.ARENA.bridgeCenters == 0
     then
@@ -181,6 +214,12 @@ function config.validate(candidate)
             or center + cfg.ARENA.bridgeHalfWidth >= cfg.ARENA.width
         then
             error("Invalid config: bridge " .. i .. " extends outside the arena", 0)
+        end
+        if previousCenter and center <= previousCenter then
+            error(
+                "Invalid config: bridgeCenters must be strictly increasing",
+                0
+            )
         end
         if previousCenter
             and center - previousCenter <= cfg.ARENA.bridgeHalfWidth * 2
