@@ -3,10 +3,12 @@ local REPO = "CC-Minecraft-Royale"
 local BRANCH = "main"
 
 local files = {
-  "config.lua",
+  -- Install the recovery-aware startup entry first: even an interruption
+  -- before main/admin were updated will stop normal reboot into mixed files.
+  "startup.lua",
   "main.lua",
   "admin.lua",
-  "startup.lua",
+  "config.lua",
   "src/util.lua",
   "src/version.lua",
   "src/cards.lua",
