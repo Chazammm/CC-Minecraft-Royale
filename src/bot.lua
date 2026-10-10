@@ -791,7 +791,7 @@ local function anvilOverlapsPending(state, playerId, x, y, radius)
     return false
 end
 
-local function bestAnvilTarget(state, playerId, view)
+local function bestAnvilTarget(state, playerId, view, forceReference)
     local card = ANVIL_CARD
     local spell = card and card.spell or nil
     if not spell then return nil, nil, 0 end
@@ -812,6 +812,58 @@ local function bestAnvilTarget(state, playerId, view)
         }
     end
 
+    -- Pre-computed predicted positions are grouped into radius-sized cells.
+    -- Query only the 3x3 neighboring cells when the board is crowded.
+    -- For small boards the original array scan has lower constant overhead.
+    -- Neighbor snapshots are restored to original entity order so floating
+    -- scoring accumulation and first-best tie choices remain EXACTLY equal.
+    local grid = nil
+    local cellSize = math.max(1, radius)
+    if not forceReference and #view.enemyEntities >= 24 then
+        grid = {}
+        for order, entity in ipairs(view.enemyEntities) do
+            local point = predicted[entity.id]
+            local gx = math.floor(point.x / cellSize)
+            local gy = math.floor(point.y / cellSize)
+            local row = grid[gy]
+            if not row then row = {} grid[gy] = row end
+            local bucket = row[gx]
+            if not bucket then bucket = {} row[gx] = bucket end
+            bucket[#bucket + 1] = {
+                entity = entity,
+                order = order,
+            }
+        end
+    end
+
+    local function possibleVictims(cx, cy)
+        if not grid then return view.enemyEntities end
+        local gx = math.floor(cx / cellSize)
+        local gy = math.floor(cy / cellSize)
+        local nearby = {}
+        for iy = gy - 1, gy + 1 do
+            local row = grid[iy]
+            if row then
+                for ix = gx - 1, gx + 1 do
+                    local bucket = row[ix]
+                    if bucket then
+                        for _, point in ipairs(bucket) do
+                            nearby[#nearby + 1] = point
+                        end
+                    end
+                end
+            end
+        end
+        table.sort(nearby, function(a, b)
+            return a.order < b.order
+        end)
+        local ordered = {}
+        for i, point in ipairs(nearby) do
+            ordered[i] = point.entity
+        end
+        return ordered
+    end
+
     for _, center in ipairs(view.enemyEntities) do
         local centerPrediction = predicted[center.id]
             local cx = centerPrediction and centerPrediction.x or center.x
@@ -823,7 +875,7 @@ local function bestAnvilTarget(state, playerId, view)
                 local reliableHits = 0
                 local lethalTower = false
 
-                for _, target in ipairs(view.enemyEntities) do
+                for _, target in ipairs(possibleVictims(cx, cy)) do
                     local targetPrediction = predicted[target.id]
                         local tx = targetPrediction and targetPrediction.x or target.x
                         local ty = targetPrediction and targetPrediction.y or target.y
@@ -1541,6 +1593,13 @@ end
 -- Deterministic probe used by terrain/collision regression tests.
 function Bot.debugPredictedAnvilPosition(state, entity, delay)
     return predictedAnvilPosition(state, entity, delay)
+end
+
+-- Compare the normal grid candidate search with its original exhaustive
+-- oracle in deterministic CI. Both return the same center and score.
+function Bot.debugAnvilTarget(state, playerId, forceReference)
+    local view = buildDecisionView(state, playerId)
+    return bestAnvilTarget(state, playerId, view, forceReference == true)
 end
 
 function Bot.debugArrowTarget(state, playerId)
