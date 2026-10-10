@@ -577,11 +577,18 @@ do
     }
 
     local writes = 0
+    local function unchangedResponse(body, code)
+        return {
+            getResponseCode = function() return code or 200 end,
+            readAll = function() return body end,
+            close = function() end,
+        }
+    end
     http = {
         get = function(options)
             local url = type(options) == "table" and options.url or options
             if url:find("raw.githubusercontent.com", 1, true) then
-                return response(reportBody, 200)
+                return unchangedResponse(reportBody, 200)
             end
             error("Unchanged report must not reach Git Data reads")
         end,
