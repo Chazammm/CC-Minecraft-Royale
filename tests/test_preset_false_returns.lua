@@ -30,7 +30,13 @@ local function fixture(files, opts)
             if mode=="r" then
                 if opts.unreadablePath==p then return nil end
                 if stored[p]==nil then return nil end
-                return {readAll=function()return stored[p] end,close=function()end}
+                return {
+                    readAll=function()
+                        if opts.falseReadPath==p then return false end
+                        return stored[p]
+                    end,
+                    close=function()end,
+                }
             end
             if mode~="w" then return nil end
             local result=""
@@ -168,6 +174,33 @@ do
     eq(presets.save(deck),true,"invalid orphan temp may be replaced")
     eq(stored["deck_presets.db"],"NEW_VALID",
         "fresh valid final replaces invalid orphan temp")
+end
+
+-- A transient unreadable FINAL is not a corrupt readable file. An
+-- attempted save must not overwrite the only surviving copy.
+do
+    local stored=fixture({["deck_presets.db"]="OLD_VALID"},
+        {unreadablePath="deck_presets.db"})
+    eq(presets.save(deck),false,"unreadable final must block destructive save")
+    eq(stored["deck_presets.db"],"OLD_VALID","unreadable final survives")
+end
+
+-- readAll() can explicitly return false. Treat it as an I/O failure, not
+-- a decoded-invalid backup that may be safely deleted.
+do
+    local stored=fixture({["deck_presets.db.bak"]="VALID_BACKUP"},
+        {falseReadPath="deck_presets.db.bak"})
+    eq(presets.save(deck),false,"failed backup read must preserve candidate")
+    eq(stored["deck_presets.db.bak"],"VALID_BACKUP","backup read failure preserves file")
+end
+
+-- Likewise readAll(false) for the final must not grant permission to
+-- overwrite it when no backup exists.
+do
+    local stored=fixture({["deck_presets.db"]="OLD_VALID"},
+        {falseReadPath="deck_presets.db"})
+    eq(presets.save(deck),false,"failed final read must reject save")
+    eq(stored["deck_presets.db"],"OLD_VALID","failed final read preserves data")
 end
 
 fs,textutils=oldFs,oldTextutils
