@@ -99,9 +99,11 @@ local function syncMusic()
             Music.start(music)
         end
     elseif state.phase ~= "battle" and previousMusicPhase == "battle" then
-        -- Do not hard-stop the only speaker here: on one-speaker setups the
-        -- victory/defeat SFX may be playing at the same moment.
-        Music.stop(music, false)
+        -- A dedicated second speaker can be stopped immediately without
+        -- clipping victory/defeat SFX on the primary speaker.
+        local dedicatedMusicSpeaker = hw.speakerNames
+            and #hw.speakerNames >= 2
+        Music.stop(music, dedicatedMusicSpeaker)
     end
 
     previousMusicPhase = state.phase
