@@ -35,6 +35,7 @@ jobs:
           lua5.2 tests/test_refactor_parity.lua
           lua5.2 tests/test_audit_hardening_20261010.lua
           lua5.2 tests/test_audit_fixes_20261010.lua
+          lua5.2 tests/test_release_gate.lua
       - name: V1 smoke tests
         run: lua5.4 tests/test_v1.lua
       - name: Platform stub tests
@@ -59,3 +60,5 @@ jobs:
         run: lua5.4 tests/test_audit_hardening_20261010.lua
       - name: Third-audit regression tests
         run: lua5.4 tests/test_audit_fixes_20261010.lua
+      - name: Audit register and release quality gate
+        run: lua5.4 tests/test_release_gate.lua
