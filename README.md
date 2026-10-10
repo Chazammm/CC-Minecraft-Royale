@@ -494,3 +494,10 @@ report filename only after the run completes. If a rename fails, the previous
 complete report is restored. A stale `*.bak` is recovered at the start of the
 next invocation. Incomplete runs therefore do not silently replace valid
 reports. The repository sync runs only for successfully published results.
+
+The complete **24-scenario in-game `mechanics_test.lua`** suite now runs in
+GitHub Actions with a small CC:Tweaked filesystem shim under both Lua 5.2 and
+5.4. This executes the real battle simulation and checks the generated report
+for zero failures; it does not pretend to test physical ATM10 peripherals.
+The regression also validates the exact Charged Creeper (580) and Evoker
+Fangs (85 per ground target) report metrics after gameplay invariant changes.
