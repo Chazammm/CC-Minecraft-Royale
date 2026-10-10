@@ -120,6 +120,17 @@ function presets.load()
     return presets.empty()
 end
 
+-- Return true for a valid recoverable preset OR a copy whose contents
+-- cannot be read safely. Never discard potentially important unreadable
+-- transaction files automatically. Invalid but readable files can be
+-- replaced by a fresh valid save if there is no other recovery candidate.
+local function needsRecovery(path)
+    if not pathExists(path) then return false end
+    local raw = readBody(path)
+    if raw == nil then return true end
+    return decode(raw) ~= nil
+end
+
 function presets.save(value)
     if not fs or not fs.open or not textutils or not textutils.serialize then
         return nil
@@ -131,10 +142,15 @@ function presets.save(value)
         return false
     end
 
-    -- The .bak may be the only complete copy after an interrupted
-    -- previous save. Keep it until load() can recover it, rather than
-    -- deleting it at the beginning of a new transaction.
-    if not pathExists(PRESET_FILE) and pathExists(PRESET_BACKUP_FILE) then
+    -- On an interrupted previous save, the newest valid copy might be
+    -- the .tmp or .bak. Block overwriting those recoverable files while the
+    -- main file is absent/corrupt: load() must restore them first. However,
+    -- an explicitly invalid, readable orphan backup must NOT permanently
+    -- lock users out of saving fresh valid decks.
+    if not decode(readBody(PRESET_FILE))
+        and (needsRecovery(PRESET_TEMP_FILE)
+            or needsRecovery(PRESET_BACKUP_FILE))
+    then
         return false
     end
 
