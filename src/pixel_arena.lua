@@ -1185,7 +1185,7 @@ local function canvasChanged(box, cached)
     return different
 end
 
-function pixelArena.draw(monitor, state, playerId, rect)
+function pixelArena.draw(monitor, state, playerId, rect, forceFullEncode)
     local box, cached = getSurface(monitor, rect)
 
     -- The countdown writes its overlay directly to the physical monitor.
@@ -1238,7 +1238,9 @@ function pixelArena.draw(monitor, state, playerId, rect)
     -- same terminal rows. Avoid its conversion entirely. Forced renders
     -- remain necessary after phase transitions because countdown text was
     -- written outside the PixelBox renderer.
-    if forceFrame or canvasChanged(box, cached) then
+    -- Optional diagnostic oracle: bypass the frame cache entirely to
+    -- compare cached and exhaustive PixelBox output under the SAME state.
+    if forceFrame or forceFullEncode or canvasChanged(box, cached) then
         box:render()
     end
 end
