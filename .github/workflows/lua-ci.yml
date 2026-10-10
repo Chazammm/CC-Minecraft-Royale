@@ -83,6 +83,10 @@ jobs:
           lua5.4 tests/test_preset_transaction_integrity.lua
           lua5.2 tests/test_atomic_token_reconfig.lua
           lua5.4 tests/test_atomic_token_reconfig.lua
+      - name: Credential backup recovery across interrupted updates
+        run: |
+          lua5.2 tests/test_token_backup_recovery.lua
+          lua5.4 tests/test_token_backup_recovery.lua
       - name: Music seek failure and no-progress fault injection
         run: |
           lua5.2 tests/test_music_seek_failures.lua
