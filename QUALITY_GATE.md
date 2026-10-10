@@ -48,6 +48,24 @@ proven correct. No change is considered audited solely because CI is green.
 | Headless vs live timing / side fairness | `tests/test_headless_runner.lua`, `tests/test_side_symmetry.lua`, `tests/test_refactor_parity.lua` |
 | Registry completeness / fixed-test references | `tests/test_release_gate.lua` |
 
+## Additional deep-audit regression gates (2026-10-10)
+
+- `tests/test_preset_false_returns.lua`: fail closed on silent
+  disk/rename/write/close failure; protect deck presets and backups.
+- `tests/test_installer_false_returns.lua`: never replace project files
+  when the prior cleanup or recovery marker write fails.
+- `tests/test_report_logout_false.lua`: never claim GitHub credential
+  removal unless the credential is actually gone.
+- `tests/test_music_seek_failures.lua`: failed seeks must not play the
+  wrong song offsets or spin on empty reads.
+- `tests/test_core_invariant_stress.lua`: seeded live combat snapshots
+  verify ID/owner/spatial/economy invariants. Always run both Lua 5.2 and 5.4.
+
+These checks prevent regression in the *exercised scenarios* but do not
+substitute for actual CC:Tweaked monitor, filesystem and speaker testing.
+The full scope and residual caveats are in
+`docs/DEEP_CORE_AUDIT_20261010.md`.
+
 ## Explicit limits
 
 GitHub CI uses Linux and synthetic CC:Tweaked APIs. A successful run does not
