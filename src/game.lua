@@ -3183,38 +3183,6 @@ function Game.handleTouch(state, playerId, x, y, layout)
             return
         end
 
-        if layout.presetButtons then
-            if hit(layout.presetButtons.prev, x, y) then
-                Game.cycleDeckPresetSlot(state, playerId, -1)
-                emitSound(state, "minecraft:block.note_block.hat", 0.4, 0.9)
-                return
-            end
-
-            if hit(layout.presetButtons.next, x, y) then
-                Game.cycleDeckPresetSlot(state, playerId, 1)
-                emitSound(state, "minecraft:block.note_block.hat", 0.4, 1.3)
-                return
-            end
-
-            if hit(layout.presetButtons.save, x, y) then
-                Game.saveDeckPreset(state, playerId, player.presetSlot or 1)
-                emitSound(state, "minecraft:block.note_block.chime", 0.45, 1.2)
-                return
-            end
-
-            if hit(layout.presetButtons.load, x, y) then
-                Game.loadDeckPreset(state, playerId, player.presetSlot or 1)
-                emitSound(state, "minecraft:block.note_block.hat", 0.4, 1.1)
-                return
-            end
-
-            if hit(layout.presetButtons.random, x, y) then
-                Game.randomizeDeck(state, playerId)
-                emitSound(state, "minecraft:block.note_block.pling", 0.45, 1.5)
-                return
-            end
-        end
-
         if layout.collectionCards then
             for slot, zone in ipairs(layout.collectionCards) do
                 if hit(zone, x, y) then
