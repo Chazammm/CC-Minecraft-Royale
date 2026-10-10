@@ -25,6 +25,8 @@ platform integration, and benchmark tooling can evolve independently.
 
 ## Presentation and hardware
 
+- `src/ui_buffer.lua` — shared text-buffer, drawing and dirty-row blit
+  primitives used by both monitor UIs.
 - `src/render.lua` — normal UI.
 - `src/admin_render.lua` — admin UI.
 - `src/pixel_arena.lua` — arena pixel rendering and sprites.

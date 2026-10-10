@@ -21,6 +21,7 @@ local files = {
   "src/headless_match.lua",
   "src/music.lua",
   "src/music_manifest.lua",
+  "src/ui_buffer.lua",
   "src/render.lua",
   "src/admin_render.lua",
   "src/report_sync.lua",

@@ -457,3 +457,8 @@ Refactoring note: spatial bucket maintenance/query infrastructure lives in
 Deck-preset file transactions and recovery now live in `src/presets.lua`.
 `src/game.lua` only requests load/save operations and keeps match-state
 behavior unchanged.
+
+
+The normal and admin monitor renderers now share their low-level buffer/text/
+blit implementation through `src/ui_buffer.lua`, eliminating duplicated UI
+plumbing while preserving their separate layouts.

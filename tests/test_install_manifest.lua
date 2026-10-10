@@ -96,6 +96,10 @@ assert(
     "Spatial index module must be installed"
 )
 assert(
+    managed["src/ui_buffer.lua"],
+    "Shared UI buffer module must be installed"
+)
+assert(
     managed["src/presets.lua"],
     "Preset persistence module must be installed"
 )
