@@ -88,6 +88,15 @@ local function decode(raw)
     return out
 end
 
+-- An unreadable transaction artifact could still contain a valid saved
+-- deck. Only clean recovery debris after confirming that it is readable.
+local function safeDeleteReadable(path)
+    if pathExists(path) and readBody(path) == nil then
+        return false
+    end
+    return safeDelete(path)
+end
+
 function presets.load()
     if not fs or not fs.open or not fs.exists then
         return presets.empty()
@@ -108,21 +117,27 @@ function presets.load()
                 -- reboot/power loss between old->backup and temp->final.
                 -- If invalid/partial final cannot be removed, do not
                 -- destroy any other complete recovery candidate.
-                local cleared = safeDelete(PRESET_FILE)
+                -- Do not classify a transiently unreadable active file
+                -- as corrupt. Return the readable recovery candidate in
+                -- memory but leave BOTH files untouched for a later retry.
+                local finalReadable = not pathExists(PRESET_FILE)
+                    or readBody(PRESET_FILE) ~= nil
+                local cleared = finalReadable
+                    and safeDelete(PRESET_FILE)
                 local promoted = cleared and safeMove(path, PRESET_FILE)
                 -- Some storage wrappers return success without actually
                 -- renaming; never delete the recovery backup in that case.
                 if promoted and readBody(PRESET_FILE) == originalBody
                     and not pathExists(path)
                 then
-                    safeDelete(PRESET_BACKUP_FILE)
-                    safeDelete(PRESET_TEMP_FILE)
+                    safeDeleteReadable(PRESET_BACKUP_FILE)
+                    safeDeleteReadable(PRESET_TEMP_FILE)
                 end
             elseif index == 1 then
                 -- A valid final file wins; stale transaction debris can be
                 -- discarded without risking the recovered presets.
-                safeDelete(PRESET_BACKUP_FILE)
-                safeDelete(PRESET_TEMP_FILE)
+                safeDeleteReadable(PRESET_BACKUP_FILE)
+                safeDeleteReadable(PRESET_TEMP_FILE)
             end
             return loaded
         end

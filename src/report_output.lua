@@ -55,6 +55,12 @@ function reportOutput.start(path)
     if exists(path) and not isFile(path) then
         return nil, "Report destination is a directory"
     end
+    -- A failed read is not proof that the current report is obsolete.
+    -- Never delete its only recovery backup until the active file can
+    -- actually be read and the new run can proceed safely.
+    if exists(path) and readExact(path) == nil then
+        return nil, "Existing report cannot be read; recovery copies preserved"
+    end
 
     -- Previous power loss after old->backup: restore the completed old report.
     if exists(backup) and not exists(path) then

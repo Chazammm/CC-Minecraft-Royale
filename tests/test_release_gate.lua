@@ -42,7 +42,7 @@ for line in registry:gmatch("[^\r\n]+") do
     end
 end
 
-assert(fixed >= 23, "Audit register lost transaction and historical audit findings")
+assert(fixed >= 27, "Audit register lost iterative and historical audit findings")
 assert(open >= 5, "Open measurement/hardware limitations were silently removed")
 for _, testPath in ipairs({
     "tests/test_preset_false_returns.lua",
@@ -55,6 +55,8 @@ for _, testPath in ipairs({
     "tests/test_atomic_token_reconfig.lua",
     "tests/test_token_backup_recovery.lua",
     "tests/test_report_transaction_integrity.lua",
+    "tests/test_token_corrupt_active_fallback.lua",
+    "tests/test_preset_recovery_matrix.lua",
 }) do
     assert(workflow:find("lua5.2 " .. testPath, 1, true)
         and workflow:find("lua5.4 " .. testPath, 1, true),

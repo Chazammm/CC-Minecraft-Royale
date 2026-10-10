@@ -91,6 +91,14 @@ jobs:
         run: |
           lua5.2 tests/test_report_transaction_integrity.lua
           lua5.4 tests/test_report_transaction_integrity.lua
+      - name: Token degraded-active crash recovery oracle
+        run: |
+          lua5.2 tests/test_token_corrupt_active_fallback.lua
+          lua5.4 tests/test_token_corrupt_active_fallback.lua
+      - name: Exhaustive 125-case deck recovery matrix
+        run: |
+          lua5.2 tests/test_preset_recovery_matrix.lua
+          lua5.4 tests/test_preset_recovery_matrix.lua
       - name: Music seek failure and no-progress fault injection
         run: |
           lua5.2 tests/test_music_seek_failures.lua

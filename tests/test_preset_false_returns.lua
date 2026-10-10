@@ -203,5 +203,37 @@ do
     eq(stored["deck_presets.db"],"OLD_VALID","failed final read preserves data")
 end
 
+-- Recovery may read a valid backup while the main file is temporarily
+-- unreadable. Loading the backup into memory must NEVER destroy the
+-- potentially newer unreadable main file.
+do
+    local stored=fixture({
+        ["deck_presets.db"]="OLD_VALID",
+        ["deck_presets.db.bak"]="VALID_BACKUP",
+    },{unreadablePath="deck_presets.db"})
+    local loaded=presets.load()
+    eq(cards.isValidDeck(loaded[1][1]),true,
+        "backup remains usable without altering unreadable primary")
+    eq(stored["deck_presets.db"],"OLD_VALID",
+        "load must not delete temporarily unreadable primary")
+    eq(stored["deck_presets.db.bak"],"VALID_BACKUP",
+        "load must preserve valid backup while primary unreadable")
+end
+
+-- When the new complete .tmp can be recovered, an older backup may be
+-- temporarily unreadable. A successful temp promotion must not delete
+-- that unreadable recovery candidate blindly.
+do
+    local stored=fixture({
+        ["deck_presets.db.tmp"]="NEW_VALID",
+        ["deck_presets.db.bak"]="VALID_BACKUP",
+    },{unreadablePath="deck_presets.db.bak"})
+    local loaded=presets.load()
+    eq(cards.isValidDeck(loaded[1][1]),true,"new staged deck recovered")
+    eq(stored["deck_presets.db"],"NEW_VALID","staged deck promoted")
+    eq(stored["deck_presets.db.bak"],"VALID_BACKUP",
+        "unreadable previous backup must remain until verifiably readable")
+end
+
 fs,textutils=oldFs,oldTextutils
 print("Preset false-return transaction regressions passed: "..checks)

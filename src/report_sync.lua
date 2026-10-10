@@ -71,13 +71,27 @@ local function writeAll(path, body)
 
     local temporary, backup = path .. ".tmp", path .. ".bak"
 
-    -- Previous power loss after old->backup: recover old credentials first,
-    -- rather than treating the missing active token as an empty installation.
-    if fs.exists(backup) and not fs.exists(path) then
+    -- A previous interruption may leave either no active credential or
+    -- a truncated active credential, while the only usable copy is in .bak.
+    -- Recover that copy BEFORE clearing any transaction artifacts.
+    if fs.exists(backup) then
         local recoverable = readAll(backup)
-        if not recoverable or not tokenMoveVerified(backup, path, recoverable)
-        then
-            return false, "Existing token backup could not be recovered"
+        if not recoverable then
+            return false, "Existing token backup could not be read"
+        end
+        local active = fs.exists(path) and readAll(path) or nil
+        if fs.exists(path) and active == nil then
+            return false, "Existing active GitHub token cannot be read"
+        end
+        local needsRestore = not fs.exists(path)
+            or (active and #trim(active) < 20 and #trim(recoverable) >= 20)
+        if needsRestore then
+            if fs.exists(path) and not safeTokenDelete(path) then
+                return false, "Damaged active credential could not be cleared"
+            end
+            if not tokenMoveVerified(backup, path, recoverable) then
+                return false, "Existing token backup could not be recovered"
+            end
         end
     end
 
@@ -407,10 +421,18 @@ end
 -- rename. Treat it as a readable fallback until a subsequent setup restores
 -- it; never replace a present but unreadable active token implicitly.
 local function readStoredToken()
+    local primary, primaryErr = nil, nil
     if fs.exists(TOKEN_FILE) then
-        return readAll(TOKEN_FILE)
+        primary, primaryErr = readAll(TOKEN_FILE)
+        if primary and #trim(primary) >= 20 then return primary end
     end
-    return readAll(TOKEN_FILE .. ".bak")
+
+    -- A crash or partial write may leave a truncated active credential
+    -- alongside the last good, verified backup. Prefer a usable backup
+    -- rather than treating the damaged primary as the only possible token.
+    local backup, backupErr = readAll(TOKEN_FILE .. ".bak")
+    if backup and #trim(backup) >= 20 then return backup end
+    return primary or backup, primaryErr or backupErr
 end
 
 function M.isConfigured()
