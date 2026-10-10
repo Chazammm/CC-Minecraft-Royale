@@ -71,13 +71,27 @@ local function writeAll(path, body)
 
     local temporary, backup = path .. ".tmp", path .. ".bak"
 
-    -- Previous power loss after old->backup: recover old credentials first,
-    -- rather than treating the missing active token as an empty installation.
-    if fs.exists(backup) and not fs.exists(path) then
+    -- A previous interruption may leave either no active credential or
+    -- a truncated active credential, while the only usable copy is in .bak.
+    -- Recover that copy BEFORE clearing any transaction artifacts.
+    if fs.exists(backup) then
         local recoverable = readAll(backup)
-        if not recoverable or not tokenMoveVerified(backup, path, recoverable)
-        then
-            return false, "Existing token backup could not be recovered"
+        if not recoverable then
+            return false, "Existing token backup could not be read"
+        end
+        local active = fs.exists(path) and readAll(path) or nil
+        if fs.exists(path) and active == nil then
+            return false, "Existing active GitHub token cannot be read"
+        end
+        local needsRestore = not fs.exists(path)
+            or (active and #trim(active) < 20 and #trim(recoverable) >= 20)
+        if needsRestore then
+            if fs.exists(path) and not safeTokenDelete(path) then
+                return false, "Damaged active credential could not be cleared"
+            end
+            if not tokenMoveVerified(backup, path, recoverable) then
+                return false, "Existing token backup could not be recovered"
+            end
         end
     end
 
