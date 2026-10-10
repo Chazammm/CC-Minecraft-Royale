@@ -3654,8 +3654,11 @@ function Game.debugClearUnits(state)
         end
     end
     state.entities = kept
+    state.entitiesDirty = false
     state.globalMovementAuraActive = false
     state.globalMovementAuraDirty = false
+    state.emeraldBoost = { [1] = 0, [2] = 0 }
+    state.emeraldBoostSources = { [1] = {}, [2] = {} }
     state.entityById = {}
     for _, entity in ipairs(kept) do
         state.entityById[entity.id] = entity

@@ -67,53 +67,115 @@ config.RULESET_DEFAULTS = {
 
 config.DEBUG = false
 
-function config.validate()
+function config.validate(candidate)
+    local cfg = candidate or config
+
+    local function finiteNumber(name, value)
+        if type(value) ~= "number"
+            or value ~= value
+            or value == math.huge
+            or value == -math.huge
+        then
+            error("Invalid config: " .. name .. " must be a finite number", 0)
+        end
+        return value
+    end
+
     local function positive(name, value)
-        if type(value) ~= "number" or value <= 0 then
+        finiteNumber(name, value)
+        if value <= 0 then
             error("Invalid config: " .. name .. " must be > 0", 0)
         end
     end
 
-    positive("TEXT_SCALE", config.TEXT_SCALE)
-    positive("TICK_RATE", config.TICK_RATE)
-    positive("ARENA.width", config.ARENA and config.ARENA.width)
-    positive("ARENA.height", config.ARENA and config.ARENA.height)
+    local function nonNegative(name, value)
+        finiteNumber(name, value)
+        if value < 0 then
+            error("Invalid config: " .. name .. " must be >= 0", 0)
+        end
+    end
+
+    positive("TEXT_SCALE", cfg.TEXT_SCALE)
+    positive("TICK_RATE", cfg.TICK_RATE)
+    if cfg.TICK_RATE > 0.25 then
+        error("Invalid config: TICK_RATE must be <= 0.25 seconds", 0)
+    end
+
+    positive("ARENA.width", cfg.ARENA and cfg.ARENA.width)
+    positive("ARENA.height", cfg.ARENA and cfg.ARENA.height)
+    positive("ARENA.bridgeHalfWidth", cfg.ARENA and cfg.ARENA.bridgeHalfWidth)
     positive(
         "BUILDINGS.lifetimeDecayMultiplier",
-        config.BUILDINGS and config.BUILDINGS.lifetimeDecayMultiplier
+        cfg.BUILDINGS and cfg.BUILDINGS.lifetimeDecayMultiplier
     )
     positive(
         "MATCH.tiebreakerDamagePerSecond",
-        config.MATCH and config.MATCH.tiebreakerDamagePerSecond
+        cfg.MATCH and cfg.MATCH.tiebreakerDamagePerSecond
     )
 
-    -- Arena/tower/bot geometry is intentionally authored for the canonical
-    -- 100x160 battlefield. Fail loudly instead of accepting a partially
-    -- rescaled configuration with inconsistent hard-coded positions.
-    if config.ARENA.width ~= 100 or config.ARENA.height ~= 160 then
+    if cfg.ARENA.width ~= 100 or cfg.ARENA.height ~= 160 then
         error("Invalid config: arena size is fixed at 100x160", 0)
     end
 
-    if type(config.ARENA.riverTop) ~= "number"
-        or type(config.ARENA.riverBottom) ~= "number"
-        or config.ARENA.riverTop <= 0
-        or config.ARENA.riverBottom >= config.ARENA.height
-        or config.ARENA.riverTop >= config.ARENA.riverBottom
+    if type(cfg.ARENA.riverTop) ~= "number"
+        or type(cfg.ARENA.riverBottom) ~= "number"
+        or cfg.ARENA.riverTop <= 0
+        or cfg.ARENA.riverBottom >= cfg.ARENA.height
+        or cfg.ARENA.riverTop >= cfg.ARENA.riverBottom
     then
         error("Invalid config: river bounds must be ordered inside the arena", 0)
     end
 
-    if type(config.MATCH.emeraldPerSecond) ~= "number"
-        or config.MATCH.emeraldPerSecond < 0
+    if type(cfg.ARENA.bridgeCenters) ~= "table"
+        or #cfg.ARENA.bridgeCenters == 0
     then
-        error("Invalid config: MATCH.emeraldPerSecond must be >= 0", 0)
+        error("Invalid config: ARENA.bridgeCenters must contain at least one bridge", 0)
     end
 
-    positive("MATCH.normalTime", config.MATCH.normalTime)
-    positive("MATCH.overtimeTime", config.MATCH.overtimeTime)
-    positive("MATCH.emeraldMax", config.MATCH.emeraldMax)
-    positive("MATCH.overtimeMultiplier", config.MATCH.overtimeMultiplier)
-    positive("MATCH.overtimeFinalMultiplier", config.MATCH.overtimeFinalMultiplier)
+    local previousCenter = nil
+    for i, center in ipairs(cfg.ARENA.bridgeCenters) do
+        finiteNumber("ARENA.bridgeCenters[" .. i .. "]", center)
+        if center - cfg.ARENA.bridgeHalfWidth <= 0
+            or center + cfg.ARENA.bridgeHalfWidth >= cfg.ARENA.width
+        then
+            error("Invalid config: bridge " .. i .. " extends outside the arena", 0)
+        end
+        if previousCenter
+            and center - previousCenter <= cfg.ARENA.bridgeHalfWidth * 2
+        then
+            error("Invalid config: bridge rectangles must not overlap", 0)
+        end
+        previousCenter = center
+    end
+
+    nonNegative("MATCH.emeraldPerSecond", cfg.MATCH.emeraldPerSecond)
+    positive("MATCH.normalTime", cfg.MATCH.normalTime)
+    positive("MATCH.overtimeTime", cfg.MATCH.overtimeTime)
+    positive("MATCH.emeraldMax", cfg.MATCH.emeraldMax)
+    nonNegative("MATCH.emeraldStart", cfg.MATCH.emeraldStart)
+    if cfg.MATCH.emeraldStart > cfg.MATCH.emeraldMax then
+        error("Invalid config: MATCH.emeraldStart must not exceed emeraldMax", 0)
+    end
+
+    positive("MATCH.overtimeMultiplier", cfg.MATCH.overtimeMultiplier)
+    positive("MATCH.overtimeFinalMultiplier", cfg.MATCH.overtimeFinalMultiplier)
+    nonNegative("MATCH.overtimeFinalSeconds", cfg.MATCH.overtimeFinalSeconds)
+    if cfg.MATCH.overtimeFinalSeconds > cfg.MATCH.overtimeTime then
+        error("Invalid config: overtimeFinalSeconds must not exceed overtimeTime", 0)
+    end
+    nonNegative("MATCH.countdown", cfg.MATCH.countdown)
+
+    positive("TOWERS.princessRange", cfg.TOWERS and cfg.TOWERS.princessRange)
+    positive("TOWERS.kingRange", cfg.TOWERS and cfg.TOWERS.kingRange)
+
+    if cfg.MUSIC then
+        finiteNumber("MUSIC.volume", cfg.MUSIC.volume)
+        if cfg.MUSIC.volume < 0 or cfg.MUSIC.volume > 3 then
+            error("Invalid config: MUSIC.volume must be between 0 and 3", 0)
+        end
+        positive("MUSIC.httpTimeout", cfg.MUSIC.httpTimeout)
+    end
+
     return true
 end
 

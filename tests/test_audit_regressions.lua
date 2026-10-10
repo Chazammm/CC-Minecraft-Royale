@@ -76,6 +76,22 @@ do
 end
 
 do
+    -- Counterpush scoring must include special-mechanic DPS. Guardian's low HP
+    -- alone is below the threshold, so its beam contribution is required.
+    local guardianState = Game.new()
+    Game.debugLoadScenario(guardianState, "empty")
+    assertTrue(
+        Game.debugSpawnCard(guardianState, 1, "guardian", 50, 80),
+        "Counterpush special-DPS test needs a Guardian"
+    )
+    assertEq(
+        Bot.debugCounterpushLane(guardianState, 1),
+        75,
+        "Decision view must include Guardian beam DPS in counterpush scoring"
+    )
+end
+
+do
     -- Bot.prepare must never inherit a valid-but-stale human Evolution choice.
     local state = Game.new()
     state.players[2].evolutionCardId = "endermite"
@@ -98,6 +114,23 @@ do
         chosen,
         freshState.players[2].evolutionCardId,
         "Bot Evolution choice must not depend on a stale human selection"
+    )
+end
+
+do
+    -- Charged Creeper's doubled proximity burst must be visible to the
+    -- strategic Evolution selector rather than reading as a zero-damage card.
+    local state = Game.new()
+    local deck = {
+        "creeper", "iron_golem", "zombie", "cannon",
+        "arrows", "enderman", "blaze", "skeleton",
+    }
+    local bot = Bot.new(2, deck)
+    Bot.prepare(bot, state)
+    assertEq(
+        state.players[2].evolutionCardId,
+        "creeper",
+        "Strategic Evo selection must account for proximity-explosion value"
     )
 end
 

@@ -310,8 +310,8 @@ function render.layoutFor(monitor)
     return layout
 end
 
-local function drawButton(buffer, zone, label, active)
-    local bg = active and colors.lime or colors.gray
+local function drawButton(buffer, zone, label, active, activeColor)
+    local bg = active and (activeColor or colors.lime) or colors.gray
     local fg = active and colors.black or colors.white
     fill(buffer, zone.x1, zone.y1, zone.x2, zone.y2, bg)
 

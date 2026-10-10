@@ -231,10 +231,48 @@ local function cardCombatValue(card)
             )
         end
 
+        if body.proximityExplosion then
+            local spec = body.proximityExplosion
+            local fuse = math.max(0.25, tonumber(spec.fuseTime) or 1.5)
+            local burst = tonumber(spec.damage) or 0
+            dps = math.max(dps, burst / math.max(2.0, fuse + 1.0))
+        end
+
         local utility = 0
-        if body.emeraldBoost then utility = utility + body.emeraldBoost * 180 end
+        local lifetime = math.max(1, tonumber(body.lifetime) or 50)
+        if body.emeraldBoost then
+            utility = utility
+                + body.emeraldBoost * 120 * math.min(1.6, lifetime / 50)
+        end
         if body.globalEnemyMoveSlow then utility = utility + 35 end
         if body.teleport then utility = utility + 18 end
+        if body.flying then utility = utility + 6 end
+
+        local range = tonumber(body.attackRange) or 0
+        if range > 3 then utility = utility + math.min(10, range * 0.25) end
+
+        if body.projectileSplashRadius then
+            utility = utility + (tonumber(body.projectileSplashRadius) or 0) * 2.5
+        end
+
+        if body.onHitSlow then
+            local factor = tonumber(body.onHitSlow.factor) or 1
+            local duration = tonumber(body.onHitSlow.duration) or 0
+            utility = utility + math.max(0, 1 - factor) * duration * 20
+        end
+
+        if body.splitOnDeath and body.splitOnDeath.template then
+            local template = cards.getInternalUnitTemplate
+                and cards.getInternalUnitTemplate(body.splitOnDeath.template)
+                or cards.getInternalUnit(body.splitOnDeath.template)
+            if template then
+                local count = tonumber(body.splitOnDeath.count) or 1
+                local childHp = tonumber(template.maxHp) or 0
+                local childDps = (tonumber(template.damage) or 0)
+                    / math.max(0.25, tonumber(template.attackCooldown) or 1)
+                utility = utility + count * (childHp * 0.012 + childDps * 0.40)
+            end
+        end
 
         if body.periodicSpawn and body.periodicSpawn.template then
             local template = cards.getInternalUnitTemplate
@@ -248,6 +286,15 @@ local function cardCombatValue(card)
                 local summonCount = tonumber(body.periodicSpawn.count) or 1
                 local summonDps = (tonumber(template.damage) or 0)
                     / math.max(0.25, tonumber(template.attackCooldown) or 1)
+                if template.hybridAttack then
+                    summonDps = math.max(
+                        summonDps,
+                        (tonumber(template.hybridAttack.meleeDamage) or 0)
+                            / math.max(0.25, tonumber(template.hybridAttack.meleeCooldown) or 1),
+                        (tonumber(template.hybridAttack.rangedDamage) or 0)
+                            / math.max(0.25, tonumber(template.hybridAttack.rangedCooldown) or 1)
+                    )
+                end
                 utility = utility + summonCount * (
                     (tonumber(template.maxHp) or 0) / summonCooldown * 0.08
                     + summonDps * 4 / summonCooldown
@@ -262,7 +309,8 @@ local function cardCombatValue(card)
         local spell = card.spell
         local damage = tonumber(spell.damage) or 0
         local radius = tonumber(spell.radius) or 0
-        return damage + radius * 2
+        local delay = tonumber(spell.delay) or 0
+        return damage + radius * 2 - delay * 3
     end
 
     return 0
@@ -331,6 +379,8 @@ local function handHasCard(player, cardId)
     return false
 end
 
+local unitDps
+
 -- A bot decision used to rescan state.entities independently for threat
 -- analysis, Arrow targeting, Anvil targeting, towers, and Villagers. Build
 -- those stable views once per decision while preserving the original entity
@@ -365,13 +415,8 @@ local function buildDecisionView(state, playerId)
                     if advanced then
                         local hpRatio = (entity.hp or 0)
                             / math.max(1, entity.maxHp or 1)
-                        local dps = 0
-                        if entity.damage and entity.damage > 0 then
-                            dps = entity.damage
-                                / math.max(0.25, entity.attackCooldown or 1)
-                        end
                         local score = hpRatio * ((entity.maxHp or 100) / 220)
-                            + dps / 45
+                            + unitDps(entity) / 45
                         if score > view.counterpushScore then
                             view.counterpushScore = score
                             view.counterpushLane = entity.x < 50 and 25 or 75
@@ -449,7 +494,7 @@ local function directUnitDps(entity)
     return entity.damage / math.max(0.25, entity.attackCooldown or 1)
 end
 
-local function unitDps(entity)
+unitDps = function(entity)
     local dps = directUnitDps(entity)
     local spec = entity.periodicSpawn
 
