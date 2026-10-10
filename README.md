@@ -501,3 +501,17 @@ GitHub Actions with a small CC:Tweaked filesystem shim under both Lua 5.2 and
 for zero failures; it does not pretend to test physical ATM10 peripherals.
 The regression also validates the exact Charged Creeper (580) and Evoker
 Fangs (85 per ground target) report metrics after gameplay invariant changes.
+
+### Profile-guided performance changes (2026-10-10)
+
+The first round of targeted optimizations reuses combat target predicates,
+shortlists Anvil predictions using spatial buckets on crowded boards, and
+skips full PixelBox conversion for unchanged arena frames. Movement bypasses
+the expensive full-pixel comparison so fast-action scenes retain roughly the
+previous frame cost. The original Anvil search and full pixel encoder remain
+available as diagnostic oracles; CI checks exact selections and pixel output.
+
+Read [`docs/PERFORMANCE_OPTIMIZATION_20261010.md`](docs/PERFORMANCE_OPTIMIZATION_20261010.md)
+for real CPU measurements, baseline comparison, and the still-pending
+in-game hardware validation. Changes do **not** modify attack behavior,
+sprite resolution, bot scoring rules or benchmark simulation timesteps.
