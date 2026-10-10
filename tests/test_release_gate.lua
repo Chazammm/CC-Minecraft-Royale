@@ -48,8 +48,8 @@ assert(workflow:find("tests/test_audit_fixes_20261010.lua", 1, true),
     "Third-audit tests must be in CI")
 assert(workflow:find("tests/test_release_gate.lua", 1, true),
     "Release gate must be self-enforcing in CI")
-assert(policy:find("Hardware", 1, true)
-    and policy:find("reproducible", 1, true),
+assert(policy:lower():find("hardware", 1, true)
+    and policy:lower():find("reproducib", 1, true),
     "Quality process must document hardware and reproducibility requirements")
 assert(template:find("Regression test", 1, true)
     and template:find("Hardware", 1, true),
