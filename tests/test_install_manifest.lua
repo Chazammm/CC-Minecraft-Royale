@@ -92,6 +92,10 @@ for _, path in ipairs(entrypoints) do
 end
 
 assert(
+    managed["src/spatial.lua"],
+    "Spatial index module must be installed"
+)
+assert(
     managed["src/headless_match.lua"],
     "Shared headless runner must be installed"
 )

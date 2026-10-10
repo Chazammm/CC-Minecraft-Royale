@@ -2,6 +2,7 @@ local config = require("config")
 local util = require("src.util")
 local cards = require("src.cards")
 local arena = require("src.arena")
+local spatial = require("src.spatial")
 
 local Game = {}
 
@@ -367,147 +368,6 @@ local function addFangEffect(state, kind, pending, ttl)
     })
 end
 
-local SPATIAL_CELL_SIZE = 16
-local SPATIAL_KEY_STRIDE = 1024
-
-local function spatialCellCoords(x, y)
-    return math.floor((x or 0) / SPATIAL_CELL_SIZE),
-        math.floor((y or 0) / SPATIAL_CELL_SIZE)
-end
-
-local function spatialKey(cx, cy)
-    -- Arena/query cell X is tiny compared with this stride, so this numeric
-    -- key is collision-free for every reachable arena/query coordinate and
-    -- avoids allocating "x:y" strings in combat hotpaths.
-    return cy * SPATIAL_KEY_STRIDE + cx
-end
-
-local function ensureSpatialIndex(state)
-    if not state.spatialIndex then
-        state.spatialIndex = {
-            cellSize = SPATIAL_CELL_SIZE,
-            buckets = { [1] = {}, [2] = {} },
-        }
-    end
-    return state.spatialIndex
-end
-
-local function removeSpatialEntity(state, entity)
-    if not entity or not entity._spatialKey or not entity._spatialOwner then
-        return
-    end
-
-    local index = state.spatialIndex
-    local ownerBuckets = index
-        and index.buckets
-        and index.buckets[entity._spatialOwner]
-    local bucket = ownerBuckets and ownerBuckets[entity._spatialKey]
-    if bucket then
-        bucket[entity.id] = nil
-        if next(bucket) == nil then
-            ownerBuckets[entity._spatialKey] = nil
-        end
-    end
-
-    entity._spatialKey = nil
-    entity._spatialOwner = nil
-end
-
-local function indexSpatialEntity(state, entity)
-    if not entity or not entity.alive then return end
-    if entity.owner ~= 1 and entity.owner ~= 2 then return end
-
-    local index = ensureSpatialIndex(state)
-    local cx, cy = spatialCellCoords(entity.x, entity.y)
-    local key = spatialKey(cx, cy)
-
-    if entity._spatialKey == key
-        and entity._spatialOwner == entity.owner
-    then
-        return
-    end
-
-    removeSpatialEntity(state, entity)
-
-    local ownerBuckets = index.buckets[entity.owner]
-    local bucket = ownerBuckets[key]
-    if not bucket then
-        bucket = {}
-        ownerBuckets[key] = bucket
-    end
-    bucket[entity.id] = entity
-    entity._spatialKey = key
-    entity._spatialOwner = entity.owner
-end
-
-local function rebuildSpatialIndex(state)
-    state.spatialIndex = {
-        cellSize = SPATIAL_CELL_SIZE,
-        buckets = { [1] = {}, [2] = {} },
-    }
-
-    for order, entity in ipairs(state.entities or {}) do
-        entity._spatialKey = nil
-        entity._spatialOwner = nil
-        entity._spatialOrder = order
-        if entity.alive then
-            indexSpatialEntity(state, entity)
-        end
-    end
-end
-
-local function spatialCandidatesInBounds(
-    state,
-    owner,
-    minX,
-    minY,
-    maxX,
-    maxY
-)
-    local index = state.spatialIndex
-    local ownerBuckets = index and index.buckets and index.buckets[owner]
-    if not ownerBuckets then
-        return state.entitiesByOwner
-            and state.entitiesByOwner[owner]
-            or state.entities
-    end
-
-    local minCx, minCy = spatialCellCoords(minX, minY)
-    local maxCx, maxCy = spatialCellCoords(maxX, maxY)
-    local out = {}
-
-    for cx = minCx, maxCx do
-        for cy = minCy, maxCy do
-            local bucket = ownerBuckets[spatialKey(cx, cy)]
-            if bucket then
-                for _, entity in pairs(bucket) do
-                    if entity.alive then out[#out + 1] = entity end
-                end
-            end
-        end
-    end
-
-    table.sort(out, function(a, b)
-        local ao = a._spatialOrder or a.id
-        local bo = b._spatialOrder or b.id
-        if ao == bo then return a.id < b.id end
-        return ao < bo
-    end)
-    return out
-end
-
-local function spatialCandidatesInRadius(state, owner, x, y, radius)
-    radius = math.max(0, radius or 0)
-    return spatialCandidatesInBounds(
-        state,
-        owner,
-        x - radius,
-        y - radius,
-        x + radius,
-        y + radius
-    )
-end
-
 local function makeBaseEntity(state, owner, kind, x, y)
     local entity = {
         id = state.nextEntityId,
@@ -533,7 +393,7 @@ local function makeBaseEntity(state, owner, kind, x, y)
         local owned = state.entitiesByOwner[owner]
         owned[#owned + 1] = entity
     end
-    indexSpatialEntity(state, entity)
+    spatial.index(state, entity)
 
     return entity
 end
@@ -809,31 +669,16 @@ local function findNearest(state, entity, filter, maxRange)
         end
     end
 
-    local index = maxRange and state.spatialIndex or nil
-    local ownerBuckets = index
-        and index.buckets
-        and index.buckets[enemyOwner]
-
-    if maxRange and ownerBuckets then
-        local minCx, minCy = spatialCellCoords(
+    if maxRange and state.spatialIndex then
+        spatial.forEachInBounds(
+            state,
+            enemyOwner,
             entity.x - maxRange,
-            entity.y - maxRange
-        )
-        local maxCx, maxCy = spatialCellCoords(
+            entity.y - maxRange,
             entity.x + maxRange,
-            entity.y + maxRange
+            entity.y + maxRange,
+            consider
         )
-
-        for cx = minCx, maxCx do
-            for cy = minCy, maxCy do
-                local bucket = ownerBuckets[spatialKey(cx, cy)]
-                if bucket then
-                    for _, candidate in pairs(bucket) do
-                        if candidate.alive then consider(candidate) end
-                    end
-                end
-            end
-        end
     else
         local candidates = state.entitiesByOwner
             and state.entitiesByOwner[enemyOwner]
@@ -1140,7 +985,7 @@ local function moveToward(state, entity, tx, ty, dt)
 
     local moved = util.distance(oldX, oldY, entity.x, entity.y)
     if moved > 0.0001 then
-        indexSpatialEntity(state, entity)
+        spatial.index(state, entity)
         advanceMovementPulse(state, entity, oldX, oldY, dt, speed)
         return true
     end
@@ -1173,7 +1018,7 @@ local function moveAway(state, entity, target, dt)
 
     local moved = util.distance(oldX, oldY, entity.x, entity.y)
     if moved > 0.0001 then
-        indexSpatialEntity(state, entity)
+        spatial.index(state, entity)
         advanceMovementPulse(state, entity, oldX, oldY, dt, speed)
         return true
     end
@@ -1197,7 +1042,7 @@ local function deactivateEntity(state, entity)
         end
     end
 
-    removeSpatialEntity(state, entity)
+    spatial.remove(state, entity)
     entity.alive = false
     state.entitiesDirty = true
 
@@ -1364,7 +1209,7 @@ local function explodeProximityUnit(state, entity)
     local victims = {}
     local radius = spec.radius or 8
     local radiusSq = radius * radius
-    local candidates = spatialCandidatesInRadius(
+    local candidates = spatial.candidatesInRadius(
         state,
         otherPlayer(entity.owner),
         entity.x,
@@ -1413,7 +1258,7 @@ local function handleDeathAbilities(state, entity)
         local victims = {}
         local radius = entity.deathDamage.radius
         local radiusSq = radius * radius
-        local candidates = spatialCandidatesInRadius(
+        local candidates = spatial.candidatesInRadius(
             state,
             otherPlayer(entity.owner),
             entity.x,
@@ -1640,7 +1485,7 @@ updateGroundPulse = function(state, entity, dt)
     -- Snapshot victims before applying damage. A lethal pulse may split a
     -- Slime/Magma Cube, but newborn split units did not exist when the stomp
     -- happened and must not be hit by that same pulse.
-    local candidates = spatialCandidatesInRadius(
+    local candidates = spatial.candidatesInRadius(
         state,
         otherPlayer(entity.owner),
         entity.x,
@@ -1746,7 +1591,7 @@ local function resolveEvokerFangs(state, pending)
     local candidates
     if pending.mode == "ring" then
         local ringRadius = spec.ringRadius or 5
-        candidates = spatialCandidatesInRadius(
+        candidates = spatial.candidatesInRadius(
             state,
             otherPlayer(pending.owner),
             pending.x,
@@ -1755,7 +1600,7 @@ local function resolveEvokerFangs(state, pending)
         )
     else
         local halfWidth = spec.lineHalfWidth or 2.4
-        candidates = spatialCandidatesInBounds(
+        candidates = spatial.candidatesInBounds(
             state,
             otherPlayer(pending.owner),
             math.min(pending.x, pending.x2) - halfWidth,
@@ -2067,7 +1912,7 @@ local function updateCombatEntity(state, entity, dt)
                 addEffect(state, "teleport", entity.x, entity.y, 4, 0.25, entity.owner)
                 entity.x = util.clamp(nx, 2, config.ARENA.width - 2)
                 entity.y = util.clamp(ny, 2, config.ARENA.height - 2)
-                indexSpatialEntity(state, entity)
+                spatial.index(state, entity)
                 entity.teleportCooldownLeft = spec.cooldown or 4
                 addEffect(state, "teleport", entity.x, entity.y, 4, 0.25, entity.owner)
                 emitSound(state, "minecraft:entity.enderman.teleport", 0.7, 1.0)
@@ -2211,7 +2056,7 @@ local function updateProjectiles(state, dt)
                     if projectile.splashRadius then
                         local splashSq =
                             projectile.splashRadius * projectile.splashRadius
-                        local candidates = spatialCandidatesInRadius(
+                        local candidates = spatial.candidatesInRadius(
                             state,
                             otherPlayer(projectile.owner),
                             target.x,
@@ -2396,10 +2241,7 @@ function Game.new(soundCallback, options)
         entities = {},
         entityById = {},
         entitiesByOwner = { [1] = {}, [2] = {} },
-        spatialIndex = {
-            cellSize = SPATIAL_CELL_SIZE,
-            buckets = { [1] = {}, [2] = {} },
-        },
+        spatialIndex = spatial.newIndex(),
         projectiles = {},
         effects = {},
         pendingSpells = {},
@@ -2449,10 +2291,7 @@ function Game.resetLobby(state)
     state.entities = {}
     state.entityById = {}
     state.entitiesByOwner = { [1] = {}, [2] = {} }
-    state.spatialIndex = {
-        cellSize = SPATIAL_CELL_SIZE,
-        buckets = { [1] = {}, [2] = {} },
-    }
+    state.spatialIndex = spatial.newIndex()
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
@@ -2500,10 +2339,7 @@ function Game.startCountdown(state)
     state.entities = {}
     state.entityById = {}
     state.entitiesByOwner = { [1] = {}, [2] = {} }
-    state.spatialIndex = {
-        cellSize = SPATIAL_CELL_SIZE,
-        buckets = { [1] = {}, [2] = {} },
-    }
+    state.spatialIndex = spatial.newIndex()
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
@@ -2631,7 +2467,7 @@ local function startTiebreaker(state)
         local owned = state.entitiesByOwner[tower.owner]
         owned[#owned + 1] = tower
     end
-    rebuildSpatialIndex(state)
+    spatial.rebuild(state)
 
     setFeedback(state.players[1], "TIEBREAKER - ALL TOWERS LOSE HP", 3)
     setFeedback(state.players[2], "TIEBREAKER - ALL TOWERS LOSE HP", 3)
@@ -2702,7 +2538,7 @@ local function resolveFallingAnvil(state, pending)
     local spell = pending.spell
     local targets = {}
     local radius = spell.radius or 5.5
-    local candidates = spatialCandidatesInRadius(
+    local candidates = spatial.candidatesInRadius(
         state,
         otherPlayer(pending.owner),
         pending.x,
@@ -2791,7 +2627,7 @@ local function castArrows(state, playerId, card, x, y)
 
     local targets = {}
     local radius = card.spell.radius
-    local candidates = spatialCandidatesInRadius(
+    local candidates = spatial.candidatesInRadius(
         state,
         otherPlayer(playerId),
         x,
@@ -2945,7 +2781,7 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
         -- Card plays are rare compared with combat ticks. Reconcile here so
         -- programmatic/test position edits made outside normal movement cannot
         -- make an immediate AoE spell read stale buckets.
-        rebuildSpatialIndex(state)
+        spatial.rebuild(state)
         local castType = activeCard.spell and activeCard.spell.cast
         if castType == "falling_anvil" then
             castFallingAnvil(state, playerId, activeCard, x, y)
@@ -3613,7 +3449,7 @@ function Game.update(state, dt)
     -- Normal battle movement/spawn/death/teleport paths maintain the index
     -- incrementally. The admin sandbox intentionally permits direct entity
     -- edits, so only that mode pays for a full authoritative reconcile.
-    if isAdmin then rebuildSpatialIndex(state) end
+    if isAdmin then spatial.rebuild(state) end
 
     if isBattle and state.tiebreaker then
         if state.stats then state.stats.elapsed = state.stats.elapsed + dt end
@@ -3778,10 +3614,7 @@ local function clearSimulation(state)
     state.entities = {}
     state.entityById = {}
     state.entitiesByOwner = { [1] = {}, [2] = {} }
-    state.spatialIndex = {
-        cellSize = SPATIAL_CELL_SIZE,
-        buckets = { [1] = {}, [2] = {} },
-    }
+    state.spatialIndex = spatial.newIndex()
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
@@ -3985,15 +3818,15 @@ function Game.debugClearUnits(state)
         local owned = state.entitiesByOwner[entity.owner]
         owned[#owned + 1] = entity
     end
-    rebuildSpatialIndex(state)
+    spatial.rebuild(state)
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
 end
 
 function Game.debugSpatialRadiusIds(state, owner, x, y, radius)
-    rebuildSpatialIndex(state)
-    local candidates = spatialCandidatesInRadius(state, owner, x, y, radius)
+    spatial.rebuild(state)
+    local candidates = spatial.candidatesInRadius(state, owner, x, y, radius)
     local radiusSq = radius * radius
     local ids = {}
     for _, entity in ipairs(candidates) do

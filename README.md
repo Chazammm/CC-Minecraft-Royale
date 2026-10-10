@@ -447,3 +447,8 @@ or partial monitor-name settings that CC:Tweaked cannot apply.
 Report synchronization compares each local report with the current remote
 `reports/latest/` copy. Byte-identical results are reported as unchanged and
 do not create another timestamped history file.
+
+
+Refactoring note: spatial bucket maintenance/query infrastructure lives in
+`src/spatial.lua`; authoritative target rules and combat decisions remain in
+`src/game.lua`.

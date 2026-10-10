@@ -12,6 +12,7 @@ local files = {
   "lib/pixelbox_lite.lua",
   "src/pixel_arena.lua",
   "src/arena.lua",
+  "src/spatial.lua",
   "src/hardware.lua",
   "src/game.lua",
   "src/bot.lua",
