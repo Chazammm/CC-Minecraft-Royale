@@ -1282,7 +1282,13 @@ function pixelArena.draw(monitor, state, playerId, rect, forceFullEncode)
     -- Optional diagnostic oracle: bypass the frame cache entirely to
     -- compare cached and exhaustive PixelBox output under the SAME state.
     local moved = rosterMoved(state, cached)
-    if forceFrame or forceFullEncode or moved or canvasChanged(box, cached) then
+    if forceFrame or forceFullEncode or moved then
+        -- We did not compare/update the pixel snapshot. Never leave a stale
+        -- snapshot behind: a unit can move back to the SAME old position,
+        -- and skipping the return frame would otherwise leave ghost pixels.
+        cached.framePixels = nil
+        box:render()
+    elseif canvasChanged(box, cached) then
         box:render()
     end
 end
