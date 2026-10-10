@@ -84,7 +84,7 @@ frame-time benefit.
 - All **24 in-game mechanics scenarios pass** on Lua 5.2/5.4 CI.
 - **183 exact Anvil optimized-vs-exhaustive comparisons** pass across both
   owners, clustered/sparse/cross-river layouts and overlapping pending spells.
-- **26 pixel-diff checks**, including exact line/color equality against
+- **34 pixel-diff checks**, including exact line/color equality against
   exhaustive PixelBox output for both player orientations, sprite movement,
   and countdown transitions.
 - Existing target lock, Spatial AoE order, headless simulation parity,
