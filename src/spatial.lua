@@ -154,6 +154,9 @@ function spatial.candidatesInBounds(
         end
     end
 
+    -- Damage/effect code historically traversed state.entities. Preserve
+    -- that authoritative order for ordered AoE snapshots. ID is only a
+    -- defensive tie-break if external state supplied duplicate/missing order.
     table.sort(out, function(a, b)
         local ao = a._spatialOrder or a.id
         local bo = b._spatialOrder or b.id

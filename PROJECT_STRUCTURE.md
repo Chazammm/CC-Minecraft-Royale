@@ -100,7 +100,13 @@ platform integration, and benchmark tooling can evolve independently.
 ### Spatial combat index
 
 Normal battle ticks maintain the spatial buckets incrementally on spawn,
-movement, teleport and death. Ordered AoE snapshots retain entity-ID ordering
-for deterministic terminal damage, while bounded nearest-target lookups scan
+movement, teleport and death. Ordered AoE snapshots retain the authoritative
+`state.entities` traversal order for deterministic terminal damage, while
+bounded nearest-target lookups scan
 buckets directly without allocating or sorting candidate lists. The admin
 sandbox can rebuild authoritatively because it permits direct entity edits.
+
+
+Refactor parity guards additionally cover entity-order compaction/respawn,
+spatial candidate pruning, shared UI dirty-row behavior, admin rendering, and
+preset transaction paths occupied by directories.

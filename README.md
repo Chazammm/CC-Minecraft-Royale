@@ -467,3 +467,8 @@ plumbing while preserving their separate layouts.
 Benchmark note: headless runs retain an explicit gameplay-seed interface for
 future stochastic mechanics, but the current combat engine has no random combat
 branches. Deck/context sampling uses its own deterministic RNG.
+
+
+Refactor parity tests now verify that cleanup/respawn cycles cannot reorder
+ordered Spatial AoE relative to `state.entities`, and that the shared UI buffer
+retains skip-zone and dirty-row behavior in both generic and admin rendering.

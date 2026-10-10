@@ -155,6 +155,46 @@ do
     assertEq(stored["deck_presets.db"], "BAK", "Invalid-slot final must be replaced")
 end
 
+-- Preset persistence must never recursively delete a directory occupying one
+-- of its transaction-file paths.
+do
+    local oldFs = fs
+    local oldTextutils = textutils
+    local oldPresets = package.loaded["src.presets"]
+    local deleted = {}
+
+    fs = {
+        exists = function(path)
+            return path == "deck_presets.db.bak"
+        end,
+        isDir = function(path)
+            return path == "deck_presets.db.bak"
+        end,
+        delete = function(path)
+            deleted[#deleted + 1] = path
+        end,
+        open = function()
+            error("Preset save must fail before opening when backup path is a directory")
+        end,
+        move = function()
+            error("Preset save must fail before moving when backup path is a directory")
+        end,
+    }
+    textutils = {
+        serialize = function() return "SERIALIZED" end,
+    }
+
+    package.loaded["src.presets"] = nil
+    local Presets = require("src.presets")
+    local ok = Presets.save(validPreset())
+    assertEq(ok, false, "Directory transaction path must make preset save fail closed")
+    assertEq(#deleted, 0, "Preset directory path must never call recursive fs.delete")
+
+    package.loaded["src.presets"] = oldPresets
+    fs = oldFs
+    textutils = oldTextutils
+end
+
 -- An interrupted install which fails again must keep the recovery marker even
 -- if rollback succeeds. This simulates a mixed pre-existing installation and a
 -- one-time write failure during the second Apply.

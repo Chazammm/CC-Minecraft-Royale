@@ -32,6 +32,7 @@ jobs:
           lua5.2 tests/test_audit_regressions.lua
           lua5.2 tests/test_headless_runner.lua
           lua5.2 tests/test_side_symmetry.lua
+          lua5.2 tests/test_refactor_parity.lua
       - name: V1 smoke tests
         run: lua5.4 tests/test_v1.lua
       - name: Platform stub tests
@@ -50,3 +51,5 @@ jobs:
         run: lua5.4 tests/test_audit_followups.lua
       - name: Recovery hardening tests
         run: lua5.4 tests/test_recovery_hardening.lua
+      - name: Refactor parity tests
+        run: lua5.4 tests/test_refactor_parity.lua

@@ -2032,6 +2032,11 @@ local function cleanupEntities(state)
         local entity = state.entities[read]
         if entity.alive then
             state.entities[write] = entity
+            -- Ordered Spatial AoE snapshots must match the current
+            -- state.entities traversal order after compaction. The buckets
+            -- hold entity references, so updating this field is sufficient;
+            -- no full spatial rebuild is required.
+            entity._spatialOrder = write
             state.entityById[entity.id] = entity
             if entity.owner == 1 or entity.owner == 2 then
                 local owned = state.entitiesByOwner[entity.owner]
