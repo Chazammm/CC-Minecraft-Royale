@@ -26,8 +26,16 @@ local function safeDelete(path)
         local okDir, isDir = pcall(fs.isDir, path)
         if not okDir or isDir then return false end
     end
-    local ok = pcall(fs.delete, path)
-    return ok
+    local ok, result = pcall(fs.delete, path)
+    return ok and result ~= false
+end
+
+-- CraftOS native fs.move returns nil on success; custom/peripheral wrappers
+-- may explicitly return false on failure instead of raising an exception.
+-- pcall alone only proves that the operation did not throw.
+local function safeMove(from, to)
+    local ok, result = pcall(fs.move, from, to)
+    return ok and result ~= false
 end
 
 local function readBody(path)
@@ -91,8 +99,10 @@ function presets.load()
             if index > 1 and fs.move and fs.delete then
                 -- Recover a fully serialized transaction left behind by a
                 -- reboot/power loss between old->backup and temp->final.
-                safeDelete(PRESET_FILE)
-                local promoted = pcall(fs.move, path, PRESET_FILE)
+                -- If invalid/partial final cannot be removed, do not
+                -- destroy any other complete recovery candidate.
+                local cleared = safeDelete(PRESET_FILE)
+                local promoted = cleared and safeMove(path, PRESET_FILE)
                 if promoted then
                     safeDelete(PRESET_BACKUP_FILE)
                     safeDelete(PRESET_TEMP_FILE)
@@ -121,6 +131,13 @@ function presets.save(value)
         return false
     end
 
+    -- The .bak may be the only complete copy after an interrupted
+    -- previous save. Keep it until load() can recover it, rather than
+    -- deleting it at the beginning of a new transaction.
+    if not pathExists(PRESET_FILE) and pathExists(PRESET_BACKUP_FILE) then
+        return false
+    end
+
     if not safeDelete(PRESET_TEMP_FILE)
         or not safeDelete(PRESET_BACKUP_FILE)
     then
@@ -131,27 +148,31 @@ function presets.save(value)
     if not okOpen or not handle then return false end
 
     local ok, serialized = pcall(textutils.serialize, value)
-    if ok then ok = pcall(handle.write, serialized) end
-    pcall(handle.close)
+    local writeResult = nil
+    if ok then
+        ok, writeResult = pcall(handle.write, serialized)
+        ok = ok and writeResult ~= false
+    end
+    local closed, closeResult = pcall(handle.close)
 
-    if not ok then
+    if not ok or not closed or closeResult == false then
         safeDelete(PRESET_TEMP_FILE)
         return false
     end
 
     if pathExists(PRESET_FILE) then
-        local movedOld = pcall(fs.move, PRESET_FILE, PRESET_BACKUP_FILE)
+        local movedOld = safeMove(PRESET_FILE, PRESET_BACKUP_FILE)
         if not movedOld then
             safeDelete(PRESET_TEMP_FILE)
             return false
         end
     end
 
-    local movedNew = pcall(fs.move, PRESET_TEMP_FILE, PRESET_FILE)
+    local movedNew = safeMove(PRESET_TEMP_FILE, PRESET_FILE)
     if not movedNew then
         safeDelete(PRESET_FILE)
         if pathExists(PRESET_BACKUP_FILE) then
-            pcall(fs.move, PRESET_BACKUP_FILE, PRESET_FILE)
+            safeMove(PRESET_BACKUP_FILE, PRESET_FILE)
         end
         safeDelete(PRESET_TEMP_FILE)
         return false

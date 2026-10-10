@@ -89,6 +89,16 @@ platform integration, and benchmark tooling can evolve independently.
    comparison tooling.
 
 
+## Deep audit and continuously enforced diagnostics
+
+`docs/DEEP_CORE_AUDIT_20261010.md` inventories the active code,
+automated tests, generated reports and known hardware-only test gaps.
+`tests/test_core_invariant_stress.lua` executes seeded bot battles and
+checks live entity ID mappings, owner lists, spatial bucket integrity,
+finite combat HP and Emerald bounds. Additional fault-injection tests
+cover installer/presets/token logout and music seeks; these run in CI
+on Lua 5.2 and 5.4 alongside the existing fixed-mechanics suites.
+
 ## Runtime invariants
 
 - Card and internal-unit payloads are validated before play, including nested

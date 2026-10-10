@@ -57,14 +57,21 @@ local function seekTo(handle, offset)
 
     if handle.seek then
         local ok, position = pcall(handle.seek, "set", offset)
-        if ok and position ~= nil then return true end
+        -- Native CraftOS seeks return the resulting numeric byte offset.
+        -- A wrapper returning false (without throwing) did not seek.
+        if ok and position == offset then return true end
+        if ok and type(position) == "number" and position ~= offset then
+            return false
+        end
     end
 
     -- Compatibility fallback for older ComputerCraft file handles.
     local left = offset
     while left > 0 do
         local chunk = handle.read(math.min(left, 16384))
-        if not chunk then return false end
+        -- A zero-byte read cannot advance the cursor. Without this guard a
+        -- faulty/EOF file wrapper permanently hangs the music thread.
+        if not chunk or #chunk == 0 then return false end
         left = left - #chunk
     end
     return true

@@ -42,8 +42,20 @@ for line in registry:gmatch("[^\r\n]+") do
     end
 end
 
-assert(fixed >= 9, "Audit register lost fixed findings")
+assert(fixed >= 15, "Audit register lost deep-core fixes or historical findings")
 assert(open >= 5, "Open measurement/hardware limitations were silently removed")
+for _, testPath in ipairs({
+    "tests/test_preset_false_returns.lua",
+    "tests/test_installer_false_returns.lua",
+    "tests/test_report_logout_false.lua",
+    "tests/test_music_seek_failures.lua",
+    "tests/test_core_invariant_stress.lua",
+}) do
+    assert(workflow:find("lua5.2 " .. testPath, 1, true)
+        and workflow:find("lua5.4 " .. testPath, 1, true),
+        "Deep-core diagnostic must run in BOTH Lua versions: " .. testPath)
+end
+
 assert(workflow:find("tests/test_audit_fixes_20261010.lua", 1, true),
     "Third-audit tests must be in CI")
 assert(workflow:find("tests/test_release_gate.lua", 1, true),

@@ -63,6 +63,24 @@ jobs:
         run: lua5.4 tests/test_audit_fixes_20261010.lua
       - name: Audit register and release quality gate
         run: lua5.4 tests/test_release_gate.lua
+      - name: Deep-audit preset filesystem false-return tests
+        run: |
+          lua5.2 tests/test_preset_false_returns.lua
+          lua5.4 tests/test_preset_false_returns.lua
+      - name: Installer and GitHub credential filesystem fault injection
+        run: |
+          lua5.2 tests/test_installer_false_returns.lua
+          lua5.4 tests/test_installer_false_returns.lua
+          lua5.2 tests/test_report_logout_false.lua
+          lua5.4 tests/test_report_logout_false.lua
+      - name: Music seek failure and no-progress fault injection
+        run: |
+          lua5.2 tests/test_music_seek_failures.lua
+          lua5.4 tests/test_music_seek_failures.lua
+      - name: Deterministic live-core state invariant stress
+        run: |
+          lua5.2 tests/test_core_invariant_stress.lua
+          lua5.4 tests/test_core_invariant_stress.lua
       - name: Full in-game mechanics suite
         run: lua5.4 tests/test_mechanics_full_ci.lua
       - name: Anvil candidate grid / exhaustive parity

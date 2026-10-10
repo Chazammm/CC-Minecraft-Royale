@@ -61,8 +61,9 @@ end
 
 local function safeDelete(path)
   if not safeExists(path) then return true end
-  local ok = pcall(fs.delete, path)
-  return ok
+  local ok, result = pcall(fs.delete, path)
+  -- A protected call succeeds even when the filesystem returns false.
+  return ok and result ~= false
 end
 
 local function safeIsDir(path)
@@ -113,11 +114,14 @@ local function writeFile(path, body)
     return false, "Could not open " .. path .. " for writing"
   end
 
-  local ok, err = pcall(handle.write, body)
-  pcall(handle.close)
+  local ok, result = pcall(handle.write, body)
+  local closed, closeResult = pcall(handle.close)
 
-  if not ok then
-    return false, err
+  if not ok or result == false then
+    return false, ok and "Filesystem write returned false" or result
+  end
+  if not closed or closeResult == false then
+    return false, closed and "Filesystem close returned false" or closeResult
   end
 
   return true
