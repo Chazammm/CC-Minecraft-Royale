@@ -232,4 +232,37 @@ do
     package.preload["cc.audio.dfpwm"] = oldPreload
     os.epoch, http, fs = oldEpoch, oldHttp, oldFs
 end
+do
+    local Game = require("src.game")
+    local state = Game.new()
+    Game.debugLoadScenario(state, "empty")
+    check(Game.debugSpawnCard(state, 1, "zombie", 50, 112),
+        "First admin unit must spawn")
+    check(Game.debugSpawnCard(state, 2, "zombie", 50, 111),
+        "Second admin unit must spawn")
+    local victim = state.entities[1]
+    victim.hp = 1
+    state.adminPaused = false
+    Game.update(state, 0.1)
+    eq(victim.hp, 0, "Overkill damage must clamp HP to zero")
+    check(not victim.alive, "Overkill must still kill entity")
+end
+
+do
+    local Bot = require("src.bot")
+    local arena = require("src.arena")
+    local target = {id=1, alive=true, x=50, y=40, kind="tower", owner=2}
+    local runner = {
+        id=2, alive=true, x=50, y=90, kind="unit",
+        owner=1, flying=false, waterOnly=false, moveSpeed=22,
+        attackRange=2.5, targetId=1,
+    }
+    local state = {entities={target,runner}, entityById={[1]=target, [2]=runner}}
+    local px, py = Bot.debugPredictedAnvilPosition(state, runner, 2.7)
+    check(arena.isWalkable(runner, px, py),
+        "Predicted ground position must remain on walkable terrain")
+    check(py > 0 and py < 160 and px > 0 and px < 100,
+        "Predicted position must stay in arena")
+end
+
 print("Third-audit fix regressions passed (" .. passed .. " assertions)")
