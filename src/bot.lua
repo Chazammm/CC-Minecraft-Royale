@@ -198,48 +198,56 @@ function Bot.defaultDeck()
     return copyDeck(NORMAL_DECK)
 end
 
+local function estimatedBodyDps(body)
+    if not body then return 0 end
+
+    local cooldown = math.max(0.25, tonumber(body.attackCooldown) or 1)
+    local dps = (tonumber(body.damage) or 0) / cooldown
+
+    if body.hybridAttack then
+        local spec = body.hybridAttack
+        dps = math.max(
+            dps,
+            (tonumber(spec.meleeDamage) or 0)
+                / math.max(0.25, tonumber(spec.meleeCooldown) or cooldown),
+            (tonumber(spec.rangedDamage) or 0)
+                / math.max(0.25, tonumber(spec.rangedCooldown) or cooldown)
+        )
+    end
+
+    if body.beam then
+        local baseDps = tonumber(body.beam.baseDps) or 0
+        local maxDps = math.max(baseDps, tonumber(body.beam.maxDps) or baseDps)
+        dps = math.max(dps, (baseDps + maxDps) * 0.5)
+    end
+
+    if body.fangAttack then
+        dps = math.max(
+            dps,
+            (tonumber(body.fangAttack.damage) or 0) / cooldown
+        )
+    end
+
+    if body.proximityExplosion then
+        local spec = body.proximityExplosion
+        local fuse = math.max(0.25, tonumber(spec.fuseTime) or 1.5)
+        local burst = tonumber(spec.damage) or 0
+        dps = math.max(dps, burst / math.max(2.0, fuse + 1.0))
+    end
+
+    return dps
+end
+
 local function cardCombatValue(card)
     if not card then return 0 end
 
     local body = card.unit or card.building
     if body then
         local hp = tonumber(body.maxHp) or 0
-        local cooldown = math.max(0.25, tonumber(body.attackCooldown) or 1)
-        local dps = (tonumber(body.damage) or 0) / cooldown
-
-        if body.hybridAttack then
-            local spec = body.hybridAttack
-            dps = math.max(
-                dps,
-                (tonumber(spec.meleeDamage) or 0)
-                    / math.max(0.25, tonumber(spec.meleeCooldown) or cooldown),
-                (tonumber(spec.rangedDamage) or 0)
-                    / math.max(0.25, tonumber(spec.rangedCooldown) or cooldown)
-            )
-        end
-
-        if body.beam then
-            local baseDps = tonumber(body.beam.baseDps) or 0
-            local maxDps = math.max(baseDps, tonumber(body.beam.maxDps) or baseDps)
-            dps = math.max(dps, (baseDps + maxDps) * 0.5)
-        end
-
-        if body.fangAttack then
-            dps = math.max(
-                dps,
-                (tonumber(body.fangAttack.damage) or 0) / cooldown
-            )
-        end
-
-        if body.proximityExplosion then
-            local spec = body.proximityExplosion
-            local fuse = math.max(0.25, tonumber(spec.fuseTime) or 1.5)
-            local burst = tonumber(spec.damage) or 0
-            dps = math.max(dps, burst / math.max(2.0, fuse + 1.0))
-        end
-
+        local dps = estimatedBodyDps(body)
         local utility = 0
         local lifetime = math.max(1, tonumber(body.lifetime) or 50)
+
         if body.emeraldBoost then
             utility = utility
                 + body.emeraldBoost * 120 * math.min(1.6, lifetime / 50)
@@ -261,6 +269,17 @@ local function cardCombatValue(card)
             utility = utility + math.max(0, 1 - factor) * duration * 20
         end
 
+        if body.groundPulse then
+            local pulse = body.groundPulse
+            local pulseDps = (tonumber(pulse.damage) or 0)
+                / math.max(0.25, tonumber(pulse.interval) or 2)
+            local radiusFactor = math.min(
+                2.25,
+                1 + (tonumber(pulse.radius) or 0) / 12
+            )
+            utility = utility + pulseDps * radiusFactor
+        end
+
         if body.splitOnDeath and body.splitOnDeath.template then
             local template = cards.getInternalUnitTemplate
                 and cards.getInternalUnitTemplate(body.splitOnDeath.template)
@@ -268,8 +287,7 @@ local function cardCombatValue(card)
             if template then
                 local count = tonumber(body.splitOnDeath.count) or 1
                 local childHp = tonumber(template.maxHp) or 0
-                local childDps = (tonumber(template.damage) or 0)
-                    / math.max(0.25, tonumber(template.attackCooldown) or 1)
+                local childDps = estimatedBodyDps(template)
                 utility = utility + count * (childHp * 0.012 + childDps * 0.40)
             end
         end
@@ -284,20 +302,21 @@ local function cardCombatValue(card)
                     tonumber(body.periodicSpawn.interval) or 8
                 )
                 local summonCount = tonumber(body.periodicSpawn.count) or 1
-                local summonDps = (tonumber(template.damage) or 0)
-                    / math.max(0.25, tonumber(template.attackCooldown) or 1)
-                if template.hybridAttack then
-                    summonDps = math.max(
-                        summonDps,
-                        (tonumber(template.hybridAttack.meleeDamage) or 0)
-                            / math.max(0.25, tonumber(template.hybridAttack.meleeCooldown) or 1),
-                        (tonumber(template.hybridAttack.rangedDamage) or 0)
-                            / math.max(0.25, tonumber(template.hybridAttack.rangedCooldown) or 1)
-                    )
+                local summonDps = estimatedBodyDps(template)
+                local summonUtility = 0
+                if template.projectileSplashRadius then
+                    summonUtility = summonUtility
+                        + (tonumber(template.projectileSplashRadius) or 0) * 0.8
+                end
+                if template.onHitSlow then
+                    local factor = tonumber(template.onHitSlow.factor) or 1
+                    local duration = tonumber(template.onHitSlow.duration) or 0
+                    summonUtility = summonUtility
+                        + math.max(0, 1 - factor) * duration * 8
                 end
                 utility = utility + summonCount * (
                     (tonumber(template.maxHp) or 0) / summonCooldown * 0.08
-                    + summonDps * 4 / summonCooldown
+                    + (summonDps + summonUtility) * 4 / summonCooldown
                 )
             end
         end

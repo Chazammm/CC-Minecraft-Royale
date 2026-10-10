@@ -1439,7 +1439,7 @@ local function drawLobby(buffer, state, playerId, layout, monitorName)
         buffer,
         layout.rulesetButton,
         "RULESET: EVO " .. (evoRuleEnabled and "ON" or "OFF"),
-        not evoRuleEnabled,
+        true,
         evoRuleEnabled and colors.lightBlue or colors.red
     )
 

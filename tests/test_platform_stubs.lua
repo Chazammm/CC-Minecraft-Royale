@@ -377,4 +377,43 @@ do
     fs = oldFs
 end
 
+do
+    -- Setup must reject a token which authenticates but lacks repository push
+    -- permission, instead of failing only after a long benchmark.
+    local oldHttp = http
+    local oldTextutils = textutils
+
+    local function response(body, code)
+        return {
+            getResponseCode = function() return code or 200 end,
+            readAll = function() return body end,
+            close = function() end,
+        }
+    end
+
+    http = {
+        get = function()
+            return response('{"permissions":{"pull":true,"push":false}}', 200)
+        end,
+    }
+    textutils = {
+        unserializeJSON = function()
+            return { permissions = { pull = true, push = false } }
+        end,
+    }
+
+    package.loaded["src.report_sync"] = nil
+    local ReportSync = require("src.report_sync")
+    local ok, message = ReportSync.verifyToken("dummy-token-value-long-enough")
+    assertTrue(not ok, "Read-only report token must be rejected during setup")
+    assertTrue(
+        tostring(message):find("cannot write", 1, true) ~= nil,
+        "Read-only token error must explain missing write access"
+    )
+
+    package.loaded["src.report_sync"] = nil
+    http = oldHttp
+    textutils = oldTextutils
+end
+
 print("Platform stub tests passed")

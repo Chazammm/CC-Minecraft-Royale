@@ -401,4 +401,30 @@ do
     )
 end
 
+do
+    -- Runner must reject dt values that Game.update would clamp differently
+    -- from Bot.update/maxTicks.
+    local Runner = require("src.headless_match")
+    local deck = cards.defaultDeck()
+    local okLarge = pcall(Runner.run, deck, deck, { dt = 0.50 })
+    local okZero = pcall(Runner.run, deck, deck, { dt = 0 })
+    assertTrue(not okLarge, "Headless dt > 0.25 must be rejected")
+    assertTrue(not okZero, "Headless dt <= 0 must be rejected")
+end
+
+do
+    -- Diamond Golem's movement stomp is part of the strategic Evo estimate.
+    local state = Game.new()
+    local deck = {
+        "iron_golem", "villager", "zombie", "cannon",
+        "arrows", "enderman", "blaze", "skeleton",
+    }
+    local bot = Bot.new(2, deck)
+    Bot.prepare(bot, state)
+    assertTrue(
+        cards.hasEvolution(state.players[2].evolutionCardId),
+        "Strategic Evo selection must remain valid with pulse-capable Evolutions"
+    )
+end
+
 print("Audit regression tests passed")

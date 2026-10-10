@@ -51,6 +51,20 @@ local function safeDelete(path)
   return ok
 end
 
+local function safeIsDir(path)
+  if not fs.isDir then return false end
+  local ok, isDir = pcall(fs.isDir, path)
+  return ok and isDir == true
+end
+
+local function safeDeleteManagedFile(path)
+  if not safeExists(path) then return true end
+  if safeIsDir(path) then
+    return false, "Refusing to delete managed directory: " .. tostring(path)
+  end
+  return safeDelete(path)
+end
+
 local function ensureDir(path)
   local dir = fs.getDir(path)
   if dir ~= "" and not safeExists(dir) then
@@ -378,8 +392,13 @@ local applyOk, applyErr = pcall(function()
   end
 
   for _, path in ipairs(staleFiles) do
-    if not safeDelete(path) then
-      error("Could not remove obsolete managed file: " .. path, 0)
+    local deleted, deleteErr = safeDeleteManagedFile(path)
+    if not deleted then
+      error(
+        "Could not remove obsolete managed file: "
+          .. path .. " (" .. tostring(deleteErr or "delete failed") .. ")",
+        0
+      )
     end
   end
 

@@ -1217,6 +1217,15 @@ function cards.validate()
         end
     end
 
+    local function nonNegativeField(label, payload, key)
+        local value = payload[key]
+        if value == nil then return end
+        finite(label .. "." .. key, value)
+        if value < 0 then
+            error("Invalid card data: " .. label .. "." .. key .. " must be >= 0", 0)
+        end
+    end
+
     local function validatePayload(label, payload, kind)
         if type(payload) ~= "table" then
             error("Invalid card data: " .. label .. " payload missing", 0)
@@ -1237,6 +1246,18 @@ function cards.validate()
                     )
                 end
             end
+
+            nonNegativeField(label, payload, "damage")
+            nonNegativeField(label, payload, "moveSpeed")
+            nonNegativeField(label, payload, "attackRange")
+            nonNegativeField(label, payload, "aggroRange")
+            nonNegativeField(label, payload, "lifetime")
+            nonNegativeField(label, payload, "projectileSpeed")
+        elseif kind == "spell" then
+            nonNegativeField(label, payload, "damage")
+            nonNegativeField(label, payload, "radius")
+            nonNegativeField(label, payload, "delay")
+            nonNegativeField(label, payload, "towerMultiplier")
         end
 
         validateSpawnReference(label .. ".periodicSpawn", payload.periodicSpawn)
@@ -1269,6 +1290,19 @@ function cards.validate()
         validatePayload(card.id, payload, card.kind)
 
         if card.evolution then
+            local rawCycles = card.evolution.cycles
+            if rawCycles == nil then rawCycles = card.evolution.normalPlays end
+            if rawCycles ~= nil then
+                finite(card.id .. ".evolution.cycles", rawCycles)
+                if rawCycles < 0 or rawCycles ~= math.floor(rawCycles) then
+                    error(
+                        "Invalid card data: " .. card.id
+                            .. " Evolution cycles must be a non-negative integer",
+                        0
+                    )
+                end
+            end
+
             local cycles = cards.evolutionCycles(card)
             if cycles == nil or cycles < 0 then
                 error("Invalid card data: " .. card.id .. " Evolution cycles invalid", 0)
@@ -1276,6 +1310,13 @@ function cards.validate()
 
             local evoCost = cards.evolutionCost(card)
             finite(card.id .. ".evolution.cost", evoCost)
+            if evoCost < 0 then
+                error(
+                    "Invalid card data: " .. card.id
+                        .. ".evolution.cost must be >= 0",
+                    0
+                )
+            end
 
             local abilities = card.evolution.abilities
             if type(abilities) == "table" then
@@ -1288,6 +1329,20 @@ function cards.validate()
                     abilities.splitOnDeath
                 )
             end
+
+            local evolved = cards.evolvedCopy(card)
+            if not evolved then
+                error("Invalid card data: " .. card.id .. " Evolution could not be built", 0)
+            end
+            finite(card.id .. ".evolved.cost", evolved.cost)
+            if evolved.cost < 0 then
+                error("Invalid card data: " .. card.id .. ".evolved.cost must be >= 0", 0)
+            end
+            validatePayload(
+                card.id .. ".evolved",
+                activePayload(evolved),
+                evolved.kind
+            )
         end
     end
 

@@ -130,6 +130,7 @@ local function reportRenderError(err)
 end
 
 local function redraw()
+    local firstError = nil
     for playerId = 1, 2 do
         local ok, err = pcall(
             render.draw,
@@ -138,11 +139,16 @@ local function redraw()
             playerId,
             hw.monitorNames[playerId]
         )
-        if not ok then
-            reportRenderError(err)
-            return false
+        if not ok and not firstError then
+            firstError = err
         end
     end
+
+    if firstError then
+        reportRenderError(firstError)
+        return false
+    end
+
     lastRenderError = nil
     return true
 end

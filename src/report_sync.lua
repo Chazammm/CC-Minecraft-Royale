@@ -298,7 +298,21 @@ function M.verifyToken(token)
         )
     end
 
-    return code == 200, code == 200 and "GitHub connection OK" or ("Unexpected HTTP " .. tostring(code))
+    if code ~= 200 then
+        return false, "Unexpected HTTP " .. tostring(code)
+    end
+
+    local repo, decodeErr = decodeGithub(body, "repository")
+    if not repo then return false, decodeErr end
+
+    local permissions = repo.permissions or {}
+    if permissions.push ~= true then
+        return false,
+            "Token can read the repo but cannot write it. "
+            .. "Grant this repository Contents: Read and write."
+    end
+
+    return true, "GitHub connection OK (write access confirmed)"
 end
 
 function M.setupInteractive()

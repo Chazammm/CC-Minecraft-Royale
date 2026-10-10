@@ -47,7 +47,10 @@ end
 
 function Runner.run(deck1, deck2, options)
     options = options or {}
-    local dt = options.dt or config.TICK_RATE or 0.10
+    local dt = tonumber(options.dt or config.TICK_RATE or 0.10)
+    if not dt or dt <= 0 or dt > 0.25 then
+        error("Headless dt must be > 0 and <= 0.25 seconds", 0)
+    end
     local botOrderOffset = math.floor(tonumber(options.botOrderOffset) or 0) % 2
 
     if options.gameplaySeed ~= nil then
