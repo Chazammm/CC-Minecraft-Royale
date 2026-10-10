@@ -154,4 +154,43 @@ do
         "Installer snapshots precede destructive updates")
 end
 
+-- PixelBox still computes every pixel, but an unchanged second frame must not
+-- transmit any additional monitor rows. Phase changes invalidate that cache.
+do
+    local pixelArena = require("src.pixel_arena")
+    local previousWindow = window
+    local blits = 0
+
+    window = {
+        create = function(_, _, _, width, height)
+            return {
+                getSize = function() return width, height end,
+                getBackgroundColor = function() return colors.black end,
+                setBackgroundColor = function() end,
+                clear = function() end,
+                setCursorPos = function() end,
+                blit = function() blits = blits + 1 end,
+            }
+        end,
+    }
+
+    local monitor = {}
+    local rect = { x1 = 1, y1 = 3, x2 = 48, y2 = 38 }
+    local state = Game.new(nil, { headlessSimulation = true })
+    Game.debugLoadScenario(state, "empty")
+
+    pixelArena.draw(monitor, state, 1, rect)
+    local first = blits
+    assertTrue(first > 0, "First arena frame must transmit rows")
+
+    pixelArena.draw(monitor, state, 1, rect)
+    assertEq(blits, first, "Identical frame must send zero new rows")
+
+    state.phase = "battle"
+    pixelArena.draw(monitor, state, 1, rect)
+    assertTrue(blits > first, "Phase transition must invalidate skipped rows")
+
+    window = previousWindow
+end
+
 print("October 2026 audit hardening tests passed")
