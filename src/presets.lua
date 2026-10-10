@@ -100,7 +100,8 @@ function presets.load()
     }
 
     for index, path in ipairs(candidates) do
-        local loaded = decode(readBody(path))
+        local originalBody = readBody(path)
+        local loaded = decode(originalBody)
         if loaded then
             if index > 1 and fs.move and fs.delete then
                 -- Recover a fully serialized transaction left behind by a
@@ -109,7 +110,11 @@ function presets.load()
                 -- destroy any other complete recovery candidate.
                 local cleared = safeDelete(PRESET_FILE)
                 local promoted = cleared and safeMove(path, PRESET_FILE)
-                if promoted then
+                -- Some storage wrappers return success without actually
+                -- renaming; never delete the recovery backup in that case.
+                if promoted and readBody(PRESET_FILE) == originalBody
+                    and not pathExists(path)
+                then
                     safeDelete(PRESET_BACKUP_FILE)
                     safeDelete(PRESET_TEMP_FILE)
                 end
@@ -184,25 +189,44 @@ function presets.save(value)
     end
     local closed, closeResult = pcall(handle.close)
 
-    if not ok or not closed or closeResult == false then
+    if not ok or not closed or closeResult == false
+        or readBody(PRESET_TEMP_FILE) ~= serialized
+    then
+        -- Write/close can succeed yet leave a truncated or empty file.
+        -- Detect that before touching the user's existing saved decks.
         safeDelete(PRESET_TEMP_FILE)
         return false
     end
 
     if pathExists(PRESET_FILE) then
         local movedOld = safeMove(PRESET_FILE, PRESET_BACKUP_FILE)
-        if not movedOld then
+        if not movedOld
+            or pathExists(PRESET_FILE)
+            or readBody(PRESET_BACKUP_FILE) ~= finalBody
+        then
+            -- No-op/partial old->backup move: do not attempt promotion.
+            -- Keep any resulting good backup if the original disappeared.
             safeDelete(PRESET_TEMP_FILE)
             return false
         end
     end
 
     local movedNew = safeMove(PRESET_TEMP_FILE, PRESET_FILE)
-    if not movedNew then
-        safeDelete(PRESET_FILE)
-        if pathExists(PRESET_BACKUP_FILE) then
+    local finalSavedBody = readBody(PRESET_FILE)
+    if not movedNew or finalSavedBody ~= serialized
+        or pathExists(PRESET_TEMP_FILE)
+    then
+        -- An unreadable destination may still hold good data: never
+        -- destroy it blindly. Preserve .bak as a recovery candidate.
+        if not pathExists(PRESET_FILE) or finalSavedBody ~= nil then
+            safeDelete(PRESET_FILE)
+        end
+        if not pathExists(PRESET_FILE)
+            and pathExists(PRESET_BACKUP_FILE)
+        then
             safeMove(PRESET_BACKUP_FILE, PRESET_FILE)
         end
+        -- No deletion of a still-needed .bak if rollback did not succeed.
         safeDelete(PRESET_TEMP_FILE)
         return false
     end
