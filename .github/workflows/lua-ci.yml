@@ -40,3 +40,5 @@ jobs:
         run: lua5.4 tests/test_side_symmetry.lua
       - name: Audit follow-up tests
         run: lua5.4 tests/test_audit_followups.lua
+      - name: Recovery hardening tests
+        run: lua5.4 tests/test_recovery_hardening.lua
