@@ -85,14 +85,19 @@ do
     }
     local bot = Bot.new(2, deck)
     Bot.prepare(bot, state)
+    local chosen = state.players[2].evolutionCardId
     assertTrue(
-        cards.hasEvolution(state.players[2].evolutionCardId),
+        cards.hasEvolution(chosen),
         "Bot Evolution choice must be eligible and derived from its own deck"
     )
-    assertTrue(
-        state.players[2].evolutionCardId ~= "endermite"
-            or deck[6] == "endermite",
-        "Bot must not inherit a stale Evolution outside its own evaluation"
+
+    local freshState = Game.new()
+    local freshBot = Bot.new(2, deck)
+    Bot.prepare(freshBot, freshState)
+    assertEq(
+        chosen,
+        freshState.players[2].evolutionCardId,
+        "Bot Evolution choice must not depend on a stale human selection"
     )
 end
 
