@@ -26,9 +26,16 @@ print("Monitors found: " .. tostring(#monitors))
 for i, monitor in ipairs(monitors) do
   local name = peripheral.getName(monitor)
   local oldScale = monitor.getTextScale and monitor.getTextScale() or nil
-  if monitor.setTextScale then monitor.setTextScale(0.5) end
+  local diagnosticScale = config.TEXT_SCALE or 0.5
+  if monitor.setTextScale then monitor.setTextScale(diagnosticScale) end
   local w, h = monitor.getSize()
-  print(("Monitor %d: %s -> %dx%d @ 0.5"):format(i, tostring(name), w, h))
+  print(("Monitor %d: %s -> %dx%d @ %s"):format(
+    i,
+    tostring(name),
+    w,
+    h,
+    tostring(diagnosticScale)
+  ))
   if w < (config.MIN_RECOMMENDED_WIDTH or 1)
       or h < (config.MIN_RECOMMENDED_HEIGHT or 1)
   then
@@ -62,6 +69,11 @@ elseif #monitors < 2 then
   print("The game needs TWO monitor peripherals.")
   print("Check that each 3x4 wall is one multiblock and that")
   print("both are exposed to the same wired network.")
+elseif #monitors > 2
+    and not (config.MONITOR_NAMES[1] and config.MONITOR_NAMES[2])
+then
+  print("More than two monitors found.")
+  print("Set config.MONITOR_NAMES to the exact two arena monitors.")
 else
   print("Basic monitor requirement satisfied.")
   print("You can now run: main")
