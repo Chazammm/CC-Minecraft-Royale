@@ -1152,13 +1152,88 @@ local function orderedEntities(state)
     return list
 end
 
-function pixelArena.draw(monitor, state, playerId, rect)
+-- PixelBox's row-diff proxy suppresses terminal traffic but its encoder
+-- still converts EVERY 2x3 texel on every redraw. Detect truly identical
+-- logical-pixel frames before invoking that expensive encoder. Compare the
+-- final canvas (including animated sprites/effects) rather than assuming a
+-- combat tick implies a changed image. This preserves animation fidelity and
+-- never relies on potentially stale entity IDs or wall-clock heuristics.
+local function canvasChanged(box, cached)
+    local previous = cached.framePixels
+    local different = previous == nil
+    if not previous then
+        previous = {}
+        cached.framePixels = previous
+    end
+
+    for y = 1, box.height do
+        local source = box.canvas[y]
+        local saved = previous[y]
+        if not saved then
+            saved = {}
+            previous[y] = saved
+            different = true
+        end
+        for x = 1, box.width do
+            local color = source[x]
+            if saved[x] ~= color then
+                saved[x] = color
+                different = true
+            end
+        end
+    end
+    return different
+end
+
+-- Cheap conservative invalidation: whenever any live entity changes
+-- position/order, full conversion is necessary often enough that comparing
+-- 110x120 pixels first is wasted work. The stored positions are bounded by
+-- the live roster (not a growing ID map), and never gate frame correctness:
+-- on a stationary roster canvasChanged still observes animation, effects,
+-- projectiles, HP bars and other visual state.
+local function rosterMoved(state, cached)
+    local previous = cached.previousPositions
+    local moved = previous == nil
+    if not previous then
+        previous = {}
+        cached.previousPositions = previous
+    end
+    local n = 0
+    for _, entity in ipairs(state.entities) do
+        if entity.alive then
+            n = n + 1
+            local saved = previous[n]
+            if not saved then
+                saved = {}
+                previous[n] = saved
+                moved = true
+            end
+            if saved.id ~= entity.id
+                or saved.x ~= entity.x
+                or saved.y ~= entity.y
+            then
+                moved = true
+                saved.id = entity.id
+                saved.x = entity.x
+                saved.y = entity.y
+            end
+        end
+    end
+    if #previous ~= n then
+        moved = true
+        for i = n + 1, #previous do previous[i] = nil end
+    end
+    return moved
+end
+
+function pixelArena.draw(monitor, state, playerId, rect, forceFullEncode)
     local box, cached = getSurface(monitor, rect)
 
     -- The countdown writes its overlay directly to the physical monitor.
     -- Force a full refresh when entering battle so cached rows cannot leave
     -- countdown digits visible, even if the background is otherwise static.
-    if cached.lastPhase ~= state.phase then
+    local forceFrame = cached.lastPhase ~= state.phase
+    if forceFrame then
         cached.lastBlitLines = {}
         cached.lastPhase = state.phase
     end
@@ -1200,7 +1275,22 @@ function pixelArena.draw(monitor, state, playerId, rect)
         drawEffect(box, playerId, effect)
     end
 
-    box:render()
+    -- If every logical pixel matches, PixelBox would reproduce the exact
+    -- same terminal rows. Avoid its conversion entirely. Forced renders
+    -- remain necessary after phase transitions because countdown text was
+    -- written outside the PixelBox renderer.
+    -- Optional diagnostic oracle: bypass the frame cache entirely to
+    -- compare cached and exhaustive PixelBox output under the SAME state.
+    local moved = rosterMoved(state, cached)
+    if forceFrame or forceFullEncode or moved then
+        -- We did not compare/update the pixel snapshot. Never leave a stale
+        -- snapshot behind: a unit can move back to the SAME old position,
+        -- and skipping the return frame would otherwise leave ghost pixels.
+        cached.framePixels = nil
+        box:render()
+    elseif canvasChanged(box, cached) then
+        box:render()
+    end
 end
 
 function pixelArena.getLogicalSize(monitor, rect)

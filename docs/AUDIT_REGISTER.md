@@ -58,6 +58,21 @@ PixelBox renders under Lua 5.2/5.4. See
 for method, numbers and hardware limitations. This measurement does **not**
 close OP-001, OP-002 or OP-003; no speedup has been implemented or validated.
 
+## First optimization pass — measured, not field-verified
+
+See [`PERFORMANCE_OPTIMIZATION_20261010.md`](PERFORMANCE_OPTIMIZATION_20261010.md)
+for the precise changes, seeded match controls, and same-process
+PixelBox cached-vs-exhaustive A/B measurements. The Anvil scoring grid has
+183 exhaustive-oracle comparisons, and both monitor perspectives have 38
+pixel-image checks including appearance and expiry of stationary effects.
+
+Under Lua 5.4 CI, Anvil-heavy decisions were approximately 16% cheaper;
+static frames were approximately 24–32% faster, while continuously moving
+frames incurred ~4% extra CPU. Three matches showed ~2% less CPU but this
+may be benchmark noise. **OP-001/002/003 remain OPEN pending ATM10
+hardware measurements**; do not label these as resolved defects or claim a
+real-server throughput increase.
+
 ## Field validation required before declaring a release hardware-verified
 
 - Two real Advanced Monitors, correct orientation, touch zones, no stuck

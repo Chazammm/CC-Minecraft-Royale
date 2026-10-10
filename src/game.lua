@@ -494,6 +494,24 @@ local function targetAllowed(attacker, candidate)
     return true
 end
 
+-- Reuse immutable target-kind filters. Previously these closures were
+-- allocated anew for every unlocked entity's acquisition/pull query.
+local function isUnitOrBuilding(candidate)
+    return candidate.kind == "unit" or candidate.kind == "building"
+end
+
+local function isUnit(candidate)
+    return candidate.kind == "unit"
+end
+
+local function isBuilding(candidate)
+    return candidate.kind == "building"
+end
+
+local function isNonTower(candidate)
+    return candidate.kind ~= "tower"
+end
+
 local function findNearest(state, entity, filter, maxRange)
     local best = nil
     local bestDistanceSq = math.huge
@@ -508,12 +526,10 @@ local function findNearest(state, entity, filter, maxRange)
             return
         end
 
-        local d2 = util.distanceSquared(
-            entity.x,
-            entity.y,
-            candidate.x,
-            candidate.y
-        )
+        -- Avoid an extra Lua call for each candidate in a live aggro scan.
+        local dx = candidate.x - entity.x
+        local dy = candidate.y - entity.y
+        local d2 = dx * dx + dy * dy
         if maxRangeSq and d2 > maxRangeSq then return end
 
         -- The former ordered candidate list was ID-sorted before using a
@@ -576,12 +592,9 @@ local function preferredTowerObjective(state, entity)
                 if candidateLane == lane then
                     lanePrincess = candidate
                 else
-                    local d2 = util.distanceSquared(
-                        entity.x,
-                        entity.y,
-                        candidate.x,
-                        candidate.y
-                    )
+                    local dx = candidate.x - entity.x
+                    local dy = candidate.y - entity.y
+                    local d2 = dx * dx + dy * dy
                     if d2 < fallbackDistance then
                         fallbackDistance = d2
                         fallbackPrincess = candidate
@@ -605,39 +618,18 @@ local function acquireTarget(state, entity)
     end
 
     if entity.kind == "tower" then
-        return findNearest(state, entity, function(candidate)
-            return candidate.kind == "unit" or candidate.kind == "building"
-        end, entity.attackRange)
+        return findNearest(state, entity, isUnitOrBuilding, entity.attackRange)
     end
 
     if entity.kind == "building" then
-        return findNearest(state, entity, function(candidate)
-            return candidate.kind == "unit"
-        end, entity.attackRange)
+        return findNearest(state, entity, isUnit, entity.attackRange)
     end
 
     -- Troops/buildings may distract a marching unit, but towers do not take
     -- part in generic aggro selection. Tower choice is lane-aware below.
-    local nearby
-    if entity.targetMode == "buildings" then
-        nearby = findNearest(
-            state,
-            entity,
-            function(candidate)
-                return candidate.kind == "building"
-            end,
-            entity.aggroRange
-        )
-    else
-        nearby = findNearest(
-            state,
-            entity,
-            function(candidate)
-                return candidate.kind ~= "tower"
-            end,
-            entity.aggroRange
-        )
-    end
+    local filter = entity.targetMode == "buildings"
+        and isBuilding or isNonTower
+    local nearby = findNearest(state, entity, filter, entity.aggroRange)
 
     if nearby then return nearby end
 
@@ -1700,33 +1692,19 @@ local function updateCombatEntity(state, entity, dt)
     then
         local pullTarget, pullDistance
 
-        if entity.targetMode == "buildings" then
-            pullTarget, pullDistance = findNearest(
-                state,
-                entity,
-                function(candidate)
-                    return candidate.kind == "building"
-                end,
-                entity.aggroRange
-            )
-        else
-            pullTarget, pullDistance = findNearest(
-                state,
-                entity,
-                function(candidate)
-                    return candidate.kind ~= "tower"
-                end,
-                entity.aggroRange
-            )
-        end
+        local pullFilter = entity.targetMode == "buildings"
+            and isBuilding or isNonTower
+        pullTarget, pullDistance = findNearest(
+            state,
+            entity,
+            pullFilter,
+            entity.aggroRange
+        )
 
         if pullTarget and pullTarget.id ~= target.id then
-            local currentDistance = util.distance(
-                entity.x,
-                entity.y,
-                target.x,
-                target.y
-            )
+            local dx = target.x - entity.x
+            local dy = target.y - entity.y
+            local currentDistance = math.sqrt(dx * dx + dy * dy)
 
             if pullDistance < currentDistance then
                 target = pullTarget
@@ -1750,7 +1728,10 @@ local function updateCombatEntity(state, entity, dt)
         return
     end
 
-    local distance = util.distance(entity.x, entity.y, target.x, target.y)
+    -- Exact same Euclidean distance with one fewer Lua function layer.
+    local dx = target.x - entity.x
+    local dy = target.y - entity.y
+    local distance = math.sqrt(dx * dx + dy * dy)
     local attackRange = entity.attackRange or 0
 
     if entity.hybridAttack and not target.flying then
@@ -1780,7 +1761,9 @@ local function updateCombatEntity(state, entity, dt)
                 entity.teleportCooldownLeft = spec.cooldown or 4
                 addEffect(state, "teleport", entity.x, entity.y, 4, 0.25, entity.owner)
                 emitSound(state, "minecraft:entity.enderman.teleport", 0.7, 1.0)
-                distance = util.distance(entity.x, entity.y, target.x, target.y)
+                local postDx = target.x - entity.x
+                local postDy = target.y - entity.y
+                distance = math.sqrt(postDx * postDx + postDy * postDy)
             end
         end
     end
