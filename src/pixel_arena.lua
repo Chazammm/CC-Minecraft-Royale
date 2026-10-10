@@ -654,7 +654,7 @@ local function drawHp(box, entity, playerId, cx, topY, width)
     fillRect(box, x1, y, x1 + filled - 1, y + 1, barColor)
 end
 
-local function drawSprite(box, entity, playerId)
+local function drawSprite(box, entity, playerId, frameClock)
     local sprite = spriteFor(entity)
     local cx, cy = worldToPixel(box, playerId, entity.x, entity.y)
 
@@ -691,8 +691,7 @@ local function drawSprite(box, entity, playerId)
                     elseif entity.visualVariant == "ghast_portal"
                         and (token == "A" or token == "C")
                     then
-                        local clock = (os.clock and os.clock() or 0)
-                        local shimmer = (math.floor(clock * 5) + rowIndex + col) % 2 == 0
+                        local shimmer = (math.floor(frameClock * 5) + rowIndex + col) % 2 == 0
                         color = shimmer and colors.cyan or colors.lightBlue
                     elseif entity.kind == "tower" and token == "T" then
                         -- Deterministic crack pixels make damaged towers look
@@ -1091,39 +1090,69 @@ local function drawEffect(box, playerId, effect)
     end
 end
 
+local renderOrderCache = setmetatable({}, { __mode = "k" })
+
+local function orderedEntities(state)
+    local cached = renderOrderCache[state]
+    local entities = state.entities
+    local tick = state.combatTick or 0
+    local nextId = state.nextEntityId or 0
+    local count = #entities
+
+    if cached
+        and cached.entities == entities
+        and cached.tick == tick
+        and cached.nextId == nextId
+        and cached.count == count
+    then
+        return cached.list
+    end
+
+    local list = {}
+    for _, entity in ipairs(entities) do
+        if entity.alive then list[#list + 1] = entity end
+    end
+
+    table.sort(list, function(a, b)
+        if a.y == b.y then return a.id < b.id end
+        return a.y < b.y
+    end)
+
+    renderOrderCache[state] = {
+        entities = entities,
+        tick = tick,
+        nextId = nextId,
+        count = count,
+        list = list,
+    }
+    return list
+end
+
 function pixelArena.draw(monitor, state, playerId, rect)
     local box, cached = getSurface(monitor, rect)
     restoreTerrain(box, cached)
+    local frameClock = (os.clock and os.clock() or 0)
+    local drawEntities = orderedEntities(state)
 
-    local drawEntities = cached.drawEntities or {}
-    cached.drawEntities = drawEntities
-    local drawCount = 0
-
-    for _, entity in ipairs(state.entities) do
-        if entity.alive then
-            drawCount = drawCount + 1
-            local _, py = worldToPixel(box, playerId, entity.x, entity.y)
-            local entry = drawEntities[drawCount]
-            if not entry then
-                entry = {}
-                drawEntities[drawCount] = entry
-            end
-            entry.entity = entity
-            entry.py = py
+    if playerId == 1 then
+        for _, entity in ipairs(drawEntities) do
+            drawSprite(box, entity, playerId, frameClock)
         end
-    end
-
-    for i = #drawEntities, drawCount + 1, -1 do
-        drawEntities[i] = nil
-    end
-
-    table.sort(drawEntities, function(a, b)
-        if a.py == b.py then return a.entity.id < b.entity.id end
-        return a.py < b.py
-    end)
-
-    for _, entry in ipairs(drawEntities) do
-        drawSprite(box, entry.entity, playerId)
+    else
+        -- Mirroring reverses world Y. Preserve ID order for exact same-Y ties
+        -- so overlap behavior remains identical to the old projected sort.
+        local i = #drawEntities
+        while i >= 1 do
+            local y = drawEntities[i].y
+            local first = i
+            while first > 1 and drawEntities[first - 1].y == y do
+                first = first - 1
+            end
+            for j = first, i do
+                drawSprite(box, drawEntities[j], playerId, frameClock)
+            end
+            i = first - 1
+        end
     end
 
     for _, projectile in ipairs(state.projectiles) do

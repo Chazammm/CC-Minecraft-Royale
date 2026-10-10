@@ -541,4 +541,60 @@ do
     textutils = oldTextutils
 end
 
+do
+    -- Targeting owner index must stay synchronized across spawn, death and
+    -- cleanup while preserving insertion order.
+    local state = Game.new(nil, { headlessSimulation = true })
+    Game.debugLoadScenario(state, "empty")
+    assertTrue(Game.debugSpawnCard(state, 1, "zombie", 40, 110))
+    assertTrue(Game.debugSpawnCard(state, 2, "zombie", 40, 50))
+    assertEq(#state.entitiesByOwner[1], 1, "P1 owner index must register spawn")
+    assertEq(#state.entitiesByOwner[2], 1, "P2 owner index must register spawn")
+
+    local p2 = state.entitiesByOwner[2][1]
+    assertTrue(Game.debugKillEntity(state, p2.id), "Indexed entity kill must work")
+    Game.debugSetPaused(state, false)
+    Game.update(state, 0.10)
+    assertEq(#state.entitiesByOwner[2], 0, "Cleanup must remove dead owner-index entries")
+end
+
+do
+    -- maxAlive spawners use a lifecycle counter instead of rescanning every
+    -- entity, and child death immediately frees one slot.
+    local state = Game.new(nil, { headlessSimulation = true })
+    Game.debugLoadScenario(state, "empty")
+    assertTrue(Game.debugSpawnCard(state, 1, "evoker", 50, 110))
+    local evoker
+    for _, entity in ipairs(state.entities) do
+        if entity.owner == 1 and entity.sourceCardId == "evoker" then
+            evoker = entity
+            break
+        end
+    end
+    assertTrue(evoker ~= nil, "Summon counter regression needs Evoker")
+    evoker.periodicSpawn = {
+        template = "vex",
+        interval = 10,
+        initialDelay = 0.01,
+        count = 2,
+        maxAlive = 2,
+        radius = 1,
+    }
+    evoker.periodicSpawnTimer = 0.01
+    Game.debugSetPaused(state, false)
+    Game.update(state, 0.02)
+    assertEq(evoker.periodicSpawnAlive, 2, "Spawner must count living children")
+
+    local child
+    for _, entity in ipairs(state.entities) do
+        if entity.summonerId == evoker.id and entity.alive then
+            child = entity
+            break
+        end
+    end
+    assertTrue(child ~= nil, "Summon counter regression needs child")
+    assertTrue(Game.debugKillEntity(state, child.id), "Summoned child debug kill must work")
+    assertEq(evoker.periodicSpawnAlive, 1, "Child death must free maxAlive slot immediately")
+end
+
 print("Audit follow-up tests passed")

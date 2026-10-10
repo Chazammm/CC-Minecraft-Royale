@@ -20,6 +20,7 @@ local function newBuffer(width, height, skipZone, reusable)
             flushChars = {},
             flushFg = {},
             flushBg = {},
+            lastFlushLine = {},
         }
     end
 
@@ -30,6 +31,7 @@ local function newBuffer(width, height, skipZone, reusable)
 
         if skipped then
             b.chars[y], b.fg[y], b.bg[y] = nil, nil, nil
+            b.lastFlushLine[y] = nil
         else
             local chars = b.chars[y] or {}
             local fg = b.fg[y] or {}
@@ -89,8 +91,15 @@ local function flush(b, monitor, skipZone)
                 fg[x] = colors.toBlit(b.fg[y][x])
                 bg[x] = colors.toBlit(b.bg[y][x])
             end
-            monitor.setCursorPos(1, y)
-            monitor.blit(table.concat(chars), table.concat(fg), table.concat(bg))
+            local charLine = table.concat(chars)
+            local fgLine = table.concat(fg)
+            local bgLine = table.concat(bg)
+            local signature = charLine .. "\0" .. fgLine .. "\0" .. bgLine
+            if b.lastFlushLine[y] ~= signature then
+                monitor.setCursorPos(1, y)
+                monitor.blit(charLine, fgLine, bgLine)
+                b.lastFlushLine[y] = signature
+            end
         end
     end
 end

@@ -30,6 +30,7 @@ local function newBuffer(
             flushChars = {},
             flushFg = {},
             flushBg = {},
+            lastFlushLine = {},
         }
     end
 
@@ -45,6 +46,7 @@ local function newBuffer(
             buffer.chars[y] = nil
             buffer.fg[y] = nil
             buffer.bg[y] = nil
+            buffer.lastFlushLine[y] = nil
         else
             local chars = buffer.chars[y] or {}
             local fg = buffer.fg[y] or {}
@@ -120,8 +122,16 @@ local function flush(buffer, monitor, skipZone)
                 bg[x] = colors.toBlit(buffer.bg[y][x])
             end
 
-            monitor.setCursorPos(1, y)
-            monitor.blit(table.concat(chars), table.concat(fg), table.concat(bg))
+            local charLine = table.concat(chars)
+            local fgLine = table.concat(fg)
+            local bgLine = table.concat(bg)
+            local signature = charLine .. "\0" .. fgLine .. "\0" .. bgLine
+
+            if buffer.lastFlushLine[y] ~= signature then
+                monitor.setCursorPos(1, y)
+                monitor.blit(charLine, fgLine, bgLine)
+                buffer.lastFlushLine[y] = signature
+            end
         end
     end
 end

@@ -380,6 +380,14 @@ local function makeBaseEntity(state, owner, kind, x, y)
     state.nextEntityId = state.nextEntityId + 1
     state.entityById = state.entityById or {}
     state.entityById[entity.id] = entity
+
+    state.entitiesByOwner = state.entitiesByOwner
+        or { [1] = {}, [2] = {} }
+    if owner == 1 or owner == 2 then
+        local owned = state.entitiesByOwner[owner]
+        owned[#owned + 1] = entity
+    end
+
     return entity
 end
 
@@ -441,6 +449,7 @@ local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color, 
         and (entity.periodicSpawn.initialDelay or entity.periodicSpawn.interval or 8)
         or nil
     entity.periodicSpawnTotal = 0
+    entity.periodicSpawnAlive = 0
     entity.emeraldPulseTimer = entity.emeraldBoost and 0.25 or nil
     entity.beamCharge = entity.beam and 0 or nil
     entity.beamTickTimer = entity.beam and 0 or nil
@@ -497,6 +506,7 @@ local function spawnBuilding(state, owner, card, x, y)
         and (entity.periodicSpawn.initialDelay or entity.periodicSpawn.interval or 8)
         or nil
     entity.periodicSpawnTotal = 0
+    entity.periodicSpawnAlive = 0
 
     if entity.globalEnemyMoveSlow then
         state.globalMovementAuraDirty = true
@@ -621,7 +631,11 @@ local function findNearest(state, entity, filter, maxRange)
     local bestDistanceSq = math.huge
     local maxRangeSq = maxRange and maxRange * maxRange or nil
 
-    for _, candidate in ipairs(state.entities) do
+    local candidates = state.entitiesByOwner
+        and state.entitiesByOwner[otherPlayer(entity.owner)]
+        or state.entities
+
+    for _, candidate in ipairs(candidates) do
         if candidate.id ~= entity.id
             and targetAllowed(entity, candidate)
             and (not filter or filter(candidate))
@@ -652,7 +666,11 @@ local function preferredTowerObjective(state, entity)
     local fallbackPrincess = nil
     local fallbackDistance = math.huge
 
-    for _, candidate in ipairs(state.entities) do
+    local candidates = state.entitiesByOwner
+        and state.entitiesByOwner[enemyId]
+        or state.entities
+
+    for _, candidate in ipairs(candidates) do
         if candidate.alive
             and candidate.owner == enemyId
             and candidate.kind == "tower"
@@ -978,6 +996,17 @@ local killEntity
 local function deactivateEntity(state, entity)
     if not entity or not entity.alive then return false end
     unregisterEmeraldBoost(state, entity)
+
+    if entity.summonerId then
+        local summoner = getEntityById(state, entity.summonerId)
+        if summoner then
+            summoner.periodicSpawnAlive = math.max(
+                0,
+                (summoner.periodicSpawnAlive or 0) - 1
+            )
+        end
+    end
+
     entity.alive = false
     state.entitiesDirty = true
 
@@ -1318,12 +1347,7 @@ local function updatePeriodicSpawn(state, entity, dt)
 
     local aliveSummons = nil
     if spec.maxAlive then
-        aliveSummons = 0
-        for _, candidate in ipairs(state.entities) do
-            if candidate.alive and candidate.summonerId == entity.id then
-                aliveSummons = aliveSummons + 1
-            end
-        end
+        aliveSummons = entity.periodicSpawnAlive or 0
 
         if aliveSummons >= spec.maxAlive then
             entity.periodicSpawnTimer = spec.interval or 8
@@ -1371,6 +1395,7 @@ local function updatePeriodicSpawn(state, entity, dt)
                 entity.sourceCardId
             )
             summoned.summonerId = entity.id
+            entity.periodicSpawnAlive = (entity.periodicSpawnAlive or 0) + 1
             entity.periodicSpawnTotal = (entity.periodicSpawnTotal or 0) + 1
         end
     end
@@ -2074,12 +2099,17 @@ local function cleanupEntities(state)
     local write = 1
     local count = #state.entities
     state.entityById = state.entityById or {}
+    state.entitiesByOwner = { [1] = {}, [2] = {} }
 
     for read = 1, count do
         local entity = state.entities[read]
         if entity.alive then
             state.entities[write] = entity
             state.entityById[entity.id] = entity
+            if entity.owner == 1 or entity.owner == 2 then
+                local owned = state.entitiesByOwner[entity.owner]
+                owned[#owned + 1] = entity
+            end
             write = write + 1
         else
             state.entityById[entity.id] = nil
@@ -2122,6 +2152,7 @@ function Game.new(soundCallback, options)
         },
         entities = {},
         entityById = {},
+        entitiesByOwner = { [1] = {}, [2] = {} },
         projectiles = {},
         effects = {},
         pendingSpells = {},
@@ -2170,6 +2201,7 @@ function Game.resetLobby(state)
     state.phase = "lobby"
     state.entities = {}
     state.entityById = {}
+    state.entitiesByOwner = { [1] = {}, [2] = {} }
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
@@ -2216,6 +2248,7 @@ function Game.startCountdown(state)
     state.countdown = config.MATCH.countdown
     state.entities = {}
     state.entityById = {}
+    state.entitiesByOwner = { [1] = {}, [2] = {} }
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
@@ -2337,8 +2370,11 @@ local function startTiebreaker(state)
     state.emeraldBoost = { [1] = 0, [2] = 0 }
     state.emeraldBoostSources = { [1] = {}, [2] = {} }
     state.entityById = {}
+    state.entitiesByOwner = { [1] = {}, [2] = {} }
     for _, tower in ipairs(towers) do
         state.entityById[tower.id] = tower
+        local owned = state.entitiesByOwner[tower.owner]
+        owned[#owned + 1] = tower
     end
 
     setFeedback(state.players[1], "TIEBREAKER - ALL TOWERS LOSE HP", 3)
@@ -3463,6 +3499,7 @@ end
 local function clearSimulation(state)
     state.entities = {}
     state.entityById = {}
+    state.entitiesByOwner = { [1] = {}, [2] = {} }
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
@@ -3660,8 +3697,11 @@ function Game.debugClearUnits(state)
     state.emeraldBoost = { [1] = 0, [2] = 0 }
     state.emeraldBoostSources = { [1] = {}, [2] = {} }
     state.entityById = {}
+    state.entitiesByOwner = { [1] = {}, [2] = {} }
     for _, entity in ipairs(kept) do
         state.entityById[entity.id] = entity
+        local owned = state.entitiesByOwner[entity.owner]
+        owned[#owned + 1] = entity
     end
     state.projectiles = {}
     state.effects = {}
