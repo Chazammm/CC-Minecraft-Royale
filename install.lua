@@ -235,8 +235,10 @@ local function restoreSnapshot(snapshot, rollbackPaths)
   -- Delete updated files first. This guarantees that the old installation,
   -- which demonstrably fit before the update, has enough disk space to return.
   for _, path in ipairs(rollbackPaths) do
-    if not safeDelete(path) then
-      return false, "Could not clear " .. path .. " during rollback"
+    local deleted, deleteErr = safeDeleteManagedFile(path)
+    if not deleted then
+      return false, "Could not clear " .. path .. " during rollback: "
+        .. tostring(deleteErr or "delete failed")
     end
   end
 
@@ -380,8 +382,13 @@ local applyOk, applyErr = pcall(function()
   for _, path in ipairs(appliedFiles) do
     -- Delete just this old file before writing its replacement. Peak disk usage
     -- is therefore approximately the installed project size, not 2x the size.
-    if not safeDelete(path) then
-      error("Could not remove old file before update: " .. path, 0)
+    local deleted, deleteErr = safeDeleteManagedFile(path)
+    if not deleted then
+      error(
+        "Could not remove old file before update: "
+          .. path .. " (" .. tostring(deleteErr or "delete failed") .. ")",
+        0
+      )
     end
 
     local ok, err = writeFile(path, downloaded[path])

@@ -247,4 +247,32 @@ do
     write = oldWrite
 end
 
+do
+    -- A corrupted managed manifest must never make the installer recursively
+    -- delete a directory during stale cleanup or rollback.
+    local installer = assert(io.open("install.lua", "r")):read("*a")
+    assertTrue(
+        installer:find("safeDeleteManagedFile(path)", 1, true) ~= nil,
+        "Installer must route managed-file deletes through directory-safe helper"
+    )
+    assertTrue(
+        installer:find("Refusing to delete managed directory", 1, true) ~= nil,
+        "Managed directory deletion must fail closed"
+    )
+
+    local restoreStart = assert(
+        installer:find("local function restoreSnapshot", 1, true),
+        "restoreSnapshot must exist"
+    )
+    local restoreEnd = assert(
+        installer:find("local function preflightLua", restoreStart, true),
+        "restoreSnapshot boundary must exist"
+    )
+    local restoreBody = installer:sub(restoreStart, restoreEnd - 1)
+    assertTrue(
+        restoreBody:find("safeDeleteManagedFile(path)", 1, true) ~= nil,
+        "Rollback must not recursively delete managed directory entries"
+    )
+end
+
 print("Recovery hardening tests passed")
