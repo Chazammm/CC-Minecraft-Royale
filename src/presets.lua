@@ -108,7 +108,13 @@ function presets.load()
                 -- reboot/power loss between old->backup and temp->final.
                 -- If invalid/partial final cannot be removed, do not
                 -- destroy any other complete recovery candidate.
-                local cleared = safeDelete(PRESET_FILE)
+                -- Do not classify a transiently unreadable active file
+                -- as corrupt. Return the readable recovery candidate in
+                -- memory but leave BOTH files untouched for a later retry.
+                local finalReadable = not pathExists(PRESET_FILE)
+                    or readBody(PRESET_FILE) ~= nil
+                local cleared = finalReadable
+                    and safeDelete(PRESET_FILE)
                 local promoted = cleared and safeMove(path, PRESET_FILE)
                 -- Some storage wrappers return success without actually
                 -- renaming; never delete the recovery backup in that case.
