@@ -3,6 +3,7 @@ local config = require("config")
 local benchmark = require("src.benchmark_utils")
 local Runner = require("src.headless_match")
 local version = require("src.version")
+local reportOutput = require("src.report_output")
 
 local args = { ... }
 
@@ -304,7 +305,7 @@ local function signalFor(delta, ciLow, ciHigh)
 end
 
 local totalMatches = #evolutionCards * contextCount * 4
-liveHandle = fs and fs.open(RESULT_PATH, "w") or nil
+liveHandle, liveError = reportOutput.start(RESULT_PATH)
 
 reportPrint("CC-Minecraft Royale controlled Evolution impact analysis")
 reportPrint("CODE_REVISION|" .. version.read())
@@ -490,8 +491,11 @@ reportPrint("  simulate 1000 mixed            -- overall meta after Evolutions")
 reportPrint("")
 reportPrint("Saved report: " .. RESULT_PATH)
 
+local reportCommitted, reportCommitError = false, liveError
 if liveHandle then
-    liveHandle.close()
+    reportCommitted, reportCommitError = reportOutput.commit(RESULT_PATH, liveHandle)
+end
+if reportCommitted then
     nativePrint("")
     nativePrint("View it with: type " .. RESULT_PATH)
 
@@ -512,5 +516,5 @@ if liveHandle then
     end
 else
     nativePrint("")
-    nativePrint("WARNING: Could not create " .. RESULT_PATH)
+    nativePrint("WARNING: Previous complete report preserved; new output not committed: " .. tostring(reportCommitError))
 end
