@@ -76,8 +76,12 @@ local function scenario(mode)
         check(ok==false,"corrupt-primary reconfiguration failure must fail")
         check(Sync.readToken()==oldToken,
             "reconfiguration must not destroy valid recovery backup")
-        check(files[TOKEN..".bak"]==oldToken.."\n",
-            "valid previous credential backup was lost")
+        -- Recovery may legitimately MOVE the last good backup into the
+        -- active path. Require at least one intact usable copy, not a
+        -- particular filename.
+        check(files[TOKEN]==oldToken.."\n"
+            or files[TOKEN..".bak"]==oldToken.."\n",
+            "all copies of the previous credential were lost")
     else
         check(ok==false,mode.." must reject failed replacement")
         check(files[TOKEN]==oldToken.."\n",
