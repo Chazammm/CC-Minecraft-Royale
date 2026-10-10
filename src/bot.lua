@@ -1522,6 +1522,11 @@ function Bot.debugCounterpushLane(state, playerId)
     return counterpushLane(state, playerId, view)
 end
 
+function Bot.debugArrowTarget(state, playerId)
+    local view = buildDecisionView(state, playerId)
+    return bestArrowTarget(state, playerId, view)
+end
+
 function Bot.status(bot, state)
     local player = state.players[bot.playerId]
     return {
