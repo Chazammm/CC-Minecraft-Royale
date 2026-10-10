@@ -92,8 +92,8 @@ do
         exists = function() return false end,
     }
     http = {
-        get = function()
-            return nil, "offline"
+        request = function()
+            return false, "offline"
         end,
     }
     package.loaded["cc.audio.dfpwm"] = nil
@@ -303,8 +303,8 @@ do
 end
 
 do
-    -- If a proxy ignores an HTTP Range request, music must not synchronously
-    -- read/discard a huge response body just to seek to a later track.
+    -- Remote music must queue HTTP asynchronously. An ignored Range response
+    -- is rejected from the http_success event without reading body bytes.
     local oldHttp = http
     local oldFs = fs
     local oldEpoch = os.epoch
@@ -313,6 +313,7 @@ do
     local oldPreload = package.preload["cc.audio.dfpwm"]
     local oldDfpwm = package.loaded["cc.audio.dfpwm"]
 
+    local requestedUrl = nil
     local reads = 0
     local closes = 0
 
@@ -320,15 +321,9 @@ do
         exists = function() return false end,
     }
     http = {
-        get = function()
-            return {
-                getResponseCode = function() return 200 end,
-                read = function()
-                    reads = reads + 1
-                    return string.rep("x", 16)
-                end,
-                close = function() closes = closes + 1 end,
-            }
+        request = function(options)
+            requestedUrl = options.url
+            return true
         end,
     }
     os.epoch = function() return 123456789 end
@@ -364,10 +359,113 @@ do
     }, "speaker_range_test")
 
     local started = Music.start(controller)
-    assertTrue(not started, "Ignored Range response must fail gracefully")
+    assertTrue(started, "Remote music start should queue an async HTTP request")
+    assertTrue(requestedUrl ~= nil, "Async music start must call http.request")
+    assertTrue(Music.status(controller).httpPending, "Queued stream must report pending HTTP")
+    assertEq(reads, 0, "Queuing remote music must not read response bytes")
+
+    local response = {
+        getResponseCode = function() return 200 end,
+        read = function()
+            reads = reads + 1
+            return string.rep("x", 16)
+        end,
+        close = function() closes = closes + 1 end,
+    }
+    Music.handleEvent(controller, { "http_success", requestedUrl, response })
+
     assertEq(reads, 0, "Ignored Range response must not discard body bytes to seek")
     assertTrue(closes > 0, "Ignored Range response must be closed")
+    assertTrue(
+        controller.error == "MUSIC HTTP RANGE UNSUPPORTED",
+        "Ignored Range response must schedule a clear retry error"
+    )
 
+    package.loaded["src.music"] = oldMusic
+    package.loaded["src.music_manifest"] = oldManifest
+    package.loaded["cc.audio.dfpwm"] = oldDfpwm
+    package.preload["cc.audio.dfpwm"] = oldPreload
+    os.epoch = oldEpoch
+    http = oldHttp
+    fs = oldFs
+end
+
+do
+    -- Successful 206 responses are attached only when their event arrives;
+    -- Music.start itself must never perform a blocking body read.
+    local oldHttp = http
+    local oldFs = fs
+    local oldEpoch = os.epoch
+    local oldManifest = package.loaded["src.music_manifest"]
+    local oldMusic = package.loaded["src.music"]
+    local oldPreload = package.preload["cc.audio.dfpwm"]
+    local oldDfpwm = package.loaded["cc.audio.dfpwm"]
+
+    local requestedUrl = nil
+    local reads = 0
+    local plays = 0
+
+    fs = { exists = function() return false end }
+    http = {
+        request = function(options)
+            requestedUrl = options.url
+            return true
+        end,
+    }
+    os.epoch = function() return 123456789 end
+
+    package.loaded["src.music_manifest"] = {
+        packs = {
+            [1] = {
+                path = "missing.dfpwm",
+                remoteUrl = "https://example.invalid/music.dfpwm",
+                size = 1000,
+                version = "test",
+            },
+        },
+        tracks = {
+            { id = 1, pack = 1, offset = 10, bytes = 4 },
+        },
+        chunkBytes = 4,
+        volume = 0.25,
+    }
+    package.loaded["src.music"] = nil
+    package.loaded["cc.audio.dfpwm"] = nil
+    package.preload["cc.audio.dfpwm"] = function()
+        return {
+            make_decoder = function()
+                return function(data) return data end
+            end,
+        }
+    end
+
+    local Music = require("src.music")
+    local controller = Music.new({
+        playAudio = function(_, data)
+            plays = plays + 1
+            return data ~= nil
+        end,
+    }, "speaker_async_test")
+
+    assertTrue(Music.start(controller), "Async 206 test must queue successfully")
+    assertEq(reads, 0, "Music.start must not synchronously read remote audio")
+
+    local returned = false
+    local response = {
+        getResponseCode = function() return 206 end,
+        read = function()
+            reads = reads + 1
+            if returned then return nil end
+            returned = true
+            return "DATA"
+        end,
+        close = function() end,
+    }
+    Music.handleEvent(controller, { "http_success", requestedUrl, response })
+    assertEq(reads, 1, "HTTP success event should feed one audio chunk")
+    assertEq(plays, 1, "HTTP success event should queue decoded audio")
+
+    Music.stop(controller, false)
     package.loaded["src.music"] = oldMusic
     package.loaded["src.music_manifest"] = oldManifest
     package.loaded["cc.audio.dfpwm"] = oldDfpwm

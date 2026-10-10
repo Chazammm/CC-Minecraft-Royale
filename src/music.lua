@@ -91,54 +91,66 @@ local function allLocalPacksAvailable()
 end
 
 local function remotePacksAvailable()
-    if not http or not http.get or not manifest.packs then return false end
+    if not http or not http.request or not manifest.packs then return false end
     for _, pack in pairs(manifest.packs) do
         if not pack.remoteUrl then return false end
     end
     return true
 end
 
-local function openRemoteRange(track, relativeOffset)
+local function abandonPendingRequest(controller)
+    local pending = controller.httpPending
+    if not pending then return end
+    controller.abandonedRequests = controller.abandonedRequests or {}
+    controller.abandonedRequests[pending.url] = true
+    controller.httpPending = nil
+end
+
+local function requestRemoteRange(controller, track, relativeOffset)
     local pack = packForTrack(track)
-    if not pack or not http or not http.get or not pack.remoteUrl then
-        return nil, "HTTP MUSIC UNAVAILABLE"
+    if not pack or not http or not http.request or not pack.remoteUrl then
+        return false, "HTTP MUSIC UNAVAILABLE"
     end
 
     relativeOffset = relativeOffset or 0
     local startByte = track.offset + relativeOffset
     local lastByte = track.offset + track.bytes - 1
-    local headers = {
-        ["Range"] = ("bytes=%d-%d"):format(startByte, lastByte),
-        ["Accept"] = "application/octet-stream",
-    }
-    local url = pack.remoteUrl .. "?v=" .. tostring(pack.version or pack.size or "1")
-    local response, err = http.get({
+
+    abandonPendingRequest(controller)
+    controller.requestSerial = (controller.requestSerial or 0) + 1
+
+    local separator = pack.remoteUrl:find("?", 1, true) and "&" or "?"
+    local url = pack.remoteUrl
+        .. separator
+        .. "v=" .. tostring(pack.version or pack.size or "1")
+        .. "&ccrq=" .. tostring(controller.requestSerial)
+
+    local options = {
         url = url,
-        headers = headers,
+        headers = {
+            ["Range"] = ("bytes=%d-%d"):format(startByte, lastByte),
+            ["Accept"] = "application/octet-stream",
+        },
         binary = true,
         timeout = (config.MUSIC and config.MUSIC.httpTimeout) or 6,
-    })
-    if not response then return nil, tostring(err or "MUSIC HTTP FAILED") end
+    }
 
-    if response.getResponseCode then
-        local code = response.getResponseCode()
-
-        if code ~= 200 and code ~= 206 then
-            response.close()
-            return nil, "MUSIC HTTP " .. tostring(code)
-        end
-
-        if startByte > 0 and code == 200 then
-            -- A proxy/CDN which ignores Range would otherwise make the game
-            -- synchronously read and discard up to ~20 MB just to reach the
-            -- requested track offset. Treat that source as temporarily
-            -- unsuitable and let normal retry/track-skip logic recover.
-            response.close()
-            return nil, "MUSIC HTTP RANGE UNSUPPORTED"
-        end
+    local callOk, queued, err = pcall(http.request, options)
+    if not callOk then
+        return false, tostring(queued or "MUSIC HTTP REQUEST FAILED")
+    end
+    if queued == false then
+        return false, tostring(err or "MUSIC HTTP REQUEST FAILED")
     end
 
-    return response
+    controller.httpPending = {
+        url = url,
+        startByte = startByte,
+        trackIndex = controller.currentTrackIndex,
+        relativeOffset = relativeOffset,
+    }
+    controller.source = "stream"
+    return true
 end
 
 local function openSource(controller, track, relativeOffset)
@@ -150,6 +162,7 @@ local function openSource(controller, track, relativeOffset)
 
     local handle
     if localPackAvailable(pack) then
+        abandonPendingRequest(controller)
         handle = fs.open(pack.path, "rb")
         if not handle then return false, "MUSIC PACK OPEN FAILED" end
         if not seekTo(handle, track.offset + relativeOffset) then
@@ -157,15 +170,11 @@ local function openSource(controller, track, relativeOffset)
             return false, "MUSIC SEEK FAILED"
         end
         controller.source = "local"
-    else
-        local err
-        handle, err = openRemoteRange(track, relativeOffset)
-        if not handle then return false, err end
-        controller.source = "stream"
+        controller.handle = handle
+        return true
     end
 
-    controller.handle = handle
-    return true
+    return requestRemoteRange(controller, track, relativeOffset)
 end
 
 local function openTrack(controller, trackIndex)
@@ -220,6 +229,9 @@ function Music.new(speaker, speakerName)
         reconnectAttempts = 0,
         retryAt = 0,
         consecutiveFailures = 0,
+        httpPending = nil,
+        abandonedRequests = {},
+        requestSerial = 0,
         bag = {},
         rng = seedNow(),
         volume = manifest.volume or 0.28,
@@ -280,6 +292,7 @@ function Music.stop(controller, hardStop)
     controller.retryAt = 0
     controller.reconnectAttempts = 0
     controller.consecutiveFailures = 0
+    abandonPendingRequest(controller)
     closeHandle(controller)
 
     if hardStop and controller.speaker and controller.speaker.stop then
@@ -307,6 +320,7 @@ end
 
 local function ensureSource(controller)
     if controller.handle then return true end
+    if controller.httpPending then return false end
     if controller.retryAt and nowSeconds() < controller.retryAt then return false end
 
     local ok, err
@@ -330,7 +344,7 @@ local function ensureSource(controller)
 
     controller.error = nil
     controller.retryAt = 0
-    return true
+    return controller.handle ~= nil
 end
 
 function Music.pump(controller)
@@ -415,9 +429,76 @@ function Music.pump(controller)
     return true
 end
 
+local function handleHttpSuccess(controller, url, response)
+    if controller.abandonedRequests and controller.abandonedRequests[url] then
+        controller.abandonedRequests[url] = nil
+        if response and response.close then pcall(response.close) end
+        return true
+    end
+
+    local pending = controller.httpPending
+    if not pending or pending.url ~= url then return false end
+    controller.httpPending = nil
+
+    if not controller.active then
+        if response and response.close then pcall(response.close) end
+        return true
+    end
+
+    local code = response and response.getResponseCode
+        and select(1, response.getResponseCode())
+        or 200
+
+    if code ~= 200 and code ~= 206 then
+        if response and response.close then pcall(response.close) end
+        scheduleRetry(controller, "MUSIC HTTP " .. tostring(code), 1.5)
+        return true
+    end
+
+    if pending.startByte > 0 and code == 200 then
+        if response and response.close then pcall(response.close) end
+        scheduleRetry(controller, "MUSIC HTTP RANGE UNSUPPORTED", 1.5)
+        return true
+    end
+
+    controller.handle = response
+    controller.source = "stream"
+    controller.error = nil
+    controller.retryAt = 0
+    Music.pump(controller)
+    return true
+end
+
+local function handleHttpFailure(controller, url, err, response)
+    if controller.abandonedRequests and controller.abandonedRequests[url] then
+        controller.abandonedRequests[url] = nil
+        if response and response.close then pcall(response.close) end
+        return true
+    end
+
+    local pending = controller.httpPending
+    if not pending or pending.url ~= url then return false end
+    controller.httpPending = nil
+    if response and response.close then pcall(response.close) end
+
+    if controller.active then
+        scheduleRetry(controller, err or "MUSIC HTTP FAILED", 1.5)
+    end
+    return true
+end
+
 function Music.handleEvent(controller, event)
-    if not controller.active then return end
-    if not event or event[1] ~= "speaker_audio_empty" then return end
+    if not event then return end
+
+    if event[1] == "http_success" then
+        handleHttpSuccess(controller, event[2], event[3])
+        return
+    elseif event[1] == "http_failure" then
+        handleHttpFailure(controller, event[2], event[3], event[4])
+        return
+    end
+
+    if not controller.active or event[1] ~= "speaker_audio_empty" then return end
 
     if controller.speakerName
         and event[2]
@@ -439,6 +520,7 @@ function Music.status(controller)
         reconnects = controller.reconnectAttempts or 0,
         failures = controller.consecutiveFailures or 0,
         retryAt = controller.retryAt or 0,
+        httpPending = controller.httpPending ~= nil,
         error = controller.error,
     }
 end
