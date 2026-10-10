@@ -198,6 +198,103 @@ function Bot.defaultDeck()
     return copyDeck(NORMAL_DECK)
 end
 
+local function cardCombatValue(card)
+    if not card then return 0 end
+
+    local body = card.unit or card.building
+    if body then
+        local hp = tonumber(body.maxHp) or 0
+        local cooldown = math.max(0.25, tonumber(body.attackCooldown) or 1)
+        local dps = (tonumber(body.damage) or 0) / cooldown
+
+        if body.hybridAttack then
+            local spec = body.hybridAttack
+            dps = math.max(
+                dps,
+                (tonumber(spec.meleeDamage) or 0)
+                    / math.max(0.25, tonumber(spec.meleeCooldown) or cooldown),
+                (tonumber(spec.rangedDamage) or 0)
+                    / math.max(0.25, tonumber(spec.rangedCooldown) or cooldown)
+            )
+        end
+
+        if body.beam then
+            local baseDps = tonumber(body.beam.baseDps) or 0
+            local maxDps = math.max(baseDps, tonumber(body.beam.maxDps) or baseDps)
+            dps = math.max(dps, (baseDps + maxDps) * 0.5)
+        end
+
+        if body.fangAttack then
+            dps = math.max(
+                dps,
+                (tonumber(body.fangAttack.damage) or 0) / cooldown
+            )
+        end
+
+        local utility = 0
+        if body.emeraldBoost then utility = utility + body.emeraldBoost * 180 end
+        if body.globalEnemyMoveSlow then utility = utility + 35 end
+        if body.teleport then utility = utility + 18 end
+
+        if body.periodicSpawn and body.periodicSpawn.template then
+            local template = cards.getInternalUnitTemplate
+                and cards.getInternalUnitTemplate(body.periodicSpawn.template)
+                or cards.getInternalUnit(body.periodicSpawn.template)
+            if template then
+                local summonCooldown = math.max(
+                    1,
+                    tonumber(body.periodicSpawn.interval) or 8
+                )
+                local summonCount = tonumber(body.periodicSpawn.count) or 1
+                local summonDps = (tonumber(template.damage) or 0)
+                    / math.max(0.25, tonumber(template.attackCooldown) or 1)
+                utility = utility + summonCount * (
+                    (tonumber(template.maxHp) or 0) / summonCooldown * 0.08
+                    + summonDps * 4 / summonCooldown
+                )
+            end
+        end
+
+        return hp * 0.035 + dps + utility
+    end
+
+    if card.spell then
+        local spell = card.spell
+        local damage = tonumber(spell.damage) or 0
+        local radius = tonumber(spell.radius) or 0
+        return damage + radius * 2
+    end
+
+    return 0
+end
+
+local function chooseEvolutionForDeck(deck)
+    local bestId, bestScore = nil, -math.huge
+
+    for _, cardId in ipairs(deck or {}) do
+        if cards.isSelectable(cardId) and cards.hasEvolution(cardId) then
+            local base = cards.get(cardId)
+            local evolved = cards.evolvedCopy(cardId)
+            if base and evolved then
+                local gain = cardCombatValue(evolved) - cardCombatValue(base)
+                local baseCost = tonumber(base.cost) or 0
+                local evoCost = tonumber(cards.evolutionCost(cardId))
+                    or tonumber(evolved.cost)
+                    or baseCost
+                local cycleCost = math.max(1, cards.evolutionCycles(cardId) or 2)
+                local score = (gain + (baseCost - evoCost) * 15) / cycleCost
+
+                if score > bestScore then
+                    bestScore = score
+                    bestId = cardId
+                end
+            end
+        end
+    end
+
+    return bestId
+end
+
 function Bot.prepare(bot, state)
     local player = state.players[bot.playerId]
     bot.styleSeed = deckStyleSeed(bot.deck)
@@ -215,15 +312,10 @@ function Bot.prepare(bot, state)
     player.evolutionProgress = 0
     player.evolutionSelecting = false
 
-    -- Bot Evolution choice must depend only on its own deck, not on a
-    -- previous human selection left on that player slot in the lobby.
-    player.evolutionCardId = nil
-    for _, cardId in ipairs(player.deck) do
-        if cards.isSelectable(cardId) and cards.hasEvolution(cardId) then
-            player.evolutionCardId = cardId
-            break
-        end
-    end
+    -- Pick the Evolution with the best estimated deck value instead of
+    -- whichever Evo card happened to appear first after a benchmark shuffle.
+    -- This remains deterministic and symmetric for identical decks.
+    player.evolutionCardId = chooseEvolutionForDeck(player.deck)
 
     bot.thinkTimer = 0.75
     bot.decisionCount = 0
@@ -316,6 +408,10 @@ local function buildDecisionView(state, playerId)
 end
 
 local function ownEmeraldBoost(state, playerId)
+    if state.emeraldBoost then
+        return state.emeraldBoost[playerId] or 0
+    end
+
     local boost = 0
     for _, entity in ipairs(state.entities) do
         if entity.alive and entity.owner == playerId and entity.emeraldBoost then
@@ -325,7 +421,7 @@ local function ownEmeraldBoost(state, playerId)
     return boost
 end
 
-local function unitDps(entity)
+local function directUnitDps(entity)
     if entity.hybridAttack then
         local spec = entity.hybridAttack
         return (spec.meleeDamage or entity.damage or 0)
@@ -345,15 +441,36 @@ local function unitDps(entity)
 
     if entity.proximityExplosion then
         local spec = entity.proximityExplosion
-        -- Treat one-shot burst as pressure spread over a short engagement
-        -- window instead of pretending its base entity.damage (usually zero)
-        -- represents the card.
         return (spec.damage or 0)
             / math.max(2.0, (spec.fuseTime or 1.5) + 1.0)
     end
 
     if not entity.damage or entity.damage <= 0 then return 0 end
     return entity.damage / math.max(0.25, entity.attackCooldown or 1)
+end
+
+local function unitDps(entity)
+    local dps = directUnitDps(entity)
+    local spec = entity.periodicSpawn
+
+    if spec and spec.template then
+        local template = cards.getInternalUnitTemplate
+            and cards.getInternalUnitTemplate(spec.template)
+            or cards.getInternalUnit(spec.template)
+
+        if template then
+            local count = tonumber(spec.count) or 1
+            local interval = math.max(1, tonumber(spec.interval) or 8)
+            local summonDps = directUnitDps(template)
+
+            -- Convert recurring summon output into sustained pressure. The
+            -- four-second horizon prevents a slow spawner from looking like
+            -- all of its future summons are present immediately.
+            dps = dps + summonDps * count * math.min(1, 4 / interval)
+        end
+    end
+
+    return dps
 end
 
 local function nearestOwnTowerDistance(view, entity)
