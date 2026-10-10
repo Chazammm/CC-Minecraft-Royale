@@ -42,12 +42,13 @@ for line in registry:gmatch("[^\r\n]+") do
     end
 end
 
-assert(fixed >= 15, "Audit register lost deep-core fixes or historical findings")
+assert(fixed >= 18, "Audit register lost deep-core fixes or historical findings")
 assert(open >= 5, "Open measurement/hardware limitations were silently removed")
 for _, testPath in ipairs({
     "tests/test_preset_false_returns.lua",
     "tests/test_installer_false_returns.lua",
     "tests/test_report_logout_false.lua",
+    "tests/test_report_token_write_failures.lua",
     "tests/test_music_seek_failures.lua",
     "tests/test_core_invariant_stress.lua",
 }) do

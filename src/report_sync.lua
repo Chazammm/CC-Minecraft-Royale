@@ -28,25 +28,47 @@ local function readAll(path)
         return nil, "File not found: " .. path
     end
 
-    local handle = fs.open(path, "r")
-    if not handle then return nil, "Could not open " .. path end
+    local opened, handle = pcall(fs.open, path, "r")
+    if not opened or not handle then return nil, "Could not open " .. path end
 
-    local body = handle.readAll()
-    handle.close()
+    local okRead, body = pcall(handle.readAll)
+    local okClose, closeResult = pcall(handle.close)
+    if not okRead or type(body) ~= "string"
+        or not okClose or closeResult == false
+    then
+        return nil, "Could not read and close " .. path
+    end
     return body
 end
 
 local function writeAll(path, body)
     local dir = fs.getDir(path)
     if dir ~= "" and not fs.exists(dir) then
-        fs.makeDir(dir)
+        local okDir, resultDir = pcall(fs.makeDir, dir)
+        if not okDir or resultDir == false then
+            return false, "Could not create directory " .. dir
+        end
     end
 
-    local handle = fs.open(path, "w")
-    if not handle then return false, "Could not write " .. path end
+    local opened, handle = pcall(fs.open, path, "w")
+    if not opened or not handle then return false, "Could not write " .. path end
 
-    handle.write(body)
-    handle.close()
+    local okWrite, writeResult = pcall(handle.write, body)
+    local okClose, closeResult = pcall(handle.close)
+    if not okWrite or writeResult == false then
+        return false, "Could not write " .. path
+    end
+    if not okClose or closeResult == false then
+        return false, "Could not close " .. path
+    end
+
+    -- An apparently successful write can still leave missing/partial token
+    -- data behind (for example on a full CC filesystem). Never claim that
+    -- report syncing is configured before checking its on-disk contents.
+    local verified = readAll(path)
+    if verified ~= body then
+        return false, "Saved data could not be verified: " .. path
+    end
     return true
 end
 

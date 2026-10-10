@@ -73,6 +73,10 @@ jobs:
           lua5.4 tests/test_installer_false_returns.lua
           lua5.2 tests/test_report_logout_false.lua
           lua5.4 tests/test_report_logout_false.lua
+      - name: GitHub token setup write, close and readback fault injection
+        run: |
+          lua5.2 tests/test_report_token_write_failures.lua
+          lua5.4 tests/test_report_token_write_failures.lua
       - name: Music seek failure and no-progress fault injection
         run: |
           lua5.2 tests/test_music_seek_failures.lua
