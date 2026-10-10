@@ -446,6 +446,7 @@ do
     }
 
     local getCount = 0
+    local rawGetCount = 0
     local blobCount = 0
     local treeCount = 0
     local commitCount = 0
@@ -489,8 +490,12 @@ do
 
     http = {
         get = function(options)
-            getCount = getCount + 1
             local url = type(options) == "table" and options.url or options
+            if url:find("raw.githubusercontent.com", 1, true) then
+                rawGetCount = rawGetCount + 1
+                return response("REMOTE_OLD_CONTENT", 200)
+            end
+            getCount = getCount + 1
             if url:find("/git/ref/heads/main", 1, true) then
                 return response("REF", 200)
             end
@@ -526,8 +531,9 @@ do
     assertTrue(ok, "Batch report sync must succeed")
     assertEq(#result.uploaded, 4, "All four reports should share the batch")
     assertEq(#result.failures, 0, "Batch report sync should have no failures")
+    assertEq(rawGetCount, 4, "Batch sync should compare each remote latest once")
     assertEq(getCount, 2, "Batch sync should read branch and parent only once")
-    assertEq(blobCount, 8, "Four reports need history + latest blobs")
+    assertEq(blobCount, 8, "Four changed reports need history + latest blobs")
     assertEq(treeCount, 1, "Batch sync should create one tree")
     assertEq(commitCount, 1, "Batch sync should create one commit")
     assertEq(patchCount, 1, "Batch sync should advance main once")
@@ -539,6 +545,96 @@ do
     fs = oldFs
     http = oldHttp
     textutils = oldTextutils
+end
+
+do
+    -- Byte-identical reports are successful no-ops and must not create another
+    -- timestamped history blob.
+    local oldFs = fs
+    local oldHttp = http
+    local oldTextutils = textutils
+    local oldReportSync = package.loaded["src.report_sync"]
+
+    local token = "dummy-token-value-long-enough-for-tests"
+    local reportBody = "UNCHANGED_MECHANICS"
+    fs = {
+        exists = function(path)
+            return path == ".cc_royale/github_token.txt"
+                or path == "mechanics_report.txt"
+        end,
+        isDir = function() return false end,
+        open = function(path, mode)
+            if mode ~= "r" then return nil end
+            local value = path == ".cc_royale/github_token.txt"
+                and token
+                or reportBody
+            return {
+                readAll = function() return value end,
+                close = function() end,
+            }
+        end,
+        getName = function(path) return path:match("([^/]+)$") end,
+    }
+
+    local writes = 0
+    http = {
+        get = function(options)
+            local url = type(options) == "table" and options.url or options
+            if url:find("raw.githubusercontent.com", 1, true) then
+                return response(reportBody, 200)
+            end
+            error("Unchanged report must not reach Git Data reads")
+        end,
+        post = function()
+            writes = writes + 1
+            return nil, "unexpected write"
+        end,
+    }
+    textutils = {
+        serializeJSON = function() return "{}" end,
+        unserializeJSON = function() return {} end,
+    }
+
+    package.loaded["src.report_sync"] = nil
+    local ReportSync = require("src.report_sync")
+    local ok, result = ReportSync.syncAll()
+    assertTrue(ok, "Unchanged report sync should be a successful no-op")
+    assertEq(#result.uploaded, 0, "Unchanged report must not upload")
+    assertEq(#result.skipped, 1, "Unchanged report must be reported as skipped")
+    assertEq(writes, 0, "Unchanged report must create no Git objects")
+
+    package.loaded["src.report_sync"] = oldReportSync
+    fs = oldFs
+    http = oldHttp
+    textutils = oldTextutils
+end
+
+do
+    -- A malformed token path must never be recursively deleted.
+    local oldFs = fs
+    local oldReportSync = package.loaded["src.report_sync"]
+    local deleteCalls = 0
+
+    fs = {
+        exists = function(path)
+            return path == ".cc_royale/github_token.txt"
+        end,
+        isDir = function(path)
+            return path == ".cc_royale/github_token.txt"
+        end,
+        delete = function()
+            deleteCalls = deleteCalls + 1
+        end,
+    }
+
+    package.loaded["src.report_sync"] = nil
+    local ReportSync = require("src.report_sync")
+    local ok = ReportSync.clearToken()
+    assertTrue(not ok, "Directory token path must be rejected")
+    assertEq(deleteCalls, 0, "Directory token path must never call recursive fs.delete")
+
+    package.loaded["src.report_sync"] = oldReportSync
+    fs = oldFs
 end
 
 do

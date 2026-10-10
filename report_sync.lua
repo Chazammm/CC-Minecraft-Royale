@@ -31,8 +31,12 @@ if command == "setup" then
 end
 
 if command == "logout" or command == "clear" or command == "remove-token" then
-    ReportSync.clearToken()
-    print("Local GitHub token removed.")
+    local ok, err = ReportSync.clearToken()
+    if ok then
+        print("Local GitHub token removed.")
+    else
+        print("FAILED: " .. tostring(err))
+    end
     return
 end
 
@@ -76,6 +80,10 @@ end
 for _, uploaded in ipairs(result.uploaded or {}) do
     print(("OK %-11s -> %s"):format(uploaded.kind, uploaded.latestPath))
     print(("   archived -> %s"):format(uploaded.historyPath))
+end
+
+for _, skipped in ipairs(result.skipped or {}) do
+    print(("UNCHANGED %-8s -> %s"):format(skipped.kind, skipped.latestPath))
 end
 
 for _, failure in ipairs(result.failures or {}) do

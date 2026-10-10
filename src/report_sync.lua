@@ -7,6 +7,11 @@ local BRANCH = "main"
 local TOKEN_DIR = ".cc_royale"
 local TOKEN_FILE = TOKEN_DIR .. "/github_token.txt"
 local API_BASE = ("https://api.github.com/repos/%s/%s"):format(OWNER, REPO)
+local RAW_BASE = ("https://raw.githubusercontent.com/%s/%s/%s/"):format(
+    OWNER,
+    REPO,
+    BRANCH
+)
 
 local REPORTS = {
     { kind = "mechanics", path = "mechanics_report.txt" },
@@ -106,6 +111,28 @@ local function githubWrite(token, method, url, payload)
 
     local code, responseBody = responseDetails(failedResponse)
     return false, code, responseBody ~= "" and responseBody or tostring(err)
+end
+
+local function remoteLatestMatches(path, content)
+    if not http or not http.get then return false end
+
+    local response = http.get({
+        url = RAW_BASE .. path,
+        timeout = 10,
+    })
+    if not response then return false end
+
+    local code = response.getResponseCode
+        and select(1, response.getResponseCode())
+        or 200
+    if code ~= 200 then
+        if response.close then response.close() end
+        return false
+    end
+
+    local body = response.readAll and response.readAll() or ""
+    if response.close then response.close() end
+    return body == content
 end
 
 local function decodeGithub(body, context)
@@ -339,9 +366,13 @@ function M.setupInteractive()
 end
 
 function M.clearToken()
-    if fs.exists(TOKEN_FILE) then
-        fs.delete(TOKEN_FILE)
+    if not fs.exists(TOKEN_FILE) then return true end
+    if fs.isDir(TOKEN_FILE) then
+        return false, "Token path is a directory; refusing recursive delete"
     end
+
+    local ok, err = pcall(fs.delete, TOKEN_FILE)
+    if not ok then return false, tostring(err) end
     return true
 end
 
@@ -363,6 +394,16 @@ function M.upload(kind, localPath, token, stamp)
     local fileName = fs.getName(localPath)
     local historyPath = ("reports/history/%s/%s_%s"):format(kind, stamp, fileName)
     local latestPath = "reports/latest/" .. fileName
+
+    if remoteLatestMatches(latestPath, content) then
+        return true, {
+            kind = kind,
+            localPath = localPath,
+            latestPath = latestPath,
+            stamp = stamp,
+            unchanged = true,
+        }
+    end
 
     local ok, commitOrErr = commitFiles(
         token,
@@ -401,6 +442,7 @@ function M.syncAll()
 
     local stamp = epochStamp()
     local pending = {}
+    local skipped = {}
     local commitEntries = {}
     local failures = {}
 
@@ -417,21 +459,31 @@ function M.syncAll()
                     )
                 local latestPath = "reports/latest/" .. fileName
 
-                commitEntries[#commitEntries + 1] = {
-                    path = historyPath,
-                    content = content,
-                }
-                commitEntries[#commitEntries + 1] = {
-                    path = latestPath,
-                    content = content,
-                }
-                pending[#pending + 1] = {
-                    kind = report.kind,
-                    localPath = report.path,
-                    historyPath = historyPath,
-                    latestPath = latestPath,
-                    stamp = stamp,
-                }
+                if remoteLatestMatches(latestPath, content) then
+                    skipped[#skipped + 1] = {
+                        kind = report.kind,
+                        localPath = report.path,
+                        latestPath = latestPath,
+                        stamp = stamp,
+                        unchanged = true,
+                    }
+                else
+                    commitEntries[#commitEntries + 1] = {
+                        path = historyPath,
+                        content = content,
+                    }
+                    commitEntries[#commitEntries + 1] = {
+                        path = latestPath,
+                        content = content,
+                    }
+                    pending[#pending + 1] = {
+                        kind = report.kind,
+                        localPath = report.path,
+                        historyPath = historyPath,
+                        latestPath = latestPath,
+                        stamp = stamp,
+                    }
+                end
             else
                 failures[#failures + 1] =
                     report.path .. ": " .. tostring(readErr)
@@ -439,7 +491,7 @@ function M.syncAll()
         end
     end
 
-    if #pending == 0 and #failures == 0 then
+    if #pending == 0 and #skipped == 0 and #failures == 0 then
         return false, "No report files found yet."
     end
 
@@ -465,6 +517,7 @@ function M.syncAll()
     return #failures == 0, {
         uploaded = uploaded,
         failures = failures,
+        skipped = skipped,
         stamp = stamp,
     }
 end
