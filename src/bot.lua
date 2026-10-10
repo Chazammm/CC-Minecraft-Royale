@@ -1538,6 +1538,11 @@ function Bot.debugCounterpushLane(state, playerId)
     return counterpushLane(state, playerId, view)
 end
 
+-- Deterministic probe used by terrain/collision regression tests.
+function Bot.debugPredictedAnvilPosition(state, entity, delay)
+    return predictedAnvilPosition(state, entity, delay)
+end
+
 function Bot.debugArrowTarget(state, playerId)
     local view = buildDecisionView(state, playerId)
     return bestArrowTarget(state, playerId, view)
