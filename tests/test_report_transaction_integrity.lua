@@ -57,5 +57,40 @@ for _,mode in ipairs({"truncate","noop_promote","normal"}) do
       mode..": old complete report must survive")
   end
 end
+-- Start-up recovery is itself transactional. A fake successful no-op move
+-- of the only complete .bak must not erase that recoverable copy.
+do
+  local files={
+    ["balance_results.txt.bak"]="GOOD COMPLETE BACKUP",
+    ["balance_results.txt.tmp"]="INTERRUPTED PARTIAL",
+  }
+  fs={
+    exists=function(p)return files[p]~=nil end,
+    isDir=function()return false end,
+    delete=function(p)files[p]=nil end,
+    move=function(from,to)
+      if from=="balance_results.txt.bak" then return nil end
+      assert(files[from]~=nil,"missing source")
+      files[to]=files[from]
+      files[from]=nil
+    end,
+    open=function(p,m)
+      if m=="r" then
+        if files[p]==nil then return nil end
+        return {readAll=function()return files[p]end,close=function()end}
+      end
+      local value=""
+      return {
+        write=function(s)value=value..s end,
+        close=function()files[p]=value end,
+      }
+    end,
+  }
+  local writer=output.start("balance_results.txt")
+  eq(writer,nil,"no-op backup restore must not claim successful start")
+  eq(files["balance_results.txt.bak"],"GOOD COMPLETE BACKUP",
+    "failed restore must not delete only good report")
+end
+
 fs=originalFs
 print("Report publishing integrity oracle passed: "..checks)
