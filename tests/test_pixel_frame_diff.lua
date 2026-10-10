@@ -67,6 +67,24 @@ for owner=1,2 do
     assert(record.calls==count,"Static spawned sprite must not resend")
     checks=checks+1
 
+    -- Effects may change while every unit stays still. Position-only
+    -- invalidation is not sufficient: the final-pixel comparison MUST catch
+    -- a temporary impact, including its subsequent disappearance.
+    count=record.calls
+    state.effects[#state.effects+1]={
+        kind="hit", x=50, y=100, radius=9, ttl=0.2, owner=2,
+    }
+    pixelArena.draw(monitor,state,owner,rect)
+    oracle("static impact appeared")
+    assert(record.calls>count,"Visual effect must invalidate static pixels")
+    checks=checks+1
+    count=record.calls
+    state.effects={}
+    pixelArena.draw(monitor,state,owner,rect)
+    oracle("static impact disappeared")
+    assert(record.calls>count,"Expired visual effect must restore background")
+    checks=checks+1
+
     -- Moving the sprite must redraw old and new footprints.
     for _,entity in ipairs(state.entities) do
         if entity.owner==owner and entity.sourceCardId=="creeper" then
