@@ -30,6 +30,7 @@ config.ARENA = {
 config.MUSIC = {
     enabled = true,
     volume = 0.45,
+    httpTimeout = 6,
 }
 
 config.BUILDINGS = {
