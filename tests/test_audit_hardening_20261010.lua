@@ -154,6 +154,93 @@ do
         "Installer snapshots precede destructive updates")
 end
 
+-- The accelerated Arrow evaluator must choose exactly the same position and
+-- score as the old all-pairs scan. Check several tactical layouts for BOTH
+-- sides, including overlapping clusters and symmetric/tied priorities.
+do
+    local Bot = require("src.bot")
+    local arrow = cards.get("arrows")
+    local radiusSq = arrow.spell.radius * arrow.spell.radius
+
+    local function legacyArrowTarget(state, playerId)
+        local opponents, towers = {}, {}
+        for _, entity in ipairs(state.entities) do
+            if entity.alive and entity.owner ~= playerId then
+                if entity.kind == "tower" then
+                    towers[#towers + 1] = entity
+                else
+                    opponents[#opponents + 1] = entity
+                end
+            end
+        end
+
+        local best, bestScore = nil, 0
+        for _, center in ipairs(opponents) do
+            local score = 0
+            for _, target in ipairs(opponents) do
+                local dx = center.x - target.x
+                local dy = center.y - target.y
+                if dx * dx + dy * dy <= radiusSq then
+                    if target.sourceCardId == "villager" and target.emeraldBoost then
+                        score = score + 9
+                    elseif target.name == "Bat Swarm" then
+                        score = score + 1.4
+                    elseif target.name == "Endermite" or target.name == "Baby Zombie" then
+                        score = score + 1.0
+                    elseif (target.hp or 9999) <= 185 then
+                        score = score + 1.25
+                    else
+                        score = score + 0.35
+                    end
+                end
+            end
+            if score > bestScore then
+                best, bestScore = center, score
+            end
+        end
+
+        local towerDamage = (arrow.spell.damage or 0)
+            * (arrow.spell.towerMultiplier or 1)
+        for _, tower in ipairs(towers) do
+            if towerDamage > 0 and tower.hp <= towerDamage + 0.001 then
+                local score = tower.towerType == "king" and 80 or 35
+                if state.overtime then score = score + 25 end
+                if score > bestScore then
+                    best, bestScore = tower, score
+                end
+            end
+        end
+
+        if best then return best.x, best.y, bestScore end
+        return nil, nil, bestScore
+    end
+
+    for scenario = 1, 3 do
+        local state = Game.new(nil, { headlessSimulation = true })
+        Game.debugLoadScenario(state, "full")
+        for i = 1, 14 do
+            local owner = i % 2 + 1
+            local cardId = i % 7 == 0 and "villager"
+                or (i % 4 == 0 and "endermite" or "zombie")
+            local x = scenario == 1 and (9 + i * 5)
+                or (scenario == 2 and 50 + (i % 5) * 1.7
+                    or 25 + (i % 4) * 8)
+            local y = scenario == 1 and (30 + i * 7)
+                or (scenario == 2 and 98 + (i % 3) * 2
+                    or 105 + (i % 6) * 5)
+            assertTrue(Game.debugSpawnCard(state, owner, cardId, x, y))
+        end
+
+        for playerId = 1, 2 do
+            local ax, ay, ascore = Bot.debugArrowTarget(state, playerId)
+            local ex, ey, escore = legacyArrowTarget(state, playerId)
+            assertEq(ax, ex, "Arrow X parity scenario " .. scenario)
+            assertEq(ay, ey, "Arrow Y parity scenario " .. scenario)
+            assertEq(ascore, escore, "Arrow score parity scenario " .. scenario)
+        end
+    end
+end
+
 -- PixelBox still computes every pixel, but an unchanged second frame must not
 -- transmit any additional monitor rows. Phase changes invalidate that cache.
 do
