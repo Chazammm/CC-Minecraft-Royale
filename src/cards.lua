@@ -1170,6 +1170,13 @@ function cards.getInternalUnit(id)
     return util.deepcopy(unit)
 end
 
+-- Engine-only read path. Callers must treat this template as immutable.
+-- spawnUnitFromStats() performs the single defensive deepcopy needed for a
+-- live entity, avoiding the former template-copy + spawn-copy duplication.
+function cards.getInternalUnitTemplate(id)
+    return cards.internalUnits[id]
+end
+
 function cards.defaultDeck()
     return util.deepcopy(DEFAULT_DECK)
 end
