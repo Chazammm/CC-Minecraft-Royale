@@ -74,6 +74,81 @@ do
     )
 end
 
+-- The real affordability hotpath must use the same allocation-free
+-- Evolution-cost helper as the dedicated cards API.
+do
+    local state = Game.new(nil, { headlessSimulation = true })
+    assertTrue(Game.startHeadlessBattle(state, config.TICK_RATE), "Cost hotpath needs battle")
+    state.players[1].evolutionCardId = "iron_golem"
+    state.players[1].evolutionProgress = cards.evolutionCycles("iron_golem")
+
+    local oldDeepcopy = util.deepcopy
+    local deepcopyCalls = 0
+    util.deepcopy = function(value)
+        deepcopyCalls = deepcopyCalls + 1
+        return oldDeepcopy(value)
+    end
+
+    local cost = Game.getCardPlayCost(state, 1, "iron_golem")
+    util.deepcopy = oldDeepcopy
+
+    assertEq(deepcopyCalls, 0, "Game.getCardPlayCost must not build an evolved card")
+    assertNear(
+        cost,
+        cards.evolutionCost("iron_golem"),
+        1e-9,
+        "Game affordability cost must match the Evolution helper"
+    )
+end
+
+-- Internal summon templates are immutable engine data. Reading one through the
+-- engine-only path must not copy it before spawnUnitFromStats performs its one
+-- defensive live-entity copy.
+do
+    local oldDeepcopy = util.deepcopy
+    local deepcopyCalls = 0
+    util.deepcopy = function(value)
+        deepcopyCalls = deepcopyCalls + 1
+        return oldDeepcopy(value)
+    end
+
+    local template = cards.getInternalUnitTemplate("vex")
+    util.deepcopy = oldDeepcopy
+
+    assertTrue(template ~= nil, "Vex internal template must exist")
+    assertEq(deepcopyCalls, 0, "Internal engine template lookup must not deepcopy")
+end
+
+-- Emerald-generation bonuses are maintained as lifecycle state, not rebuilt by
+-- rescanning every entity each tick/render.
+do
+    local state = Game.new(nil, { headlessSimulation = true })
+    Game.debugLoadScenario(state, "empty")
+    assertEq(state.emeraldBoost[1], 0, "Emerald cache starts empty")
+
+    assertTrue(
+        Game.debugSpawnCard(state, 1, "villager", 50, 120),
+        "Emerald cache regression needs a Villager"
+    )
+    local villager
+    for _, entity in ipairs(state.entities) do
+        if entity.owner == 1 and entity.emeraldBoost then
+            villager = entity
+            break
+        end
+    end
+    assertTrue(villager ~= nil, "Villager must exist")
+    assertNear(
+        state.emeraldBoost[1],
+        villager.emeraldBoost,
+        1e-9,
+        "Spawn must register Emerald boost immediately"
+    )
+
+    assertTrue(Game.debugKillEntity(state, villager.id), "Villager debug kill must work")
+    assertNear(state.emeraldBoost[1], 0, 1e-9, "Death must unregister Emerald boost immediately")
+end
+
 -- Strong and weak slows must retain their own durations. A later weak slow may
 -- outlive the strong effect, but may never extend the strong factor itself.
 do
