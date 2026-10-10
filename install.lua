@@ -243,7 +243,8 @@ if not safeDelete(LEGACY_BACKUP_DIR) then
   error("Could not remove legacy backup directory: " .. LEGACY_BACKUP_DIR, 0)
 end
 
-if safeExists(INSTALL_MARKER) then
+local recoveringInterruptedInstall = safeExists(INSTALL_MARKER)
+if recoveringInterruptedInstall then
   local interruptedSha = readFile(INSTALL_MARKER) or "unknown"
   print("Interrupted previous update detected (" .. interruptedSha .. ").")
   print("Reinstalling every managed file from one pinned commit.")
@@ -380,8 +381,16 @@ if not applyOk then
     )
   end
 
-  safeDelete(INSTALL_MARKER)
-  error("Update failed and was rolled back: " .. tostring(applyErr), 0)
+  if not recoveringInterruptedInstall then
+    safeDelete(INSTALL_MARKER)
+  end
+  error(
+    "Update failed and was rolled back: " .. tostring(applyErr)
+      .. (recoveringInterruptedInstall
+        and ("\nRecovery marker retained at " .. INSTALL_MARKER)
+        or ""),
+    0
+  )
 end
 
 if not safeDelete(INSTALL_MARKER) then
