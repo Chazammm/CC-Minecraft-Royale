@@ -67,6 +67,10 @@ jobs:
         run: |
           lua5.2 tests/test_preset_false_returns.lua
           lua5.4 tests/test_preset_false_returns.lua
+      - name: Music seek failure and no-progress fault injection
+        run: |
+          lua5.2 tests/test_music_seek_failures.lua
+          lua5.4 tests/test_music_seek_failures.lua
       - name: Deterministic live-core state invariant stress
         run: |
           lua5.2 tests/test_core_invariant_stress.lua
