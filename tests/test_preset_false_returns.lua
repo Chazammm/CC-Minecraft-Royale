@@ -220,5 +220,20 @@ do
         "load must preserve valid backup while primary unreadable")
 end
 
+-- When the new complete .tmp can be recovered, an older backup may be
+-- temporarily unreadable. A successful temp promotion must not delete
+-- that unreadable recovery candidate blindly.
+do
+    local stored=fixture({
+        ["deck_presets.db.tmp"]="NEW_VALID",
+        ["deck_presets.db.bak"]="VALID_BACKUP",
+    },{unreadablePath="deck_presets.db.bak"})
+    local loaded=presets.load()
+    eq(cards.isValidDeck(loaded[1][1]),true,"new staged deck recovered")
+    eq(stored["deck_presets.db"],"NEW_VALID","staged deck promoted")
+    eq(stored["deck_presets.db.bak"],"VALID_BACKUP",
+        "unreadable previous backup must remain until verifiably readable")
+end
+
 fs,textutils=oldFs,oldTextutils
 print("Preset false-return transaction regressions passed: "..checks)
