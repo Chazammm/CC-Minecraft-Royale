@@ -403,14 +403,23 @@ function M.tokenPath()
     return TOKEN_FILE
 end
 
+-- A power loss can leave the original token in .bak after the first
+-- rename. Treat it as a readable fallback until a subsequent setup restores
+-- it; never replace a present but unreadable active token implicitly.
+local function readStoredToken()
+    if fs.exists(TOKEN_FILE) then
+        return readAll(TOKEN_FILE)
+    end
+    return readAll(TOKEN_FILE .. ".bak")
+end
+
 function M.isConfigured()
-    if not fs.exists(TOKEN_FILE) or fs.isDir(TOKEN_FILE) then return false end
-    local token = readAll(TOKEN_FILE)
+    local token = readStoredToken()
     return token ~= nil and #trim(token) >= 20
 end
 
 function M.readToken()
-    local token, err = readAll(TOKEN_FILE)
+    local token, err = readStoredToken()
     if not token then return nil, err end
 
     token = trim(token)
