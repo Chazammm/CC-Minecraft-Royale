@@ -472,9 +472,36 @@ do
     assertTrue(Music.start(controller), "Async 206 test must queue successfully")
     assertEq(reads, 0, "Music.start must not synchronously read remote audio")
 
+    -- A broken intermediate cache can respond with 206 but the WRONG byte
+    -- range. Reject it without passing corrupt DFPWM bytes into the decoder.
+    local rejectedClose = 0
+    local wrongRange = {
+        getResponseCode = function() return 206 end,
+        getResponseHeaders = function()
+            return { ["Content-Range"] = "bytes 0-3/1000" }
+        end,
+        read = function()
+            reads = reads + 1
+            return "BAD!"
+        end,
+        close = function() rejectedClose = rejectedClose + 1 end,
+    }
+    Music.handleEvent(controller, { "http_success", requestedUrl, wrongRange })
+    assertEq(reads, 0, "Wrong Content-Range must not reach decoder")
+    assertEq(rejectedClose, 1, "Wrong-range response must be closed")
+    assertEq(controller.error, "MUSIC HTTP RANGE MISMATCH", "Precise range error")
+
+    -- Force the scheduled retry for this deterministic no-clock-advance stub.
+    controller.retryAt = 0
+    Music.pump(controller)
+    assertTrue(Music.status(controller).httpPending, "Range retry must requeue")
+
     local returned = false
     local response = {
         getResponseCode = function() return 206 end,
+        getResponseHeaders = function()
+            return { ["Content-Range"] = "bytes 10-13/1000" }
+        end,
         read = function()
             reads = reads + 1
             if returned then return nil end
