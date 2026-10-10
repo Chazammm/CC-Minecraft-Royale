@@ -1,3 +1,4 @@
+local config = require("config")
 local manifest = require("src.music_manifest")
 
 local Music = {}
