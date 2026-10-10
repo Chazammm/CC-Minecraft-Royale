@@ -36,6 +36,9 @@ Fix branch: `fix-audit-findings-quality-gates-20261010`.
 | AF-008 | RISK P3, ranged HTTP data | An invalid/missing `Content-Range` under HTTP 206 could be passed to DFPWM decoding | Validate start/end/total, case-insensitive header key; reject malformed/missing range | `tests/test_audit_fixes_20261010.lua`, `tests/test_platform_stubs.lua` — FIXED_CI |
 | AF-009 | CONFIRMED invariant P3, health | `damageEntity` subtracted raw damage so dead HP could go below 0 while actual-damage telemetry was capped | Clamp resulting HP to zero | `tests/test_audit_fixes_20261010.lua` — FIXED_CI |
 
+| AF-010 | CONFIRMED P2, stale Charged Creeper assertion | In-game mechanics report (2026-10-10, revision `b084252affcd`) shows 523 HP lost for each 523-HP Zombie; old fixture asserted 580 after `damageEntity` began clamping death HP at zero | Give isolated test targets at least 1,000 HP so exact 580 explosion damage is measurable without changing correct combat rules | `tests/test_mechanics_full_ci.lua` — FIXED_CI |
+| AF-011 | CONFIRMED P2, stale Evoker Fang-line setup | Mechanics report shows nearer Skeleton receives 85 and farther Zombie receives 0 because uncommitted units now retarget nearer enemies; old test set `targetId` but assumed it persisted | Queue the long-target Fang line **before** a nearer Skeleton enters its warning path; then measure two 85-damage ground hits and unaffected Blaze | `tests/test_mechanics_full_ci.lua` — FIXED_CI |
+
 ## Open follow-ups — not confirmed gameplay bugs
 
 | ID | Classification | Evidence / limitation | Next action and acceptance condition |
