@@ -368,6 +368,7 @@ local function addFangEffect(state, kind, pending, ttl)
 end
 
 local SPATIAL_CELL_SIZE = 16
+local SPATIAL_KEY_STRIDE = 1024
 
 local function spatialCellCoords(x, y)
     return math.floor((x or 0) / SPATIAL_CELL_SIZE),
@@ -375,7 +376,10 @@ local function spatialCellCoords(x, y)
 end
 
 local function spatialKey(cx, cy)
-    return tostring(cx) .. ":" .. tostring(cy)
+    -- Arena/query cell X is tiny compared with this stride, so this numeric
+    -- key is collision-free for every reachable arena/query coordinate and
+    -- avoids allocating "x:y" strings in combat hotpaths.
+    return cy * SPATIAL_KEY_STRIDE + cx
 end
 
 local function ensureSpatialIndex(state)
@@ -766,40 +770,69 @@ local function findNearest(state, entity, filter, maxRange)
     local best = nil
     local bestDistanceSq = math.huge
     local maxRangeSq = maxRange and maxRange * maxRange or nil
-
     local enemyOwner = otherPlayer(entity.owner)
-    local candidates
-    if maxRange then
-        candidates = spatialCandidatesInRadius(
-            state,
-            enemyOwner,
+
+    local function consider(candidate)
+        if candidate.id == entity.id
+            or not targetAllowed(entity, candidate)
+            or (filter and not filter(candidate))
+        then
+            return
+        end
+
+        local d2 = util.distanceSquared(
             entity.x,
             entity.y,
-            maxRange
+            candidate.x,
+            candidate.y
         )
-    else
-        candidates = state.entitiesByOwner
-            and state.entitiesByOwner[enemyOwner]
-            or state.entities
+        if maxRangeSq and d2 > maxRangeSq then return end
+
+        -- The former ordered candidate list was ID-sorted before using a
+        -- strict distance comparison. Preserve that exact tie behavior
+        -- explicitly without allocating/sorting a query result table.
+        if d2 < bestDistanceSq
+            or (
+                d2 == bestDistanceSq
+                and (not best or candidate.id < best.id)
+            )
+        then
+            bestDistanceSq = d2
+            best = candidate
+        end
     end
 
-    for _, candidate in ipairs(candidates) do
-        if candidate.id ~= entity.id
-            and targetAllowed(entity, candidate)
-            and (not filter or filter(candidate))
-        then
-            local d2 = util.distanceSquared(
-                entity.x,
-                entity.y,
-                candidate.x,
-                candidate.y
-            )
-            if (not maxRangeSq or d2 <= maxRangeSq)
-                and d2 < bestDistanceSq
-            then
-                bestDistanceSq = d2
-                best = candidate
+    local index = maxRange and state.spatialIndex or nil
+    local ownerBuckets = index
+        and index.buckets
+        and index.buckets[enemyOwner]
+
+    if maxRange and ownerBuckets then
+        local minCx, minCy = spatialCellCoords(
+            entity.x - maxRange,
+            entity.y - maxRange
+        )
+        local maxCx, maxCy = spatialCellCoords(
+            entity.x + maxRange,
+            entity.y + maxRange
+        )
+
+        for cx = minCx, maxCx do
+            for cy = minCy, maxCy do
+                local bucket = ownerBuckets[spatialKey(cx, cy)]
+                if bucket then
+                    for _, candidate in pairs(bucket) do
+                        if candidate.alive then consider(candidate) end
+                    end
+                end
             end
+        end
+    else
+        local candidates = state.entitiesByOwner
+            and state.entitiesByOwner[enemyOwner]
+            or state.entities
+        for _, candidate in ipairs(candidates) do
+            consider(candidate)
         end
     end
 
@@ -2321,7 +2354,6 @@ local function cleanupEntities(state)
 
     for i = write, count do state.entities[i] = nil end
     state.entitiesDirty = false
-    rebuildSpatialIndex(state)
 end
 
 local function resetPlayersForMatch(state)
@@ -2662,21 +2694,27 @@ end
 local function resolveFallingAnvil(state, pending)
     local spell = pending.spell
     local targets = {}
+    local radius = spell.radius or 5.5
+    local candidates = spatialCandidatesInRadius(
+        state,
+        otherPlayer(pending.owner),
+        pending.x,
+        pending.y,
+        radius
+    )
 
-    for _, entity in ipairs(state.entities) do
+    for _, entity in ipairs(candidates) do
         if entity.alive
             and entity.owner ~= pending.owner
             and (not spell.groundOnly or not entity.flying)
-        then
-            local radius = spell.radius or 5.5
-            if util.distanceSquared(
+            and util.distanceSquared(
                 pending.x,
                 pending.y,
                 entity.x,
                 entity.y
-            ) <= radius * radius then
-                targets[#targets + 1] = entity
-            end
+            ) <= radius * radius
+        then
+            targets[#targets + 1] = entity
         end
     end
 
@@ -2745,14 +2783,21 @@ local function castArrows(state, playerId, card, x, y)
     addEffect(state, "arrows", x, y, card.spell.radius, 0.45, playerId)
 
     local targets = {}
-    for _, entity in ipairs(state.entities) do
-        if entity.alive and entity.owner ~= playerId then
-            local radius = card.spell.radius
-            if util.distanceSquared(x, y, entity.x, entity.y)
+    local radius = card.spell.radius
+    local candidates = spatialCandidatesInRadius(
+        state,
+        otherPlayer(playerId),
+        x,
+        y,
+        radius
+    )
+    for _, entity in ipairs(candidates) do
+        if entity.alive
+            and entity.owner ~= playerId
+            and util.distanceSquared(x, y, entity.x, entity.y)
                 <= radius * radius
-            then
-                table.insert(targets, entity)
-            end
+        then
+            table.insert(targets, entity)
         end
     end
 
@@ -2890,6 +2935,10 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
         spawnBuilding(state, playerId, activeCard, x, y)
         addEffect(state, evolutionUsed and "evolution_spawn" or "spawn", x, y, 5, 0.35, playerId)
     elseif activeCard.kind == "spell" then
+        -- Card plays are rare compared with combat ticks. Reconcile here so
+        -- programmatic/test position edits made outside normal movement cannot
+        -- make an immediate AoE spell read stale buckets.
+        rebuildSpatialIndex(state)
         local castType = activeCard.spell and activeCard.spell.cast
         if castType == "falling_anvil" then
             castFallingAnvil(state, playerId, activeCard, x, y)
@@ -3554,10 +3603,10 @@ function Game.update(state, dt)
     if not isBattle and not isAdmin then return end
     if isAdmin and state.adminPaused then return end
 
-    -- Reconcile the spatial grid once at tick start. This captures direct
-    -- admin/test position edits, while movement/teleports maintain it
-    -- incrementally for the rest of the combat step.
-    rebuildSpatialIndex(state)
+    -- Normal battle movement/spawn/death/teleport paths maintain the index
+    -- incrementally. The admin sandbox intentionally permits direct entity
+    -- edits, so only that mode pays for a full authoritative reconcile.
+    if isAdmin then rebuildSpatialIndex(state) end
 
     if isBattle and state.tiebreaker then
         if state.stats then state.stats.elapsed = state.stats.elapsed + dt end
@@ -3933,6 +3982,22 @@ function Game.debugClearUnits(state)
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
+end
+
+function Game.debugSpatialRadiusIds(state, owner, x, y, radius)
+    rebuildSpatialIndex(state)
+    local candidates = spatialCandidatesInRadius(state, owner, x, y, radius)
+    local radiusSq = radius * radius
+    local ids = {}
+    for _, entity in ipairs(candidates) do
+        if entity.alive
+            and entity.owner == owner
+            and util.distanceSquared(x, y, entity.x, entity.y) <= radiusSq
+        then
+            ids[#ids + 1] = entity.id
+        end
+    end
+    return ids
 end
 
 function Game.debugSetPaused(state, paused)

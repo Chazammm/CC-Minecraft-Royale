@@ -90,3 +90,12 @@ platform integration, and benchmark tooling can evolve independently.
   combat mechanics and raw Evolution-cost rules.
 - CI keeps the primary Lua 5.4 suite and adds a Lua 5.2 compatibility guard for
   Cobalt-oriented syntax/core behavior.
+
+
+### Spatial combat index
+
+Normal battle ticks maintain the spatial buckets incrementally on spawn,
+movement, teleport and death. Ordered AoE snapshots retain entity-ID ordering
+for deterministic terminal damage, while bounded nearest-target lookups scan
+buckets directly without allocating or sorting candidate lists. The admin
+sandbox can rebuild authoritatively because it permits direct entity edits.

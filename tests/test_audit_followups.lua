@@ -746,4 +746,78 @@ do
     assertTrue(enemies[2].hp < hp2, "Spatial explosion must hit second nearby enemy")
 end
 
+do
+    -- Spatial radius queries must exactly match a full-scan reference across
+    -- many deterministic positions/radii/owners.
+    local state = Game.new(nil, { headlessSimulation = true })
+    Game.debugLoadScenario(state, "empty")
+
+    for i = 1, 28 do
+        local owner = i % 2 == 0 and 1 or 2
+        assertTrue(
+            Game.debugSpawnCard(state, owner, "zombie", 10 + (i % 8) * 10, 20 + (i % 12) * 10),
+            "Spatial fuzz setup spawn failed"
+        )
+    end
+
+    local rng = 24681357
+    local function nextInt(maximum)
+        rng = (rng * 48271) % 2147483647
+        return (rng % maximum) + 1
+    end
+
+    for round = 1, 160 do
+        for _, entity in ipairs(state.entities) do
+            entity.x = nextInt(9900) / 100 + 0.5
+            entity.y = nextInt(15900) / 100 + 0.5
+        end
+
+        local owner = nextInt(2)
+        local x = nextInt(10000) / 100
+        local y = nextInt(16000) / 100
+        local radius = 1 + nextInt(4500) / 100
+
+        local actual = Game.debugSpatialRadiusIds(state, owner, x, y, radius)
+        local expected = {}
+        local radiusSq = radius * radius
+        for _, entity in ipairs(state.entities) do
+            if entity.alive
+                and entity.owner == owner
+                and util.distanceSquared(x, y, entity.x, entity.y) <= radiusSq
+            then
+                expected[#expected + 1] = entity.id
+            end
+        end
+        table.sort(expected)
+
+        assertEq(#actual, #expected, "Spatial fuzz candidate count mismatch")
+        for i = 1, #expected do
+            assertEq(actual[i], expected[i], "Spatial fuzz candidate order/content mismatch")
+        end
+    end
+end
+
+do
+    -- Equal-distance target ties must preserve the historical lower-ID winner
+    -- even though nearest-target queries no longer sort candidate tables.
+    local state = Game.new(nil, { headlessSimulation = true })
+    Game.debugLoadScenario(state, "empty")
+    assertTrue(Game.debugSpawnCard(state, 1, "skeleton", 50, 110))
+    assertTrue(Game.debugSpawnCard(state, 2, "zombie", 45, 100))
+    assertTrue(Game.debugSpawnCard(state, 2, "zombie", 55, 100))
+
+    local skeleton = state.entitiesByOwner[1][1]
+    local firstEnemy = state.entitiesByOwner[2][1]
+    skeleton.moveSpeed = 0
+    skeleton.aggroRange = 30
+    Game.debugSetPaused(state, false)
+    Game.update(state, 0.10)
+
+    assertEq(
+        skeleton.targetId,
+        firstEnemy.id,
+        "Nearest spatial tie must resolve to lower entity ID"
+    )
+end
+
 print("Audit follow-up tests passed")
