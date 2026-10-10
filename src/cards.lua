@@ -64,9 +64,9 @@ cards.list = {
             cycles = 2,
             name = "Diamond Golem",
             color = colors.cyan,
-            description = "7.5% more HP than the Iron Golem. While walking, every 2s it stomps for 25 damage to nearby grounded enemy units.",
+            description = "9.5% more HP than the Iron Golem. While walking, every 2s it stomps for 25 damage to nearby grounded enemy units.",
             statMultipliers = {
-                maxHp = 1.075,
+                maxHp = 1.095,
             },
             abilities = {
                 visualVariant = "diamond_golem",
