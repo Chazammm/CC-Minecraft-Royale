@@ -1152,13 +1152,47 @@ local function orderedEntities(state)
     return list
 end
 
+-- PixelBox's row-diff proxy suppresses terminal traffic but its encoder
+-- still converts EVERY 2x3 texel on every redraw. Detect truly identical
+-- logical-pixel frames before invoking that expensive encoder. Compare the
+-- final canvas (including animated sprites/effects) rather than assuming a
+-- combat tick implies a changed image. This preserves animation fidelity and
+-- never relies on potentially stale entity IDs or wall-clock heuristics.
+local function canvasChanged(box, cached)
+    local previous = cached.framePixels
+    local different = previous == nil
+    if not previous then
+        previous = {}
+        cached.framePixels = previous
+    end
+
+    for y = 1, box.height do
+        local source = box.canvas[y]
+        local saved = previous[y]
+        if not saved then
+            saved = {}
+            previous[y] = saved
+            different = true
+        end
+        for x = 1, box.width do
+            local color = source[x]
+            if saved[x] ~= color then
+                saved[x] = color
+                different = true
+            end
+        end
+    end
+    return different
+end
+
 function pixelArena.draw(monitor, state, playerId, rect)
     local box, cached = getSurface(monitor, rect)
 
     -- The countdown writes its overlay directly to the physical monitor.
     -- Force a full refresh when entering battle so cached rows cannot leave
     -- countdown digits visible, even if the background is otherwise static.
-    if cached.lastPhase ~= state.phase then
+    local forceFrame = cached.lastPhase ~= state.phase
+    if forceFrame then
         cached.lastBlitLines = {}
         cached.lastPhase = state.phase
     end
@@ -1200,7 +1234,13 @@ function pixelArena.draw(monitor, state, playerId, rect)
         drawEffect(box, playerId, effect)
     end
 
-    box:render()
+    -- If every logical pixel matches, PixelBox would reproduce the exact
+    -- same terminal rows. Avoid its conversion entirely. Forced renders
+    -- remain necessary after phase transitions because countdown text was
+    -- written outside the PixelBox renderer.
+    if forceFrame or canvasChanged(box, cached) then
+        box:render()
+    end
 end
 
 function pixelArena.getLogicalSize(monitor, rect)
