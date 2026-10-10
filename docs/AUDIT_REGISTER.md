@@ -39,6 +39,32 @@ Fix branch: `fix-audit-findings-quality-gates-20261010`.
 | AF-010 | CONFIRMED P2, stale Charged Creeper assertion | In-game mechanics report (2026-10-10, revision `b084252affcd`) shows 523 HP lost for each 523-HP Zombie; old fixture asserted 580 after `damageEntity` began clamping death HP at zero | Give isolated test targets at least 1,000 HP so exact 580 explosion damage is measurable without changing correct combat rules | `tests/test_mechanics_full_ci.lua` — FIXED_CI |
 | AF-011 | CONFIRMED P2, stale Evoker Fang-line setup | Mechanics report shows nearer Skeleton receives 85 and farther Zombie receives 0 because uncommitted units now retarget nearer enemies; old test set `targetId` but assumed it persisted | Queue the long-target Fang line **before** a nearer Skeleton enters its warning path; then measure two 85-damage ground hits and unaffected Blaze | `tests/test_mechanics_full_ci.lua` — FIXED_CI |
 
+## Deep core audit — 2026-10-10 (revision `6e0c6ebf07a7`)
+
+Inventory: 118 tracked files at the audit baseline: 11 root Lua entry/config
+files, 19 `src/` modules, 1 bundled PixelBox library, 17 existing Lua
+test files, 58 report files, and 12 metadata/docs/asset-manifest files.
+The Lua source/CI module families were individually fetched and searched for
+unsafe filesystem outcomes, non-progress loops, unbounded work, RNG side
+effects and missing state consistency tests. No claim of formally verifying
+every execution path or physical peripheral is made.
+
+| ID | Category / severity | Evidence / reproduction | Resolution | Regression / status |
+| --- | --- | --- | --- | --- |
+| AF-012 | CONFIRMED P1, preset persistence | `src/presets.lua` treated `pcall(fs.move/delete/write/close)` returning `true,false` as a successful file transaction; false-return move to final could delete the only old preset backup or report a false successful save. Regression deliberately failed on unpatched branch commit `3ef1a8f` (CI `38071951733`). | Require both no exception and no explicit `false`; reject write/close failures, protect a lone recovery backup, and retain temp/backup after failed promotion | `tests/test_preset_false_returns.lua` — FIXED_CI |
+| AF-013 | RISK P2, music source seek | `src/music.lua:seekTo` accepted `seek(...) == false` as successful and on a stream wrapper returning `read(...) == ""` could loop forever without consuming bytes | Only accept correct numeric seek position; explicitly reject zero-byte fallback reads | `tests/test_music_seek_failures.lua` — FIXED_CI |
+| AF-014 | RISK P1, installer fail-closed behavior | `install.lua` treated false-return `fs.delete/write/close` as success; a failed installation marker write could allow subsequent managed-file replacement without a reliable recovery marker. Fault-injected standalone installer test. | Reject false-return delete/write/close and abort before applying new project files | `tests/test_installer_false_returns.lua` — FIXED_CI |
+| AF-015 | RISK P2, token logout reporting | `src/report_sync.lua:clearToken` reported GitHub token deletion after `fs.delete` returned `false` (or left file present), misleading the user into thinking local credentials were removed | Require successful deletion and confirm the token file no longer exists | `tests/test_report_logout_false.lua` — FIXED_CI |
+
+New reusable invariant diagnostic: `tests/test_core_invariant_stress.lua`
+probes **8 seeded, real headless bot matches** over **21,254 ticks** and
+**1,250 sampled live match states** with **244,969 assertions** for valid
+finite HP/coordinates, owner and ID maps, entity-array order, spatial bucket
+forward/reverse links, orphan and duplicate members, and Emerald bounds.
+Both Lua 5.2 and 5.4 pass with the regular regression suites and all
+24 mechanics cases. In-game monitor, network and speaker tests are still
+needed; the assertions provide fault detection, not proof that no bug exists.
+
 ## Open follow-ups — not confirmed gameplay bugs
 
 | ID | Classification | Evidence / limitation | Next action and acceptance condition |
