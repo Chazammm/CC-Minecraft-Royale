@@ -476,19 +476,21 @@ function M.setupInteractive()
 end
 
 function M.clearToken()
-    if not fs.exists(TOKEN_FILE) then return true end
-    if fs.isDir(TOKEN_FILE) then
-        return false, "Token path is a directory; refusing recursive delete"
-    end
-
-    local ok, result = pcall(fs.delete, TOKEN_FILE)
-    if not ok then return false, tostring(result) end
-    if result == false then
-        return false, "Filesystem refused to delete the local GitHub token"
-    end
-    -- Avoid telling the user the credential was removed while it remains.
-    if fs.exists(TOKEN_FILE) then
-        return false, "Token still exists after deletion attempt"
+    -- After a crash, .bak or .tmp may still hold a valid credential. Logout
+    -- must not leave either secret behind or report success prematurely.
+    for _, path in ipairs({
+        TOKEN_FILE,
+        TOKEN_FILE .. ".tmp",
+        TOKEN_FILE .. ".bak",
+    }) do
+        if fs.exists(path) then
+            if fs.isDir(path) then
+                return false, "Token transaction path is a directory: " .. path
+            end
+            if not safeTokenDelete(path) then
+                return false, "Could not remove local GitHub token file: " .. path
+            end
+        end
     end
     return true
 end
