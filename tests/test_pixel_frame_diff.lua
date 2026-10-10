@@ -32,18 +32,30 @@ for owner=1,2 do
     local monitor={}
     monitors[monitor]={calls=0,rows={}}
     local record=monitors[monitor]
+    local oracleMonitor={}
+    monitors[oracleMonitor]={calls=0,rows={}}
     local state=Game.new(nil,{headlessSimulation=true})
     Game.debugLoadScenario(state,"full")
+    local function oracle(label)
+        pixelArena.draw(oracleMonitor,state,owner,rect,true)
+        local actual=table.concat(record.rows,"\n")
+        local expected=table.concat(monitors[oracleMonitor].rows,"\n")
+        assert(actual==expected,"Pixel-perfect cached/full-encode mismatch: "..label)
+        checks=checks+1
+    end
     pixelArena.draw(monitor,state,owner,rect)
+    oracle("initial")
     assert(record.calls>0,"Initial frame must transmit rows")
     local frame1=table.concat(record.rows,"\n")
     local count=record.calls
     pixelArena.draw(monitor,state,owner,rect)
+    oracle("identical")
     assert(record.calls==count,"Identical pixel frame must produce zero new blits")
     checks=checks+1
 
     assert(Game.debugSpawnCard(state,owner,"creeper",50,100))
     pixelArena.draw(monitor,state,owner,rect)
+    oracle("spawn")
     assert(record.calls>count,"Spawn must invalidate arena")
     local frame2=table.concat(record.rows,"\n")
     assert(frame2~=frame1,"Spawn must visibly change pixel output")
@@ -51,6 +63,7 @@ for owner=1,2 do
 
     count=record.calls
     pixelArena.draw(monitor,state,owner,rect)
+    oracle("static spawned")
     assert(record.calls==count,"Static spawned sprite must not resend")
     checks=checks+1
 
@@ -62,6 +75,7 @@ for owner=1,2 do
         end
     end
     pixelArena.draw(monitor,state,owner,rect)
+    oracle("movement")
     assert(record.calls>count,"Unit movement must not be missed by frame cache")
     checks=checks+1
 
@@ -70,10 +84,12 @@ for owner=1,2 do
     count=record.calls
     state.phase="countdown"
     pixelArena.draw(monitor,state,owner,rect)
+    oracle("phase transition")
     assert(record.calls>count,"Phase transition must force terminal overwrite")
     checks=checks+1
     count=record.calls
     pixelArena.draw(monitor,state,owner,rect)
+    oracle("stable countdown")
     assert(record.calls==count,"Stable countdown canvas should be cached")
     checks=checks+1
 end
