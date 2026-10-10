@@ -116,8 +116,8 @@ assertEq(cards.evolutionCycles("iron_golem"), 2, "Diamond Golem must evolve on t
 assertEq(cards.evolutionCost("iron_golem"), 5, "Diamond Golem must keep the base 5E cost")
 assertEq(diamondGolem.name, "Diamond Golem", "Iron Golem Evolution must be Diamond Golem")
 assertTrue(
-    math.abs(diamondGolem.unit.maxHp - ironGolemCard.unit.maxHp * 1.075) < 0.000001,
-    "Diamond Golem must have exactly 7.5 percent more HP"
+    math.abs(diamondGolem.unit.maxHp - ironGolemCard.unit.maxHp * 1.095) < 0.000001,
+    "Diamond Golem must have exactly 9.5 percent more HP"
 )
 assertEq(diamondGolem.unit.groundPulse.interval, 2.0, "Diamond Golem stomp must trigger every two seconds")
 assertEq(diamondGolem.unit.groundPulse.damage, 25, "Diamond Golem stomp must deal twenty-five damage")
