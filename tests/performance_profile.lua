@@ -67,6 +67,13 @@ for i = 1, 3 do
     totalActions = totalActions + bot1.actions + bot2.actions
 end
 local fullCpu = os.clock() - caseStart
+-- Frozen control results from the clean pre-optimization baseline
+-- (2026-10-10, 3 seeded matches). Performance may change; decisions,
+-- tick cadence and gameplay outcomes must not change silently.
+assert(totalTicks == 9231,
+    "Optimized headless runner changed deterministic match tick counts")
+assert(totalActions == 340,
+    "Optimized headless runner changed deterministic bot action counts")
 Game.update = originalGameUpdate
 Bot.update = originalBotUpdate
 printMetric("headless_3_matches", 3, fullCpu,
