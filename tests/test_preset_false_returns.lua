@@ -121,5 +121,34 @@ do
     eq(stored["deck_presets.db"],"OLD_VALID","failed close preserves final")
 end
 
+-- The previous fix conservatively rejected any .bak file when the final
+-- was missing. A CORRUPT backup, however, is not recoverable: it should
+-- not block the user from ever saving a fresh valid deck.
+do
+    local stored=fixture({["deck_presets.db.bak"]="CORRUPTED"})
+    eq(presets.save(deck),true,"invalid orphan backup must not block new saves")
+    eq(stored["deck_presets.db"],"NEW_VALID","new valid preset promoted")
+end
+
+-- Conversely, a valid orphan .tmp is the only complete copy and must NOT
+-- be erased by an attempted save just because no .bak exists.
+do
+    local stored=fixture({["deck_presets.db.tmp"]="OLD_VALID"})
+    eq(presets.save(deck),false,"valid orphan temp must be recovered before save")
+    eq(stored["deck_presets.db.tmp"],"OLD_VALID","orphan temp preserved")
+end
+
+-- A corrupt final alongside a valid backup must not allow save() to delete
+-- the only recoverable deck; load() must repair it first.
+do
+    local stored=fixture({
+        ["deck_presets.db"]="CORRUPTED",
+        ["deck_presets.db.bak"]="VALID_BACKUP",
+    })
+    eq(presets.save(deck),false,"valid backup with invalid final blocks overwrite")
+    eq(stored["deck_presets.db.bak"],"VALID_BACKUP",
+        "valid backup survived attempted save")
+end
+
 fs,textutils=oldFs,oldTextutils
 print("Preset false-return transaction regressions passed: "..checks)
