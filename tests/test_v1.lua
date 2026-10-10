@@ -2203,10 +2203,28 @@ local simDeck = {
 local simBot = Bot.new(1, simDeck)
 Bot.prepare(simBot, simState)
 
-assertEq(
-    simState.players[1].evolutionCardId,
+assertTrue(
+    cards.hasEvolution(simState.players[1].evolutionCardId),
+    "Bot.prepare must select an eligible Evolution card for normal simulations"
+)
+
+local reorderedDeck = {
+    "zombie",
+    "skeleton",
+    "nether_portal",
     "creeper",
-    "Bot.prepare must select the first eligible Evolution card for normal simulations"
+    "endermite",
+    "cannon",
+    "arrows",
+    "wolf",
+}
+local reorderedState = Game.new()
+local reorderedBot = Bot.new(1, reorderedDeck)
+Bot.prepare(reorderedBot, reorderedState)
+assertEq(
+    reorderedState.players[1].evolutionCardId,
+    simState.players[1].evolutionCardId,
+    "Bot Evolution choice must be strategic and independent of deck ordering"
 )
 assertEq(
     simState.players[1].evolutionProgress,
