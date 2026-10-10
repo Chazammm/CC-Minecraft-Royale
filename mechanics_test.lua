@@ -662,7 +662,7 @@ runTest("evo_diamond_golem", "Diamond Golem stomps only while walking", function
 
     return cards.evolutionCycles("iron_golem") == 2
         and evolved
-        and math.abs(evolved.unit.maxHp - base.unit.maxHp * 1.075) <= EPSILON
+        and math.abs(evolved.unit.maxHp - base.unit.maxHp * 1.095) <= EPSILON
         and diamond.visualVariant == "diamond_golem"
         and math.abs(beforeFirstPulse) <= EPSILON
         and math.abs(afterFirstPulse - 25) <= EPSILON
