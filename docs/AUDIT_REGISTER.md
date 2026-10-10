@@ -68,6 +68,27 @@ Both Lua 5.2 and 5.4 pass with the regular regression suites and all
 24 mechanics cases. In-game monitor, network and speaker tests are still
 needed; the assertions provide fault detection, not proof that no bug exists.
 
+## Transaction integrity audit — 2026-10-10 (baseline `b5c3058b2beb`)
+
+A fourth manual cross-file review targeted failure sequences that earlier
+filesystem tests had missed: successful calls with *incorrect side effects*,
+failed token replacements with existing credentials, broken report writes
+and crash windows between renaming originals and publishing new files.
+
+| ID | Category / severity | Reproduction / evidence | Resolution | CI regression / status |
+| --- | --- | --- | --- | --- |
+| AF-019 | CONFIRMED P1, silently corrupted deck saves | `presets.save` accepted a successful `write/close` that only stored a truncated temporary deck, or `fs.move` returning success without moving anything. A corrupt new file could displace the only previously good preset. Reproduced with a red-before-fix fault-injection CI step. | Byte-compare staged serialized data; verify old->backup and temp->final side effects and destination contents; preserve/read back recovery files before deletion. | `tests/test_preset_transaction_integrity.lua` — FIXED_CI |
+| AF-020 | CONFIRMED P1, credential replacement | Re-running `report_sync setup` on a configured computer wrote directly to the active token. An injected write failure truncated/deleted the previously working credential. | Write new credentials to verified `.tmp`, move old credential into verified `.bak`, promote staged token and restore old token on failed publication. | `tests/test_atomic_token_reconfig.lua` — FIXED_CI |
+| AF-021 | RISK P2, credential crash/logout residue | Interrupted token replacement can leave original valid token only in `.bak`; logout previously deleted only the active path, reporting success while usable secrets remained in temporary/backup files. | Backup fallback for credential reads and cleanup of all three credential paths on logout, verifying each removal. | `tests/test_token_backup_recovery.lua`, `tests/test_report_logout_false.lua` — FIXED_CI |
+| AF-022 | CONFIRMED P2, benchmark report data integrity | `reportOutput.commit` accepted truncated temporary report content after supposedly successful writes and silently unsuccessful renames, then removed the only complete old report. | Check exact staged bytes and expected destination bytes, verify old report backup and new report promotion before deleting backup; rollback safely on mismatch. | `tests/test_report_transaction_integrity.lua` — FIXED_CI |
+| AF-023 | RISK P1, installer marker/content verification | `install.lua` relied on no-exception `write/close`; a silently dropped installation marker could permit destructive updates without the intended on-disk startup guard. | Read back exact bytes of recovery marker, managed modules and metadata before considering write successful. | `tests/test_installer_false_returns.lua` — FIXED_CI |
+
+The diagnostics run under **Lua 5.2 and Lua 5.4**, next to the existing
+24 mechanics cases, 8-match live-state invariant stress, Anvil and PixelBox
+parity tests. Failure simulations do not replace real power-loss,
+speaker/monitor or low-disk hardware testing. Full details:
+`docs/TRANSACTION_INTEGRITY_AUDIT_20261010.md`.
+
 ## Open follow-ups — not confirmed gameplay bugs
 
 | ID | Classification | Evidence / limitation | Next action and acceptance condition |

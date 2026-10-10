@@ -10,13 +10,14 @@ local function check(x,msg)
     checks=checks+1
 end
 local function run(mode)
-    local content=nil
+    local files={}
+    local tokenFile=Sync.tokenPath()
     local dirExists=false
     fs={
         getDir=function()return ".cc_royale" end,
         exists=function(p)
             if p==".cc_royale" then return dirExists end
-            return p==Sync.tokenPath() and content~=nil
+            return files[p]~=nil
         end,
         isDir=function(p)return p==".cc_royale" end,
         makeDir=function(p)
@@ -24,8 +25,15 @@ local function run(mode)
             if mode=="mkdir_false" then return false end
             dirExists=true
         end,
+        delete=function(p)files[p]=nil end,
+        move=function(from,to)
+            check(files[from]~=nil,"missing move source")
+            files[to]=files[from]
+            files[from]=nil
+        end,
         open=function(p,m)
-            check(p==Sync.tokenPath(),"unexpected token path")
+            check(p==tokenFile or p==tokenFile..".tmp"
+                or p==tokenFile..".bak","unexpected token transaction path")
             if m=="w" then
                 local buf=""
                 return {
@@ -35,12 +43,12 @@ local function run(mode)
                     end,
                     close=function()
                         if mode=="close_false" then return false end
-                        if mode~="silent_drop" then content=buf end
+                        if mode~="silent_drop" then files[p]=buf end
                     end,
                 }
             elseif m=="r" then
-                if content==nil then return nil end
-                return {readAll=function()return content end,close=function()end}
+                if files[p]==nil then return nil end
+                return {readAll=function()return files[p] end,close=function()end}
             end
         end,
     }

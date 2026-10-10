@@ -41,7 +41,26 @@ local function readAll(path)
     return body
 end
 
+-- Store credentials by staging, verifying and renaming; never open the
+-- active credential in "w" mode. A failed reconfiguration must preserve the
+-- previous usable token even after a process interruption.
+local function safeTokenDelete(path)
+    if not fs.exists(path) then return true end
+    if fs.isDir(path) then return false end
+    local ok, result = pcall(fs.delete, path)
+    return ok and result ~= false and not fs.exists(path)
+end
+
+local function tokenMoveVerified(from, to, expected)
+    local ok, result = pcall(fs.move, from, to)
+    if not ok or result == false then return false end
+    return not fs.exists(from) and readAll(to) == expected
+end
+
 local function writeAll(path, body)
+    if not fs.move or not fs.delete then
+        return false, "Credential transactions need filesystem move/delete"
+    end
     local dir = fs.getDir(path)
     if dir ~= "" and not fs.exists(dir) then
         local okDir, resultDir = pcall(fs.makeDir, dir)
@@ -50,25 +69,77 @@ local function writeAll(path, body)
         end
     end
 
-    local opened, handle = pcall(fs.open, path, "w")
-    if not opened or not handle then return false, "Could not write " .. path end
+    local temporary, backup = path .. ".tmp", path .. ".bak"
 
-    local okWrite, writeResult = pcall(handle.write, body)
-    local okClose, closeResult = pcall(handle.close)
-    if not okWrite or writeResult == false then
-        return false, "Could not write " .. path
-    end
-    if not okClose or closeResult == false then
-        return false, "Could not close " .. path
+    -- Previous power loss after old->backup: recover old credentials first,
+    -- rather than treating the missing active token as an empty installation.
+    if fs.exists(backup) and not fs.exists(path) then
+        local recoverable = readAll(backup)
+        if not recoverable or not tokenMoveVerified(backup, path, recoverable)
+        then
+            return false, "Existing token backup could not be recovered"
+        end
     end
 
-    -- An apparently successful write can still leave missing/partial token
-    -- data behind (for example on a full CC filesystem). Never claim that
-    -- report syncing is configured before checking its on-disk contents.
-    local verified = readAll(path)
-    if verified ~= body then
-        return false, "Saved data could not be verified: " .. path
+    local oldToken = nil
+    if fs.exists(path) then
+        oldToken = readAll(path)
+        if not oldToken then
+            return false, "Existing GitHub token cannot be read safely"
+        end
     end
+
+    if not safeTokenDelete(temporary) then
+        return false, "Could not clear old token staging file"
+    end
+    if not safeTokenDelete(backup) then
+        return false, "Could not clear stale token backup"
+    end
+
+    local opened, handle = pcall(fs.open, temporary, "w")
+    if not opened or not handle then
+        return false, "Could not stage new GitHub token"
+    end
+
+    local okWrite, resultWrite = pcall(handle.write, body)
+    local okClose, resultClose = pcall(handle.close)
+    if not okWrite or resultWrite == false
+        or not okClose or resultClose == false
+        or readAll(temporary) ~= body
+    then
+        safeTokenDelete(temporary)
+        return false, "Could not stage/verify new GitHub token"
+    end
+
+    if oldToken then
+        if not tokenMoveVerified(path, backup, oldToken) then
+            if not fs.exists(path) and readAll(backup) == oldToken then
+                tokenMoveVerified(backup, path, oldToken)
+            end
+            safeTokenDelete(temporary)
+            return false, "Could not protect previous GitHub token"
+        end
+    end
+
+    local promoted = tokenMoveVerified(temporary, path, body)
+    if not promoted then
+        -- A partial destination might still contain useful data; never
+        -- delete an unreadable destination or the good .bak blindly.
+        if fs.exists(path) and readAll(path) ~= nil then
+            safeTokenDelete(path)
+        end
+        if not fs.exists(path) and oldToken
+            and readAll(backup) == oldToken
+        then
+            tokenMoveVerified(backup, path, oldToken)
+        end
+        safeTokenDelete(temporary)
+        return false, "Could not publish verified GitHub token"
+    end
+
+    -- A good active token is now present. If cleaning stale backup fails,
+    -- setup still succeeded; the backup is retried on the next setup.
+    safeTokenDelete(backup)
     return true
 end
 
@@ -332,14 +403,23 @@ function M.tokenPath()
     return TOKEN_FILE
 end
 
+-- A power loss can leave the original token in .bak after the first
+-- rename. Treat it as a readable fallback until a subsequent setup restores
+-- it; never replace a present but unreadable active token implicitly.
+local function readStoredToken()
+    if fs.exists(TOKEN_FILE) then
+        return readAll(TOKEN_FILE)
+    end
+    return readAll(TOKEN_FILE .. ".bak")
+end
+
 function M.isConfigured()
-    if not fs.exists(TOKEN_FILE) or fs.isDir(TOKEN_FILE) then return false end
-    local token = readAll(TOKEN_FILE)
+    local token = readStoredToken()
     return token ~= nil and #trim(token) >= 20
 end
 
 function M.readToken()
-    local token, err = readAll(TOKEN_FILE)
+    local token, err = readStoredToken()
     if not token then return nil, err end
 
     token = trim(token)
@@ -405,19 +485,21 @@ function M.setupInteractive()
 end
 
 function M.clearToken()
-    if not fs.exists(TOKEN_FILE) then return true end
-    if fs.isDir(TOKEN_FILE) then
-        return false, "Token path is a directory; refusing recursive delete"
-    end
-
-    local ok, result = pcall(fs.delete, TOKEN_FILE)
-    if not ok then return false, tostring(result) end
-    if result == false then
-        return false, "Filesystem refused to delete the local GitHub token"
-    end
-    -- Avoid telling the user the credential was removed while it remains.
-    if fs.exists(TOKEN_FILE) then
-        return false, "Token still exists after deletion attempt"
+    -- After a crash, .bak or .tmp may still hold a valid credential. Logout
+    -- must not leave either secret behind or report success prematurely.
+    for _, path in ipairs({
+        TOKEN_FILE,
+        TOKEN_FILE .. ".tmp",
+        TOKEN_FILE .. ".bak",
+    }) do
+        if fs.exists(path) then
+            if fs.isDir(path) then
+                return false, "Token transaction path is a directory: " .. path
+            end
+            if not safeTokenDelete(path) then
+                return false, "Could not remove local GitHub token file: " .. path
+            end
+        end
     end
     return true
 end

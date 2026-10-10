@@ -124,6 +124,14 @@ local function writeFile(path, body)
     return false, closed and "Filesystem close returned false" or closeResult
   end
 
+  -- A storage wrapper can return success after silently dropping bytes.
+  -- Verify the exact data before treating the installation marker, metadata
+  -- or a managed module as safely written. Especially important BEFORE
+  -- any old project files are replaced.
+  if readFile(path) ~= body then
+    return false, "Filesystem write verification failed for " .. path
+  end
+
   return true
 end
 
