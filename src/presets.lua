@@ -50,8 +50,14 @@ local function readBody(path)
     if not okOpen or not handle then return nil end
 
     local okRead, raw = pcall(handle.readAll)
-    pcall(handle.close)
-    if not okRead then return nil end
+    local closed, closeResult = pcall(handle.close)
+    -- False or non-string read results are I/O failures, NOT evidence that
+    -- the existing data is corrupt and can safely be overwritten.
+    if not okRead or type(raw) ~= "string"
+        or not closed or closeResult == false
+    then
+        return nil
+    end
     return raw
 end
 
@@ -147,7 +153,13 @@ function presets.save(value)
     -- main file is absent/corrupt: load() must restore them first. However,
     -- an explicitly invalid, readable orphan backup must NOT permanently
     -- lock users out of saving fresh valid decks.
-    if not decode(readBody(PRESET_FILE))
+    local finalBody = readBody(PRESET_FILE)
+    -- Never reinterpret a *read failure* of an existing final as a
+    -- definitely invalid file. It may be the only intact deck data.
+    if pathExists(PRESET_FILE) and finalBody == nil then
+        return false
+    end
+    if not decode(finalBody)
         and (needsRecovery(PRESET_TEMP_FILE)
             or needsRecovery(PRESET_BACKUP_FILE))
     then
@@ -164,6 +176,7 @@ function presets.save(value)
     if not okOpen or not handle then return false end
 
     local ok, serialized = pcall(textutils.serialize, value)
+    ok = ok and type(serialized) == "string"
     local writeResult = nil
     if ok then
         ok, writeResult = pcall(handle.write, serialized)
