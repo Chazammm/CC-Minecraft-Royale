@@ -19,6 +19,7 @@ platform integration, and benchmark tooling can evolve independently.
   and navigation helpers.
 - `src/spatial.lua` — deterministic per-owner spatial buckets and ordered
   AoE candidate snapshots used by the combat engine.
+- `src/presets.lua` — crash-safe deck-preset persistence and recovery.
 - `src/bot.lua` — bot observation, scoring, and play decisions.
 - `src/util.lua` — small general-purpose helpers.
 

@@ -13,6 +13,7 @@ local files = {
   "src/pixel_arena.lua",
   "src/arena.lua",
   "src/spatial.lua",
+  "src/presets.lua",
   "src/hardware.lua",
   "src/game.lua",
   "src/bot.lua",

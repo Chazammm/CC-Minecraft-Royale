@@ -452,3 +452,8 @@ do not create another timestamped history file.
 Refactoring note: spatial bucket maintenance/query infrastructure lives in
 `src/spatial.lua`; authoritative target rules and combat decisions remain in
 `src/game.lua`.
+
+
+Deck-preset file transactions and recovery now live in `src/presets.lua`.
+`src/game.lua` only requests load/save operations and keeps match-state
+behavior unchanged.

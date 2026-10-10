@@ -96,6 +96,10 @@ assert(
     "Spatial index module must be installed"
 )
 assert(
+    managed["src/presets.lua"],
+    "Preset persistence module must be installed"
+)
+assert(
     managed["src/headless_match.lua"],
     "Shared headless runner must be installed"
 )

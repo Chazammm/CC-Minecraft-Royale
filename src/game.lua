@@ -3,170 +3,9 @@ local util = require("src.util")
 local cards = require("src.cards")
 local arena = require("src.arena")
 local spatial = require("src.spatial")
+local presets = require("src.presets")
 
 local Game = {}
-
-local PRESET_FILE = "deck_presets.db"
-
-local function emptyPresets()
-    return {
-        [1] = { nil, nil, nil },
-        [2] = { nil, nil, nil },
-    }
-end
-
-local PRESET_TEMP_FILE = PRESET_FILE .. ".tmp"
-local PRESET_BACKUP_FILE = PRESET_FILE .. ".bak"
-
-local function presetPathExists(path)
-    if not fs or not fs.exists then return false end
-    local ok, exists = pcall(fs.exists, path)
-    return ok and exists == true
-end
-
-local function safePresetDelete(path)
-    if not presetPathExists(path) then return true end
-    if fs.isDir then
-        local okDir, isDir = pcall(fs.isDir, path)
-        if not okDir or isDir then return false end
-    end
-    local ok = pcall(fs.delete, path)
-    return ok
-end
-
-local function readPresetBody(path)
-    if not presetPathExists(path) then return nil end
-
-    if fs.isDir then
-        local okDir, isDir = pcall(fs.isDir, path)
-        if not okDir or isDir then return nil end
-    end
-
-    local okOpen, handle = pcall(fs.open, path, "r")
-    if not okOpen or not handle then return nil end
-
-    local okRead, raw = pcall(handle.readAll)
-    pcall(handle.close)
-    if not okRead then return nil end
-    return raw
-end
-
-local function decodePresets(raw)
-    if type(raw) ~= "string"
-        or not textutils
-        or not textutils.unserialize
-    then
-        return nil
-    end
-
-    local ok, decoded = pcall(textutils.unserialize, raw)
-    if not ok or type(decoded) ~= "table" then return nil end
-    if type(decoded[1]) ~= "table" or type(decoded[2]) ~= "table" then
-        return nil
-    end
-
-    local presets = emptyPresets()
-    for playerId = 1, 2 do
-        for slot = 1, 3 do
-            local deck = decoded[playerId][slot]
-            if deck ~= nil then
-                if not cards.isValidDeck(deck) then return nil end
-                presets[playerId][slot] = util.deepcopy(deck)
-            end
-        end
-    end
-    return presets
-end
-
-local function loadPresets()
-    if not fs or not fs.open or not fs.exists then
-        return emptyPresets()
-    end
-
-    local candidates = {
-        PRESET_FILE,
-        PRESET_TEMP_FILE,
-        PRESET_BACKUP_FILE,
-    }
-
-    for index, path in ipairs(candidates) do
-        local presets = decodePresets(readPresetBody(path))
-        if presets then
-            if index > 1 and fs.move and fs.delete then
-                -- Recover a fully serialized transaction left behind by a
-                -- reboot/power loss between old->backup and temp->final.
-                safePresetDelete(PRESET_FILE)
-                local promoted = pcall(fs.move, path, PRESET_FILE)
-                if promoted then
-                    safePresetDelete(PRESET_BACKUP_FILE)
-                    safePresetDelete(PRESET_TEMP_FILE)
-                end
-            elseif index == 1 then
-                -- A valid final file wins; stale transaction debris can be
-                -- discarded without risking the recovered presets.
-                safePresetDelete(PRESET_BACKUP_FILE)
-                safePresetDelete(PRESET_TEMP_FILE)
-            end
-            return presets
-        end
-    end
-
-    return emptyPresets()
-end
-
-local function savePresets(presets)
-    if not fs or not fs.open or not textutils or not textutils.serialize then
-        return nil
-    end
-
-    -- A partially available filesystem API is a real persistence failure, not
-    -- the "plain Lua/no filesystem" case where presets intentionally remain
-    -- memory-only.
-    if not fs.exists or not fs.delete or not fs.move then
-        return false
-    end
-
-    if not safePresetDelete(PRESET_TEMP_FILE)
-        or not safePresetDelete(PRESET_BACKUP_FILE)
-    then
-        return false
-    end
-
-    local okOpen, handle = pcall(fs.open, PRESET_TEMP_FILE, "w")
-    if not okOpen or not handle then return false end
-
-    local ok, serialized = pcall(textutils.serialize, presets)
-    if ok then ok = pcall(handle.write, serialized) end
-    pcall(handle.close)
-
-    if not ok then
-        safePresetDelete(PRESET_TEMP_FILE)
-        return false
-    end
-
-    -- Move the old valid file aside only after the replacement has been fully
-    -- written. A failed final move can then restore the previous presets.
-    if presetPathExists(PRESET_FILE) then
-        local movedOld = pcall(fs.move, PRESET_FILE, PRESET_BACKUP_FILE)
-        if not movedOld then
-            safePresetDelete(PRESET_TEMP_FILE)
-            return false
-        end
-    end
-
-    local movedNew = pcall(fs.move, PRESET_TEMP_FILE, PRESET_FILE)
-    if not movedNew then
-        safePresetDelete(PRESET_FILE)
-        if presetPathExists(PRESET_BACKUP_FILE) then
-            pcall(fs.move, PRESET_BACKUP_FILE, PRESET_FILE)
-        end
-        safePresetDelete(PRESET_TEMP_FILE)
-        return false
-    end
-
-    safePresetDelete(PRESET_BACKUP_FILE)
-    return true
-end
 
 local function randomDeck()
     local pool = {}
@@ -2276,7 +2115,7 @@ function Game.new(soundCallback, options)
         }),
         -- Preset IO is irrelevant to automated matches and was previously
         -- repeated once per simulated game.
-        deckPresets = headlessSimulation and emptyPresets() or loadPresets(),
+        deckPresets = headlessSimulation and presets.empty() or presets.load(),
         stats = newMatchStats(),
     }
 
@@ -3154,7 +2993,7 @@ function Game.saveDeckPreset(state, playerId, slot)
         or nil
 
     state.deckPresets[playerId][slot] = util.deepcopy(player.deck)
-    local persisted = savePresets(state.deckPresets)
+    local persisted = presets.save(state.deckPresets)
 
     if persisted == false then
         state.deckPresets[playerId][slot] = previous
