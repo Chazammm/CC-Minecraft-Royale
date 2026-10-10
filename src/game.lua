@@ -383,6 +383,35 @@ local function makeBaseEntity(state, owner, kind, x, y)
     return entity
 end
 
+local function registerEmeraldBoost(state, entity)
+    local boost = tonumber(entity and entity.emeraldBoost) or 0
+    local owner = entity and entity.owner
+    if boost == 0 or (owner ~= 1 and owner ~= 2) then return end
+
+    state.emeraldBoost = state.emeraldBoost or { [1] = 0, [2] = 0 }
+    state.emeraldBoostSources = state.emeraldBoostSources
+        or { [1] = {}, [2] = {} }
+
+    state.emeraldBoost[owner] = (state.emeraldBoost[owner] or 0) + boost
+    state.emeraldBoostSources[owner][entity.id] = entity
+end
+
+local function unregisterEmeraldBoost(state, entity)
+    local boost = tonumber(entity and entity.emeraldBoost) or 0
+    local owner = entity and entity.owner
+    if boost == 0 or (owner ~= 1 and owner ~= 2) then return end
+
+    state.emeraldBoost = state.emeraldBoost or { [1] = 0, [2] = 0 }
+    state.emeraldBoostSources = state.emeraldBoostSources
+        or { [1] = {}, [2] = {} }
+
+    state.emeraldBoost[owner] = math.max(
+        0,
+        (state.emeraldBoost[owner] or 0) - boost
+    )
+    state.emeraldBoostSources[owner][entity.id] = nil
+end
+
 local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color, sourceCardId)
     local entity = makeBaseEntity(state, owner, "unit", x, y)
 
@@ -424,6 +453,7 @@ local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color, 
         state.globalMovementAuraDirty = true
     end
 
+    registerEmeraldBoost(state, entity)
     table.insert(state.entities, entity)
     return entity
 end
@@ -472,6 +502,7 @@ local function spawnBuilding(state, owner, card, x, y)
         state.globalMovementAuraDirty = true
     end
 
+    registerEmeraldBoost(state, entity)
     table.insert(state.entities, entity)
     return entity
 end
@@ -946,6 +977,7 @@ local killEntity
 
 local function deactivateEntity(state, entity)
     if not entity or not entity.alive then return false end
+    unregisterEmeraldBoost(state, entity)
     entity.alive = false
     state.entitiesDirty = true
 
@@ -2103,6 +2135,8 @@ function Game.new(soundCallback, options)
         globalMovementAuraActive = false,
         globalMovementAuraDirty = false,
         entitiesDirty = false,
+        emeraldBoost = { [1] = 0, [2] = 0 },
+        emeraldBoostSources = { [1] = {}, [2] = {} },
         destroyedSideTowers = {
             [1] = { left = false, right = false },
             [2] = { left = false, right = false },
@@ -2149,6 +2183,8 @@ function Game.resetLobby(state)
     state.globalMovementAuraActive = false
     state.globalMovementAuraDirty = false
     state.entitiesDirty = false
+    state.emeraldBoost = { [1] = 0, [2] = 0 }
+    state.emeraldBoostSources = { [1] = {}, [2] = {} }
     state.destroyedSideTowers = {
         [1] = { left = false, right = false },
         [2] = { left = false, right = false },
@@ -2193,6 +2229,8 @@ function Game.startCountdown(state)
     state.globalMovementAuraActive = false
     state.globalMovementAuraDirty = false
     state.entitiesDirty = false
+    state.emeraldBoost = { [1] = 0, [2] = 0 }
+    state.emeraldBoostSources = { [1] = {}, [2] = {} }
     state.destroyedSideTowers = {
         [1] = { left = false, right = false },
         [2] = { left = false, right = false },
@@ -2293,8 +2331,11 @@ local function startTiebreaker(state)
         end
     end
     state.entities = towers
+    state.entitiesDirty = false
     state.globalMovementAuraActive = false
     state.globalMovementAuraDirty = false
+    state.emeraldBoost = { [1] = 0, [2] = 0 }
+    state.emeraldBoostSources = { [1] = {}, [2] = {} }
     state.entityById = {}
     for _, tower in ipairs(towers) do
         state.entityById[tower.id] = tower
@@ -3325,29 +3366,13 @@ function Game.update(state, dt)
         end
         local emeraldRate = config.MATCH.emeraldPerSecond * multiplier
 
-        local emeraldBoost1, emeraldBoost2 = 0, 0
-        local emeraldBoostSources1, emeraldBoostSources2 = nil, nil
-        for _, entity in ipairs(state.entities) do
-            if entity.alive and entity.emeraldBoost then
-                if entity.owner == 1 then
-                    emeraldBoost1 = emeraldBoost1 + entity.emeraldBoost
-                    if state.stats then
-                        emeraldBoostSources1 = emeraldBoostSources1 or {}
-                        emeraldBoostSources1[#emeraldBoostSources1 + 1] = entity
-                    end
-                elseif entity.owner == 2 then
-                    emeraldBoost2 = emeraldBoost2 + entity.emeraldBoost
-                    if state.stats then
-                        emeraldBoostSources2 = emeraldBoostSources2 or {}
-                        emeraldBoostSources2[#emeraldBoostSources2 + 1] = entity
-                    end
-                end
-            end
-        end
+        local emeraldBoost = state.emeraldBoost or { [1] = 0, [2] = 0 }
+        local emeraldBoostSources = state.emeraldBoostSources
+            or { [1] = {}, [2] = {} }
 
         for playerId = 1, 2 do
             local player = state.players[playerId]
-            local boost = playerId == 1 and emeraldBoost1 or emeraldBoost2
+            local boost = emeraldBoost[playerId] or 0
 
             local baseGain = emeraldRate * dt
             local bonusGain = baseGain * boost
@@ -3371,12 +3396,10 @@ function Game.update(state, dt)
                 -- created each living boost unit. This makes Villager useful
                 -- in balance reports even though it deals no damage.
                 if realizedBonus > 0 and boost > 0 then
-                    local boostSources = playerId == 1
-                        and emeraldBoostSources1
-                        or emeraldBoostSources2
+                    local boostSources = emeraldBoostSources[playerId]
                     if boostSources then
-                        for _, entity in ipairs(boostSources) do
-                            if entity.sourceCardId then
+                        for _, entity in pairs(boostSources) do
+                            if entity.alive and entity.sourceCardId then
                                 local share = realizedBonus
                                     * entity.emeraldBoost
                                     / boost
@@ -3480,6 +3503,8 @@ local function clearSimulation(state)
     state.globalMovementAuraActive = false
     state.globalMovementAuraDirty = false
     state.entitiesDirty = false
+    state.emeraldBoost = { [1] = 0, [2] = 0 }
+    state.emeraldBoostSources = { [1] = {}, [2] = {} }
 end
 
 local function spawnScenarioTowers(state, scenario)
