@@ -66,4 +66,56 @@ config.RULESET_DEFAULTS = {
 
 config.DEBUG = false
 
+function config.validate()
+    local function positive(name, value)
+        if type(value) ~= "number" or value <= 0 then
+            error("Invalid config: " .. name .. " must be > 0", 0)
+        end
+    end
+
+    positive("TEXT_SCALE", config.TEXT_SCALE)
+    positive("TICK_RATE", config.TICK_RATE)
+    positive("ARENA.width", config.ARENA and config.ARENA.width)
+    positive("ARENA.height", config.ARENA and config.ARENA.height)
+    positive(
+        "BUILDINGS.lifetimeDecayMultiplier",
+        config.BUILDINGS and config.BUILDINGS.lifetimeDecayMultiplier
+    )
+    positive(
+        "MATCH.tiebreakerDamagePerSecond",
+        config.MATCH and config.MATCH.tiebreakerDamagePerSecond
+    )
+
+    -- Arena/tower/bot geometry is intentionally authored for the canonical
+    -- 100x160 battlefield. Fail loudly instead of accepting a partially
+    -- rescaled configuration with inconsistent hard-coded positions.
+    if config.ARENA.width ~= 100 or config.ARENA.height ~= 160 then
+        error("Invalid config: arena size is fixed at 100x160", 0)
+    end
+
+    if type(config.ARENA.riverTop) ~= "number"
+        or type(config.ARENA.riverBottom) ~= "number"
+        or config.ARENA.riverTop <= 0
+        or config.ARENA.riverBottom >= config.ARENA.height
+        or config.ARENA.riverTop >= config.ARENA.riverBottom
+    then
+        error("Invalid config: river bounds must be ordered inside the arena", 0)
+    end
+
+    if type(config.MATCH.emeraldPerSecond) ~= "number"
+        or config.MATCH.emeraldPerSecond < 0
+    then
+        error("Invalid config: MATCH.emeraldPerSecond must be >= 0", 0)
+    end
+
+    positive("MATCH.normalTime", config.MATCH.normalTime)
+    positive("MATCH.overtimeTime", config.MATCH.overtimeTime)
+    positive("MATCH.emeraldMax", config.MATCH.emeraldMax)
+    positive("MATCH.overtimeMultiplier", config.MATCH.overtimeMultiplier)
+    positive("MATCH.overtimeFinalMultiplier", config.MATCH.overtimeFinalMultiplier)
+    return true
+end
+
+config.validate()
+
 return config
