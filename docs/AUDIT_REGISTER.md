@@ -49,6 +49,15 @@ Fix branch: `fix-audit-findings-quality-gates-20261010`.
 | OP-004 | EVIDENCE, stale balance | Latest reports are from 2026-10-09 and precede the corrected revision | In ATM10 run `mechanics_test`, `simulate 1000 mixed`, controlled `compare`/`evo_compare`; verify CODE_REVISION before balance decisions |
 | OP-005 | MAINTENANCE, reports | History grows with each upload; not a correctness defect at present | Review pruning after a documented size/retention limit; preserve newest and reproducibility |
 
+## Reproducible CPU baseline
+
+The read-only GitHub CI probe recorded CPU time for real deterministic
+headless matches, high-density Bot decisions, and two-display static
+PixelBox renders under Lua 5.2/5.4. See
+[`PERFORMANCE_BASELINE_20261010.md`](PERFORMANCE_BASELINE_20261010.md)
+for method, numbers and hardware limitations. This measurement does **not**
+close OP-001, OP-002 or OP-003; no speedup has been implemented or validated.
+
 ## Field validation required before declaring a release hardware-verified
 
 - Two real Advanced Monitors, correct orientation, touch zones, no stuck

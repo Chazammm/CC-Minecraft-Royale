@@ -65,3 +65,7 @@ jobs:
         run: lua5.4 tests/test_release_gate.lua
       - name: Full in-game mechanics suite
         run: lua5.4 tests/test_mechanics_full_ci.lua
+      - name: Read-only performance profile (diagnostic, not timed pass/fail)
+        run: |
+          lua5.2 tests/performance_profile.lua
+          lua5.4 tests/performance_profile.lua
