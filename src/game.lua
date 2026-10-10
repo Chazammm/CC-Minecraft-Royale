@@ -56,15 +56,17 @@ local function decodePresets(raw)
 
     local ok, decoded = pcall(textutils.unserialize, raw)
     if not ok or type(decoded) ~= "table" then return nil end
+    if type(decoded[1]) ~= "table" or type(decoded[2]) ~= "table" then
+        return nil
+    end
 
     local presets = emptyPresets()
     for playerId = 1, 2 do
-        if type(decoded[playerId]) == "table" then
-            for slot = 1, 3 do
-                if cards.isValidDeck(decoded[playerId][slot]) then
-                    presets[playerId][slot] =
-                        util.deepcopy(decoded[playerId][slot])
-                end
+        for slot = 1, 3 do
+            local deck = decoded[playerId][slot]
+            if deck ~= nil then
+                if not cards.isValidDeck(deck) then return nil end
+                presets[playerId][slot] = util.deepcopy(deck)
             end
         end
     end
@@ -78,8 +80,8 @@ local function loadPresets()
 
     local candidates = {
         PRESET_FILE,
-        PRESET_BACKUP_FILE,
         PRESET_TEMP_FILE,
+        PRESET_BACKUP_FILE,
     }
 
     for index, path in ipairs(candidates) do
@@ -945,6 +947,7 @@ local killEntity
 local function deactivateEntity(state, entity)
     if not entity or not entity.alive then return false end
     entity.alive = false
+    state.entitiesDirty = true
 
     if entity.globalEnemyMoveSlow then
         state.globalMovementAuraDirty = true
@@ -1179,7 +1182,7 @@ local function handleDeathAbilities(state, entity)
     end
 
     if entity.splitOnDeath then
-        local template = cards.getInternalUnit(entity.splitOnDeath.template)
+        local template = cards.getInternalUnitTemplate(entity.splitOnDeath.template)
         if template then
             local count = entity.splitOnDeath.count or 2
             for i = 1, count do
@@ -1275,7 +1278,7 @@ local function updatePeriodicSpawn(state, entity, dt)
     entity.periodicSpawnTimer = (entity.periodicSpawnTimer or spec.interval or 8) - dt
     if entity.periodicSpawnTimer > 0 then return end
 
-    local template = cards.getInternalUnit(spec.template)
+    local template = cards.getInternalUnitTemplate(spec.template)
     if not template then
         entity.periodicSpawnTimer = spec.interval or 8
         return
@@ -2052,6 +2055,7 @@ local function cleanupEntities(state)
     end
 
     for i = write, count do state.entities[i] = nil end
+    state.entitiesDirty = false
 end
 
 local function resetPlayersForMatch(state)
@@ -2098,6 +2102,7 @@ function Game.new(soundCallback, options)
         exitRequested = false,
         globalMovementAuraActive = false,
         globalMovementAuraDirty = false,
+        entitiesDirty = false,
         destroyedSideTowers = {
             [1] = { left = false, right = false },
             [2] = { left = false, right = false },
@@ -2143,6 +2148,7 @@ function Game.resetLobby(state)
     state.exitRequested = false
     state.globalMovementAuraActive = false
     state.globalMovementAuraDirty = false
+    state.entitiesDirty = false
     state.destroyedSideTowers = {
         [1] = { left = false, right = false },
         [2] = { left = false, right = false },
@@ -2186,6 +2192,7 @@ function Game.startCountdown(state)
     state.exitRequested = false
     state.globalMovementAuraActive = false
     state.globalMovementAuraDirty = false
+    state.entitiesDirty = false
     state.destroyedSideTowers = {
         [1] = { left = false, right = false },
         [2] = { left = false, right = false },
@@ -2503,8 +2510,23 @@ function Game.getActiveCardForPlayer(state, playerId, cardId)
 end
 
 function Game.getCardPlayCost(state, playerId, cardId)
-    local active = Game.getActiveCardForPlayer(state, playerId, cardId)
-    return active and active.cost or nil
+    local card = cards.get(cardId)
+    local player = state and state.players and state.players[playerId]
+    if not card then return nil end
+
+    if player
+        and state.phase == "battle"
+        and Game.rulesetEnabled(state, "evolutions")
+        and player.evolutionCardId == card.id
+        and cards.hasEvolution(card.id)
+    then
+        local cycles = cards.evolutionCycles(card.id)
+        if cycles ~= nil and (player.evolutionProgress or 0) >= cycles then
+            return cards.evolutionCost(card.id) or card.cost
+        end
+    end
+
+    return card.cost
 end
 
 function Game.playCardFromSlot(state, playerId, slot, x, y)
@@ -3400,7 +3422,9 @@ function Game.update(state, dt)
     if (isBattle and state.phase == "battle") or isAdmin then
         updateProjectiles(state, dt)
         updateEffects(state, dt)
-        cleanupEntities(state)
+        if state.entitiesDirty then
+            cleanupEntities(state)
+        end
 
         if isBattle and state.phase ~= "battle" then
             return
@@ -3455,6 +3479,7 @@ local function clearSimulation(state)
     state.combatTick = 0
     state.globalMovementAuraActive = false
     state.globalMovementAuraDirty = false
+    state.entitiesDirty = false
 end
 
 local function spawnScenarioTowers(state, scenario)
