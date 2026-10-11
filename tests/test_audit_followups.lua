@@ -859,4 +859,31 @@ do
     )
 end
 
+-- Lobby reset must not expose stale match-local clocks, telemetry or feedback
+-- between consecutive matches.
+do
+    local state = Game.new(nil, { headlessSimulation = true })
+    assertTrue(Game.startHeadlessBattle(state, config.TICK_RATE),
+        "Reset regression needs a running headless match")
+    Game.update(state, 0.10)
+    state.players[1].feedback = "STALE MATCH MESSAGE"
+    state.players[1].feedbackTime = 99
+    state.stats.players[1].cardsPlayed = 7
+
+    Game.resetLobby(state)
+
+    assertEq(state.phase, "lobby", "Reset must return to lobby")
+    assertNear(state.timeLeft, config.MATCH.normalTime, 1e-9,
+        "Lobby reset must restore regulation clock")
+    assertNear(state.countdown, config.MATCH.countdown, 1e-9,
+        "Lobby reset must restore countdown clock")
+    assertEq(state.stats.elapsed, 0, "Lobby reset must clear elapsed telemetry")
+    assertEq(state.stats.players[1].cardsPlayed, 0,
+        "Lobby reset must clear previous match player stats")
+    assertEq(state.players[1].feedback, nil,
+        "Lobby reset must clear previous match feedback")
+    assertEq(state.players[1].feedbackTime, 0,
+        "Lobby reset must clear feedback timer")
+end
+
 print("Audit follow-up tests passed")
