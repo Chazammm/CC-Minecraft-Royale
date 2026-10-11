@@ -192,6 +192,12 @@ do
     assertTrue(not okDecaySign,
         "Negative building lifetime decay must never turn natural decay into healing")
 
+    local invalidTiebreakRate = util.deepcopy(config)
+    invalidTiebreakRate.MATCH.tiebreakerDamagePerSecond = -300
+    local okTiebreakRate = pcall(config.validate, invalidTiebreakRate)
+    assertTrue(not okTiebreakRate,
+        "Negative tiebreaker damage must never heal towers or stall match end")
+
     assertTrue(config.validate(), "Live config must remain valid after candidate checks")
 end
 
