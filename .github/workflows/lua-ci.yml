@@ -124,6 +124,16 @@ jobs:
       - name: Audit-only 100/500/1000 mixed simulation verification
         if: github.ref == 'refs/heads/audit-20261011-full-system'
         run: |
-          lua5.4 simulate.lua 100 mixed 20261011
-          lua5.4 simulate.lua 500 mixed 20261011
-          lua5.4 simulate.lua 1000 mixed 20261011
+          cat > /tmp/run_cc_sim.lua <<'LUA'
+          colors = {
+            white=1, orange=2, magenta=4, lightBlue=8,
+            yellow=16, lime=32, pink=64, gray=128,
+            lightGray=256, cyan=512, purple=1024, blue=2048,
+            brown=4096, green=8192, red=16384, black=32768,
+          }
+          local count, mode, seed = ...
+          assert(loadfile("simulate.lua"))(count, mode, seed)
+          LUA
+          lua5.4 /tmp/run_cc_sim.lua 100 mixed 20261011
+          lua5.4 /tmp/run_cc_sim.lua 500 mixed 20261011
+          lua5.4 /tmp/run_cc_sim.lua 1000 mixed 20261011
