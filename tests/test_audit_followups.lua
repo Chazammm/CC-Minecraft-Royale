@@ -886,4 +886,53 @@ do
         "Lobby reset must clear feedback timer")
 end
 
+
+-- A dynamically passive/non-targeting unit must not retain hidden aggro state
+-- that can reappear if Dev/Admin code later enables it again.
+do
+    local state = Game.new(nil, { headlessSimulation = true })
+    Game.debugLoadScenario(state, "empty")
+    assertTrue(Game.debugSpawnCard(state, 1, "zombie", 25, 110))
+    assertTrue(Game.debugSpawnCard(state, 2, "zombie", 25, 100))
+    local attacker = state.entitiesByOwner[1][1]
+
+    Game.debugSetPaused(state, false)
+    Game.update(state, 0.05)
+    assertTrue(attacker.targetId ~= nil and attacker.lockedTargetId ~= nil,
+        "Passive-lock regression needs an acquired target")
+
+    attacker.passive = true
+    Game.update(state, 0.05)
+    assertEq(attacker.targetId, nil, "Passive unit must clear targetId")
+    assertEq(attacker.lockedTargetId, nil,
+        "Passive unit must clear committed target lock")
+end
+
+-- Start a second battle on the exact same state object after reset. This
+-- catches ID/index/stat/Evolution leaks which a fresh Game.new() per match
+-- would hide.
+do
+    local state = Game.new(nil, { headlessSimulation = true })
+    assertTrue(Game.startHeadlessBattle(state, config.TICK_RATE))
+    state.players[1].evolutionProgress = 99
+    state.stats.players[1].cardsPlayed = 9
+    Game.resetLobby(state)
+
+    assertEq(state.players[1].evolutionProgress, 0,
+        "Lobby reset must clear Evolution progress")
+    assertTrue(Game.startHeadlessBattle(state, config.TICK_RATE),
+        "Second battle must start on reused state")
+    assertEq(#state.entities, 6, "Second match must create exactly six towers")
+    assertEq(state.nextEntityId, 7,
+        "Second match entity IDs must restart cleanly at tower IDs 1..6")
+    assertEq(state.stats.elapsed, 0,
+        "Second match must start with fresh elapsed telemetry")
+    assertEq(state.stats.players[1].cardsPlayed, 0,
+        "Second match must not inherit previous card telemetry")
+    for id = 1, 6 do
+        assertTrue(state.entityById[id] ~= nil,
+            "Second match entityById must contain tower " .. id)
+    end
+end
+
 print("Audit follow-up tests passed")

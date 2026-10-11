@@ -6,7 +6,7 @@ local util = require("src.util")
 local arena = require("src.arena")
 local version = require("src.version")
 
-local SUITE_VERSION = 21
+local SUITE_VERSION = 22
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 local EPSILON = 0.000001
@@ -1641,6 +1641,55 @@ runTest("evoker_fangs_vex", "Evoker uses line/ring fangs and summons 30-damage V
             and vex.remainingLifetime > 8.7
     end
 
+    -- Do not only trust the template field: exercise the authoritative attack
+    -- path with exactly one Vex and a high-HP passive target so multipliers,
+    -- duplicate attacks, or future special-case code cannot raise the approved
+    -- 30-damage hit unnoticed.
+    local vexDamageState = newAdminState("empty")
+    Game.debugSpawnCard(vexDamageState, 1, "evoker", SAFE_X, SAFE_Y)
+    local damageEvoker = findEntity(vexDamageState, function(e)
+        return e.alive and e.owner == 1 and e.name == "Evoker"
+    end)
+    damageEvoker.passive = true
+    damageEvoker.targetMode = "none"
+    step(vexDamageState, 4.05, DEFAULT_DT)
+
+    local damageVexes = {}
+    for _, entity in ipairs(vexDamageState.entities) do
+        if entity.alive and entity.owner == 1 and entity.name == "Vex" then
+            damageVexes[#damageVexes + 1] = entity
+        end
+    end
+    local damageVex = damageVexes[1]
+    for i = 2, #damageVexes do
+        Game.debugKillEntity(vexDamageState, damageVexes[i].id)
+    end
+
+    local vexTarget = damageVex and debugSpawnEnemy(
+        vexDamageState,
+        "zombie",
+        damageVex.x + 1,
+        damageVex.y
+    ) or nil
+    local actualVexHit = nil
+    if damageVex and vexTarget then
+        vexTarget.maxHp = 1000
+        vexTarget.hp = 1000
+        vexTarget.passive = true
+        vexTarget.targetMode = "none"
+        vexTarget.moveSpeed = 0
+        vexTarget.damage = 0
+
+        damageVex.moveSpeed = 0
+        damageVex.attackCooldownLeft = 0
+        damageVex.targetId = vexTarget.id
+        damageVex.lockedTargetId = vexTarget.id
+
+        local hpBefore = vexTarget.hp
+        Game.update(vexDamageState, DEFAULT_DT)
+        actualVexHit = hpBefore - vexTarget.hp
+    end
+
     step(summonState, 9.10, DEFAULT_DT)
     local vexAfterLifetime = countEntities(summonState, function(e)
         return e.alive and e.owner == 1 and e.name == "Vex"
@@ -1669,6 +1718,7 @@ runTest("evoker_fangs_vex", "Evoker uses line/ring fangs and summons 30-damage V
     addData(data, "vexes_before_4s", vexBeforeFour)
     addData(data, "first_vex_wave_count", #vexes)
     addData(data, "vex_damage", vexTemplate.damage)
+    addData(data, "actual_single_vex_hit", actualVexHit)
     addData(data, "vex_hp", vexTemplate.maxHp)
     addData(data, "vex_lifetime_s", vexTemplate.lifetime)
     addData(data, "vexes_after_lifetime", vexAfterLifetime)
@@ -1677,6 +1727,8 @@ runTest("evoker_fangs_vex", "Evoker uses line/ring fangs and summons 30-damage V
     return evokerCard.cost == 6
         and evokerCard.unit.fangAttack.damage == 85
         and vexTemplate.damage == 30
+        and actualVexHit
+        and math.abs(actualVexHit - 30) <= EPSILON
         and lineQueued
         and warningVisible
         and harmlessDuringWarning

@@ -1661,7 +1661,18 @@ local function updateCombatEntity(state, entity, dt)
     end
 
     if entity.passive or entity.targetMode == "none" then
+        -- Passive/non-targeting state invalidates any prior combat commitment.
+        -- Clear the lock and target-specific transient state as well as
+        -- targetId so toggling the entity active later cannot resurrect stale
+        -- aggro, a primed fuse, or Guardian beam charge.
         entity.targetId = nil
+        entity.lockedTargetId = nil
+        entity.fuseRemaining = nil
+        if entity.beam then
+            entity.beamCharge = 0
+            entity.beamTargetId = nil
+            entity.beamTickTimer = 0
+        end
         return
     end
 
