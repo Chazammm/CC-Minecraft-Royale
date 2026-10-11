@@ -180,6 +180,18 @@ do
     local okEconomy = pcall(config.validate, invalidEconomy)
     assertTrue(not okEconomy, "emeraldStart above emeraldMax must be rejected")
 
+    local invalidDecayType = util.deepcopy(config)
+    invalidDecayType.BUILDINGS.lifetimeDecayMultiplier = "fast"
+    local okDecayType = pcall(config.validate, invalidDecayType)
+    assertTrue(not okDecayType,
+        "Non-numeric building lifetime decay must fail during config validation")
+
+    local invalidDecaySign = util.deepcopy(config)
+    invalidDecaySign.BUILDINGS.lifetimeDecayMultiplier = -1
+    local okDecaySign = pcall(config.validate, invalidDecaySign)
+    assertTrue(not okDecaySign,
+        "Negative building lifetime decay must never turn natural decay into healing")
+
     assertTrue(config.validate(), "Live config must remain valid after candidate checks")
 end
 
