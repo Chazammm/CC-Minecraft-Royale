@@ -1615,7 +1615,10 @@ local function updateCombatEntity(state, entity, dt)
 
             local decayMultiplier = (config.BUILDINGS and config.BUILDINGS.lifetimeDecayMultiplier) or 1
             local decayPerSecond = (entity.maxHp / entity.lifetime) * decayMultiplier
-            entity.hp = entity.hp - decayPerSecond * elapsed
+            entity.hp = math.max(
+                0,
+                entity.hp - decayPerSecond * elapsed
+            )
 
             if entity.hp <= 0 or entity.remainingLifetime <= 0 then
                 killEntity(state, entity, nil, nil)
@@ -1682,40 +1685,24 @@ local function updateCombatEntity(state, entity, dt)
         end
     end
 
-    -- Until the first committed attack, troops can be distracted by a
-    -- closer valid enemy even when their current target is another troop.
-    -- After locking, no retargeting happens until that target becomes invalid.
-    -- Building-only troops may only be distracted by buildings.
+    -- Target-lock contract: once a troop has selected a valid target, keep
+    -- that target until it dies or becomes invalid. Newly spawned/closer
+    -- enemies must not steal aggro merely because the troop has not attacked
+    -- yet. This keeps movement/pathing deterministic and prevents tower ->
+    -- freshly spawned unit switches.
     if target
         and entity.kind == "unit"
         and not entity.lockedTargetId
     then
-        local pullTarget, pullDistance
-
-        local pullFilter = entity.targetMode == "buildings"
-            and isBuilding or isNonTower
-        pullTarget, pullDistance = findNearest(
-            state,
-            entity,
-            pullFilter,
-            entity.aggroRange
-        )
-
-        if pullTarget and pullTarget.id ~= target.id then
-            local dx = target.x - entity.x
-            local dy = target.y - entity.y
-            local currentDistance = math.sqrt(dx * dx + dy * dy)
-
-            if pullDistance < currentDistance then
-                target = pullTarget
-                entity.targetId = pullTarget.id
-            end
-        end
+        entity.lockedTargetId = target.id
     end
 
     if not target then
         target = acquireTarget(state, entity)
         entity.targetId = target and target.id or nil
+        if target and entity.kind == "unit" then
+            entity.lockedTargetId = target.id
+        end
     end
 
     if not target then
