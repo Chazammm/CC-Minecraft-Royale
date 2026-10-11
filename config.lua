@@ -249,6 +249,14 @@ function config.validate(candidate)
     positive("TOWERS.princessRange", cfg.TOWERS and cfg.TOWERS.princessRange)
     positive("TOWERS.kingRange", cfg.TOWERS and cfg.TOWERS.kingRange)
 
+    if type(cfg.BUILDINGS) ~= "table" then
+        error("Invalid config: BUILDINGS must be a table", 0)
+    end
+    positive(
+        "BUILDINGS.lifetimeDecayMultiplier",
+        cfg.BUILDINGS.lifetimeDecayMultiplier
+    )
+
     if cfg.MUSIC then
         if cfg.MUSIC.enabled ~= nil and type(cfg.MUSIC.enabled) ~= "boolean" then
             error("Invalid config: MUSIC.enabled must be boolean", 0)
