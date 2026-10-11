@@ -134,6 +134,16 @@ control matches from **9231 ticks / 340 bot actions** to the reviewed
 control counts before checking the frozen baseline so future intentional
 contract changes are reviewable rather than opaque.
 
+Final verification on commit `8cfe3061d047` completed successfully:
+**24/24 mechanics**, **290,177 core-invariant assertions** on both Lua 5.2 and
+5.4, **183 Anvil exhaustive/grid parity comparisons**, **38 PixelBox frame
+checks**, and deterministic mixed simulations of **100 / 500 / 1000** matches.
+The 1000-match run produced P1 **50.6%**, P2 **49.2%**, draws **0.2%**, with no
+technical timeout. A subsequent clean read of the changed targeting, reset,
+movement-slow, configuration and symmetry paths found no additional relevant
+software finding. Physical ATM10 monitor/audio/network verification remains a
+separate hardware gate.
+
 ## Open follow-ups — not confirmed gameplay bugs
 
 | ID | Classification | Evidence / limitation | Next action and acceptance condition |
