@@ -245,6 +245,10 @@ function config.validate(candidate)
         error("Invalid config: overtimeFinalSeconds must not exceed overtimeTime", 0)
     end
     nonNegative("MATCH.countdown", cfg.MATCH.countdown)
+    positive(
+        "MATCH.tiebreakerDamagePerSecond",
+        cfg.MATCH.tiebreakerDamagePerSecond
+    )
 
     positive("TOWERS.princessRange", cfg.TOWERS and cfg.TOWERS.princessRange)
     positive("TOWERS.kingRange", cfg.TOWERS and cfg.TOWERS.kingRange)
