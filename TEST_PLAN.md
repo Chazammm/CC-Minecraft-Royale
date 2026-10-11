@@ -75,11 +75,12 @@ Pass condition: arrows/projectiles travel to the target and the Skeleton tries t
 - Destroy that left Princess Tower while the match continues.
 - Confirm surviving/new left-lane troops now advance toward the King Tower rather than crossing to the right Princess Tower.
 - Place an enemy troop near an Iron Golem and confirm it ignores the troop.
-- Place a defensive Cannon inside the Iron Golem's aggro range before it reaches a tower and confirm the Cannon can pull it away.
-- Let the Iron Golem hit the tower once, then place another Cannon beside it.
-- Repeat with a normal troop locked onto a tower, then spawn a new enemy troop beside it.
+- Place a defensive Cannon inside the Iron Golem's aggro range **before the Golem acquires any target** and confirm it can be selected as the initial building target.
+- In a separate run, let the Iron Golem acquire a tower first, then place a Cannon beside it before the first attack.
+- Repeat with a normal troop that has already acquired a tower, then spawn a new enemy troop beside it.
+- Kill the locked target and confirm the unit then acquires a new valid target.
 
-Pass condition: Crown Tower objectives stay lane-correct, pre-attack kiting/distraction still works, and after the first attack the unit stays locked to that target until it dies.
+Pass condition: Crown Tower objectives stay lane-correct; initial acquisition may select an already-present valid distraction, but once a valid target is acquired it is locked immediately. Newly spawned/closer enemies do not steal that target before or after the first attack; death/invalidity releases the lock.
 
 ## 9. Bat Swarm flying
 
