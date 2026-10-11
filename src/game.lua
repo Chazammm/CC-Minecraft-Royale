@@ -243,8 +243,9 @@ local function makeBaseEntity(state, owner, kind, x, y)
         y = y,
         alive = true,
         targetId = nil,
-        -- targetId may change while approaching; lockedTargetId is set only
-        -- once a unit actually commits an attack to that target.
+        -- targetId is mirrored into lockedTargetId as soon as a unit acquires
+        -- a valid target. The lock is released only when that target becomes
+        -- invalid (death, targetability/reachability contract, etc.).
         lockedTargetId = nil,
         attackCooldownLeft = 0,
     }
@@ -2168,6 +2169,9 @@ function Game.resetLobby(state)
     state.adminMode = false
     state.adminPaused = false
     state.adminScenario = nil
+    state.countdown = config.MATCH.countdown
+    state.timeLeft = config.MATCH.normalTime
+    state.stats = newMatchStats()
 
     for playerId = 1, 2 do
         local player = state.players[playerId]
@@ -2181,6 +2185,8 @@ function Game.resetLobby(state)
         resetDeck(player)
         player.emeralds = config.MATCH.emeraldStart
         player.towersDestroyed = 0
+        player.feedback = nil
+        player.feedbackTime = 0
     end
 end
 
