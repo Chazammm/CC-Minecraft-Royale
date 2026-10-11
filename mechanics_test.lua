@@ -1808,18 +1808,22 @@ runTest("target_lock", "Lock immediately on first valid target", function()
         and zombie.lockedTargetId == king.id
     addData(data, "new_unit_failed_to_steal_aggro", ignoredNewDistractor)
 
-    -- Death/invalidity is a legitimate retarget reason.
-    king.alive = false
+    -- Death/invalidity is a legitimate retarget reason. Use the real engine
+    -- cleanup path rather than mutating alive directly, so ID/spatial indexes
+    -- stay representative of live gameplay.
+    local killed = Game.debugKillEntity(state, king.id)
     Game.update(state, DEFAULT_DT)
     local releasedAfterDeath = zombie.lockedTargetId ~= king.id
         and zombie.targetId ~= king.id
     local reacquiredLivingEnemy = endermite
         and zombie.targetId == endermite.id
         and zombie.lockedTargetId == endermite.id
+    addData(data, "target_killed_through_engine", killed == true)
     addData(data, "lock_released_after_target_death", releasedAfterDeath)
     addData(data, "reacquired_living_enemy", reacquiredLivingEnemy)
 
-    return lockedOnAcquire
+    return killed == true
+        and lockedOnAcquire
         and ignoredNewDistractor
         and releasedAfterDeath
         and reacquiredLivingEnemy,
