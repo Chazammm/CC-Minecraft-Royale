@@ -67,13 +67,23 @@ for i = 1, 3 do
     totalActions = totalActions + bot1.actions + bot2.actions
 end
 local fullCpu = os.clock() - caseStart
--- Frozen control results from the clean pre-optimization baseline
--- (2026-10-10, 3 seeded matches). Performance may change; decisions,
--- tick cadence and gameplay outcomes must not change silently.
-assert(totalTicks == 9231,
-    "Optimized headless runner changed deterministic match tick counts")
-assert(totalActions == 340,
-    "Optimized headless runner changed deterministic bot action counts")
+-- Frozen control results are deliberately printed before the assertion so an
+-- intentional gameplay-contract change can establish a reviewed replacement
+-- baseline without turning the diagnostic into a black box.
+print(("PROFILE|headless_control|ticks=%d|bot_actions=%d"):format(
+    totalTicks,
+    totalActions
+))
+-- Reviewed control results after acquisition-time target locking
+-- (2026-10-11, 3 seeded matches). The intentional targeting contract changed
+-- the old 9231/340 control to 9143/339. Performance may change; decisions,
+-- tick cadence and gameplay outcomes must not change silently from here.
+assert(totalTicks == 9143,
+    "Headless gameplay baseline changed deterministic match tick counts: got "
+        .. tostring(totalTicks))
+assert(totalActions == 339,
+    "Headless gameplay baseline changed deterministic bot action counts: got "
+        .. tostring(totalActions))
 Game.update = originalGameUpdate
 Bot.update = originalBotUpdate
 printMetric("headless_3_matches", 3, fullCpu,

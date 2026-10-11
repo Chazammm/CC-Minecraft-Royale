@@ -6,7 +6,7 @@ local util = require("src.util")
 local arena = require("src.arena")
 local version = require("src.version")
 
-local SUITE_VERSION = 21
+local SUITE_VERSION = 22
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 local EPSILON = 0.000001
@@ -1641,6 +1641,55 @@ runTest("evoker_fangs_vex", "Evoker uses line/ring fangs and summons 30-damage V
             and vex.remainingLifetime > 8.7
     end
 
+    -- Do not only trust the template field: exercise the authoritative attack
+    -- path with exactly one Vex and a high-HP passive target so multipliers,
+    -- duplicate attacks, or future special-case code cannot raise the approved
+    -- 30-damage hit unnoticed.
+    local vexDamageState = newAdminState("empty")
+    Game.debugSpawnCard(vexDamageState, 1, "evoker", SAFE_X, SAFE_Y)
+    local damageEvoker = findEntity(vexDamageState, function(e)
+        return e.alive and e.owner == 1 and e.name == "Evoker"
+    end)
+    damageEvoker.passive = true
+    damageEvoker.targetMode = "none"
+    step(vexDamageState, 4.05, DEFAULT_DT)
+
+    local damageVexes = {}
+    for _, entity in ipairs(vexDamageState.entities) do
+        if entity.alive and entity.owner == 1 and entity.name == "Vex" then
+            damageVexes[#damageVexes + 1] = entity
+        end
+    end
+    local damageVex = damageVexes[1]
+    for i = 2, #damageVexes do
+        Game.debugKillEntity(vexDamageState, damageVexes[i].id)
+    end
+
+    local vexTarget = damageVex and debugSpawnEnemy(
+        vexDamageState,
+        "zombie",
+        damageVex.x + 1,
+        damageVex.y
+    ) or nil
+    local actualVexHit = nil
+    if damageVex and vexTarget then
+        vexTarget.maxHp = 1000
+        vexTarget.hp = 1000
+        vexTarget.passive = true
+        vexTarget.targetMode = "none"
+        vexTarget.moveSpeed = 0
+        vexTarget.damage = 0
+
+        damageVex.moveSpeed = 0
+        damageVex.attackCooldownLeft = 0
+        damageVex.targetId = vexTarget.id
+        damageVex.lockedTargetId = vexTarget.id
+
+        local hpBefore = vexTarget.hp
+        Game.update(vexDamageState, DEFAULT_DT)
+        actualVexHit = hpBefore - vexTarget.hp
+    end
+
     step(summonState, 9.10, DEFAULT_DT)
     local vexAfterLifetime = countEntities(summonState, function(e)
         return e.alive and e.owner == 1 and e.name == "Vex"
@@ -1669,6 +1718,7 @@ runTest("evoker_fangs_vex", "Evoker uses line/ring fangs and summons 30-damage V
     addData(data, "vexes_before_4s", vexBeforeFour)
     addData(data, "first_vex_wave_count", #vexes)
     addData(data, "vex_damage", vexTemplate.damage)
+    addData(data, "actual_single_vex_hit", actualVexHit)
     addData(data, "vex_hp", vexTemplate.maxHp)
     addData(data, "vex_lifetime_s", vexTemplate.lifetime)
     addData(data, "vexes_after_lifetime", vexAfterLifetime)
@@ -1677,6 +1727,8 @@ runTest("evoker_fangs_vex", "Evoker uses line/ring fangs and summons 30-damage V
     return evokerCard.cost == 6
         and evokerCard.unit.fangAttack.damage == 85
         and vexTemplate.damage == 30
+        and actualVexHit
+        and math.abs(actualVexHit - 30) <= EPSILON
         and lineQueued
         and warningVisible
         and harmlessDuringWarning
@@ -1772,55 +1824,15 @@ runTest("tower_bridge_range", "Princess Tower engages just after bridge exit", f
         data
 end)
 
-runTest("target_lock", "Pull before attack, lock after attack", function()
+runTest("target_lock", "Lock immediately on first valid target", function()
     local data = {}
+    local state = newAdminState("king")
+    Game.debugSpawnCard(state, 1, "zombie", SAFE_X, SAFE_Y)
 
-    local pullState = newAdminState("full")
-    local pullGolemY = SAFE_Y
-    local pullCannonY = math.max(12, config.ARENA.riverTop - 6)
-    Game.debugSpawnCard(pullState, 1, "iron_golem", SAFE_X, pullGolemY)
-    Game.debugSpawnCard(pullState, 2, "cannon", SAFE_X, pullCannonY)
-
-    local golem = findEntity(pullState, function(e)
-        return e.alive and e.owner == 1 and e.name == "Iron Golem"
-    end)
-    local cannon = findEntity(pullState, function(e)
-        return e.alive and e.owner == 2 and e.name == "Cannon"
-    end)
-    local enemyTower
-    for _, entity in ipairs(pullState.entities) do
-        if entity.alive and entity.owner == 2 and entity.kind == "tower" then
-            if not enemyTower
-                or distance(golem, entity) < distance(golem, enemyTower)
-            then
-                enemyTower = entity
-            end
-        end
-    end
-
-    if not golem or not cannon or not enemyTower then
-        return false, "Could not create Golem/Cannon/tower pull scenario.", data
-    end
-
-    golem.targetId = enemyTower.id
-    local pulledBeforeHit, pullElapsed = waitUntil(
-        pullState,
-        0.50,
-        function() return golem.targetId == cannon.id end,
-        DEFAULT_DT
-    )
-    local stillUnlocked = golem.lockedTargetId == nil
-    addData(data, "golem_pulled_before_hit", pulledBeforeHit)
-    addData(data, "golem_pull_time_s", pullElapsed)
-    addData(data, "golem_locked_before_hit", golem.lockedTargetId ~= nil)
-
-    local lockState = newAdminState("king")
-    Game.debugSpawnCard(lockState, 1, "zombie", SAFE_X, SAFE_Y)
-
-    local zombie = findEntity(lockState, function(e)
+    local zombie = findEntity(state, function(e)
         return e.alive and e.owner == 1 and e.name == "Zombie"
     end)
-    local king = findEntity(lockState, function(e)
+    local king = findEntity(state, function(e)
         return e.alive and e.owner == 2
             and e.kind == "tower" and e.towerType == "king"
     end)
@@ -1829,44 +1841,45 @@ runTest("target_lock", "Pull before attack, lock after attack", function()
         return false, "Could not create Zombie/King lock scenario.", data
     end
 
-    zombie.x = king.x
-    zombie.y = king.y + 2
+    -- The first engine-selected target must become committed immediately,
+    -- before any attack can occur.
+    Game.update(state, DEFAULT_DT)
+    local lockedOnAcquire = zombie.targetId == king.id
+        and zombie.lockedTargetId == king.id
+    addData(data, "locked_on_first_acquire", lockedOnAcquire)
 
-    local lockedAfterHit, lockElapsed = waitUntil(
-        lockState,
-        0.50,
-        function() return zombie.lockedTargetId == king.id end,
-        DEFAULT_DT
-    )
-    addData(data, "zombie_locked_after_first_hit", lockedAfterHit)
-    addData(data, "zombie_lock_time_s", lockElapsed)
+    -- A newly spawned, much closer enemy must not steal that target.
+    Game.debugSpawnCard(state, 2, "endermite", zombie.x + 1, zombie.y)
+    local endermite = findEntity(state, function(e)
+        return e.alive and e.owner == 2 and e.name == "Endermite"
+    end)
+    step(state, 0.30)
 
-    Game.debugSpawnCard(lockState, 2, "endermite", zombie.x + 1, zombie.y)
-    step(lockState, 0.30)
-
-    local ignoredNewDistractor = zombie.targetId == king.id
+    local ignoredNewDistractor = endermite
+        and zombie.targetId == king.id
         and zombie.lockedTargetId == king.id
     addData(data, "new_unit_failed_to_steal_aggro", ignoredNewDistractor)
 
-    king.hp = 1
-    zombie.attackCooldownLeft = 0
-    local releasedAfterDeath, releaseElapsed = waitUntil(
-        lockState,
-        0.50,
-        function() return zombie.lockedTargetId ~= king.id end,
-        DEFAULT_DT
-    )
+    -- Death/invalidity is a legitimate retarget reason. Use the real engine
+    -- cleanup path rather than mutating alive directly, so ID/spatial indexes
+    -- stay representative of live gameplay.
+    local killed = Game.debugKillEntity(state, king.id)
+    Game.update(state, DEFAULT_DT)
+    local releasedAfterDeath = zombie.lockedTargetId ~= king.id
+        and zombie.targetId ~= king.id
+    local reacquiredLivingEnemy = endermite
+        and zombie.targetId == endermite.id
+        and zombie.lockedTargetId == endermite.id
+    addData(data, "target_killed_through_engine", killed == true)
     addData(data, "lock_released_after_target_death", releasedAfterDeath)
-    addData(data, "lock_release_time_s", releaseElapsed)
+    addData(data, "reacquired_living_enemy", reacquiredLivingEnemy)
 
-    local passed = pulledBeforeHit
-        and stillUnlocked
-        and lockedAfterHit
+    return killed == true
+        and lockedOnAcquire
         and ignoredNewDistractor
         and releasedAfterDeath
-
-    return passed,
-        "Golem must remain pullable before commitment; attacked targets must stay locked until death.",
+        and reacquiredLivingEnemy,
+        "A valid target must lock on acquisition; only death/invalidity may release it.",
         data
 end)
 
@@ -1915,9 +1928,12 @@ runTest("building_decay", "Building HP decays continuously", function()
     local hpAccurate = math.abs(hp10 - expectedHp10) <= 1.0
     local lifetimeAccurate = died
         and math.abs(measuredDeath - expectedLife) <= DEFAULT_DT * 3.5
+    local terminalHpClamped = cannon.hp >= -EPSILON and cannon.hp <= EPSILON
+    addData(data, "terminal_hp", cannon.hp)
+    addData(data, "terminal_hp_clamped", terminalHpClamped)
 
-    return monotonic and hpAccurate and lifetimeAccurate,
-        "Cannon HP should drain smoothly at the configured lifetime multiplier.",
+    return monotonic and hpAccurate and lifetimeAccurate and terminalHpClamped,
+        "Cannon HP should drain smoothly and clamp to zero on natural decay death.",
         data
 end)
 

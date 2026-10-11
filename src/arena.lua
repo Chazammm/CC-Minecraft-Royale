@@ -236,6 +236,14 @@ function arena.navigationPoint(entity, target)
 end
 
 function arena.placementAllowed(playerId, x, y, placement, state)
+    if type(x) ~= "number" or type(y) ~= "number"
+        or x ~= x or y ~= y
+        or x == math.huge or x == -math.huge
+        or y == math.huge or y == -math.huge
+    then
+        return false
+    end
+
     if x < 3 or x > A.width - 3 or y < 3 or y > A.height - 3 then
         return false
     end

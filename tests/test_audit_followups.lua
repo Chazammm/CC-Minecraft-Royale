@@ -180,6 +180,24 @@ do
     local okEconomy = pcall(config.validate, invalidEconomy)
     assertTrue(not okEconomy, "emeraldStart above emeraldMax must be rejected")
 
+    local invalidDecayType = util.deepcopy(config)
+    invalidDecayType.BUILDINGS.lifetimeDecayMultiplier = "fast"
+    local okDecayType = pcall(config.validate, invalidDecayType)
+    assertTrue(not okDecayType,
+        "Non-numeric building lifetime decay must fail during config validation")
+
+    local invalidDecaySign = util.deepcopy(config)
+    invalidDecaySign.BUILDINGS.lifetimeDecayMultiplier = -1
+    local okDecaySign = pcall(config.validate, invalidDecaySign)
+    assertTrue(not okDecaySign,
+        "Negative building lifetime decay must never turn natural decay into healing")
+
+    local invalidTiebreakRate = util.deepcopy(config)
+    invalidTiebreakRate.MATCH.tiebreakerDamagePerSecond = -300
+    local okTiebreakRate = pcall(config.validate, invalidTiebreakRate)
+    assertTrue(not okTiebreakRate,
+        "Negative tiebreaker damage must never heal towers or stall match end")
+
     assertTrue(config.validate(), "Live config must remain valid after candidate checks")
 end
 
@@ -839,6 +857,82 @@ do
         firstEnemy.id,
         "Nearest spatial tie must resolve to lower entity ID"
     )
+end
+
+-- Lobby reset must not expose stale match-local clocks, telemetry or feedback
+-- between consecutive matches.
+do
+    local state = Game.new(nil, { headlessSimulation = true })
+    assertTrue(Game.startHeadlessBattle(state, config.TICK_RATE),
+        "Reset regression needs a running headless match")
+    Game.update(state, 0.10)
+    state.players[1].feedback = "STALE MATCH MESSAGE"
+    state.players[1].feedbackTime = 99
+    state.stats.players[1].cardsPlayed = 7
+
+    Game.resetLobby(state)
+
+    assertEq(state.phase, "lobby", "Reset must return to lobby")
+    assertNear(state.timeLeft, config.MATCH.normalTime, 1e-9,
+        "Lobby reset must restore regulation clock")
+    assertNear(state.countdown, config.MATCH.countdown, 1e-9,
+        "Lobby reset must restore countdown clock")
+    assertEq(state.stats.elapsed, 0, "Lobby reset must clear elapsed telemetry")
+    assertEq(state.stats.players[1].cardsPlayed, 0,
+        "Lobby reset must clear previous match player stats")
+    assertEq(state.players[1].feedback, nil,
+        "Lobby reset must clear previous match feedback")
+    assertEq(state.players[1].feedbackTime, 0,
+        "Lobby reset must clear feedback timer")
+end
+
+
+-- A dynamically passive/non-targeting unit must not retain hidden aggro state
+-- that can reappear if Dev/Admin code later enables it again.
+do
+    local state = Game.new(nil, { headlessSimulation = true })
+    Game.debugLoadScenario(state, "empty")
+    assertTrue(Game.debugSpawnCard(state, 1, "zombie", 25, 110))
+    assertTrue(Game.debugSpawnCard(state, 2, "zombie", 25, 100))
+    local attacker = state.entitiesByOwner[1][1]
+
+    Game.debugSetPaused(state, false)
+    Game.update(state, 0.05)
+    assertTrue(attacker.targetId ~= nil and attacker.lockedTargetId ~= nil,
+        "Passive-lock regression needs an acquired target")
+
+    attacker.passive = true
+    Game.update(state, 0.05)
+    assertEq(attacker.targetId, nil, "Passive unit must clear targetId")
+    assertEq(attacker.lockedTargetId, nil,
+        "Passive unit must clear committed target lock")
+end
+
+-- Start a second battle on the exact same state object after reset. This
+-- catches ID/index/stat/Evolution leaks which a fresh Game.new() per match
+-- would hide.
+do
+    local state = Game.new(nil, { headlessSimulation = true })
+    assertTrue(Game.startHeadlessBattle(state, config.TICK_RATE))
+    state.players[1].evolutionProgress = 99
+    state.stats.players[1].cardsPlayed = 9
+    Game.resetLobby(state)
+
+    assertEq(state.players[1].evolutionProgress, 0,
+        "Lobby reset must clear Evolution progress")
+    assertTrue(Game.startHeadlessBattle(state, config.TICK_RATE),
+        "Second battle must start on reused state")
+    assertEq(#state.entities, 6, "Second match must create exactly six towers")
+    assertEq(state.nextEntityId, 7,
+        "Second match entity IDs must restart cleanly at tower IDs 1..6")
+    assertEq(state.stats.elapsed, 0,
+        "Second match must start with fresh elapsed telemetry")
+    assertEq(state.stats.players[1].cardsPlayed, 0,
+        "Second match must not inherit previous card telemetry")
+    for id = 1, 6 do
+        assertTrue(state.entityById[id] ~= nil,
+            "Second match entityById must contain tower " .. id)
+    end
 end
 
 print("Audit follow-up tests passed")

@@ -657,16 +657,23 @@ end
 assertTrue(skeleton and zombie, "Retarget test units must exist")
 assertTrue(enemyKingForSkeleton and enemyKingForZombie, "Retarget test kings must exist")
 
--- A target assignment is not yet a combat lock. Before either troop attacks,
--- a nearer enemy may still distract it away from the distant tower.
+-- Target assignment is now the lock point. Once either troop has a valid
+-- target, a nearer/newly available enemy must not steal it merely because no
+-- attack has happened yet.
 skeleton.targetId = enemyKingForSkeleton.id
 zombie.targetId = enemyKingForZombie.id
 
 Game.debugSetPaused(retargetState, false)
 Game.update(retargetState, 0.1)
 
-assertEq(skeleton.targetId, zombie.id, "Skeleton must switch from tower to nearby enemy troop")
-assertEq(zombie.targetId, skeleton.id, "Zombie must switch from tower to nearby enemy troop")
+assertEq(skeleton.targetId, enemyKingForSkeleton.id,
+    "Skeleton must keep its first valid tower target before attacking")
+assertEq(skeleton.lockedTargetId, enemyKingForSkeleton.id,
+    "Skeleton must lock its first valid target on acquisition")
+assertEq(zombie.targetId, enemyKingForZombie.id,
+    "Zombie must keep its first valid tower target before attacking")
+assertEq(zombie.lockedTargetId, enemyKingForZombie.id,
+    "Zombie must lock its first valid target on acquisition")
 
 local golemPullState = Game.new()
 Game.debugLoadScenario(golemPullState, "full")
@@ -688,22 +695,24 @@ for _, entity in ipairs(golemPullState.entities) do
     end
 end
 
-assertTrue(pullGolem and pullCannon and distantEnemyTower, "Iron Golem pull test entities must exist")
+assertTrue(pullGolem and pullCannon and distantEnemyTower, "Iron Golem lock test entities must exist")
 
--- The Golem is marching toward a tower but has not attacked it yet. A Cannon
--- placed inside aggro range must still be able to pull it before lock-on.
+-- If a Cannon is already present when the Golem first acquires a target, it
+-- may be selected normally. But once a valid tower target has been selected,
+-- the Cannon cannot steal that target afterward.
 pullGolem.targetId = distantEnemyTower.id
 Game.debugSetPaused(golemPullState, false)
 Game.update(golemPullState, 0.10)
 
 assertEq(
     pullGolem.targetId,
-    pullCannon.id,
-    "Iron Golem must retarget from a tower to a closer Cannon before lock-on"
+    distantEnemyTower.id,
+    "Iron Golem must keep an already selected tower target"
 )
-assertTrue(
-    pullGolem.lockedTargetId == nil,
-    "Being pulled while approaching must not count as an attack lock"
+assertEq(
+    pullGolem.lockedTargetId,
+    distantEnemyTower.id,
+    "Iron Golem must lock its first valid target before attacking"
 )
 
 -- Normal troop: once the first tower attack starts, a newly spawned troop

@@ -53,8 +53,9 @@ do
     assertTrue(not cards.isValidDeck(withHole), "Sparse/oversized deck rejected")
 end
 
--- Until the first attack, nearby distractions must also pull a troop which
--- was already marching toward ANOTHER troop (not only toward a tower).
+-- Target acquisition is the commitment point. A troop marching toward one
+-- valid enemy must not be stolen by a newly spawned closer enemy before its
+-- first attack.
 do
     local state = Game.new(nil, { headlessSimulation = true })
     Game.debugLoadScenario(state, "empty")
@@ -66,18 +67,20 @@ do
     Game.debugSetPaused(state, false)
     Game.update(state, 0.05)
     assertEq(attacker.targetId, farEnemy.id, "Initial enemy acquired")
-    assertEq(attacker.lockedTargetId, nil, "Still approaching, not locked")
+    assertEq(attacker.lockedTargetId, farEnemy.id,
+        "Initial valid enemy locks immediately")
 
     assertTrue(Game.debugSpawnCard(state, 2, "zombie", 25, 105))
-    local nearEnemy = findOwned(state, 2, 2)
     Game.update(state, 0.05)
 
-    assertEq(attacker.targetId, nearEnemy.id, "Closer troop can pull before attack")
-    assertEq(attacker.lockedTargetId, nil, "Approach still unlocked")
+    assertEq(attacker.targetId, farEnemy.id,
+        "Closer newly spawned troop cannot steal acquired target")
+    assertEq(attacker.lockedTargetId, farEnemy.id,
+        "Approach remains locked before first attack")
 end
 
--- Once the initial shot/attack committed, lock on the same live target even
--- after a closer distraction is spawned.
+-- Once the initial target is acquired, keep the same live target even after a
+-- closer distraction is spawned.
 do
     local state = Game.new(nil, { headlessSimulation = true })
     Game.debugLoadScenario(state, "empty")

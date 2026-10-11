@@ -109,6 +109,41 @@ priority, preservation of unreadable entries and no loss of the only
 recoverable deck. Tested on **Lua 5.2 and 5.4** as a permanent CI step.
 Full scope and stopping criteria: `docs/ITERATIVE_AUDIT_20261010.md`.
 
+## Full-system audit — 2026-10-11 (branch `audit-20261011-full-system`)
+
+This pass re-read the active gameplay, simulation, test, persistence, installer,
+rendering and hardware integration paths rather than treating the previous
+green audit as proof of correctness. It also reconciles the targeting tests
+with the current explicit gameplay contract: a valid target locks on
+**acquisition**, not on first attack.
+
+| ID | Category / severity | Evidence / reproduction | Resolution | Regression / status |
+| --- | --- | --- | --- | --- |
+| AF-028 | CONFIRMED P1, target-lock gameplay | `updateCombatEntity` deliberately allowed an unlocked troop to abandon an already selected tower/unit for a newly spawned closer target until its first attack. Legacy tests explicitly required that old behavior, contradicting the current target-lock rule. | Commit the first valid target immediately into `lockedTargetId`; release only when that target becomes invalid. Update stale legacy/hardening/mechanics expectations and the manual test plan. | `tests/test_v1.lua`, `tests/test_audit_hardening_20261010.lua`, `tests/test_mechanics_full_ci.lua` — FIXED_CI |
+| AF-029 | CONFIRMED P2, building HP invariant | Natural lifetime decay subtracted HP directly, so the dead building object could retain negative HP even though direct combat damage had already been hardened to clamp at zero. | Clamp natural-decay HP at zero before death cleanup. | `tests/test_mechanics_full_ci.lua` — FIXED_CI |
+| AF-030 | RISK P2, building-decay configuration | `BUILDINGS.lifetimeDecayMultiplier` was used arithmetically without config validation; nonnumeric input could crash a battle, zero silently disabled decay, and negative input could heal buildings. | Require a finite positive decay multiplier during startup config validation. | `tests/test_audit_followups.lua` — FIXED_CI |
+| AF-031 | RISK P1, tiebreaker configuration | Negative `MATCH.tiebreakerDamagePerSecond` would make equal-HP drain add HP and could prevent tiebreak completion. The field was not validated. | Require a finite positive tiebreaker damage rate at config validation. | `tests/test_audit_followups.lua` — FIXED_CI |
+| AF-032 | CONFIRMED P2, consecutive-match state | `Game.resetLobby` cleared live entities but retained prior-match telemetry, clocks and player feedback until the next countdown, exposing stale match-local state in the lobby. | Reinitialize countdown/timeLeft/stats and clear feedback/timers while preserving intended lobby choices such as decks/ruleset/mode. | `tests/test_audit_followups.lua` — FIXED_CI |
+| AF-033 | RISK P2, malformed placement API | `arena.placementAllowed` compared coordinates without checking their types; a malformed bot/UI call with nil coordinates could throw instead of returning an invalid-placement result. | Reject nil, NaN and infinite placement coordinates at the arena API boundary. | `tests/test_audit_regressions.lua` — FIXED_CI |
+| AF-034 | TEST-COVERAGE P3, forward-placement symmetry | Side symmetry tests covered normal deployment and bridge navigation but not post-Princess-Tower forward-placement pockets, leaving an explicit mirrored gameplay rule without a regression. | Add mirrored pocket probes plus opposite-lane and King-centre lock assertions. | `tests/test_side_symmetry.lua` — FIXED_CI |
+| AF-035 | CONFIRMED P2, stale passive target lock | A unit switched dynamically to `passive=true` or `targetMode="none"` cleared `targetId` but retained `lockedTargetId` (and beam/fuse transient state), allowing old aggro state to survive a Dev/Admin disable-enable cycle. | Clear committed target and target-specific transient state whenever targeting is disabled. | `tests/test_audit_followups.lua` — FIXED_CI |
+
+The intentional AF-028 gameplay change moves the three seeded performance
+control matches from **9231 ticks / 340 bot actions** to the reviewed
+**9143 ticks / 339 bot actions**. The performance diagnostic now prints its
+control counts before checking the frozen baseline so future intentional
+contract changes are reviewable rather than opaque.
+
+Final verification on commit `8cfe3061d047` completed successfully:
+**24/24 mechanics**, **290,177 core-invariant assertions** on both Lua 5.2 and
+5.4, **183 Anvil exhaustive/grid parity comparisons**, **38 PixelBox frame
+checks**, and deterministic mixed simulations of **100 / 500 / 1000** matches.
+The 1000-match run produced P1 **50.6%**, P2 **49.2%**, draws **0.2%**, with no
+technical timeout. A subsequent clean read of the changed targeting, reset,
+movement-slow, configuration and symmetry paths found no additional relevant
+software finding. Physical ATM10 monitor/audio/network verification remains a
+separate hardware gate.
+
 ## Open follow-ups — not confirmed gameplay bugs
 
 | ID | Classification | Evidence / limitation | Next action and acceptance condition |

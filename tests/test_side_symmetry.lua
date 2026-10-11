@@ -75,6 +75,44 @@ do
     end
 end
 
+
+do
+    -- Forward-placement pockets unlocked by a destroyed enemy Princess Tower
+    -- must mirror exactly between P1/P2, lane by lane. The opposite lane and
+    -- King-Tower centre must remain locked.
+    local state = {
+        phase = "battle",
+        destroyedSideTowers = {
+            [1] = { left = true, right = false },
+            [2] = { left = true, right = false },
+        },
+    }
+
+    local xs = { 10, 25, 43, 50, 57, 75, 90 }
+    local ys = {
+        config.ARENA.enemyPrincessYTop - (config.ARENA.pocketPastTower or 4),
+        config.ARENA.enemyPrincessYTop,
+        config.ARENA.riverTop - 3,
+    }
+
+    for _, x in ipairs(xs) do
+        for _, y in ipairs(ys) do
+            assertEq(
+                arena.placementAllowed(1, x, y, "ground", state),
+                arena.placementAllowed(2, x, H - y, "ground", state),
+                ("Forward pocket mirror mismatch at %.1f, %.1f"):format(x, y)
+            )
+        end
+    end
+
+    assertEq(arena.placementAllowed(1, 25, config.ARENA.enemyPrincessYTop,
+        "ground", state), true, "Destroyed left enemy tower unlocks P1 left pocket")
+    assertEq(arena.placementAllowed(1, 75, config.ARENA.enemyPrincessYTop,
+        "ground", state), false, "Intact right enemy tower keeps P1 right pocket locked")
+    assertEq(arena.placementAllowed(1, 50, config.ARENA.enemyPrincessYTop,
+        "ground", state), false, "King-Tower centre remains locked for P1")
+end
+
 do
     -- Bridge/path navigation must reflect exactly in Y for equivalent units.
     local probes = {
