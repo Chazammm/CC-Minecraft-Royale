@@ -121,3 +121,9 @@ jobs:
         run: |
           lua5.2 tests/performance_profile.lua
           lua5.4 tests/performance_profile.lua
+      - name: Audit-only 100/500/1000 mixed simulation verification
+        if: github.ref == 'refs/heads/audit-20261011-full-system'
+        run: |
+          lua5.4 simulate.lua 100 mixed 20261011
+          lua5.4 simulate.lua 500 mixed 20261011
+          lua5.4 simulate.lua 1000 mixed 20261011
