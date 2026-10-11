@@ -518,4 +518,31 @@ do
     )
 end
 
+
+-- Placement is a public game/API boundary: malformed coordinates must be
+-- rejected without throwing or being interpreted as the opposite side.
+do
+    local malformed = {
+        { nil, 100 },
+        { 50, nil },
+        { 0/0, 100 },
+        { 50, 0/0 },
+        { math.huge, 100 },
+        { 50, -math.huge },
+    }
+    for i, pair in ipairs(malformed) do
+        local ok, allowed = pcall(
+            arena.placementAllowed,
+            1,
+            pair[1],
+            pair[2],
+            "ground",
+            nil
+        )
+        assertTrue(ok, "Malformed placement case " .. i .. " must not crash")
+        assertEq(allowed, false,
+            "Malformed placement case " .. i .. " must be rejected")
+    end
+end
+
 print("Audit regression tests passed")
