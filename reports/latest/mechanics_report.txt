@@ -1,14 +1,14 @@
 CC-MINECRAFT-ROYALE MECHANICS REPORT
-FORMAT_VERSION|21
-CODE_REVISION|28ef6cf29ecdb6e417fe0587ee9b731b2663e7c1
-GENERATED_EPOCH_MS|1791654329911
+FORMAT_VERSION|22
+CODE_REVISION|8ee474a700718adcca4bdad219f0e39e927be8cf
+GENERATED_EPOCH_MS|1791734428145
 OS_VERSION|CraftOS 1.9
 CARD_COUNT|22
 HARNESS|condition_waits=true|dt=0.050|safe_x=50.0|safe_y=110.0
 CONFIG|tick=0.100|normal=150|overtime=150|emerald_rate=0.357143|building_decay=1.150
 BALANCE_SNAPSHOT|skeleton_range=15.00|skeleton_retreat=0.85|bat_damage=17.00
 EVOLUTION_SNAPSHOT|creeper_cycles=2|portal_cycles=2|mite_cycles=4|guardian_cycles=2|villager_cycles=3|golem_cycles=2|ghast_damage=130.0|ghast_range=24.0
-SUMMARY|pass=24|fail=0|error=0|total=24|runtime_cpu_s=0.0000
+SUMMARY|pass=24|fail=0|error=0|total=24|runtime_cpu_s=0.0500
 
 RESULT|boot_deck|PASS|Lobby boots with empty human decks|Human players should build/load/randomize an 8-card deck before READY.
 DATA|boot_deck|p1_deck_cards=0.0000
@@ -195,6 +195,7 @@ DATA|evoker_fangs_vex|flying_blaze_ring_damage=0.0000
 DATA|evoker_fangs_vex|vexes_before_4s=0.0000
 DATA|evoker_fangs_vex|first_vex_wave_count=3.0000
 DATA|evoker_fangs_vex|vex_damage=30.0000
+DATA|evoker_fangs_vex|actual_single_vex_hit=30.0000
 DATA|evoker_fangs_vex|vex_hp=75.0000
 DATA|evoker_fangs_vex|vex_lifetime_s=9.0000
 DATA|evoker_fangs_vex|vexes_after_lifetime=0.0000
@@ -210,17 +211,14 @@ DATA|tower_bridge_range|distance_just_past_bridge=42.0476
 DATA|tower_bridge_range|acquired_just_past_bridge=true
 DATA|tower_bridge_range|king_range=27.0000
 
-RESULT|target_lock|PASS|Pull before attack, lock after attack|Golem must remain pullable before commitment; attacked targets must stay locked until death.
-DATA|target_lock|golem_pulled_before_hit=true
-DATA|target_lock|golem_pull_time_s=0.0500
-DATA|target_lock|golem_locked_before_hit=false
-DATA|target_lock|zombie_locked_after_first_hit=true
-DATA|target_lock|zombie_lock_time_s=0.0500
+RESULT|target_lock|PASS|Lock immediately on first valid target|A valid target must lock on acquisition; only death/invalidity may release it.
+DATA|target_lock|locked_on_first_acquire=true
 DATA|target_lock|new_unit_failed_to_steal_aggro=true
+DATA|target_lock|target_killed_through_engine=true
 DATA|target_lock|lock_released_after_target_death=true
-DATA|target_lock|lock_release_time_s=0.1000
+DATA|target_lock|reacquired_living_enemy=true
 
-RESULT|building_decay|PASS|Building HP decays continuously|Cannon HP should drain smoothly at the configured lifetime multiplier.
+RESULT|building_decay|PASS|Building HP decays continuously|Cannon HP should drain smoothly and clamp to zero on natural decay death.
 DATA|building_decay|initial_hp=618.0000
 DATA|building_decay|hp_at_5s=516.4714
 DATA|building_decay|hp_at_10s=414.9429
@@ -228,6 +226,8 @@ DATA|building_decay|hp_at_20s=211.8857
 DATA|building_decay|expected_hp_at_10s=414.9429
 DATA|building_decay|expected_natural_life_s=30.4348
 DATA|building_decay|measured_death_time_s=30.4500
+DATA|building_decay|terminal_hp=0.0000
+DATA|building_decay|terminal_hp_clamped=true
 
 RESULT|nether_portal|PASS|Portal spawn cadence and effective lifetime|Portal should produce the scheduled Piglins on walkable ground and die from natural HP decay.
 DATA|nether_portal|test_anchor_x=50.0000
