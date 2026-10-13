@@ -1,0 +1,65 @@
+name: Report Retention
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: report-retention-main
+  cancel-in-progress: false
+
+jobs:
+  prune:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify immutable pre-retention report archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARCHIVE=$(git ls-remote origin refs/heads/archive/reports-pre-retention-20261013 | cut -f1)
+          EXPECTED=426511c886ac7d019354ecca04d42ea99a31072d
+          if [[ "$ARCHIVE" != "$EXPECTED" ]]; then
+            echo "Archive branch missing or moved: refusing to prune reports."
+            exit 1
+          fi
+
+      - name: Verify report retention safety tests
+        run: python3 -m unittest discover -s tests -p test_report_retention.py -v
+
+      - name: Apply report retention and regenerate searchable index
+        run: python3 scripts/prune_reports.py --apply
+
+      - name: Commit bounded history to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -- reports/history reports/history_index.json
+          if git diff --cached --quiet; then
+            echo "No report changes: nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(reports): retain recent diagnostics and rebuild history index"
+          # An ongoing CC:Tweaked upload may advance main during cleanup.
+          # Never force-push; only rebase and retry boundedly.
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo "Retention commit pushed."
+              exit 0
+            fi
+            echo "Push raced with main update; fetching and rebasing ($attempt/3)."
+            git fetch origin main
+            git rebase origin/main
+          done
+          echo "Unable to safely push retention; no forced update performed."
+          exit 1

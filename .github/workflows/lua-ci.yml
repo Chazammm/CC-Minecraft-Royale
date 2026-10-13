@@ -136,3 +136,8 @@ jobs:
         run: |
           lua5.2 tests/test_finite_river_bounds.lua
           lua5.4 tests/test_finite_river_bounds.lua
+
+      - name: Python report retention safety and archive index regressions
+        run: |
+          python3 -m unittest discover -s tests -p test_report_retention.py -v
+          python3 scripts/prune_reports.py
