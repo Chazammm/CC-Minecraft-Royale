@@ -121,3 +121,18 @@ jobs:
         run: |
           lua5.2 tests/performance_profile.lua
           lua5.4 tests/performance_profile.lua
+
+      - name: Lobby-only deck mutation and malformed preset slot regressions
+        run: |
+          lua5.2 tests/test_lobby_state_mutators.lua
+          lua5.4 tests/test_lobby_state_mutators.lua
+
+      - name: Positive projectile speed data invariant
+        run: |
+          lua5.2 tests/test_projectile_speed_schema.lua
+          lua5.4 tests/test_projectile_speed_schema.lua
+
+      - name: Finite river collision geometry configuration
+        run: |
+          lua5.2 tests/test_finite_river_bounds.lua
+          lua5.4 tests/test_finite_river_bounds.lua

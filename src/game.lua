@@ -2745,6 +2745,9 @@ local function deckPosition(deck, cardId)
 end
 
 function Game.toggleDeckCard(state, playerId, cardId)
+    -- Public gameplay API: reject dev/script mutations outside the lobby.
+    -- Otherwise deck, hand, queue and Evolution progress can disagree mid-match.
+    if not state or state.phase ~= "lobby" then return false end
     local player = state.players[playerId]
     local card = cards.get(cardId)
     if not player or not card then return false end
@@ -3012,9 +3015,16 @@ function Game.cycleDeckPresetSlot(state, playerId, delta)
     return true
 end
 
+local function validPresetSlot(slot)
+    return type(slot) == "number"
+        and slot == math.floor(slot)
+        and slot >= 1 and slot <= 3
+end
+
 function Game.saveDeckPreset(state, playerId, slot)
+    if not state or state.phase ~= "lobby" then return false end
     local player = state.players[playerId]
-    if not player or slot < 1 or slot > 3 then return false end
+    if not player or not validPresetSlot(slot) then return false end
     if not cards.isValidDeck(player.deck) then
         setFeedback(player, "NEED A VALID 8-CARD DECK", 1.2)
         return false
@@ -3038,8 +3048,9 @@ function Game.saveDeckPreset(state, playerId, slot)
 end
 
 function Game.loadDeckPreset(state, playerId, slot)
+    if not state or state.phase ~= "lobby" then return false end
     local player = state.players[playerId]
-    if not player or slot < 1 or slot > 3 then return false end
+    if not player or not validPresetSlot(slot) then return false end
     local preset = state.deckPresets[playerId][slot]
 
     if not cards.isValidDeck(preset) then
@@ -3055,6 +3066,7 @@ function Game.loadDeckPreset(state, playerId, slot)
 end
 
 function Game.randomizeDeck(state, playerId)
+    if not state or state.phase ~= "lobby" then return false end
     local player = state.players[playerId]
     if not player then return false end
 

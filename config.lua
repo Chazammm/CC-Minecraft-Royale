@@ -159,9 +159,11 @@ function config.validate(candidate)
         error("Invalid config: arena size is fixed at 100x160", 0)
     end
 
-    if type(cfg.ARENA.riverTop) ~= "number"
-        or type(cfg.ARENA.riverBottom) ~= "number"
-        or cfg.ARENA.riverTop <= 0
+    -- NaN makes all river-range comparisons false and silently removes the
+    -- collision boundary. Validate finiteness before ordering constraints.
+    finiteNumber("ARENA.riverTop", cfg.ARENA.riverTop)
+    finiteNumber("ARENA.riverBottom", cfg.ARENA.riverBottom)
+    if cfg.ARENA.riverTop <= 0
         or cfg.ARENA.riverBottom >= cfg.ARENA.height
         or cfg.ARENA.riverTop >= cfg.ARENA.riverBottom
     then

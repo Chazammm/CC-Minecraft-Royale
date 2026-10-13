@@ -144,6 +144,24 @@ movement-slow, configuration and symmetry paths found no additional relevant
 software finding. Physical ATM10 monitor/audio/network verification remains a
 separate hardware gate.
 
+## October 13 cross-system audit — lobby-only mutation contracts
+
+| ID | Category / severity | Reproduction and root cause | Resolution | Regression / status |
+| --- | --- | --- | --- | --- |
+| AF-036 | CONFIRMED P2, public deck/preset state mutation | `Game.toggleDeckCard`, `Game.randomizeDeck`, `Game.loadDeckPreset` and `Game.saveDeckPreset` assumed callers had already enforced lobby phase. Direct dev/script calls during countdown, battle, result or admin could mutate the equipped deck/Evolution, or persist an unintended deck; `randomizeDeck` could also consume global gameplay RNG. Nil/noninteger preset slots could throw or index unintended slots. The new Lua 5.2 CI regression failed **before** the fix, run [38393556660](https://github.com/Chazammm/CC-Minecraft-Royale/actions/runs/38393556660). | Guard every deck/preset write API with `state.phase == "lobby"`; validate preset slot as an integer 1–3 before comparing/indexing; reject without mutating decks, cycles or RNG. No balance or live tick behavior changes. | `tests/test_lobby_state_mutators.lua` — FIXED_CI: [38393721568](https://github.com/Chazammm/CC-Minecraft-Royale/actions/runs/38393721568), Lua 5.2 and 5.4 |
+
+The existing three deck preset slots remain intentionally **UI-hidden** to
+make room for the Evolution Slot (README documentation), not a newly detected
+missing control. The fix is defensive API hardening; normal touch paths were
+already lobby-gated.
+
+## Additional defensive findings from the independent follow-up pass
+
+| ID | Category / severity | Reproduction / impact | Minimal fix | Regression / status |
+| --- | --- | --- | --- | --- |
+| AF-037 | RISK P2, card-schema projectile lifecycle | A declared `projectileSpeed = 0` passed `cards.validate()` even though Lua treats `0` as truthy: `performAttack` spawns the projectile but `updateProjectiles` advances it by `0 * dt`. A projectile spawned farther than its impact radius would persist, wasting memory and potentially accumulating. Reproduced with a failing schema regression on [CI 38394153080](https://github.com/Chazammm/CC-Minecraft-Royale/actions/runs/38394153080). Current shipped projectile definitions all use positive speeds. | Require a finite **positive** projectileSpeed when the field is present; do not change any existing card speed or melee rule. | `tests/test_projectile_speed_schema.lua` — FIXED_CI: [38394284436](https://github.com/Chazammm/CC-Minecraft-Royale/actions/runs/38394284436), both Lua interpreters |
+| AF-038 | RISK P2, river collision geometry | `config.validate()` used numeric comparisons on the `riverTop`/`riverBottom` boundaries without first checking finiteness; `NaN` comparisons all evaluate false and could pass startup validation. `arena.isRiver` would then stop identifying the river and ground pathing could illegally cross. Red-first test: [CI 38394462184](https://github.com/Chazammm/CC-Minecraft-Royale/actions/runs/38394462184). Ordinary configuration is valid. | Validate both river bounds with existing finiteNumber helper before enforcing ordering, preserving all normal geometry values. | `tests/test_finite_river_bounds.lua` — FIXED_CI on final green run, both Lua interpreters |
+
 ## Open follow-ups — not confirmed gameplay bugs
 
 | ID | Classification | Evidence / limitation | Next action and acceptance condition |
