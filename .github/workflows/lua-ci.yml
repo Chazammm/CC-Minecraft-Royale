@@ -117,6 +117,10 @@ jobs:
         run: |
           lua5.2 tests/test_pixel_frame_diff.lua
           lua5.4 tests/test_pixel_frame_diff.lua
+      - name: Complete native sprite roster and monitor encoding
+        run: |
+          lua5.2 tests/test_sprite_roster.lua
+          lua5.4 tests/test_sprite_roster.lua
       - name: Read-only performance profile (diagnostic, not timed pass/fail)
         run: |
           lua5.2 tests/performance_profile.lua
@@ -141,3 +145,4 @@ jobs:
         run: |
           python3 -m unittest discover -s tests -p test_report_retention.py -v
           python3 scripts/prune_reports.py
+
