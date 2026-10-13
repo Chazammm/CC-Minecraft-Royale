@@ -126,3 +126,8 @@ jobs:
         run: |
           lua5.2 tests/test_lobby_state_mutators.lua
           lua5.4 tests/test_lobby_state_mutators.lua
+
+      - name: Positive projectile speed data invariant
+        run: |
+          lua5.2 tests/test_projectile_speed_schema.lua
+          lua5.4 tests/test_projectile_speed_schema.lua
