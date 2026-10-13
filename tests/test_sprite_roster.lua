@@ -66,7 +66,9 @@ end
 
 local oldWindow,oldClock = window,os.clock
 os.clock=function() return 0 end -- Stable portal shimmer while checking cache.
-local records = {}
+-- Virtual monitors must be collectible like the renderer's weak-key cache.
+-- Keeping all 70 alive causes unnecessary canvas/GC pressure under Lua 5.2.
+local records = setmetatable({}, {__mode="k"})
 window={create=function(monitor,_,_,w,h)
     local y=1
     local record=records[monitor]
@@ -158,6 +160,7 @@ for _,key in ipairs(names) do
         arena.draw(monitor,state,player,rect)
         assert(snapshot(record)==empty,"Removed model left ghost pixels: "..key)
         checks=checks+1
+        records[monitor]=nil
     end
 end
 window,os.clock=oldWindow,oldClock
