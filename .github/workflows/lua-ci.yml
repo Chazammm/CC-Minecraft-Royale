@@ -131,3 +131,8 @@ jobs:
         run: |
           lua5.2 tests/test_projectile_speed_schema.lua
           lua5.4 tests/test_projectile_speed_schema.lua
+
+      - name: Finite river collision geometry configuration
+        run: |
+          lua5.2 tests/test_finite_river_bounds.lua
+          lua5.4 tests/test_finite_river_bounds.lua
