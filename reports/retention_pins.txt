@@ -1,0 +1,4 @@
+# List the exact relative path of any historical report to keep on main permanently.
+# One path per line; the complete pre-retention history is in the archive branch.
+# Example:
+# reports/history/balance/1791649407928_balance_results.txt
