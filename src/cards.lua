@@ -1498,7 +1498,9 @@ function cards.validate()
             nonNegativeField(label, payload, "attackRange")
             nonNegativeField(label, payload, "aggroRange")
             nonNegativeField(label, payload, "lifetime")
-            nonNegativeField(label, payload, "projectileSpeed")
+            -- A zero speed is truthy in Lua and would spawn a projectile that
+            -- cannot reach its target, accumulating indefinitely in flight.
+            positiveField(label, payload, "projectileSpeed")
             nonNegativeField(label, payload, "preferredMinRange")
             nonNegativeField(label, payload, "retreatSpeedMultiplier")
         elseif kind == "spell" then
