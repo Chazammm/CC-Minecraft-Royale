@@ -57,6 +57,8 @@ platform integration, and benchmark tooling can evolve independently.
   tie behavior and batch-report regressions.
 - `tests/test_recovery_hardening.lua` — interrupted-installer and preset
   recovery hardening regressions.
+- `tests/test_lobby_state_mutators.lua` — protects public deck/preset APIs
+  from mid-match writes and invalid preset slot inputs on both supported Lua versions.
 
 ## Reporting
 
