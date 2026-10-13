@@ -155,6 +155,13 @@ make room for the Evolution Slot (README documentation), not a newly detected
 missing control. The fix is defensive API hardening; normal touch paths were
 already lobby-gated.
 
+## Additional defensive findings from the independent follow-up pass
+
+| ID | Category / severity | Reproduction / impact | Minimal fix | Regression / status |
+| --- | --- | --- | --- | --- |
+| AF-037 | RISK P2, card-schema projectile lifecycle | A declared `projectileSpeed = 0` passed `cards.validate()` even though Lua treats `0` as truthy: `performAttack` spawns the projectile but `updateProjectiles` advances it by `0 * dt`. A projectile spawned farther than its impact radius would persist, wasting memory and potentially accumulating. Reproduced with a failing schema regression on [CI 38394153080](https://github.com/Chazammm/CC-Minecraft-Royale/actions/runs/38394153080). Current shipped projectile definitions all use positive speeds. | Require a finite **positive** projectileSpeed when the field is present; do not change any existing card speed or melee rule. | `tests/test_projectile_speed_schema.lua` — FIXED_CI: [38394284436](https://github.com/Chazammm/CC-Minecraft-Royale/actions/runs/38394284436), both Lua interpreters |
+| AF-038 | RISK P2, river collision geometry | `config.validate()` used numeric comparisons on the `riverTop`/`riverBottom` boundaries without first checking finiteness; `NaN` comparisons all evaluate false and could pass startup validation. `arena.isRiver` would then stop identifying the river and ground pathing could illegally cross. Red-first test: [CI 38394462184](https://github.com/Chazammm/CC-Minecraft-Royale/actions/runs/38394462184). Ordinary configuration is valid. | Validate both river bounds with existing finiteNumber helper before enforcing ordering, preserving all normal geometry values. | `tests/test_finite_river_bounds.lua` — FIXED_CI on final green run, both Lua interpreters |
+
 ## Open follow-ups — not confirmed gameplay bugs
 
 | ID | Classification | Evidence / limitation | Next action and acceptance condition |
