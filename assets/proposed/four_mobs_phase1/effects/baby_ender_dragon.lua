@@ -1,0 +1,65 @@
+-- Original Phase-1 art. Data only; deliberately absent from install.lua and all runtime imports.
+return {
+    ["assetSchema"] = 1,
+    ["id"] = "baby_ender_dragon",
+    ["phase"] = "PHASE_1_ONLY",
+    ["runtimeRegistered"] = false,
+    ["format"] = "CC_ROYALE_PALETTE_TOKEN_ROWS",
+    ["frameStatus"] = "PREPARED_STATIC_RASTER_NOT_LIVE_ANIMATION",
+    ["runtimeDispatchStatus"] = "NOT_IMPLEMENTED_REQUIRES_PHASE_2",
+    ["damageSemantics"] = "VISUAL_ONLY_NO_COMBAT_FUNCTIONS",
+    ["frames"] = {
+        ["fireball_a"] = {
+            ["width"] = 5,
+            ["height"] = 5,
+            ["rows"] = {
+                "..P..",
+                ".PMP.",
+                "PMWMP",
+                ".PMP.",
+                "..P..",
+            },
+        },
+        ["fireball_b"] = {
+            ["width"] = 5,
+            ["height"] = 5,
+            ["rows"] = {
+                ".P.W.",
+                "PMMMP",
+                ".MWM.",
+                "PMMMP",
+                ".P.P.",
+            },
+        },
+        ["splash_a"] = {
+            ["width"] = 9,
+            ["height"] = 9,
+            ["rows"] = {
+                "....M....",
+                "...MPM...",
+                "..MPWPM..",
+                ".MPWWWPM.",
+                "MPWWKWWPM",
+                ".MPWWWPM.",
+                "..MPWPM..",
+                "...MPM...",
+                "....M....",
+            },
+        },
+        ["splash_b"] = {
+            ["width"] = 9,
+            ["height"] = 9,
+            ["rows"] = {
+                "..P...P..",
+                "P..M.M..P",
+                ".M.....M.",
+                "..M...M..",
+                "....P....",
+                "..M...M..",
+                ".M.....M.",
+                "P..M.M..P",
+                "..P...P..",
+            },
+        },
+    },
+}

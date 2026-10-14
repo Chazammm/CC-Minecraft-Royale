@@ -7,7 +7,7 @@ local arena = require("src.arena")
 local version = require("src.version")
 local diagnostics = require("src.diagnostics")
 
-local SUITE_VERSION = 24
+local SUITE_VERSION = 25
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 local EPSILON = 0.000001
@@ -1028,8 +1028,8 @@ runTest("evo_elder_guardian", "Benched Elder Guardian remains fully functional i
         and not cards.isSelectable("guardian")
         and deckAddRejected
         and evoSelectionRejected
-        and #cards.evolutionCards() == 5
-        and #cards.evolutionCards(true) == 6
+        and #cards.evolutionCards() == 6
+        and #cards.evolutionCards(true) == 7
         and elder.isEvolution == true
         and evolved
         and elder.attackRange == 18
@@ -2383,6 +2383,7 @@ runTest("bot_smoke", "Normal bot can play through the real card API", function()
 end)
 
 require("src.mechanics_audit").register(runTest)
+require("src.four_mob_mechanics").register(runTest)
 
 local passCount = 0
 local failCount = 0

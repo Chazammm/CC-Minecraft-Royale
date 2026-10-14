@@ -786,6 +786,18 @@ local function infoStatLines(card)
             ))
         end
 
+        if u.secondaryAttack then
+            local rider=u.secondaryAttack
+            table.insert(lines,string.format("RIDER: %s damage / %ss, range %s; GROUND + AIR",numberText(rider.damage),numberText(rider.interval),numberText(rider.range)))
+            table.insert(lines,"RAVAGER: immediate first building hit; one shared HP pool")
+        end
+        if u.projectileSplashRadius then
+            table.insert(lines,"SPLASH RADIUS "..numberText(u.projectileSplashRadius).." (GROUND + AIR)")
+        end
+        if u.heroWebAbility then
+            table.insert(lines,"HERO WEB: every 10s; unwebbed enemy ground troops only")
+            table.insert(lines,"PERMANENT: 25% movement and attack frequency; no stacking")
+        end
         if card.spawnCount then
             table.insert(lines, string.format("DEPLOY: %d units at once", card.spawnCount))
         end

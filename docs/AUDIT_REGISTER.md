@@ -224,6 +224,19 @@ See `QUALITY_GATE.md` for the precise release decision process.
 
 ## Complete-system audit — 2026-10-14
 
+### VIS-003 — Four-mob Phase-1 asset package (no gameplay activation)
+
+RISK P2, visual readability and future integration. User authorizes native
+Ravager Rider, Baby Ender Dragon, Minoshroom and Hero Spider art, prepared
+animation/effect frames, isolated renderer tests and balancing proposals ONLY.
+`assets/proposed/four_mobs_phase1/` remains absent from card registration,
+runtime imports and installer manifests. Animation sequencing, new projectile
+dispatch, dual attacks and permanent Hero Web are explicitly NOT IMPLEMENTED.
+Validation: `assets/proposed/four_mobs_phase1/tools/test_assets.lua` and
+`assets/proposed/four_mobs_phase1/tools/validate_previews.py`; statuses and
+limitations are recorded in the package's `VALIDATION.md`. Phase 2 and merge
+remain blocked on explicit user authorization, not on a technical assumption.
+
 | ID | Classification / priority | Root cause / reproduction | Minimal fix | Validation / status |
 | --- | --- | --- | --- | --- |
 | AF-039 | CONFIRMED P1, terminal-state mutation | The projectile outer loop continued after a winning impact, so a later projectile damaged another tower after `Game.finish`. Independent regression loses 100 extra HP on the baseline. | Stop the battle projectile batch immediately on its first result transition. | `tests/test_system_audit_20261014.lua` — FIXED_CI (dual-Lua automated regression; hardware untested) |
@@ -249,3 +262,10 @@ See `QUALITY_GATE.md` for the precise release decision process.
 | AF-059 | RISK P2, simulated deck validity | An invalid caller-supplied simulation deck is silently replaced by the default deck at countdown, making the reported experiment differ from its inputs. | Reject non-nil invalid decks before RNG reseeding or match construction; retain nil/default-deck behavior. | `tests/test_simulation_contracts.lua` — FIXED_CI (dual-Lua automated regression; hardware untested) |
 | AF-060 | CONFIRMED P2, delayed-spell terminal transition | A winning pending Anvil is resolved before aura reconciliation and combatTick advancement. Those paths then mutate the already-finished match even though later entity/projectile batches are frozen. | Return immediately after a terminal pending-spell transition. | `tests/test_system_audit_20261014.lua`, `tests/test_mechanics_full_ci.lua` — FIXED_CI (dual-Lua automated regression; hardware untested) |
 | AF-061 | CONFIRMED P2, new audit-tool runtime compatibility | Follow-up review of the newly added runner found unconditional native-Lua `collectgarbage` calls. Cobalt BaseLib does not expose that function; a real CraftOS run would fail while sampling memory. | Probe optional GC safely, print unavailable memory honestly, and distinguish native CPU time from CraftOS uptime. | `tests/test_audit_runtime_gc.lua` — FIXED_CI (missing, count-only and throwing GC fixtures under both Lua versions; hardware untested) |
+
+## Four-mob integration (explicit Phase-2 authorization, 2026-10-14)
+
+| ID | Classification | Priority | Status | Scope / evidence |
+| --- | --- | --- | --- | --- |
+| MOB-001 | CONFIRMED feature | HIGH | FIXED_AUTOMATED | Three new cards, Hero Spider Evolution; independent weapons, permanent web and actual sprite dispatch. Tests: `tests/test_four_mobs.lua`, `tests/test_four_mob_rendering.lua`, `tests/test_four_mob_simulations.lua`; both Lua versions required. Phase 2 explicitly authorized by user; no other balance changes. |
+| MOB-002 | CONFIRMED bug | HIGH | FIXED_AUTOMATED | Integration follow-up: final unit removal retained permanent Web on the discarded object, and match end retained pending Web reservations. Explicit status cleanup and cancellation now cover reset, admin purge, result and tiebreaker. Reproduced before fix; regressions `tests/test_four_mobs.lua` (`mob_web_purged_entity`, `mob_result_web_cancel`). |

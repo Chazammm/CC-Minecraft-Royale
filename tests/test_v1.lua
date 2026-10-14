@@ -41,8 +41,8 @@ local function assertTrue(value, message)
     if not value then error(message or "assertTrue failed") end
 end
 
-assertEq(#cards.list, 22, "Card pool must contain twenty-two selectable cards with Evoker added")
-assertEq(#cards.all, 23, "Card registry must contain selectable cards plus dev-only Guardian")
+assertEq(#cards.list, 25, "Card pool must contain twenty-five selectable cards including the three new mobs")
+assertEq(#cards.all, 26, "Card registry must contain selectable cards plus dev-only Guardian")
 assertTrue(not cards.isSelectable("guardian"), "Guardian must be DEV ONLY and absent from normal card selection")
 assertEq(#cards.defaultDeck(), 8, "Default deck must contain eight cards")
 assertTrue(cards.isValidDeck(cards.defaultDeck()), "Default deck must be valid")
@@ -2331,8 +2331,8 @@ assertEq(
     #cards.all + #cards.evolutionCards(true),
     "Admin spawn catalog must include production and dev-only base/Evolution forms"
 )
-assertEq(#cards.evolutionCards(), 5, "Normal Evolution selection must expose five production Evolutions")
-assertEq(#cards.evolutionCards(true), 6, "Dev/admin Evolution registry must retain Elder Guardian")
+assertEq(#cards.evolutionCards(), 6, "Normal Evolution selection must expose six production Evolutions including Hero Spider")
+assertEq(#cards.evolutionCards(true), 7, "Dev/admin Evolution registry must retain Elder Guardian")
 
 local adminKeys = {}
 for _, entry in ipairs(adminCatalog) do

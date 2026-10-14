@@ -25,7 +25,7 @@ function diagnostics.restorePoint(...)
     end
 end
 
-local visualFields={damageFlash=true,criticalPulseTimer=true,emeraldPulseTimer=true,
+local visualFields={visualAnimation=true,damageFlash=true,criticalPulseTimer=true,emeraldPulseTimer=true,
     lastBeamChargeBeforeHit=true,lastBeamChargeAfterHit=true}
 local function serialize(value)
     local kind=type(value)
@@ -52,7 +52,7 @@ end
 function diagnostics.combatSnapshot(state)
     local snapshot={}
     for _,key in ipairs({'phase','countdown','timeLeft','overtime','tiebreaker',
-        'winner','resultReason','nextEntityId','combatTick','entities','projectiles',
+        'winner','resultReason','nextEntityId','nextWebShotId','combatTick','entities','projectiles',
         'pendingSpells','stats','ruleset','destroyedSideTowers','emeraldBoost'}) do
         snapshot[key]=state[key]
     end
@@ -71,6 +71,18 @@ function diagnostics.assertState(state,context)
     local function check(ok,message) assert(ok,prefix..message) end
     local function finite(value,label) check(util.isFiniteNumber(value),'nonfinite '..label) end
     local seen,live,counts={},{},{0,0}
+    local webShots={}
+    finite(state.nextWebShotId or 1,'next web shot ID')
+    for _,projectile in ipairs(state.projectiles or {}) do
+        if projectile.alive and projectile.heroWebSpec then
+            local id=projectile.webShotId
+            finite(id,'web shot ID')
+            check(id>0 and id==math.floor(id) and not webShots[id],'invalid/duplicate web shot')
+            finite(projectile.damage,'web projectile damage')
+            check(projectile.damage==0,'web projectile deals unintended ordinary damage')
+            webShots[id]=projectile
+        end
+    end
     for _,entity in ipairs(state.entities) do
         check(type(entity.id)=='number' and entity.id>0
             and entity.id==math.floor(entity.id) and not seen[entity.id],'invalid/duplicate entity ID')
@@ -92,7 +104,35 @@ function diagnostics.assertState(state,context)
             check(bucket and bucket[entity.id]==entity and entity._spatialOwner==entity.owner,
                 'broken spatial index')
         end
+        if entity.heroWeb then
+            local web=entity.heroWeb
+            check(entity.alive and entity.kind=='unit' and not entity.flying and not entity.waterOnly,'invalid permanent web target')
+            finite(web.moveFactor,'web move factor');finite(web.attackFactor,'web attack factor')
+            check(web.moveFactor==.25 and web.attackFactor==.25,'wrong web factors')
+            check(web.sourceOwner==1 or web.sourceOwner==2,'invalid web source owner')
+            check(web.sourceOwner~=entity.owner,'friendly permanent web')
+            check(not entity.heroWebReservation,'affected target still reserved')
+        end
+        if entity.heroWebReservation then
+            local reservation=entity.heroWebReservation
+            local shot=webShots[reservation.shotId]
+            check(entity.alive and shot and shot.targetId==entity.id
+                and shot.sourceEntityId==reservation.sourceEntityId,'orphan target web reservation')
+        end
+        if entity.pendingWebShotId then
+            local shot=webShots[entity.pendingWebShotId]
+            check(entity.alive and shot and shot.sourceEntityId==entity.id,'orphan source web reservation')
+        end
+        for _,field in ipairs({'attackCooldownLeft','riderCooldownLeft','webCooldownLeft'}) do
+            if entity[field]~=nil then finite(entity[field],field) end
+        end
         check(state.nextEntityId>entity.id,'nextEntityId reused')
+    end
+    for _,shot in pairs(webShots) do
+        local target=live[shot.targetId]
+        local reservation=target and target.heroWebReservation
+        check(reservation and reservation.shotId==shot.webShotId
+            and reservation.sourceEntityId==shot.sourceEntityId,'web projectile missing its reservation')
     end
     for id,entity in pairs(state.entityById) do
         check(seen[id]==entity,'orphan ID lookup')

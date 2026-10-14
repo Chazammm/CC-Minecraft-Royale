@@ -1,0 +1,69 @@
+{
+  "status": "PROPOSALS_ONLY_NOT_REGISTERED_NOT_SIMULATED",
+  "baseCommit": "4490cbdd00c2a7995155eb6bcb5828b3ac65d04e",
+  "ravager_rider": {
+    "cost": 5,
+    "maxHp": 1300,
+    "moveSpeed": 4.4,
+    "attackRange": 3,
+    "damage": 220,
+    "attackCooldown": 3.0,
+    "riderDamage": 20,
+    "riderAttackCooldown": 2,
+    "riderRange": 15,
+    "projectileSpeedProposal": 58
+  },
+  "baby_ender_dragon": {
+    "cost": 5,
+    "maxHp": 600,
+    "damage": 70,
+    "attackCooldown": 1.8,
+    "attackRange": 14,
+    "projectileSplashRadius": 4,
+    "moveSpeed": 5.2,
+    "projectileSpeedProposal": 38
+  },
+  "minoshroom": {
+    "cost": 8,
+    "maxHp": 2100,
+    "damage": 300,
+    "attackCooldown": 2.4,
+    "attackRange": 2.5,
+    "moveSpeed": 3.6
+  },
+  "hero_spider": {
+    "cost": 2,
+    "maxHp": 275.0,
+    "damage": 38.76,
+    "attackCooldown": 0.7843137254901961,
+    "attackRange": 2.2,
+    "moveSpeed": 10.5,
+    "cycles": 2,
+    "webCooldown": 10,
+    "webRangeProposal": 12,
+    "initialWebDelayProposal": 10,
+    "webMoveFrequencyFactor": 0.25,
+    "webAttackFrequencyFactor": 0.25
+  },
+  "arithmeticOnly": {
+    "targetHp": {
+      "zombie": 523,
+      "wither_skeleton": 470,
+      "iron_golem": 1514.7,
+      "diamond_golem": 1658.5965,
+      "king_tower": 2565,
+      "princess_tower": 1501
+    },
+    "zombieHpAfterOneHit": 223,
+    "zombieHitsToKill": 2,
+    "damageConstraints": "HP/2 <= damage < HP; normal unmodified Zombie; no healing/other damage",
+    "matchupsAt300": {
+      "zombie": 2,
+      "wither_skeleton": 2,
+      "iron_golem": 6,
+      "diamond_golem": 6,
+      "king_tower": 9,
+      "princess_tower": 6
+    }
+  }
+}

@@ -4,6 +4,7 @@ local cards = require("src.cards")
 local arena = require("src.arena")
 local spatial = require("src.spatial")
 local presets = require("src.presets")
+local modifiers = require("src.combat_modifiers")
 
 local Game = {}
 
@@ -218,6 +219,15 @@ local RESERVED_ENTITY_FIELDS = {
     lockedTargetId = true,
     attackCooldownLeft = true,
     sourceCardId = true,
+    heroWeb = true,
+    heroWebReservation = true,
+    pendingWebShotId = true,
+    webCooldownLeft = true,
+    riderTargetId = true,
+    riderCooldownLeft = true,
+    initialBuildingImpactUsed = true,
+    visualAnimation = true,
+
     summonerId = true,
     summonerAliveTracked = true,
     _spatialKey = true,
@@ -316,6 +326,20 @@ local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color, 
     entity.slowRemaining = 0
     entity.slowFactor = 1
     entity.slowEffects = {}
+    entity.heroWeb = nil
+    entity.heroWebReservation = nil
+    entity.pendingWebShotId = nil
+    entity.webCooldownLeft = entity.heroWebAbility
+        and (entity.heroWebAbility.initialDelay or entity.heroWebAbility.interval) or nil
+    entity.riderCooldownLeft = entity.secondaryAttack and 0 or nil
+    entity.riderTargetId = nil
+    if entity.initialBuildingImpact then entity.initialBuildingImpactUsed = false end
+    if not state.headlessSimulation and (
+        entity.visualVariant == "ravager_rider" or entity.visualVariant == "baby_ender_dragon"
+        or entity.visualVariant == "minoshroom" or entity.visualVariant == "hero_spider"
+    ) then
+        entity.visualAnimation = { walkTime = 0 }
+    end
     entity.periodicSpawnTimer = entity.periodicSpawn
         and (entity.periodicSpawn.initialDelay or entity.periodicSpawn.interval or 8)
         or nil
@@ -747,6 +771,7 @@ local function applyMovementSlow(entity, spec)
     end
 
     local effectiveAdded = math.max(0, duration - coveredByEqualOrStronger)
+    if entity.heroWeb and factor >= entity.heroWeb.moveFactor then return 0, false end
     if effectiveAdded <= 0 then
         refreshMovementSlow(entity)
         return 0, false
@@ -761,12 +786,7 @@ local function applyMovementSlow(entity, spec)
 end
 
 local function currentMoveSpeed(entity)
-    local speed = entity.moveSpeed or 0
-    if entity.slowRemaining and entity.slowRemaining > 0 then
-        speed = speed * (entity.slowFactor or 1)
-    end
-    speed = speed * (entity.globalMoveSpeedFactor or 1)
-    return speed
+    return modifiers.moveSpeed(entity)
 end
 
 local function updateGlobalMovementAuras(state)
@@ -840,6 +860,10 @@ local function moveToward(state, entity, tx, ty, dt)
 
     local moved = util.distance(oldX, oldY, entity.x, entity.y)
     if moved > 0.0001 then
+        if entity.visualAnimation then
+            entity.visualAnimation.moving = true
+            entity.visualAnimation.walkTime = entity.visualAnimation.walkTime + moved / math.max(.001, entity.moveSpeed or .001)
+        end
         spatial.index(state, entity)
         advanceMovementPulse(state, entity, oldX, oldY, dt, speed)
         return true
@@ -873,6 +897,10 @@ local function moveAway(state, entity, target, dt)
 
     local moved = util.distance(oldX, oldY, entity.x, entity.y)
     if moved > 0.0001 then
+        if entity.visualAnimation then
+            entity.visualAnimation.moving = true
+            entity.visualAnimation.walkTime = entity.visualAnimation.walkTime + moved / math.max(.001, entity.moveSpeed or .001)
+        end
         spatial.index(state, entity)
         advanceMovementPulse(state, entity, oldX, oldY, dt, speed)
         return true
@@ -882,6 +910,15 @@ end
 
 local damageEntity
 local killEntity
+
+local function clearRemovedMobState(state)
+    for _,entity in ipairs(state.entities or {}) do
+        entity.heroWeb = nil
+        entity.heroWebReservation = nil
+        entity.pendingWebShotId = nil
+        entity.riderTargetId = nil
+    end
+end
 
 local function deactivateEntity(state, entity)
     if not entity or not entity.alive then return false end
@@ -899,6 +936,10 @@ local function deactivateEntity(state, entity)
 
     spatial.remove(state, entity)
     entity.alive = false
+    entity.heroWeb = nil
+    entity.heroWebReservation = nil
+    entity.pendingWebShotId = nil
+    entity.riderTargetId = nil
     state.entitiesDirty = true
 
     if entity.globalEnemyMoveSlow then
@@ -915,8 +956,9 @@ local function despawnEntity(state, entity)
     return deactivateEntity(state, entity)
 end
 
-local function spawnProjectile(state, attacker, target, damageOverride, visualOverride)
-    table.insert(state.projectiles, {
+local function spawnProjectile(state, attacker, target, damageOverride, visualOverride, attackSpec)
+    local attack = attackSpec or attacker
+    local projectile = {
         x = attacker.x,
         y = attacker.y,
         targetId = target.id,
@@ -928,21 +970,23 @@ local function spawnProjectile(state, attacker, target, damageOverride, visualOv
         sourceCardId = attacker.sourceCardId,
         sourceEntityId = attacker.id,
         damage = damageOverride or attacker.damage,
-        speed = attacker.projectileSpeed or 50,
+        speed = attack.projectileSpeed or 50,
         visual = visualOverride
-            or attacker.projectileVisual
+            or attack.projectileVisual
             or (attacker.sourceCardId == "skeleton" and "arrow")
             or (attacker.sourceCardId == "cannon" and "cannonball")
             or (attacker.kind == "tower" and "tower_shot")
             or "shot",
-        splashRadius = attacker.projectileSplashRadius,
-        splashEffect = attacker.projectileSplashEffect,
+        splashRadius = attack.projectileSplashRadius,
+        splashEffect = attack.projectileSplashEffect,
         -- Projectile code only reads this immutable combat spec. Sharing the
         -- entity-owned table avoids one short-lived allocation per shot.
-        onHitSlow = attacker.onHitSlow,
-        slowPrimaryOnly = attacker.projectileSlowPrimaryOnly == true,
+        onHitSlow = attack.onHitSlow,
+        slowPrimaryOnly = attack.projectileSlowPrimaryOnly == true,
         alive = true,
-    })
+    }
+    table.insert(state.projectiles, projectile)
+    return projectile
 end
 
 damageEntity = function(
@@ -1531,9 +1575,16 @@ local function resolveEvokerFangs(state, pending)
 end
 
 local function performAttack(state, entity, target)
+    if entity.visualAnimation then entity.visualAnimation.primaryLeft = 0.35 end
+    if entity.initialBuildingImpact and not entity.initialBuildingImpactUsed then
+        entity.initialBuildingImpactUsed = true
+        addEffect(state, "ravager_impact", target.x, target.y, 4, 0.35, entity.owner)
+    elseif entity.visualVariant == "minoshroom" then
+        addEffect(state, "minoshroom_impact", target.x, target.y, 3, 0.3, entity.owner)
+    end
     if entity.fangAttack then
         queueEvokerFangs(state, entity, target)
-        entity.attackCooldownLeft = entity.attackCooldown or 2.4
+        modifiers.arm(entity, "attackCooldownLeft", entity.attackCooldown or 2.4)
         return
     end
 
@@ -1551,7 +1602,7 @@ local function performAttack(state, entity, target)
                 spec.rangedDamage or entity.damage,
                 entity.projectileVisual or "crossbow_bolt"
             )
-            entity.attackCooldownLeft = spec.rangedCooldown or entity.attackCooldown or 1
+            modifiers.arm(entity, "attackCooldownLeft", spec.rangedCooldown or entity.attackCooldown or 1)
             emitSound(state, "minecraft:item.crossbow.shoot", 0.35, 1.15)
         else
             damageEntity(
@@ -1562,7 +1613,7 @@ local function performAttack(state, entity, target)
                 entity.sourceCardId,
                 entity.id
             )
-            entity.attackCooldownLeft = spec.meleeCooldown or entity.attackCooldown or 1
+            modifiers.arm(entity, "attackCooldownLeft", spec.meleeCooldown or entity.attackCooldown or 1)
             emitSound(state, "minecraft:entity.player.attack.sweep", 0.35, 1.25)
         end
         return
@@ -1580,11 +1631,19 @@ local function performAttack(state, entity, target)
             entity.id
         )
     end
-    entity.attackCooldownLeft = entity.attackCooldown or 1
+    modifiers.arm(entity, "attackCooldownLeft", entity.attackCooldown or 1)
 end
 
+local ANIMATION_TIMERS = { "primaryLeft", "riderLeft", "webLeft" }
 local function updateCombatEntity(state, entity, dt)
     if not entity.alive then return end
+    if entity.visualAnimation then
+        local animation = entity.visualAnimation
+        animation.moving = false
+        for _, field in ipairs(ANIMATION_TIMERS) do
+            if animation[field] then animation[field] = math.max(0, util.tickRemaining(animation[field], dt)) end
+        end
+    end
 
     if not state.headlessSimulation then
         if entity.damageFlash and entity.damageFlash > 0 then
@@ -1648,7 +1707,7 @@ local function updateCombatEntity(state, entity, dt)
         end
     end
 
-    entity.attackCooldownLeft = math.max(0, util.tickRemaining(entity.attackCooldownLeft or 0, dt))
+    modifiers.advance(entity, "attackCooldownLeft", dt)
     entity.teleportCooldownLeft = math.max(0, util.tickRemaining(entity.teleportCooldownLeft or 0, dt))
 
     updateMovementSlows(entity, dt)
@@ -1721,6 +1780,7 @@ local function updateCombatEntity(state, entity, dt)
     end
 
     if not target then
+        if modifiers.precise(entity) then entity.attackCooldownLeft = math.max(0, entity.attackCooldownLeft) end
         entity.fuseRemaining = nil
         if entity.beam then
             entity.beamCharge = 0
@@ -1866,7 +1926,9 @@ local function updateCombatEntity(state, entity, dt)
     end
 
     if distance <= attackRange + 1e-9 then
-        if entity.attackCooldownLeft <= 0 then
+        if entity.attackCooldownLeft <= 1e-9
+            or (entity.initialBuildingImpact and not entity.initialBuildingImpactUsed)
+        then
             if entity.kind == "unit" then
                 entity.lockedTargetId = target.id
             end
@@ -1880,8 +1942,150 @@ local function updateCombatEntity(state, entity, dt)
         return
     end
 
+    if modifiers.precise(entity) then entity.attackCooldownLeft = math.max(0, entity.attackCooldownLeft) end
     local tx, ty = arena.navigationPoint(entity, target)
     moveToward(state, entity, tx, ty, dt)
+    if entity.initialBuildingImpact and not entity.initialBuildingImpactUsed
+        and target.alive and util.distance(entity.x, entity.y, target.x, target.y) <= attackRange + 1e-9
+    then
+        performAttack(state, entity, target)
+    end
+end
+
+-- Auxiliary weapons use their own filters/locks; primary building targeting
+-- must never steer the rider or consume the Hero Web clock.
+local function auxiliaryTargetAllowed(entity, target, web)
+    return target and target.alive and target.owner ~= entity.owner
+        and target.kind == "unit"
+        and (not web or (not target.flying and not target.waterOnly
+            and not target.heroWeb and not target.heroWebReservation))
+end
+
+local function nearestAuxiliary(state, entity, range, web)
+    local best, bestSq = nil, range * range + 1e-9
+    spatial.forEachInBounds(state, otherPlayer(entity.owner),
+        entity.x - range, entity.y - range, entity.x + range, entity.y + range,
+        function(candidate)
+            if auxiliaryTargetAllowed(entity, candidate, web) then
+                local d2 = util.distanceSquared(entity.x, entity.y, candidate.x, candidate.y)
+                if d2 <= range * range + 1e-9
+                    and (not best or d2 < bestSq or (d2 == bestSq and candidate.id < best.id))
+                then best, bestSq = candidate, d2 end
+            end
+        end)
+    return best
+end
+
+local function releaseWebShot(state, projectile, refund)
+    local target = state.entityById[projectile.targetId]
+    local reservation = target and target.heroWebReservation
+    if reservation and reservation.shotId == projectile.webShotId
+        and reservation.sourceEntityId == projectile.sourceEntityId
+    then target.heroWebReservation = nil end
+    local source = getEntityById(state, projectile.sourceEntityId)
+    if source and source.pendingWebShotId == projectile.webShotId then
+        source.pendingWebShotId = nil
+        if refund then source.webCooldownLeft = 0 end
+    end
+end
+
+local function cancelWebProjectiles(state)
+    local write=1
+    local projectiles=state.projectiles
+    for read=1,#projectiles do
+        local projectile=projectiles[read]
+        if projectile.heroWebSpec then
+            releaseWebShot(state,projectile,false)
+            projectile.alive=false
+        else
+            projectiles[write]=projectile;write=write+1
+        end
+    end
+    for i=write,#projectiles do projectiles[i]=nil end
+end
+
+local function webProjectileAllowed(projectile, target)
+    local reservation = target and target.heroWebReservation
+    return target and target.alive and target.owner ~= projectile.owner
+        and target.kind == "unit" and not target.flying and not target.waterOnly
+        and not target.heroWeb and reservation
+        and reservation.shotId == projectile.webShotId
+        and reservation.sourceEntityId == projectile.sourceEntityId
+end
+
+local function applyWebImpact(state, projectile, target)
+    if not webProjectileAllowed(projectile, target) then
+        releaseWebShot(state, projectile, true)
+        return
+    end
+    local spec = projectile.heroWebSpec
+    target.heroWeb = {
+        moveFactor = spec.moveFactor, attackFactor = spec.attackFactor,
+        sourceOwner = projectile.owner, sourceCardId = projectile.sourceCardId,
+    }
+    releaseWebShot(state, projectile, false)
+    addEffect(state, "hero_web_hit", target.x, target.y, 4, 0.35, projectile.owner)
+    if state.phase == "battle" and state.stats then
+        local stats = getCardStats(state, projectile.owner, projectile.sourceCardId)
+        stats.websApplied = (stats.websApplied or 0) + 1
+    end
+end
+
+local function updateAuxiliaryWeapons(state, entity, dt)
+    if not entity.alive then return end
+    if entity.heroWeb and state.phase == "battle" and state.stats then
+        local status = entity.heroWeb
+        local stats = getCardStats(state, status.sourceOwner, status.sourceCardId)
+        stats.webSeconds = (stats.webSeconds or 0) + dt
+        stats.slowSeconds = stats.slowSeconds + dt
+    end
+    if entity.secondaryAttack then modifiers.advance(entity, "riderCooldownLeft", dt) end
+    if entity.heroWebAbility then
+        entity.webCooldownLeft = math.max(0, util.tickRemaining(entity.webCooldownLeft or 0, dt))
+    end
+    if entity.passive or entity.targetMode == "none" then
+        entity.riderTargetId = nil
+        return
+    end
+    local spec = entity.secondaryAttack
+    if spec then
+        local target = getEntityById(state, entity.riderTargetId)
+        if not auxiliaryTargetAllowed(entity, target, false)
+            or util.distanceSquared(entity.x, entity.y, target.x, target.y) > spec.range * spec.range + 1e-9
+        then
+            target = nearestAuxiliary(state, entity, spec.range, false)
+            entity.riderTargetId = target and target.id or nil
+        end
+        if target and entity.riderCooldownLeft <= 1e-9 then
+            spawnProjectile(state, entity, target, spec.damage, spec.projectileVisual, spec)
+            modifiers.arm(entity, "riderCooldownLeft", spec.interval)
+            if entity.visualAnimation then entity.visualAnimation.riderLeft = 0.25 end
+            addEffect(state, "rider_muzzle", entity.x, entity.y, 1, 0.15, entity.owner)
+            emitSound(state, "minecraft:item.crossbow.shoot", 0.35, 1.0)
+        elseif not target then
+            entity.riderCooldownLeft = math.max(0, entity.riderCooldownLeft)
+        end
+    end
+    spec = entity.heroWebAbility
+    if spec and entity.visualAnimation then
+        entity.visualAnimation.webCharging = entity.webCooldownLeft > 0
+            and entity.webCooldownLeft <= .25 and not entity.pendingWebShotId
+            and nearestAuxiliary(state, entity, spec.range, true) ~= nil
+    end
+    if spec and entity.webCooldownLeft <= 1e-9 and not entity.pendingWebShotId then
+        local target = nearestAuxiliary(state, entity, spec.range, true)
+        if target then
+            local shotId = state.nextWebShotId or 1
+            state.nextWebShotId = shotId + 1
+            target.heroWebReservation = { shotId = shotId, sourceEntityId = entity.id }
+            entity.pendingWebShotId = shotId
+            local projectile = spawnProjectile(state, entity, target, 0, spec.projectileVisual, spec)
+            projectile.webShotId = shotId
+            projectile.heroWebSpec = spec
+            entity.webCooldownLeft = spec.interval
+            if entity.visualAnimation then entity.visualAnimation.webLeft = 0.25 end
+        end
+    end
 end
 
 local function updateProjectiles(state, dt)
@@ -1892,6 +2096,10 @@ local function updateProjectiles(state, dt)
         if battleBatch and state.phase ~= "battle" then break end
         if projectile.alive then
             local target = getEntityById(state, projectile.targetId)
+            if projectile.heroWebSpec and not webProjectileAllowed(projectile, target) then
+                releaseWebShot(state, projectile, true)
+                target = nil
+            end
             if target then
                 projectile.lastTargetX = target.x
                 projectile.lastTargetY = target.y
@@ -1921,7 +2129,9 @@ local function updateProjectiles(state, dt)
                     projectile.alive = false
 
                     local victims = {}
-                    if projectile.splashRadius then
+                    if projectile.heroWebSpec then
+                        applyWebImpact(state, projectile, target)
+                    elseif projectile.splashRadius then
                         local splashSq =
                             projectile.splashRadius * projectile.splashRadius
                         local candidates = spatial.candidatesInRadius(
@@ -2119,6 +2329,8 @@ function Game.new(soundCallback, options)
         effects = {},
         pendingSpells = {},
         nextEntityId = 1,
+        nextWebShotId = 1,
+        visualTime = 0,
         combatTick = 0,
         countdown = config.MATCH.countdown,
         timeLeft = config.MATCH.normalTime,
@@ -2160,6 +2372,8 @@ function Game.new(soundCallback, options)
 end
 
 function Game.resetLobby(state)
+    cancelWebProjectiles(state)
+    clearRemovedMobState(state)
     state.phase = "lobby"
     state.entities = {}
     state.entityById = {}
@@ -2169,6 +2383,8 @@ function Game.resetLobby(state)
     state.effects = {}
     state.pendingSpells = {}
     state.nextEntityId = 1
+    state.nextWebShotId = 1
+    state.visualTime = 0
     state.combatTick = 0
     state.winner = nil
     state.resultReason = nil
@@ -2209,6 +2425,8 @@ function Game.resetLobby(state)
 end
 
 function Game.startCountdown(state)
+    cancelWebProjectiles(state)
+    clearRemovedMobState(state)
     state.phase = "countdown"
     state.adminMode = false
     state.adminPaused = false
@@ -2222,6 +2440,8 @@ function Game.startCountdown(state)
     state.effects = {}
     state.pendingSpells = {}
     state.nextEntityId = 1
+    state.nextWebShotId = 1
+    state.visualTime = 0
     state.combatTick = 0
     state.winner = nil
     state.resultReason = nil
@@ -2283,6 +2503,7 @@ end
 
 function Game.finish(state, winner, reason)
     if state.phase == "result" then return end
+    cancelWebProjectiles(state)
     state.phase = "result"
     state.winner = winner
     state.resultReason = reason or "MATCH OVER"
@@ -2313,6 +2534,8 @@ local function lowestLivingTowerHp(state, owner)
 end
 
 local function startTiebreaker(state)
+    cancelWebProjectiles(state)
+    clearRemovedMobState(state)
     state.tiebreaker = true
     state.timeLeft = 0
     state.projectiles = {}
@@ -3341,6 +3564,8 @@ function Game.update(state, dt)
     if not isBattle and not isAdmin then return end
     if isAdmin and state.adminPaused then return end
 
+    if not state.headlessSimulation then state.visualTime = (state.visualTime or 0) + dt end
+
     -- Normal battle movement/spawn/death/teleport paths maintain the index
     -- incrementally. The admin sandbox intentionally permits direct entity
     -- edits, so only that mode pays for a full authoritative reconcile.
@@ -3448,11 +3673,23 @@ function Game.update(state, dt)
         for i = 1, entityCount do
             if isBattle and state.phase ~= "battle" then break end
             updateCombatEntity(state, state.entities[i], dt)
+            local entity = state.entities[i]
+            if (not isBattle or state.phase == "battle")
+                and (entity.secondaryAttack or entity.heroWebAbility or entity.heroWeb)
+            then
+                updateAuxiliaryWeapons(state, entity, dt)
+            end
         end
     else
         for i = entityCount, 1, -1 do
             if isBattle and state.phase ~= "battle" then break end
             updateCombatEntity(state, state.entities[i], dt)
+            local entity = state.entities[i]
+            if (not isBattle or state.phase == "battle")
+                and (entity.secondaryAttack or entity.heroWebAbility or entity.heroWeb)
+            then
+                updateAuxiliaryWeapons(state, entity, dt)
+            end
         end
     end
 
@@ -3507,6 +3744,8 @@ function Game.update(state, dt)
 end
 
 local function clearSimulation(state)
+    cancelWebProjectiles(state)
+    clearRemovedMobState(state)
     state.entities = {}
     state.entityById = {}
     state.entitiesByOwner = { [1] = {}, [2] = {} }
@@ -3515,6 +3754,8 @@ local function clearSimulation(state)
     state.effects = {}
     state.pendingSpells = {}
     state.nextEntityId = 1
+    state.nextWebShotId = 1
+    state.visualTime = 0
     state.combatTick = 0
     state.globalMovementAuraActive = false
     state.globalMovementAuraDirty = false
@@ -3703,6 +3944,8 @@ function Game.debugApplySlow(state, entityOrId, factor, duration)
 end
 
 function Game.debugClearUnits(state)
+    cancelWebProjectiles(state)
+    clearRemovedMobState(state)
     local kept = {}
     for _, entity in ipairs(state.entities) do
         if entity.kind == "tower" and entity.alive then
