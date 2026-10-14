@@ -91,7 +91,11 @@ if mode ~= "mixed" and mode ~= "fixed" then
     return
 end
 
-local seed = math.floor(tonumber(args[3]) or 1337)
+local seed, seedError = benchmark.parseSeed(args[3], 1337)
+if not seed then
+    nativePrint("ERROR: " .. seedError)
+    return
+end
 
 -- Only replace the previous report after all command-line arguments have
 -- passed validation. "simulate help" and invalid commands must preserve it.
@@ -245,8 +249,7 @@ reportPrint("")
 reportPrint("Side-swapped pairs reuse one deterministic gameplay seed; current combat has no random branches, while deck sampling RNG stays independent.")
 
 local function gameplaySeedForPair(pairIndex)
-    local value = (seed + pairIndex * 1000003) % 2147483646
-    return value + 1
+    return benchmark.pairedGameplaySeed(seed, pairIndex)
 end
 
 local benchmarkStartedMs = os.epoch and os.epoch("utc") or nil

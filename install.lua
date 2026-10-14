@@ -10,6 +10,8 @@ local files = {
   "admin.lua",
   "config.lua",
   "src/util.lua",
+  "src/diagnostics.lua",
+  "src/mechanics_audit.lua",
   "src/version.lua",
   "src/cards.lua",
   "lib/pixelbox_lite.lua",
@@ -34,6 +36,7 @@ local files = {
   "compare.lua",
   "evo_compare.lua",
   "mechanics_test.lua",
+  "audit_matches.lua",
   "report_sync.lua",
 }
 

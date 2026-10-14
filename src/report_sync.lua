@@ -168,27 +168,32 @@ end
 
 local function responseDetails(handle)
     if not handle then return nil, nil end
-
-    local code = nil
-    if handle.getResponseCode then
-        code = select(1, handle.getResponseCode())
+    local ok, code, body = pcall(function()
+        local status = handle.getResponseCode and handle.getResponseCode() or nil
+        local content = handle.readAll and handle.readAll() or ""
+        if type(content) ~= "string" then error("Non-string HTTP response", 0) end
+        return status, content
+    end)
+    local closed, closeResult = true, nil
+    if handle.close then closed, closeResult = pcall(handle.close) end
+    if not ok then return nil, "Could not read HTTP response: " .. tostring(code) end
+    if not closed or closeResult == false then
+        return nil, "Could not close HTTP response"
     end
-
-    local body = handle.readAll and handle.readAll() or ""
-    if handle.close then handle.close() end
     return code, body
 end
 
 local function githubGet(token, url)
-    local response, err, failedResponse = http.get({
+    local called, response, err, failedResponse = pcall(http.get, {
         url = url,
         headers = apiHeaders(token),
         timeout = 20,
     })
+    if not called then return false, nil, tostring(response) end
 
     if response then
         local code, body = responseDetails(response)
-        return true, code, body
+        return code ~= nil, code, body
     end
 
     local code, body = responseDetails(failedResponse)
@@ -196,7 +201,7 @@ local function githubGet(token, url)
 end
 
 local function githubWrite(token, method, url, payload)
-    local response, err, failedResponse = http.post({
+    local called, response, err, failedResponse = pcall(http.post, {
         url = url,
         body = textutils.serializeJSON(payload or {}),
         headers = {
@@ -209,6 +214,7 @@ local function githubWrite(token, method, url, payload)
         method = method,
         timeout = 30,
     })
+    if not called then return false, nil, tostring(response) end
 
     if response then
         local code, responseBody = responseDetails(response)
@@ -223,10 +229,11 @@ local function remoteLatestMatches(path, content, revision)
     if not http or not http.get then return false end
     if type(revision) ~= "string" or revision == "" then return false end
 
-    local response, _, failedResponse = http.get({
+    local called, response, _, failedResponse = pcall(http.get, {
         url = RAW_ROOT .. revision .. "/" .. path,
         timeout = 10,
     })
+    if not called then return false end
     if not response then
         -- CC:Tweaked may return an HTTP failure handle even when the primary
         -- response is nil. Consume/close it so repeated sync attempts cannot
@@ -235,26 +242,25 @@ local function remoteLatestMatches(path, content, revision)
         return false
     end
 
-    local code = response.getResponseCode
-        and select(1, response.getResponseCode())
-        or 200
-    if code ~= 200 then
-        if response.close then response.close() end
-        return false
-    end
-
-    local body = response.readAll and response.readAll() or ""
-    if response.close then response.close() end
-    return body == content
+    local code, body = responseDetails(response)
+    return code == 200 and body == content
 end
 
 local function decodeGithub(body, context)
-    local decoded, decodeErr = textutils.unserializeJSON(body or "")
-    if not decoded then
+    local ok, decoded, decodeErr = pcall(textutils.unserializeJSON, body or "")
+    if not ok or type(decoded) ~= "table" then
         return nil, (context or "GitHub response")
-            .. " JSON error: " .. tostring(decodeErr)
+            .. " JSON error: " .. tostring(ok and decodeErr or decoded)
     end
     return decoded
+end
+
+local function responseSha(object, child)
+    if type(object) ~= "table" then return nil end
+    if child then object = object[child] end
+    if type(object) == "table" and type(object.sha) == "string"
+        and object.sha ~= ""
+    then return object.sha end
 end
 
 local function branchHeadSha(token)
@@ -265,7 +271,7 @@ local function branchHeadSha(token)
     if not ok or code ~= 200 then return nil end
 
     local ref = decodeGithub(body, "branch ref")
-    return ref and ref.object and ref.object.sha or nil
+    return responseSha(ref, "object")
 end
 
 local function commitFilesOnce(token, files, message)
@@ -285,7 +291,7 @@ local function commitFilesOnce(token, files, message)
 
     local ref, refErr = decodeGithub(body, "branch ref")
     if not ref then return false, refErr end
-    local parentSha = ref.object and ref.object.sha
+    local parentSha = responseSha(ref, "object")
     if not parentSha then return false, "GitHub branch ref had no commit SHA" end
 
     ok, code, body = githubGet(
@@ -301,7 +307,7 @@ local function commitFilesOnce(token, files, message)
 
     local parent, parentErr = decodeGithub(body, "parent commit")
     if not parent then return false, parentErr end
-    local baseTree = parent.tree and parent.tree.sha
+    local baseTree = responseSha(parent, "tree")
     if not baseTree then return false, "GitHub parent commit had no tree SHA" end
 
     local treeEntries = {}
@@ -326,6 +332,7 @@ local function commitFilesOnce(token, files, message)
 
         local blob, blobErr = decodeGithub(blobBody, "blob")
         if not blob then return false, blobErr end
+        if not responseSha(blob) then return false, "GitHub blob had no valid SHA" end
 
         treeEntries[#treeEntries + 1] = {
             path = file.path,
@@ -352,6 +359,7 @@ local function commitFilesOnce(token, files, message)
     end
     local tree, treeErr = decodeGithub(treeBody, "tree")
     if not tree then return false, treeErr end
+    if not responseSha(tree) then return false, "GitHub tree had no valid SHA" end
 
     local commitOk, commitCode, commitBody = githubWrite(
         token,
@@ -371,6 +379,7 @@ local function commitFilesOnce(token, files, message)
     end
     local commit, commitErr = decodeGithub(commitBody, "commit")
     if not commit then return false, commitErr end
+    if not responseSha(commit) then return false, "GitHub commit had no valid SHA" end
 
     local refOk, refCode, refBody = githubWrite(
         token,
@@ -473,8 +482,8 @@ function M.verifyToken(token)
     local repo, decodeErr = decodeGithub(body, "repository")
     if not repo then return false, decodeErr end
 
-    local permissions = repo.permissions or {}
-    if permissions.push ~= true then
+    local permissions = repo.permissions
+    if type(permissions) ~= "table" or permissions.push ~= true then
         return false,
             "Token can read the repo but cannot write it. "
             .. "Grant this repository Contents: Read and write."

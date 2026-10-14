@@ -17,7 +17,7 @@ local centered = uiBuffer.centered
 local flush = uiBuffer.flush
 
 function render.layoutFor(monitor)
-    local width, height = monitor.getSize()
+    local width, height = uiBuffer.monitorSize(monitor)
     local cached = layoutCache[monitor]
     if cached
         and cached.width == width
@@ -95,6 +95,7 @@ function render.layoutFor(monitor)
         },
         resultButtons = {},
         compactLobby = height < 52,
+        tooSmall = width < uiBuffer.MIN_MONITOR_WIDTH or height < uiBuffer.MIN_MONITOR_HEIGHT,
     }
 
     if layout.compactLobby then
@@ -1467,18 +1468,25 @@ local function drawResult(buffer, state, playerId, layout)
 end
 
 function render.draw(monitor, state, playerId, monitorName)
-    local width, height = monitor.getSize()
     local layout = render.layoutFor(monitor)
+    local width, height = layout.width, layout.height
     local isArenaFrame = state.phase ~= "lobby" and state.phase ~= "result"
     local buffer = newBuffer(
         width,
         height,
         colors.white,
         colors.black,
-        isArenaFrame and layout.arena or nil,
+        isArenaFrame and not layout.tooSmall and layout.arena or nil,
         bufferCache[monitor]
     )
     bufferCache[monitor] = buffer
+
+    if layout.tooSmall then
+        pixelArena.invalidate(monitor)
+        uiBuffer.drawSizeWarning(buffer, uiBuffer.MIN_MONITOR_WIDTH, uiBuffer.MIN_MONITOR_HEIGHT)
+        flush(buffer, monitor)
+        return
+    end
 
     if state.phase == "lobby" then
         if state.players[playerId].rulesetOpen then

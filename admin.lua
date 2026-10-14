@@ -97,7 +97,9 @@ local function handleTouch(monitorName, x, y)
     if not viewerId then return end
 
     local monitor = hw.monitors[viewerId]
-    local layout = render.layoutFor(monitor)
+    local ok, layout = pcall(render.layoutFor, monitor)
+    if not ok then reportRenderError(layout); return end
+    if layout.tooSmall then return end
 
     for i, zone in ipairs(layout.scenarios) do
         if hit(zone, x, y) then

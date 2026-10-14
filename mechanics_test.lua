@@ -5,8 +5,9 @@ local Bot = require("src.bot")
 local util = require("src.util")
 local arena = require("src.arena")
 local version = require("src.version")
+local diagnostics = require("src.diagnostics")
 
-local SUITE_VERSION = 22
+local SUITE_VERSION = 24
 local REPORT_FILE = "mechanics_report.txt"
 local DEFAULT_DT = 0.05
 local EPSILON = 0.000001
@@ -154,7 +155,9 @@ local SAFE_X, SAFE_Y = findSafeGroundAnchor()
 local function runTest(id, title, fn)
     write(("[%-24s] "):format(id))
 
+    local restoreDefinitions = diagnostics.restorePoint(cards, config)
     local ok, passed, message, data = pcall(fn)
+    restoreDefinitions()
     local status
 
     if not ok then
@@ -2378,6 +2381,8 @@ runTest("bot_smoke", "Normal bot can play through the real card API", function()
         "Bot should spend real Emeralds and register every successful play in normal match telemetry.",
         data
 end)
+
+require("src.mechanics_audit").register(runTest)
 
 local passCount = 0
 local failCount = 0

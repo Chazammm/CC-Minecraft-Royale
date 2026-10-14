@@ -40,7 +40,7 @@ local function makeColumns(width, count, y1, y2)
 end
 
 function render.layoutFor(monitor)
-    local w, h = monitor.getSize()
+    local w, h = uiBuffer.monitorSize(monitor)
     local cached = layoutCache[monitor]
     if cached and cached.width == w and cached.height == h then
         return cached
@@ -54,6 +54,7 @@ function render.layoutFor(monitor)
         controls = makeColumns(w, 4, h - 21, h - 18),
         cardPageButtons = {},
         cards = {},
+        tooSmall = w < uiBuffer.MIN_MONITOR_WIDTH or h < uiBuffer.MIN_MONITOR_HEIGHT,
     }
 
     local pagerY = h - 17
@@ -124,10 +125,17 @@ local scenarioLabels = { "FULL", "TOWERS", "KING", "1V1 TOWER", "EMPTY" }
 local scenarioIds = { "full", "princess", "king", "single_tower", "empty" }
 
 function render.draw(monitor, state, viewerId, ui)
-    local w, h = monitor.getSize()
     local layout = render.layoutFor(monitor)
-    local b = newBuffer(w, h, layout.arena, bufferCache[monitor])
+    local w, h = layout.width, layout.height
+    local b = newBuffer(w, h, not layout.tooSmall and layout.arena or nil, bufferCache[monitor])
     bufferCache[monitor] = b
+
+    if layout.tooSmall then
+        pixelArena.invalidate(monitor)
+        uiBuffer.drawSizeWarning(b, uiBuffer.MIN_MONITOR_WIDTH, uiBuffer.MIN_MONITOR_HEIGHT)
+        flush(b, monitor)
+        return
+    end
 
     centered(b, 1, "ADMIN SANDBOX", colors.orange, colors.black)
     local botStatus = ui.bot and ui.bot.enabled

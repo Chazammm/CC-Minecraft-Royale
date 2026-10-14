@@ -121,7 +121,11 @@ if #evolutionCards == 0 then
     return
 end
 
-local seed = math.floor(tonumber(seedArg) or DEFAULT_SEED)
+local seed, seedError = benchmark.parseSeed(seedArg, DEFAULT_SEED)
+if not seed then
+    nativePrint("ERROR: " .. seedError)
+    return
+end
 local randomInt = benchmark.newRandomInt(seed)
 local copy = benchmark.copy
 

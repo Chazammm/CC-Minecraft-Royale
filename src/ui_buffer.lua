@@ -1,4 +1,24 @@
+local util = require("src.util")
 local ui = {}
+ui.MIN_MONITOR_WIDTH = 45
+ui.MIN_MONITOR_HEIGHT = 42
+
+function ui.monitorSize(monitor)
+    local width, height = monitor.getSize()
+    for _, size in ipairs({width, height}) do
+        assert(util.isFiniteNumber(size) and size >= 1 and size == math.floor(size),
+            "Monitor dimensions must be finite positive integers")
+    end
+    assert(width ~= nil and height ~= nil, "Monitor dimensions are missing")
+    return width, height
+end
+
+function ui.drawSizeWarning(buffer, minimumWidth, minimumHeight)
+    local row = math.max(1, math.floor(buffer.height / 2))
+    ui.centered(buffer, row, util.truncate("MONITOR TOO SMALL", buffer.width), colors.yellow, colors.black)
+    ui.centered(buffer, row + 1, util.truncate(
+        ("NEED %dx%d"):format(minimumWidth, minimumHeight), buffer.width), colors.white, colors.black)
+end
 
 function ui.newBuffer(
     width,

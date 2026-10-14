@@ -1,0 +1,1034 @@
+{
+  "baseline_revision": "c9b4796d7651a391d647ca6316937744b21dc047",
+  "original_files": 155,
+  "reviewed_files": 171,
+  "generated_evidence": "docs/audit_20261014/manifest.json independently hashes every evidence artifact; coverage index excludes itself to avoid self-referential hashes.",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "baseline_blob_sha": "3c5eb6446265ce46ca17236fbce996bd698d2664",
+      "audited_blob_sha": "3c5eb6446265ce46ca17236fbce996bd698d2664",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": ".github/pull_request_template.md",
+      "baseline_blob_sha": "ff26de306e3702878aba9c905a520a26bf40f4ab",
+      "audited_blob_sha": "ff26de306e3702878aba9c905a520a26bf40f4ab",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": ".github/workflows/lua-ci.yml",
+      "baseline_blob_sha": "29ca861cfa61e2b6712c5dd4318fcbb5d3a073dc",
+      "audited_blob_sha": "0655861e2c2c8f3fe6655dc6dd6c1b12f6767a7e",
+      "status": "CI coverage and report upload/retention race safety review"
+    },
+    {
+      "path": ".github/workflows/report-retention.yml",
+      "baseline_blob_sha": "7f598adcce91a984a8060477a79c70de08595354",
+      "audited_blob_sha": "5c6a889e648210c4392c045270fa2bdf40fdd698",
+      "status": "CI coverage and report upload/retention race safety review"
+    },
+    {
+      "path": ".gitignore",
+      "baseline_blob_sha": "8594b5df8ebe799983b9e923567afdffcaa945d5",
+      "audited_blob_sha": "8594b5df8ebe799983b9e923567afdffcaa945d5",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "PROJECT_STRUCTURE.md",
+      "baseline_blob_sha": "4906028ed9bc09fcb5c79bcd9e6e19c62cd714a5",
+      "audited_blob_sha": "4906028ed9bc09fcb5c79bcd9e6e19c62cd714a5",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "QUALITY_GATE.md",
+      "baseline_blob_sha": "9982c9ea75396d7153f865de8f07e4e758a4752b",
+      "audited_blob_sha": "9982c9ea75396d7153f865de8f07e4e758a4752b",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "README.md",
+      "baseline_blob_sha": "d14e02a4b5a1d5cbbdacc71d48f7ec90e478c1f3",
+      "audited_blob_sha": "d14e02a4b5a1d5cbbdacc71d48f7ec90e478c1f3",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "TEST_PLAN.md",
+      "baseline_blob_sha": "4e9ac67916d3e81eb1a756f8cd8a793c71f1e945",
+      "audited_blob_sha": "4e9ac67916d3e81eb1a756f8cd8a793c71f1e945",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "admin.lua",
+      "baseline_blob_sha": "5f6914b3cbf8e17c9a12019aea0987cb76d45d9b",
+      "audited_blob_sha": "705f6bfb66f8a1c6e73f955a096bb76e1dc613ed",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "assets/README.txt",
+      "baseline_blob_sha": "9fc10f4ad5c7955d57ceaf6c92089298269a2fea",
+      "audited_blob_sha": "9fc10f4ad5c7955d57ceaf6c92089298269a2fea",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "assets/arena/after.png",
+      "baseline_blob_sha": "696e19e9b9289397ea68237481d557ed715ba5ec",
+      "audited_blob_sha": "696e19e9b9289397ea68237481d557ed715ba5ec",
+      "status": "Approved visual evidence: bytes preserved; sprite/terrain raster parity tested"
+    },
+    {
+      "path": "assets/arena/before-after.png",
+      "baseline_blob_sha": "1186758e68e65ab91293a0ff1e2b83954a6fbf3b",
+      "audited_blob_sha": "1186758e68e65ab91293a0ff1e2b83954a6fbf3b",
+      "status": "Approved visual evidence: bytes preserved; sprite/terrain raster parity tested"
+    },
+    {
+      "path": "assets/arena/before.png",
+      "baseline_blob_sha": "7a8fb8e4bf6b6d1a543e5b9b4ec6be60e55aa4b6",
+      "audited_blob_sha": "7a8fb8e4bf6b6d1a543e5b9b4ec6be60e55aa4b6",
+      "status": "Approved visual evidence: bytes preserved; sprite/terrain raster parity tested"
+    },
+    {
+      "path": "assets/sprites/approved-model-revamp-1.webp",
+      "baseline_blob_sha": "58ac4059a46358f5855be0b9377f2e8425458b9c",
+      "audited_blob_sha": "58ac4059a46358f5855be0b9377f2e8425458b9c",
+      "status": "Approved visual evidence: bytes preserved; sprite/terrain raster parity tested"
+    },
+    {
+      "path": "assets/sprites/approved-model-revamp-2.webp",
+      "baseline_blob_sha": "69609dbf441dac50bb86742cedaa28070474e3e7",
+      "audited_blob_sha": "69609dbf441dac50bb86742cedaa28070474e3e7",
+      "status": "Approved visual evidence: bytes preserved; sprite/terrain raster parity tested"
+    },
+    {
+      "path": "assets/sprites/native-sprite-roster.png",
+      "baseline_blob_sha": "e9bf06c6858da0ca9269c7a4a5030af91fef0e65",
+      "audited_blob_sha": "e9bf06c6858da0ca9269c7a4a5030af91fef0e65",
+      "status": "Approved visual evidence: bytes preserved; sprite/terrain raster parity tested"
+    },
+    {
+      "path": "assets/sprites/pixelbox-sprite-roster.png",
+      "baseline_blob_sha": "92782c8e1a238b6ba30ebb7164a6cee4860b156b",
+      "audited_blob_sha": "92782c8e1a238b6ba30ebb7164a6cee4860b156b",
+      "status": "Approved visual evidence: bytes preserved; sprite/terrain raster parity tested"
+    },
+    {
+      "path": "audit_matches.lua",
+      "baseline_blob_sha": null,
+      "audited_blob_sha": "6f3fbcbb73039369d2e83ab317f0889f4feb6a00",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "compare.lua",
+      "baseline_blob_sha": "860bd242c5a780f5698cbc18c4bceab4e4b69803",
+      "audited_blob_sha": "bb619bf2d5ff1bf3d25a7c445ad2452da93c1619",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "config.lua",
+      "baseline_blob_sha": "2f77b20bf15cde196e43d169f17b2850024316dc",
+      "audited_blob_sha": "2f77b20bf15cde196e43d169f17b2850024316dc",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "diagnose.lua",
+      "baseline_blob_sha": "90f576a2d2c1e94f018f23022b557c40dbe7f582",
+      "audited_blob_sha": "90f576a2d2c1e94f018f23022b557c40dbe7f582",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "docs/ARENA_SKIN.md",
+      "baseline_blob_sha": "e5e3ead43be6f7f08496390255f29aa897fdbeb3",
+      "audited_blob_sha": "e5e3ead43be6f7f08496390255f29aa897fdbeb3",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "docs/AUDIT_REGISTER.md",
+      "baseline_blob_sha": "9171a03bab3989590def68faba38c99015651066",
+      "audited_blob_sha": "5e1c018d027c275d7ee03d5c7cc9980f0a587d60",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "docs/DEEP_CORE_AUDIT_20261010.md",
+      "baseline_blob_sha": "5023dbdc4bc8674d7ed7222f767ada3d22e9def2",
+      "audited_blob_sha": "5023dbdc4bc8674d7ed7222f767ada3d22e9def2",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "docs/ITERATIVE_AUDIT_20261010.md",
+      "baseline_blob_sha": "09dbb449a564ef49fb46b894fe595985a26c477e",
+      "audited_blob_sha": "09dbb449a564ef49fb46b894fe595985a26c477e",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "docs/PERFORMANCE_BASELINE_20261010.md",
+      "baseline_blob_sha": "dbe92704739b332bafe086eff713357fd6440719",
+      "audited_blob_sha": "dbe92704739b332bafe086eff713357fd6440719",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "docs/PERFORMANCE_OPTIMIZATION_20261010.md",
+      "baseline_blob_sha": "b88a94bb2c1bdc9b15c31e1443d4e8e454bde78b",
+      "audited_blob_sha": "b88a94bb2c1bdc9b15c31e1443d4e8e454bde78b",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "docs/POST_AUDIT_VERIFICATION_20261010.md",
+      "baseline_blob_sha": "aa56bf8f71331107826182f2add6ce0101f416fa",
+      "audited_blob_sha": "aa56bf8f71331107826182f2add6ce0101f416fa",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "docs/POST_RELEASE_RECHECK_20261010.md",
+      "baseline_blob_sha": "d43ef5f05971b37b570e2bc43037eb68a14b364b",
+      "audited_blob_sha": "d43ef5f05971b37b570e2bc43037eb68a14b364b",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "docs/SPRITE_REVAMP.md",
+      "baseline_blob_sha": "2383b987583334cdbb6f75cbfa08a2da051554aa",
+      "audited_blob_sha": "2383b987583334cdbb6f75cbfa08a2da051554aa",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "docs/SYSTEM_AUDIT_20261014.md",
+      "baseline_blob_sha": null,
+      "audited_blob_sha": "e39ed27b9b3493840ad3a4c9de3e57d9a3dc0a09",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "docs/TRANSACTION_INTEGRITY_AUDIT_20261010.md",
+      "baseline_blob_sha": "43c617bb6401c986a9b28d1745d7def5370e33fb",
+      "audited_blob_sha": "43c617bb6401c986a9b28d1745d7def5370e33fb",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "evo_compare.lua",
+      "baseline_blob_sha": "cfc6b6a4711836ebe6aefe649090c0612307aa09",
+      "audited_blob_sha": "c20b0aae6982aeed28b3eb9c2d3f5edfceb2c5d2",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "install.lua",
+      "baseline_blob_sha": "36ffd682fb81395892ad0acea21096b8bae0a039",
+      "audited_blob_sha": "d8af77fc193a11dea757acf6fd075fd4dd1a883d",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "lib/pixelbox_lite.lua",
+      "baseline_blob_sha": "c2c7672a1953de6b12a19b5dd25266c1beef464a",
+      "audited_blob_sha": "c2c7672a1953de6b12a19b5dd25266c1beef464a",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "main.lua",
+      "baseline_blob_sha": "29abb93cecceea9ec984bda899bac7ad6fc15a21",
+      "audited_blob_sha": "2a2c7f7ef121ffb91df5b4486ba62116f62883af",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "mechanics_test.lua",
+      "baseline_blob_sha": "59b594e83e402950dac2ac081d9ca16ddd974b5a",
+      "audited_blob_sha": "b2da64b2ec9d61c5fd08c603cab647565b4acea0",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "report_sync.lua",
+      "baseline_blob_sha": "7e01bfe48921e1b7f01113b65f3824026ee165f9",
+      "audited_blob_sha": "7e01bfe48921e1b7f01113b65f3824026ee165f9",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "reports/README.md",
+      "baseline_blob_sha": "d7d4cc53799927b0a51c7f5e62d9ef4c6e3636f6",
+      "audited_blob_sha": "d7d4cc53799927b0a51c7f5e62d9ef4c6e3636f6",
+      "status": "Documentation/configuration review; reconciled with current code and persistence contracts"
+    },
+    {
+      "path": "reports/history/balance/1791456064527_balance_results.txt",
+      "baseline_blob_sha": "7b98f5a458ffccbba598e2fb6aa8d171f5136e88",
+      "audited_blob_sha": "7b98f5a458ffccbba598e2fb6aa8d171f5136e88",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/balance/1791462442649_balance_results.txt",
+      "baseline_blob_sha": "170bcd79095deb65ba531f391caadbdafe054d91",
+      "audited_blob_sha": "170bcd79095deb65ba531f391caadbdafe054d91",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/balance/1791470332349_balance_results.txt",
+      "baseline_blob_sha": "9d92bb4d710618d3cef6d32dd80673c96ef319df",
+      "audited_blob_sha": "9d92bb4d710618d3cef6d32dd80673c96ef319df",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/balance/1791472946685_balance_results.txt",
+      "baseline_blob_sha": "a4f95ed3bcafa21af5fc9c7a72d96b2bfc1f7fdd",
+      "audited_blob_sha": "a4f95ed3bcafa21af5fc9c7a72d96b2bfc1f7fdd",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/balance/1791543985878_balance_results.txt",
+      "baseline_blob_sha": "9b8352af43a3a4a9b9a3d805f515bc6a4137e72a",
+      "audited_blob_sha": "9b8352af43a3a4a9b9a3d805f515bc6a4137e72a",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/balance/1791551182365_balance_results.txt",
+      "baseline_blob_sha": "c2f7c6bc0c890026d2c7d127b910038e8d36a8be",
+      "audited_blob_sha": "c2f7c6bc0c890026d2c7d127b910038e8d36a8be",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/balance/1791552899072_balance_results.txt",
+      "baseline_blob_sha": "348b93ba1d8027c2c12cad52f4e4a487a8b4cbf0",
+      "audited_blob_sha": "348b93ba1d8027c2c12cad52f4e4a487a8b4cbf0",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/balance/1791556345911_balance_results.txt",
+      "baseline_blob_sha": "62fae0edf64a69a8f0389b32c9c178e556a6bfe1",
+      "audited_blob_sha": "62fae0edf64a69a8f0389b32c9c178e556a6bfe1",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/balance/1791557304789_balance_results.txt",
+      "baseline_blob_sha": "b32c01362111a1a9940cc798c1056b0d5c16b6cb",
+      "audited_blob_sha": "b32c01362111a1a9940cc798c1056b0d5c16b6cb",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/balance/1791561796886_balance_results.txt",
+      "baseline_blob_sha": "cb3466c5cd31e44414280e169def959a42b5c00f",
+      "audited_blob_sha": "cb3466c5cd31e44414280e169def959a42b5c00f",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/balance/1791565770520_balance_results.txt",
+      "baseline_blob_sha": "b58b75148be34c081cdda37e9992bc36f14680cb",
+      "audited_blob_sha": "b58b75148be34c081cdda37e9992bc36f14680cb",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/balance/1791567185493_balance_results.txt",
+      "baseline_blob_sha": "ec31082cbe189a6ff62d219988d5cbf91bd52ea0",
+      "audited_blob_sha": "ec31082cbe189a6ff62d219988d5cbf91bd52ea0",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/balance/1791569041508_balance_results.txt",
+      "baseline_blob_sha": "a1fd13d19dc5927df18a509f76bc536b7d5f2dec",
+      "audited_blob_sha": "a1fd13d19dc5927df18a509f76bc536b7d5f2dec",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/balance/1791649407928_balance_results.txt",
+      "baseline_blob_sha": "5e425d805edc64834e3eef1ea033bba75827b8a3",
+      "audited_blob_sha": "5e425d805edc64834e3eef1ea033bba75827b8a3",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/comparison/1791456064527_comparison_results.txt",
+      "baseline_blob_sha": "e6d3f7c39a0c1dcc8d7fbed7149571d72f174ad3",
+      "audited_blob_sha": "e6d3f7c39a0c1dcc8d7fbed7149571d72f174ad3",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/comparison/1791477024239_comparison_results.txt",
+      "baseline_blob_sha": "9d77ad18a9e5c61893fb74d152d67c106a45348d",
+      "audited_blob_sha": "9d77ad18a9e5c61893fb74d152d67c106a45348d",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/comparison/1791566665656_comparison_results.txt",
+      "baseline_blob_sha": "441ce33f3357bd67416191b55cdfc8e900f31046",
+      "audited_blob_sha": "441ce33f3357bd67416191b55cdfc8e900f31046",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/comparison/1791568655507_comparison_results.txt",
+      "baseline_blob_sha": "4e9087cf4bd6ceaa25867d2da0c5daf19372f5dc",
+      "audited_blob_sha": "4e9087cf4bd6ceaa25867d2da0c5daf19372f5dc",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/comparison/1791649859380_comparison_results.txt",
+      "baseline_blob_sha": "58bd6072e2cb9fc42797b91d69ef1127e218a063",
+      "audited_blob_sha": "58bd6072e2cb9fc42797b91d69ef1127e218a063",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/comparison/1791650871746_comparison_results.txt",
+      "baseline_blob_sha": "455991028b5d31ffd1cf47fe5b6263f7fc1e25a3",
+      "audited_blob_sha": "455991028b5d31ffd1cf47fe5b6263f7fc1e25a3",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/evolution/1791462347645_evolution_results.txt",
+      "baseline_blob_sha": "c8fddaccd3296817e2bd53eb857057f474294eeb",
+      "audited_blob_sha": "c8fddaccd3296817e2bd53eb857057f474294eeb",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/evolution/1791465208444_evolution_results.txt",
+      "baseline_blob_sha": "1c17bb928e588baa0df3ff8d3581b4e1e2218908",
+      "audited_blob_sha": "1c17bb928e588baa0df3ff8d3581b4e1e2218908",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/evolution/1791470549203_evolution_results.txt",
+      "baseline_blob_sha": "a6c0ef1849fe35d1994f18536f4da28b72b71205",
+      "audited_blob_sha": "a6c0ef1849fe35d1994f18536f4da28b72b71205",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/evolution/1791475486644_evolution_results.txt",
+      "baseline_blob_sha": "73fca4355c66e693f83464b0a940df06192c5843",
+      "audited_blob_sha": "73fca4355c66e693f83464b0a940df06192c5843",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/evolution/1791566990007_evolution_results.txt",
+      "baseline_blob_sha": "ae5f582c65616e38323f47b1bc2548acd34c20fd",
+      "audited_blob_sha": "ae5f582c65616e38323f47b1bc2548acd34c20fd",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/evolution/1791568729440_evolution_results.txt",
+      "baseline_blob_sha": "54219318a3b395b2b304136010649dc1e8b80052",
+      "audited_blob_sha": "54219318a3b395b2b304136010649dc1e8b80052",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/evolution/1791651421418_evolution_results.txt",
+      "baseline_blob_sha": "54c78823b263561daf467f6099a6326d5a3be76a",
+      "audited_blob_sha": "54c78823b263561daf467f6099a6326d5a3be76a",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791456064527_mechanics_report.txt",
+      "baseline_blob_sha": "305daf31abc3c0e3827dbd26a6f1194ee78b79a6",
+      "audited_blob_sha": "305daf31abc3c0e3827dbd26a6f1194ee78b79a6",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791459034039_mechanics_report.txt",
+      "baseline_blob_sha": "84b59c7ff126beeb3c01ed9aea81e61cc08d76d9",
+      "audited_blob_sha": "84b59c7ff126beeb3c01ed9aea81e61cc08d76d9",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791459898702_mechanics_report.txt",
+      "baseline_blob_sha": "073a2b627b1ce5b05de8336bd0852fc508a25ba2",
+      "audited_blob_sha": "073a2b627b1ce5b05de8336bd0852fc508a25ba2",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791460764155_mechanics_report.txt",
+      "baseline_blob_sha": "6289a098506320a2c327092c3a6ac66caebcd6a5",
+      "audited_blob_sha": "6289a098506320a2c327092c3a6ac66caebcd6a5",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791461037811_mechanics_report.txt",
+      "baseline_blob_sha": "b59d96186dc31a0b447ae6da0e30dafc00c7d4f4",
+      "audited_blob_sha": "b59d96186dc31a0b447ae6da0e30dafc00c7d4f4",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791461190609_mechanics_report.txt",
+      "baseline_blob_sha": "29607cb790fbc33eb6bda6907adc9226d7530154",
+      "audited_blob_sha": "29607cb790fbc33eb6bda6907adc9226d7530154",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791463100945_mechanics_report.txt",
+      "baseline_blob_sha": "66a692a01e94850e1f92f24dfbca34b3e2cdec2b",
+      "audited_blob_sha": "66a692a01e94850e1f92f24dfbca34b3e2cdec2b",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791465139063_mechanics_report.txt",
+      "baseline_blob_sha": "dafcd31bbce694dc923e2fa6db3bcd4352a86d41",
+      "audited_blob_sha": "dafcd31bbce694dc923e2fa6db3bcd4352a86d41",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791465904288_mechanics_report.txt",
+      "baseline_blob_sha": "b342aacf1bd060dce1b67da6d35849572abff766",
+      "audited_blob_sha": "b342aacf1bd060dce1b67da6d35849572abff766",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791469115267_mechanics_report.txt",
+      "baseline_blob_sha": "ef6a9b9033a3060802145940177026ed1558392f",
+      "audited_blob_sha": "ef6a9b9033a3060802145940177026ed1558392f",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791470210364_mechanics_report.txt",
+      "baseline_blob_sha": "4c224faee1a7fa1db03e9bd8144067e854acbcfa",
+      "audited_blob_sha": "4c224faee1a7fa1db03e9bd8144067e854acbcfa",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791470400715_mechanics_report.txt",
+      "baseline_blob_sha": "b38e30b2be12458bf948b794d32759bf162d61cf",
+      "audited_blob_sha": "b38e30b2be12458bf948b794d32759bf162d61cf",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791472279316_mechanics_report.txt",
+      "baseline_blob_sha": "ab91d176629e12fbcb540acab04dbba2db56cd65",
+      "audited_blob_sha": "ab91d176629e12fbcb540acab04dbba2db56cd65",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791472603198_mechanics_report.txt",
+      "baseline_blob_sha": "0e7cef177531945584269701978551fd6ad6b587",
+      "audited_blob_sha": "0e7cef177531945584269701978551fd6ad6b587",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791474923862_mechanics_report.txt",
+      "baseline_blob_sha": "7692cd61d9178fbc69e6ad9a4c1f7b72f297e747",
+      "audited_blob_sha": "7692cd61d9178fbc69e6ad9a4c1f7b72f297e747",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791475223300_mechanics_report.txt",
+      "baseline_blob_sha": "5c3c2a6c8ec671fe172bc0f14fdfcd624a757765",
+      "audited_blob_sha": "5c3c2a6c8ec671fe172bc0f14fdfcd624a757765",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791539779203_mechanics_report.txt",
+      "baseline_blob_sha": "7cb345bec24bcefe59483b0645bbbc432aa3a6b4",
+      "audited_blob_sha": "7cb345bec24bcefe59483b0645bbbc432aa3a6b4",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791539953052_mechanics_report.txt",
+      "baseline_blob_sha": "0b601b3a2c1fc4ad0528bc127b36bdae5c7764e4",
+      "audited_blob_sha": "0b601b3a2c1fc4ad0528bc127b36bdae5c7764e4",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791540246600_mechanics_report.txt",
+      "baseline_blob_sha": "0a258167701607f842f708fc670341de82e88e34",
+      "audited_blob_sha": "0a258167701607f842f708fc670341de82e88e34",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791542522406_mechanics_report.txt",
+      "baseline_blob_sha": "440a0c007ae06ff1a73509a18daff68d39bab951",
+      "audited_blob_sha": "440a0c007ae06ff1a73509a18daff68d39bab951",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791560708850_mechanics_report.txt",
+      "baseline_blob_sha": "48e1da3a09021439e2866f63fc1ca9e0e0fd6478",
+      "audited_blob_sha": "48e1da3a09021439e2866f63fc1ca9e0e0fd6478",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791561046633_mechanics_report.txt",
+      "baseline_blob_sha": "8db15256002498697eb6b3d7c8da1a2cb72b5b4e",
+      "audited_blob_sha": "8db15256002498697eb6b3d7c8da1a2cb72b5b4e",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791571553014_mechanics_report.txt",
+      "baseline_blob_sha": "8a9b609ecff6880ad7c75758f2482920eeff36dd",
+      "audited_blob_sha": "8a9b609ecff6880ad7c75758f2482920eeff36dd",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791643852032_mechanics_report.txt",
+      "baseline_blob_sha": "d5f3eb52ea1ff479e3f56c1e2b4f40acaf10b5d2",
+      "audited_blob_sha": "d5f3eb52ea1ff479e3f56c1e2b4f40acaf10b5d2",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791644344949_mechanics_report.txt",
+      "baseline_blob_sha": "54daa667119e0e21907e51dba2a34e0df0233320",
+      "audited_blob_sha": "54daa667119e0e21907e51dba2a34e0df0233320",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791649214688_mechanics_report.txt",
+      "baseline_blob_sha": "1ff0fd739f59f1a4c960359458edca31efc9bbe1",
+      "audited_blob_sha": "1ff0fd739f59f1a4c960359458edca31efc9bbe1",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791654329913_mechanics_report.txt",
+      "baseline_blob_sha": "9dc91eb48b153b421f35769080bfd1599a11c56d",
+      "audited_blob_sha": "9dc91eb48b153b421f35769080bfd1599a11c56d",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/history/mechanics/1791734428147_mechanics_report.txt",
+      "baseline_blob_sha": "39c30d9265606e3323ee16e1facea27f58f05068",
+      "audited_blob_sha": "39c30d9265606e3323ee16e1facea27f58f05068",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/latest/balance_results.txt",
+      "baseline_blob_sha": "5e425d805edc64834e3eef1ea033bba75827b8a3",
+      "audited_blob_sha": "5e425d805edc64834e3eef1ea033bba75827b8a3",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/latest/comparison_results.txt",
+      "baseline_blob_sha": "455991028b5d31ffd1cf47fe5b6263f7fc1e25a3",
+      "audited_blob_sha": "455991028b5d31ffd1cf47fe5b6263f7fc1e25a3",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/latest/evolution_results.txt",
+      "baseline_blob_sha": "54c78823b263561daf467f6099a6326d5a3be76a",
+      "audited_blob_sha": "54c78823b263561daf467f6099a6326d5a3be76a",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/latest/mechanics_report.txt",
+      "baseline_blob_sha": "39c30d9265606e3323ee16e1facea27f58f05068",
+      "audited_blob_sha": "39c30d9265606e3323ee16e1facea27f58f05068",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "reports/retention_pins.txt",
+      "baseline_blob_sha": "03fac7737dec72d9dce5cbdcce193266bc7f2340",
+      "audited_blob_sha": "03fac7737dec72d9dce5cbdcce193266bc7f2340",
+      "status": "Historical report/pin data: schema, revision and failure markers reviewed; retained unchanged; not current test evidence"
+    },
+    {
+      "path": "scripts/audit_cli_host.lua",
+      "baseline_blob_sha": null,
+      "audited_blob_sha": "aa8b3af0414472262736c5aea543521dd34eea26",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "scripts/prune_reports.py",
+      "baseline_blob_sha": "f0a3bcca1dccd018677e5cfbf9e347942ae31105",
+      "audited_blob_sha": "f0a3bcca1dccd018677e5cfbf9e347942ae31105",
+      "status": "Source review; dry-run planner and five filesystem/Git race regressions"
+    },
+    {
+      "path": "simulate.lua",
+      "baseline_blob_sha": "4ee34c9ad8819ff702869eda24925e09633ed894",
+      "audited_blob_sha": "f516412246acb7dc19d88566cbb9b18215cab1a6",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/admin_render.lua",
+      "baseline_blob_sha": "98e9a3cfe46b380b2e609334bde897dd49850847",
+      "audited_blob_sha": "3e9159cc859fd1900b2d8bd438643ad6ff923dbc",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/arena.lua",
+      "baseline_blob_sha": "5b968567a69e6f44575eabd9f255a5f7cce05f77",
+      "audited_blob_sha": "0668b0ee907b3ca8d33f22f6ca559310ea5f4e52",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/benchmark_utils.lua",
+      "baseline_blob_sha": "97c41fa1a85e659fa241cc2399e7fb5b72a91893",
+      "audited_blob_sha": "9138fead9de7e41f615cd2fa4ab8b154724625c5",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/bot.lua",
+      "baseline_blob_sha": "efa6425b54d357cdfe1cda80c88c2fe25af9da15",
+      "audited_blob_sha": "1f8fbc60b497de4b7b936d6b04ca38e281106eac",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/cards.lua",
+      "baseline_blob_sha": "a86a59991cab340ac864f652dc64f5eadf90cda0",
+      "audited_blob_sha": "a86a59991cab340ac864f652dc64f5eadf90cda0",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/diagnostics.lua",
+      "baseline_blob_sha": null,
+      "audited_blob_sha": "29aa69b51b814608bb367f45c3e2271b3e8b8538",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/game.lua",
+      "baseline_blob_sha": "260ccf7ef182f370aac18e920c736584ed1a37be",
+      "audited_blob_sha": "d52e2d89929bc9b5960b6017e8d2910306ccbb98",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/hardware.lua",
+      "baseline_blob_sha": "cdeb6ed16fd10a7d4992b9262011e849eacbd6b3",
+      "audited_blob_sha": "cdeb6ed16fd10a7d4992b9262011e849eacbd6b3",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/headless_match.lua",
+      "baseline_blob_sha": "7014668ac72749d2ebb95b2c380f42be9f6bd6ca",
+      "audited_blob_sha": "153200b6b1944ee505acd670a20a71dafa45e0a1",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/mechanics_audit.lua",
+      "baseline_blob_sha": null,
+      "audited_blob_sha": "669b9bf7aa7028d9ecc02a05070a25eb9ea9ccf6",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/music.lua",
+      "baseline_blob_sha": "a9c2ba616fc39b0941b41ae81aa8a166203e0b06",
+      "audited_blob_sha": "1df65cfd27fdcccad83d2ea037fc921c4c0cbdf9",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/music_manifest.lua",
+      "baseline_blob_sha": "ff75d8835161f29c846b19db783591121e3566aa",
+      "audited_blob_sha": "ff75d8835161f29c846b19db783591121e3566aa",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/pixel_arena.lua",
+      "baseline_blob_sha": "8f853d5d64fd90cead9a447e482a0aaaf30d2442",
+      "audited_blob_sha": "9078e6128f38fa329dc33403db6b3cc827e4673c",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/presets.lua",
+      "baseline_blob_sha": "4ff437af9d4bc854082882d1b367975212557ac1",
+      "audited_blob_sha": "4ff437af9d4bc854082882d1b367975212557ac1",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/render.lua",
+      "baseline_blob_sha": "a8eed02d204a3a16defca3e7b00ffbd7657041f9",
+      "audited_blob_sha": "c436b3e0cca5553db752ad0862d691b57adda41f",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/report_output.lua",
+      "baseline_blob_sha": "b3a6e64c353087f4b77839873528e71ba846a555",
+      "audited_blob_sha": "b3a6e64c353087f4b77839873528e71ba846a555",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/report_sync.lua",
+      "baseline_blob_sha": "dce673910f8c4ccddc1e770f46844cc97b8abde4",
+      "audited_blob_sha": "70cff62b372a66e93a3ca0dff00ad2023ff284c5",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/spatial.lua",
+      "baseline_blob_sha": "52e62cb502b3190dabcb99409cdcee0b5ad5ed74",
+      "audited_blob_sha": "52e62cb502b3190dabcb99409cdcee0b5ad5ed74",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/ui_buffer.lua",
+      "baseline_blob_sha": "c2cc6f447654104f2a58811ed65cf55c5a803665",
+      "audited_blob_sha": "b1050eacda11eb003de8a49406f0c34100619a30",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/util.lua",
+      "baseline_blob_sha": "c3e259f16f412fc433ffac68610b19a5e56f5e66",
+      "audited_blob_sha": "9d557ee48ff13c7f1b09585d870a952a75a1dfb3",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "src/version.lua",
+      "baseline_blob_sha": "fb1edec3bfbfc31ee46eec14775f8f056c7eb091",
+      "audited_blob_sha": "fb1edec3bfbfc31ee46eec14775f8f056c7eb091",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "startup.lua",
+      "baseline_blob_sha": "8338e742dd61fc34eed6dca8774c370f1fb29fd3",
+      "audited_blob_sha": "8338e742dd61fc34eed6dca8774c370f1fb29fd3",
+      "status": "Source/dataflow review; dual-Lua syntax and subsystem contract regressions"
+    },
+    {
+      "path": "tests/performance_profile.lua",
+      "baseline_blob_sha": "eb511b47b4936c4344c40b8af7410a9adde76912",
+      "audited_blob_sha": "ba5fa569b0ceba5e0ddc4d723101986e1dad7e2b",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_anvil_grid_parity.lua",
+      "baseline_blob_sha": "73811d215ae88593e86509eeadac941df60f6ec6",
+      "audited_blob_sha": "73811d215ae88593e86509eeadac941df60f6ec6",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_arena_skin_parity.lua",
+      "baseline_blob_sha": "54157f75e053df0439d5e3f781b69323d5b77604",
+      "audited_blob_sha": "54157f75e053df0439d5e3f781b69323d5b77604",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_atomic_token_reconfig.lua",
+      "baseline_blob_sha": "34be6233009ef992088f2706dc602d6e4da23b4a",
+      "audited_blob_sha": "34be6233009ef992088f2706dc602d6e4da23b4a",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_audit_fixes_20261010.lua",
+      "baseline_blob_sha": "f18f00abb704dfff00b4a7c15f288bf0b4462413",
+      "audited_blob_sha": "f18f00abb704dfff00b4a7c15f288bf0b4462413",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_audit_followups.lua",
+      "baseline_blob_sha": "862dc921f57e096efeb3dac7ae8a5e646b004b3f",
+      "audited_blob_sha": "862dc921f57e096efeb3dac7ae8a5e646b004b3f",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_audit_hardening_20261010.lua",
+      "baseline_blob_sha": "f708fd32099cccbd3a8ffd08996104b674accc32",
+      "audited_blob_sha": "f708fd32099cccbd3a8ffd08996104b674accc32",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_audit_io_boundaries.lua",
+      "baseline_blob_sha": null,
+      "audited_blob_sha": "cb9ba823841e1967fbaabad623cb22953ee51caa",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_audit_monitor_boundaries.lua",
+      "baseline_blob_sha": null,
+      "audited_blob_sha": "90127ecd481ff9aee4e2076c23a4ae634b382330",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_audit_regressions.lua",
+      "baseline_blob_sha": "43d2de421884e5d771755c458e1ed671a7c55259",
+      "audited_blob_sha": "43d2de421884e5d771755c458e1ed671a7c55259",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_audit_runtime_gc.lua",
+      "baseline_blob_sha": null,
+      "audited_blob_sha": "d1d67c8bb0d14e35f0b10416226376f19e96077a",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_cli_manifest.lua",
+      "baseline_blob_sha": "d9f88c482a741bb519a22bcc0328eedbff61859e",
+      "audited_blob_sha": "d9f88c482a741bb519a22bcc0328eedbff61859e",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_core_invariant_stress.lua",
+      "baseline_blob_sha": "ef7162bd6c561247b40424e2f98fca6b10389f26",
+      "audited_blob_sha": "ef7162bd6c561247b40424e2f98fca6b10389f26",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_diagnostic_contracts.lua",
+      "baseline_blob_sha": null,
+      "audited_blob_sha": "172a6fad6f97fab071e24a2a88ed64dcc34d2ebf",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_finite_river_bounds.lua",
+      "baseline_blob_sha": "2ae47001fe3b6c017d046b818982f648c0e1c8fb",
+      "audited_blob_sha": "2ae47001fe3b6c017d046b818982f648c0e1c8fb",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_headless_runner.lua",
+      "baseline_blob_sha": "ef7601c3aa0a48b45644214f11453f5d3eacb356",
+      "audited_blob_sha": "ef7601c3aa0a48b45644214f11453f5d3eacb356",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_install_manifest.lua",
+      "baseline_blob_sha": "578ed702b0f5fc504fb16a117a361b32b5b5b6a4",
+      "audited_blob_sha": "578ed702b0f5fc504fb16a117a361b32b5b5b6a4",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_installer_false_returns.lua",
+      "baseline_blob_sha": "bfd00d0cac46dce6d6c137c8e080be6e7401fc94",
+      "audited_blob_sha": "bfd00d0cac46dce6d6c137c8e080be6e7401fc94",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_lobby_state_mutators.lua",
+      "baseline_blob_sha": "37a931735e49bf46e190ee98fdc3b0d63f64b08d",
+      "audited_blob_sha": "37a931735e49bf46e190ee98fdc3b0d63f64b08d",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_mechanics_full_ci.lua",
+      "baseline_blob_sha": "95e5e881268b0a4677fb0ab2d1029522488e0b7d",
+      "audited_blob_sha": "b3cf0d1dca54087a5d86166acd6c45416caa64ca",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_mechanics_isolation.lua",
+      "baseline_blob_sha": null,
+      "audited_blob_sha": "ae1d8932a2a88c31bbb7ec164820e7e68a3c46ff",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_music_fault_boundaries.lua",
+      "baseline_blob_sha": null,
+      "audited_blob_sha": "fe5da07b5ca55a6da86b1daddf2e5f68aa5077bc",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_music_seek_failures.lua",
+      "baseline_blob_sha": "b177f86ea2ebb34868348a5bac25b994109bfd8d",
+      "audited_blob_sha": "b177f86ea2ebb34868348a5bac25b994109bfd8d",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_pixel_failure_recovery.lua",
+      "baseline_blob_sha": null,
+      "audited_blob_sha": "413f72ffbda07dc956bac147eee5c735b8c86f24",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_pixel_frame_diff.lua",
+      "baseline_blob_sha": "878bb7e0ffbe0421f0ad922f85316198aa88747c",
+      "audited_blob_sha": "878bb7e0ffbe0421f0ad922f85316198aa88747c",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_platform_stubs.lua",
+      "baseline_blob_sha": "eb60b9bb3e7044615202598d2094847b23b83d42",
+      "audited_blob_sha": "eb60b9bb3e7044615202598d2094847b23b83d42",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_preset_false_returns.lua",
+      "baseline_blob_sha": "63d36887a0165f59f15313b1ae492e789218a4fd",
+      "audited_blob_sha": "63d36887a0165f59f15313b1ae492e789218a4fd",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_preset_recovery_matrix.lua",
+      "baseline_blob_sha": "f40a22bda36e88af53de9dd0594d27a17ee3fc2d",
+      "audited_blob_sha": "f40a22bda36e88af53de9dd0594d27a17ee3fc2d",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_preset_transaction_integrity.lua",
+      "baseline_blob_sha": "2d53cd6b78dac1562d0fbf43b9784aa72c8f49c4",
+      "audited_blob_sha": "2d53cd6b78dac1562d0fbf43b9784aa72c8f49c4",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_projectile_speed_schema.lua",
+      "baseline_blob_sha": "6e34c897f5e26741141ad5e21db4cd00e807d2d6",
+      "audited_blob_sha": "6e34c897f5e26741141ad5e21db4cd00e807d2d6",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_recovery_hardening.lua",
+      "baseline_blob_sha": "b1b7fdf9ceb99819f1223a1acad0b54de9e233f9",
+      "audited_blob_sha": "b1b7fdf9ceb99819f1223a1acad0b54de9e233f9",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_refactor_parity.lua",
+      "baseline_blob_sha": "eda094a60846ebabf008b2b8204ce0150cadc3c8",
+      "audited_blob_sha": "eda094a60846ebabf008b2b8204ce0150cadc3c8",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_release_gate.lua",
+      "baseline_blob_sha": "1191e7d9d4443768a5c5e046366e5942d6e6cfbd",
+      "audited_blob_sha": "fc465130192a4c2b753642c269d6f3f2773a5fa8",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_report_logout_false.lua",
+      "baseline_blob_sha": "e2695da1b3806c2c55f37ab06c4f378083a9892c",
+      "audited_blob_sha": "e2695da1b3806c2c55f37ab06c4f378083a9892c",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_report_retention.py",
+      "baseline_blob_sha": "6b6f4d7aad0e27c01eac2fdc5ee3894521959e9e",
+      "audited_blob_sha": "0603369094457c43e46b1f14e80f3ea72c7a7a20",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_report_token_write_failures.lua",
+      "baseline_blob_sha": "0b4af63145d86ae72c00aba9e323ceb27566ecfa",
+      "audited_blob_sha": "0b4af63145d86ae72c00aba9e323ceb27566ecfa",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_report_transaction_integrity.lua",
+      "baseline_blob_sha": "f56a3ae01b36e19e0c1fbbcb40dc9d5d1eba553c",
+      "audited_blob_sha": "f56a3ae01b36e19e0c1fbbcb40dc9d5d1eba553c",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_side_symmetry.lua",
+      "baseline_blob_sha": "b4337370b4ae98bd214a98de2fd18d36632b8381",
+      "audited_blob_sha": "b4337370b4ae98bd214a98de2fd18d36632b8381",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_simulation_contracts.lua",
+      "baseline_blob_sha": null,
+      "audited_blob_sha": "7cdef958e9637eab400ced213b639964f4ccb56b",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_sprite_roster.lua",
+      "baseline_blob_sha": "4daaa59b716488dc56efa47fc454135a81b4b69d",
+      "audited_blob_sha": "4daaa59b716488dc56efa47fc454135a81b4b69d",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_system_audit_20261014.lua",
+      "baseline_blob_sha": null,
+      "audited_blob_sha": "0c2429ff28da48d877138853ba574e46a7a2d4ea",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_timer_precision.lua",
+      "baseline_blob_sha": null,
+      "audited_blob_sha": "37f67c04de64c543fb9410ad78ec38e48d2e2412",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_token_backup_recovery.lua",
+      "baseline_blob_sha": "fdf3f1ac2f580223414ecaaf2ea2e102d67041fc",
+      "audited_blob_sha": "fdf3f1ac2f580223414ecaaf2ea2e102d67041fc",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_token_corrupt_active_fallback.lua",
+      "baseline_blob_sha": "01fccf5317463868796f48d7a32b2a4a6cd1503f",
+      "audited_blob_sha": "01fccf5317463868796f48d7a32b2a4a6cd1503f",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_touch_disconnect.lua",
+      "baseline_blob_sha": null,
+      "audited_blob_sha": "ccc99e812f44afbcf8070cf642b30077477aae89",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    },
+    {
+      "path": "tests/test_v1.lua",
+      "baseline_blob_sha": "0e67cd2e66e2b3aa4fbb63fe70a8cfb19d566711",
+      "audited_blob_sha": "0e67cd2e66e2b3aa4fbb63fe70a8cfb19d566711",
+      "status": "Fixture/expectation/override review; executed under Lua 5.2/5.4 or Python as applicable"
+    }
+  ]
+}

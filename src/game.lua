@@ -341,11 +341,12 @@ end
 local function spawnCardUnit(state, owner, card, x, y)
     local count = card.spawnCount or 1
     local radius = card.spawnRadius or 0
+    local direction = owner == 2 and -1 or 1
 
     for i = 1, count do
         local angle = ((i - 1) / math.max(1, count)) * math.pi * 2
-        local ox = math.cos(angle) * radius
-        local oy = math.sin(angle) * radius
+        local ox = math.cos(angle) * radius * direction
+        local oy = math.sin(angle) * radius * direction
         local sx = util.clamp(x + ox, 2, config.ARENA.width - 2)
         local sy = util.clamp(y + oy, 2, config.ARENA.height - 2)
 
@@ -468,7 +469,7 @@ local function canAttackWaterTarget(attacker, candidate)
         candidate.y
     )
 
-    return attackReachAgainst(attacker, candidate) + 0.001 >= requiredReach
+    return attackReachAgainst(attacker, candidate) + 1e-9 >= requiredReach
 end
 
 local function targetAllowed(attacker, candidate)
@@ -571,7 +572,7 @@ end
 
 local function preferredTowerObjective(state, entity)
     local enemyId = otherPlayer(entity.owner)
-    local lane = arena.laneForX(entity.x)
+    local lane = arena.laneForX(entity.x, entity.owner)
     local lanePrincess = nil
     local kingTower = nil
     local fallbackPrincess = nil
@@ -683,7 +684,7 @@ local function updateMovementSlows(entity, dt)
         local write = 1
         for read = 1, #effects do
             local effect = effects[read]
-            effect.remaining = math.max(0, (effect.remaining or 0) - dt)
+            effect.remaining = math.max(0, util.tickRemaining(effect.remaining or 0, dt))
             if effect.remaining > 1e-9 then
                 effects[write] = effect
                 write = write + 1
@@ -697,7 +698,7 @@ local function updateMovementSlows(entity, dt)
     -- Compatibility path for legacy/debug entities which still provide only
     -- the old aggregate slow fields.
     if entity.slowRemaining and entity.slowRemaining > 0 then
-        entity.slowRemaining = math.max(0, entity.slowRemaining - dt)
+        entity.slowRemaining = math.max(0, util.tickRemaining(entity.slowRemaining, dt))
         if entity.slowRemaining <= 0 then
             entity.slowFactor = 1
         end
@@ -1155,10 +1156,11 @@ local function handleDeathAbilities(state, entity)
         local template = cards.getInternalUnitTemplate(entity.splitOnDeath.template)
         if template then
             local count = entity.splitOnDeath.count or 2
+            local mirror = entity.owner == 2 and -1 or 1
             for i = 1, count do
                 local direction = i % 2 == 0 and 1 or -1
-                local sx = util.clamp(entity.x + direction * 2.2, 2, config.ARENA.width - 2)
-                local sy = util.clamp(entity.y + (i - 1) * 1.2, 2, config.ARENA.height - 2)
+                local sx = util.clamp(entity.x + direction * 2.2 * mirror, 2, config.ARENA.width - 2)
+                local sy = util.clamp(entity.y + (i - 1) * 1.2 * mirror, 2, config.ARENA.height - 2)
 
                 -- Offset splits can land beside a bridge in water. The parent
                 -- ground unit died on a valid tile, so fall back to that
@@ -1245,7 +1247,7 @@ local function updatePeriodicSpawn(state, entity, dt)
         return
     end
 
-    entity.periodicSpawnTimer = (entity.periodicSpawnTimer or spec.interval or 8) - dt
+    entity.periodicSpawnTimer = util.tickRemaining(entity.periodicSpawnTimer or spec.interval or 8, dt)
     if entity.periodicSpawnTimer > 0 then return end
 
     local template = cards.getInternalUnitTemplate(spec.template)
@@ -1278,11 +1280,12 @@ local function updatePeriodicSpawn(state, entity, dt)
     if count <= 0 then return end
 
     local radius = spec.radius or 2
+    local direction = entity.owner == 2 and -1 or 1
 
     for i = 1, count do
         local angle = ((i - 1) / math.max(1, count)) * math.pi * 2
-        local sx = util.clamp(entity.x + math.cos(angle) * radius, 2, config.ARENA.width - 2)
-        local sy = util.clamp(entity.y + math.sin(angle) * radius, 2, config.ARENA.height - 2)
+        local sx = util.clamp(entity.x + math.cos(angle) * radius * direction, 2, config.ARENA.width - 2)
+        local sy = util.clamp(entity.y + math.sin(angle) * radius * direction, 2, config.ARENA.height - 2)
 
         -- A circular offset can land beside a bridge in water. The
         -- summoner itself already occupies a valid tile, so ground summons
@@ -1331,7 +1334,7 @@ updateGroundPulse = function(state, entity, dt)
     local spec = entity.groundPulse
     if not spec then return end
 
-    entity.groundPulseTimer = (entity.groundPulseTimer or (spec.interval or 2)) - dt
+    entity.groundPulseTimer = util.tickRemaining(entity.groundPulseTimer or (spec.interval or 2), dt)
     if entity.groundPulseTimer > 0 then return end
 
     local radius = spec.radius or 8
@@ -1585,7 +1588,7 @@ local function updateCombatEntity(state, entity, dt)
 
     if not state.headlessSimulation then
         if entity.damageFlash and entity.damageFlash > 0 then
-            entity.damageFlash = math.max(0, entity.damageFlash - dt)
+            entity.damageFlash = math.max(0, util.tickRemaining(entity.damageFlash, dt))
         end
 
         if entity.kind == "tower"
@@ -1594,7 +1597,7 @@ local function updateCombatEntity(state, entity, dt)
             and entity.hp > 0
             and entity.hp / math.max(1, entity.maxHp) <= 0.25
         then
-            entity.criticalPulseTimer = (entity.criticalPulseTimer or 0) - dt
+            entity.criticalPulseTimer = util.tickRemaining(entity.criticalPulseTimer or 0, dt)
             if entity.criticalPulseTimer <= 0 then
                 entity.damageFlash = math.max(entity.damageFlash or 0, 0.10)
                 entity.criticalPulseTimer = 0.55
@@ -1612,7 +1615,7 @@ local function updateCombatEntity(state, entity, dt)
             -- over the configured lifetime. Enemy damage stacks on top, so a
             -- damaged building naturally dies earlier.
             local elapsed = math.min(dt, math.max(0, entity.remainingLifetime))
-            entity.remainingLifetime = math.max(0, entity.remainingLifetime - dt)
+            entity.remainingLifetime = math.max(0, util.tickRemaining(entity.remainingLifetime, dt))
 
             local decayMultiplier = (config.BUILDINGS and config.BUILDINGS.lifetimeDecayMultiplier) or 1
             local decayPerSecond = (entity.maxHp / entity.lifetime) * decayMultiplier
@@ -1628,7 +1631,7 @@ local function updateCombatEntity(state, entity, dt)
         else
             -- Units with a lifetime (Piglin, Villager, etc.) keep their normal
             -- timed despawn behavior. Only buildings use HP decay.
-            entity.remainingLifetime = entity.remainingLifetime - dt
+            entity.remainingLifetime = util.tickRemaining(entity.remainingLifetime, dt)
             if entity.remainingLifetime <= 0 then
                 despawnEntity(state, entity)
                 addEffect(
@@ -1645,15 +1648,15 @@ local function updateCombatEntity(state, entity, dt)
         end
     end
 
-    entity.attackCooldownLeft = math.max(0, (entity.attackCooldownLeft or 0) - dt)
-    entity.teleportCooldownLeft = math.max(0, (entity.teleportCooldownLeft or 0) - dt)
+    entity.attackCooldownLeft = math.max(0, util.tickRemaining(entity.attackCooldownLeft or 0, dt))
+    entity.teleportCooldownLeft = math.max(0, util.tickRemaining(entity.teleportCooldownLeft or 0, dt))
 
     updateMovementSlows(entity, dt)
 
     updatePeriodicSpawn(state, entity, dt)
 
     if entity.emeraldBoost and not state.headlessSimulation then
-        entity.emeraldPulseTimer = (entity.emeraldPulseTimer or 0) - dt
+        entity.emeraldPulseTimer = util.tickRemaining(entity.emeraldPulseTimer or 0, dt)
         if entity.emeraldPulseTimer <= 0 then
             addEffect(state, "emerald", entity.x, entity.y, 2.5, 0.45, entity.owner)
             entity.emeraldPulseTimer = 1.0
@@ -1770,7 +1773,7 @@ local function updateCombatEntity(state, entity, dt)
     if entity.kind == "unit" and entity.beam then
         local spec = entity.beam
 
-        if distance > attackRange then
+        if distance > attackRange + 1e-9 then
             -- Inferno-style lock: leaving beam range drops the current charge.
             entity.beamCharge = 0
             entity.beamTargetId = nil
@@ -1795,7 +1798,7 @@ local function updateCombatEntity(state, entity, dt)
             (entity.beamCharge or 0) + dt / rampSeconds
         )
 
-        entity.beamTickTimer = (entity.beamTickTimer or 0) - dt
+        entity.beamTickTimer = util.tickRemaining(entity.beamTickTimer or 0, dt)
         if entity.beamTickTimer <= 0 then
             local tick = math.max(0.05, spec.tick or 0.25)
             local baseDps = spec.baseDps or 30
@@ -1826,10 +1829,10 @@ local function updateCombatEntity(state, entity, dt)
         local cancelRange = spec.cancelRange or (triggerRange + 2)
 
         if entity.fuseRemaining then
-            if distance > cancelRange then
+            if distance > cancelRange + 1e-9 then
                 entity.fuseRemaining = nil
             else
-                entity.fuseRemaining = entity.fuseRemaining - dt
+                entity.fuseRemaining = util.tickRemaining(entity.fuseRemaining, dt)
                 if entity.fuseRemaining <= 0 then
                     explodeProximityUnit(state, entity)
                 end
@@ -1837,7 +1840,7 @@ local function updateCombatEntity(state, entity, dt)
             end
         end
 
-        if distance <= triggerRange then
+        if distance <= triggerRange + 1e-9 then
             entity.fuseRemaining = spec.fuseTime or 1.5
             entity.lockedTargetId = target.id
             emitSound(state, "minecraft:entity.creeper.primed", 0.7, 1.0)
@@ -1854,7 +1857,7 @@ local function updateCombatEntity(state, entity, dt)
         and target.kind == "unit"
         and distance < entity.preferredMinRange
     then
-        if distance <= attackRange and entity.attackCooldownLeft <= 0 then
+        if distance <= attackRange + 1e-9 and entity.attackCooldownLeft <= 0 then
             entity.lockedTargetId = target.id
             performAttack(state, entity, target)
         end
@@ -1862,7 +1865,7 @@ local function updateCombatEntity(state, entity, dt)
         return
     end
 
-    if distance <= attackRange then
+    if distance <= attackRange + 1e-9 then
         if entity.attackCooldownLeft <= 0 then
             if entity.kind == "unit" then
                 entity.lockedTargetId = target.id
@@ -1882,7 +1885,11 @@ local function updateCombatEntity(state, entity, dt)
 end
 
 local function updateProjectiles(state, dt)
+    local battleBatch = state.phase == "battle"
     for _, projectile in ipairs(state.projectiles) do
+        -- A winning impact freezes the remaining battle immediately. The
+        -- inner splash guard alone cannot stop the next projectile's impact.
+        if battleBatch and state.phase ~= "battle" then break end
         if projectile.alive then
             local target = getEntityById(state, projectile.targetId)
             if target then
@@ -2035,7 +2042,7 @@ local function updateEffects(state, dt)
     local count = #state.effects
     for read = 1, count do
         local effect = state.effects[read]
-        effect.ttl = effect.ttl - dt
+        effect.ttl = util.tickRemaining(effect.ttl, dt)
         if effect.ttl > 0 then
             state.effects[write] = effect
             write = write + 1
@@ -2129,7 +2136,7 @@ function Game.new(soundCallback, options)
         },
         winner = nil,
         resultReason = nil,
-        sound = headlessSimulation and nil or soundCallback,
+        sound = not headlessSimulation and soundCallback or nil,
         headlessSimulation = headlessSimulation,
         adminMode = false,
         adminPaused = false,
@@ -2253,22 +2260,22 @@ function Game.startHeadlessBattle(state, dt)
         return false, "HEADLESS SIMULATION REQUIRED"
     end
 
+    dt = dt or config.TICK_RATE
+    if not util.isFiniteNumber(dt) or dt <= 0 or dt > 0.25 then
+        return false, "FINITE POSITIVE TICK <= 0.25 REQUIRED"
+    end
+
     Game.startCountdown(state)
 
     -- Reproduce the exact countdown arithmetic without executing the inert
     -- per-tick engine loop. The returned tick count lets benchmark drivers
     -- preserve bot-update ordering and the one final pre-combat bot update
     -- that normally happens on the tick where countdown reaches zero.
-    dt = util.clamp(dt or config.TICK_RATE, 0, 0.25)
-    if dt <= 0 then
-        return false, "POSITIVE TICK REQUIRED"
-    end
-
     local skippedTicks = 0
-    while state.countdown > 0 do
-        state.countdown = state.countdown - dt
+    repeat
+        state.countdown = util.tickRemaining(state.countdown, dt)
         skippedTicks = skippedTicks + 1
-    end
+    until state.countdown <= 0
 
     beginBattle(state)
     return true, skippedTicks
@@ -2473,7 +2480,7 @@ local function updatePendingSpells(state, dt)
 
     for read = 1, count do
         local pending = pendingSpells[read]
-        pending.remaining = pending.remaining - dt
+        pending.remaining = util.tickRemaining(pending.remaining, dt)
         if pending.remaining <= 0 then
             if pending.kind == "falling_anvil" then
                 resolveFallingAnvil(state, pending)
@@ -2667,7 +2674,7 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
         return false, "UNSUPPORTED CARD"
     end
 
-    player.emeralds = player.emeralds - playCost
+    player.emeralds = math.max(0, player.emeralds - playCost)
 
     if battlePlay and state.stats then
         local playerStats = state.stats.players[playerId]
@@ -3084,6 +3091,7 @@ local function hit(zone, x, y)
 end
 
 function Game.handleTouch(state, playerId, x, y, layout)
+    if layout and layout.tooSmall then return end
     local player = state.players[playerId]
 
     if state.phase == "lobby" then
@@ -3305,18 +3313,22 @@ function Game.handleTouch(state, playerId, x, y, layout)
 end
 
 function Game.update(state, dt)
+    if dt ~= nil and not util.isFiniteNumber(dt) then
+        error("Game.update dt must be a finite number", 0)
+    end
     dt = util.clamp(dt or config.TICK_RATE, 0, 0.25)
+    if dt <= 0 then return end
 
     for playerId = 1, 2 do
         local player = state.players[playerId]
         if player.feedbackTime > 0 then
-            player.feedbackTime = math.max(0, player.feedbackTime - dt)
+            player.feedbackTime = math.max(0, util.tickRemaining(player.feedbackTime, dt))
             if player.feedbackTime <= 0 then player.feedback = nil end
         end
     end
 
     if state.phase == "countdown" then
-        state.countdown = state.countdown - dt
+        state.countdown = util.tickRemaining(state.countdown, dt)
         if state.countdown <= 0 then
             beginBattle(state)
         end
@@ -3352,7 +3364,7 @@ function Game.update(state, dt)
 
             if state.timeLeft <= finalSeconds then
                 multiplier = finalMultiplier
-            elseif state.timeLeft - dt >= finalSeconds then
+            elseif util.tickRemaining(state.timeLeft, dt) >= finalSeconds then
                 multiplier = baseMultiplier
             else
                 -- Split a tick that crosses the 0:30 boundary so the boost is
@@ -3420,6 +3432,7 @@ function Game.update(state, dt)
     end
 
     updatePendingSpells(state, dt)
+    if isBattle and state.phase ~= "battle" then return end
     updateGlobalMovementAuras(state)
 
     -- Freeze the entity count for this tick. Summons/splits created while
@@ -3459,7 +3472,7 @@ function Game.update(state, dt)
         end
 
         local previousTimeLeft = state.timeLeft
-        state.timeLeft = state.timeLeft - dt
+        state.timeLeft = util.tickRemaining(state.timeLeft, dt)
 
         if state.overtime then
             local finalSeconds = config.MATCH.overtimeFinalSeconds or 30
@@ -3574,6 +3587,9 @@ end
 function Game.debugSpawnCard(state, owner, cardId, x, y)
     if not state.adminMode then return false, "NOT IN ADMIN MODE" end
     if owner ~= 1 and owner ~= 2 then return false, "INVALID OWNER" end
+    if not util.isFiniteNumber(x) or not util.isFiniteNumber(y) then
+        return false, "INVALID COORDINATES"
+    end
 
     local card
     local evolutionBaseId = tostring(cardId or ""):match("^evo:(.+)$")
@@ -3622,6 +3638,9 @@ function Game.debugSpawnCard(state, owner, cardId, x, y)
             owner
         )
     elseif card.kind == "spell" then
+        -- Admin callers can edit coordinates directly between ticks. Resolve
+        -- the instant spell against those coordinates, not stale buckets.
+        spatial.rebuild(state)
         local castType = card.spell and card.spell.cast
         if castType == "falling_anvil" then
             castFallingAnvil(state, owner, card, x, y)
@@ -3671,6 +3690,10 @@ function Game.debugApplySlow(state, entityOrId, factor, duration)
     if type(entity) ~= "table" or not entity.alive then
         return false, "ENTITY NOT FOUND"
     end
+
+    if not util.isFiniteNumber(tonumber(factor))
+        or not util.isFiniteNumber(tonumber(duration))
+    then return false, "INVALID SLOW" end
 
     local _, applied = applyMovementSlow(entity, {
         factor = factor,

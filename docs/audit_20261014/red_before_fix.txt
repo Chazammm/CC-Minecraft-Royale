@@ -1,0 +1,350 @@
+EVIDENCE_FILE|red-bot-timer.txt
+FAIL easy bot timer expected 8 ticks, got 9
+FAIL easy bot timer expected 8 ticks, got 9
+FAIL normal bot timer expected 5 ticks, got 6
+FAIL normal bot timer expected 5 ticks, got 6
+/workspace/tools/lua52/src/lua: tests/test_timer_precision.lua:76: 4 timer-precision regressions failed
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_timer_precision.lua:76: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-centre-ties.txt
+FAIL centre-lane troop objective mirrors both players: tests/test_system_audit_20261014.lua:15: Centre-lane tower X: 150 vs 100
+FAIL centre-lane bot counterpush mirrors both players: tests/test_system_audit_20261014.lua:15: Centre counterpush X: 150 vs 100
+/workspace/tools/lua52/src/lua: tests/test_system_audit_20261014.lua:15: 2/20 full-system regressions failed
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_system_audit_20261014.lua:15: in function 'check'
+	tests/test_system_audit_20261014.lua:223: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-cross-system-52.txt
+FAIL headless suppresses sound callbacks: tests/test_system_audit_20261014.lua:15: Headless start invoked a live sound callback
+FAIL technical headless timeout is an error rather than a draw: tests/test_system_audit_20261014.lua:15: A frozen engine was returned as a statistically valid draw
+FAIL fractional affordability tolerance never creates negative Emeralds: tests/test_system_audit_20261014.lua:15: Allowed rounded cost created negative Emeralds
+FAIL admin instant spell reconciles edited entity position: tests/test_system_audit_20261014.lua:15: Admin spell read stale Spatial bucket: 0 vs 185
+/workspace/tools/lua52/src/lua: tests/test_system_audit_20261014.lua:15: 4/16 full-system regressions failed
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_system_audit_20261014.lua:15: in function 'check'
+	tests/test_system_audit_20261014.lua:176: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-cross-system-54.txt
+FAIL headless suppresses sound callbacks: tests/test_system_audit_20261014.lua:15: Headless start invoked a live sound callback
+FAIL technical headless timeout is an error rather than a draw: tests/test_system_audit_20261014.lua:15: A frozen engine was returned as a statistically valid draw
+FAIL fractional affordability tolerance never creates negative Emeralds: tests/test_system_audit_20261014.lua:15: Allowed rounded cost created negative Emeralds
+FAIL admin instant spell reconciles edited entity position: tests/test_system_audit_20261014.lua:15: Admin spell read stale Spatial bucket: 0 vs 185
+tests/test_system_audit_20261014.lua: tests/test_system_audit_20261014.lua:15: 4/16 full-system regressions failed
+
+EVIDENCE_FILE|red-http-shapes.txt
+/workspace/tools/lua52/src/lua: tests/test_audit_io_boundaries.lua:6: permissions_type must return a diagnostic rather than throw or claim success
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_audit_io_boundaries.lua:6: in function 'check'
+	tests/test_audit_io_boundaries.lua:34: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-invalid-decks.txt
+FAIL Invalid deck must fail for owner 1
+FAIL Invalid deck created a match
+FAIL Invalid deck reseeded gameplay RNG
+FAIL Invalid deck must fail for owner 2
+FAIL Invalid deck created a match
+FAIL Invalid deck reseeded gameplay RNG
+FAIL Invalid deck must fail for owner 1
+FAIL Invalid deck created a match
+FAIL Invalid deck reseeded gameplay RNG
+FAIL Invalid deck must fail for owner 2
+FAIL Invalid deck created a match
+FAIL Invalid deck reseeded gameplay RNG
+FAIL Invalid deck must fail for owner 1
+FAIL Invalid deck created a match
+FAIL Invalid deck reseeded gameplay RNG
+FAIL Invalid deck must fail for owner 2
+FAIL Invalid deck created a match
+FAIL Invalid deck reseeded gameplay RNG
+FAIL Invalid deck must fail for owner 1
+FAIL Invalid deck created a match
+FAIL Invalid deck reseeded gameplay RNG
+FAIL Invalid deck must fail for owner 2
+FAIL Invalid deck created a match
+FAIL Invalid deck reseeded gameplay RNG
+/workspace/tools/lua52/src/lua: tests/test_simulation_contracts.lua:57: 24 simulation-input checks failed
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_simulation_contracts.lua:57: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-monitor-52.txt
+FAIL Size guard 20x10
+FAIL Renderer should query peripheral size once per frame
+FAIL Small monitor created an arena window
+FAIL Invisible small-monitor card zone accepted touch
+FAIL Admin small-monitor fallback
+FAIL Size guard 44x42
+FAIL Renderer should query peripheral size once per frame
+FAIL Small monitor created an arena window
+FAIL Invisible small-monitor card zone accepted touch
+FAIL Size guard 45x41
+FAIL Renderer should query peripheral size once per frame
+FAIL Small monitor created an arena window
+FAIL Invisible small-monitor card zone accepted touch
+FAIL Size guard 1x1
+FAIL Render 1x1: tests/test_audit_monitor_boundaries.lua:19: invalid arena window
+FAIL Renderer should query peripheral size once per frame
+FAIL Small monitor created an arena window
+FAIL Invisible small-monitor card zone accepted touch
+FAIL Admin small-monitor fallback
+FAIL Renderer should query peripheral size once per frame
+FAIL Renderer should query peripheral size once per frame
+FAIL Size guard 20x10
+FAIL Renderer should query peripheral size once per frame
+FAIL Small monitor created an arena window
+FAIL Invisible small-monitor card zone accepted touch
+FAIL Admin small-monitor fallback
+FAIL Renderer should query peripheral size once per frame
+/workspace/tools/lua52/src/lua: tests/test_audit_monitor_boundaries.lua:51: 27 monitor boundary regressions failed
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_audit_monitor_boundaries.lua:51: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-music-faults.txt
+FAIL Optional stream start threw seek_read
+FAIL Failed seek leaked its handle
+FAIL Optional stream start threw open
+FAIL Optional pack discovery threw size
+FAIL Failed pending audio ignored its backoff deadline
+/workspace/tools/lua52/src/lua: tests/test_music_fault_boundaries.lua:42: 5 optional music faults failed
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_music_fault_boundaries.lua:42: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-nested-http-json.txt
+/workspace/tools/lua52/src/lua: tests/test_audit_io_boundaries.lua:6: permissions_type must return a diagnostic rather than throw or claim success
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_audit_io_boundaries.lua:6: in function 'check'
+	tests/test_audit_io_boundaries.lua:34: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-owner-ties.txt
+FAIL bot opening placement mirrors both axes: tests/test_system_audit_20261014.lua:15: Bot opening X orientation: 50 vs 100
+FAIL exact bridge-distance tie mirrors owner-relative route: tests/test_system_audit_20261014.lua:15: Equal-cost bridge X: 54 vs 100
+/workspace/tools/lua52/src/lua: tests/test_system_audit_20261014.lua:15: 2/18 full-system regressions failed
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_system_audit_20261014.lua:15: in function 'check'
+	tests/test_system_audit_20261014.lua:199: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-pending-terminal.txt
+FAIL pending winning spells stop later aura and combat stages: tests/test_system_audit_20261014.lua:15: Finished spell batch reconciled subsequent auras
+/workspace/tools/lua52/src/lua: tests/test_system_audit_20261014.lua:15: 1/23 full-system regressions failed
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_system_audit_20261014.lua:15: in function 'check'
+	tests/test_system_audit_20261014.lua:264: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-pixel-recovery.txt
+/workspace/tools/lua52/src/lua: tests/test_pixel_failure_recovery.lua:35: An unacknowledged failed frame was skipped instead of retried
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_pixel_failure_recovery.lua:35: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-retention-race.txt
+test_invalid_pins_fail_closed_without_any_deletion (test_report_retention.ReportRetentionTests.test_invalid_pins_fail_closed_without_any_deletion) ... ok
+test_pinned_old_mechanics_run_survives (test_report_retention.ReportRetentionTests.test_pinned_old_mechanics_run_survives) ... ok
+test_prunes_known_old_reports_and_indexes_survivors (test_report_retention.ReportRetentionTests.test_prunes_known_old_reports_and_indexes_survivors) ... ok
+test_push_race_recomputes_new_pins_and_index (test_report_retention.ReportRetentionTests.test_push_race_recomputes_new_pins_and_index) ... FAIL
+test_sorting_uses_timestamp_not_filename_order (test_report_retention.ReportRetentionTests.test_sorting_uses_timestamp_not_filename_order) ... ok
+
+======================================================================
+FAIL: test_push_race_recomputes_new_pins_and_index (test_report_retention.ReportRetentionTests.test_push_race_recomputes_new_pins_and_index)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/cc-royale-audit/tests/test_report_retention.py", line 130, in test_push_race_recomputes_new_pins_and_index
+    self.assertTrue((cleaner / oldest).is_file(), "Raced pin was deleted by stale cleanup")
+AssertionError: False is not true : Raced pin was deleted by stale cleanup
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.165s
+
+FAILED (failures=1)
+Retention: keep 41 historical reports, prune 7; archive: archive/reports-pre-retention-20261013; mode: apply
+Retention: keep 40 historical reports, prune 8; archive: archive/reports-pre-retention-20261013; mode: dry-run
+Retention: keep 40 historical reports, prune 8; archive: archive/reports-pre-retention-20261013; mode: apply
+Retention: keep 40 historical reports, prune 0; archive: archive/reports-pre-retention-20261013; mode: apply
+Retention: keep 40 historical reports, prune 8; archive: archive/reports-pre-retention-20261013; mode: apply
+
+EVIDENCE_FILE|red-runtime-gc.txt
+FAIL missing: audit_matches.lua:70: attempt to call global 'collectgarbage' (a nil value)
+FAIL dishonest/missing GC summary missing
+FAIL count_only: tests/test_audit_runtime_gc.lua:11: Unsupported GC option
+FAIL dishonest/missing GC summary count_only
+FAIL throws: tests/test_audit_runtime_gc.lua:13: GC unavailable
+FAIL dishonest/missing GC summary throws
+/workspace/tools/lua52/src/lua: tests/test_audit_runtime_gc.lua:24: 6 CraftOS GC compatibility checks failed
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_audit_runtime_gc.lua:24: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-system-regressions-52.txt
+FAIL terminal projectile state freezes after King destruction: tests/test_system_audit_20261014.lua:15: Later projectile damaged a result-state tower: 1401 vs 1501
+FAIL three-bat deployment mirrors corresponding bodies: tests/test_system_audit_20261014.lua:15: Mirrored spawn X: 107 vs 100
+FAIL mirrored periodic summons witch: tests/test_system_audit_20261014.lua:15: Mirrored spawn X: 106 vs 100
+FAIL mirrored periodic summons evoker: tests/test_system_audit_20261014.lua:15: Mirrored spawn X: 106 vs 100
+FAIL mirrored periodic summons nether_portal: tests/test_system_audit_20261014.lua:15: Mirrored spawn X: 106 vs 100
+FAIL mirrored periodic summons evo:nether_portal: tests/test_system_audit_20261014.lua:15: Mirrored spawn X: 108 vs 100
+FAIL mirrored death splits slime: tests/test_system_audit_20261014.lua:15: Mirrored spawn X: 95.6 vs 100
+FAIL mirrored death splits magma_cube: tests/test_system_audit_20261014.lua:15: Mirrored spawn X: 95.6 vs 100
+FAIL nonfinite delta is rejected without match state mutation: tests/test_system_audit_20261014.lua:15: Malformed dt must raise a diagnostic error
+FAIL malformed admin spawn is rejected before indexing: tests/test_system_audit_20261014.lua:15: Malformed spawn must return false
+FAIL invalid headless dt preserves lobby: tests/test_system_audit_20261014.lua:15: Rejected headless start reset the lobby
+FAIL zero countdown preserves one live transition tick: tests/test_system_audit_20261014.lua:15: Headless skipped ticks differ from zero-countdown live transition
+/workspace/tools/lua52/src/lua: tests/test_system_audit_20261014.lua:15: 12/12 full-system regressions failed
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_system_audit_20261014.lua:15: in function 'check'
+	tests/test_system_audit_20261014.lua:143: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-system-regressions-54.txt
+FAIL terminal projectile state freezes after King destruction: tests/test_system_audit_20261014.lua:15: Later projectile damaged a result-state tower: 1401 vs 1501
+FAIL three-bat deployment mirrors corresponding bodies: tests/test_system_audit_20261014.lua:15: Mirrored spawn X: 107.0 vs 100
+FAIL mirrored periodic summons witch: tests/test_system_audit_20261014.lua:15: Mirrored spawn X: 106.0 vs 100
+FAIL mirrored periodic summons evoker: tests/test_system_audit_20261014.lua:15: Mirrored spawn X: 106.0 vs 100
+FAIL mirrored periodic summons nether_portal: tests/test_system_audit_20261014.lua:15: Mirrored spawn X: 106.0 vs 100
+FAIL mirrored periodic summons evo:nether_portal: tests/test_system_audit_20261014.lua:15: Mirrored spawn X: 108.0 vs 100
+FAIL mirrored death splits slime: tests/test_system_audit_20261014.lua:15: Mirrored spawn X: 95.6 vs 100
+FAIL mirrored death splits magma_cube: tests/test_system_audit_20261014.lua:15: Mirrored spawn X: 95.6 vs 100
+FAIL nonfinite delta is rejected without match state mutation: tests/test_system_audit_20261014.lua:15: Malformed dt must raise a diagnostic error
+FAIL malformed admin spawn is rejected before indexing: tests/test_system_audit_20261014.lua:15: Malformed spawn must return false
+FAIL invalid headless dt preserves lobby: tests/test_system_audit_20261014.lua:15: Rejected headless start reset the lobby
+FAIL zero countdown preserves one live transition tick: tests/test_system_audit_20261014.lua:15: Headless skipped ticks differ from zero-countdown live transition
+tests/test_system_audit_20261014.lua: tests/test_system_audit_20261014.lua:15: 12/12 full-system regressions failed
+
+EVIDENCE_FILE|red-test_audit_io_boundaries-52.txt
+/workspace/tools/lua52/src/lua: tests/test_audit_io_boundaries.lua:6: request must return a diagnostic rather than throw or claim success
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_audit_io_boundaries.lua:6: in function 'check'
+	tests/test_audit_io_boundaries.lua:33: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-test_mechanics_isolation-52.txt
+/workspace/tools/lua52/src/lua: tests/test_mechanics_isolation.lua:37: [string "isolation suite"]:2430: bad argument #2 to 'format' (number expected, got nil)
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_mechanics_isolation.lua:37: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-test_simulation_contracts-52.txt
+FAIL gameplaySeed must reject -nan
+FAIL gameplaySeed must validate before constructing match
+FAIL gameplaySeed rejection must preserve gameplay RNG
+FAIL gameplaySeed must reject inf
+FAIL gameplaySeed must validate before constructing match
+FAIL gameplaySeed rejection must preserve gameplay RNG
+FAIL gameplaySeed must reject -inf
+FAIL gameplaySeed must validate before constructing match
+FAIL gameplaySeed rejection must preserve gameplay RNG
+FAIL gameplaySeed must reject invalid
+FAIL gameplaySeed must validate before constructing match
+FAIL gameplaySeed rejection must preserve gameplay RNG
+FAIL botOrderOffset must reject -nan
+FAIL botOrderOffset must validate before constructing match
+FAIL botOrderOffset must reject inf
+FAIL botOrderOffset must validate before constructing match
+FAIL botOrderOffset must reject -inf
+FAIL botOrderOffset must validate before constructing match
+FAIL botOrderOffset must reject invalid
+FAIL botOrderOffset must validate before constructing match
+FAIL yieldCheckTicks must reject -nan
+FAIL yieldCheckTicks must validate before constructing match
+FAIL yieldCheckTicks must reject inf
+FAIL yieldCheckTicks must validate before constructing match
+FAIL yieldCheckTicks must reject -inf
+FAIL yieldCheckTicks must validate before constructing match
+FAIL yieldCheckTicks must reject invalid
+FAIL yieldCheckTicks must validate before constructing match
+FAIL Deck sampler must reject invalid seed -nan
+FAIL Deck sampler must reject invalid seed inf
+FAIL Deck sampler must reject invalid seed -inf
+FAIL Deck sampler must reject invalid seed 1e+20
+FAIL Deck sampler must reject invalid seed invalid
+FAIL simulate.lua must reject invalid seed before report IO
+FAIL compare.lua must reject invalid seed before report IO
+FAIL evo_compare.lua must reject invalid seed before report IO
+/workspace/tools/lua52/src/lua: tests/test_simulation_contracts.lua:43: 36 simulation-input checks failed
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_simulation_contracts.lua:43: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-timer-precision-52.txt
+FAIL zombie cooldown 1.00s: expected 10 ticks, got 11
+FAIL zombie cooldown 1.00s: expected 10 ticks, got 11
+FAIL zombie cooldown 1.00s: expected 10 ticks, got 11
+FAIL zombie cooldown 1.00s: expected 10 ticks, got 11
+FAIL zombie cooldown 1.00s: expected 10 ticks, got 11
+FAIL zombie cooldown 1.00s: expected 10 ticks, got 11
+FAIL zombie cooldown 1.00s: expected 10 ticks, got 11
+FAIL skeleton cooldown 1.10s: expected 11 ticks, got 12
+FAIL skeleton cooldown 1.10s: expected 11 ticks, got 12
+FAIL skeleton cooldown 1.10s: expected 11 ticks, got 12
+FAIL skeleton cooldown 1.10s: expected 11 ticks, got 12
+FAIL skeleton cooldown 1.10s: expected 11 ticks, got 12
+FAIL skeleton cooldown 1.10s: expected 11 ticks, got 12
+FAIL king cooldown 0.90s: expected 9 ticks, got 10
+FAIL king cooldown 0.90s: expected 9 ticks, got 10
+FAIL king cooldown 0.90s: expected 9 ticks, got 10
+FAIL king cooldown 0.90s: expected 9 ticks, got 10
+FAIL king cooldown 0.90s: expected 9 ticks, got 10
+FAIL king cooldown 0.90s: expected 9 ticks, got 10
+FAIL king cooldown 0.90s: expected 9 ticks, got 10
+FAIL blaze cooldown 1.20s: expected 12 ticks, got 13
+FAIL blaze cooldown 1.20s: expected 12 ticks, got 13
+FAIL blaze cooldown 1.20s: expected 12 ticks, got 13
+FAIL blaze cooldown 1.20s: expected 12 ticks, got 13
+FAIL blaze cooldown 1.20s: expected 12 ticks, got 13
+FAIL blaze cooldown 1.20s: expected 12 ticks, got 13
+FAIL 4s+14s Vex wave was delayed beyond tick180
+FAIL 150s regulation boundary was delayed to 150.1s
+FAIL 3s countdown at 0.05s gained a floating-point extra tick
+FAIL Nonpositive time delta advanced combat
+FAIL Nonpositive time delta advanced combat
+/workspace/tools/lua52/src/lua: tests/test_timer_precision.lua:63: 31 timer-precision regressions failed
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_timer_precision.lua:63: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-touch-disconnect.txt
+FAIL main.lua aborted on a queued detached-monitor touch: tests/test_touch_disconnect.lua:16: Monitor detached
+FAIL main.lua did not reach clean termination
+FAIL main.lua should report the peripheral failure once
+FAIL admin.lua aborted on a queued detached-monitor touch: tests/test_touch_disconnect.lua:16: Monitor detached
+FAIL admin.lua did not reach clean termination
+FAIL admin.lua should report the peripheral failure once
+/workspace/tools/lua52/src/lua: tests/test_touch_disconnect.lua:47: 6 touch disconnect checks failed
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_touch_disconnect.lua:47: in main chunk
+	[C]: in ?
+
+EVIDENCE_FILE|red-water-slow-boundaries.txt
+FAIL ground-water eligibility agrees with the actual legal bank point: tests/test_system_audit_20261014.lua:15: Zombie locked a water target beyond actual walkable reach
+FAIL malformed slow factor/duration is rejected without effect-table pollution: tests/test_system_audit_20261014.lua:15: Nonfinite slow factor accepted
+/workspace/tools/lua52/src/lua: tests/test_system_audit_20261014.lua:15: 2/22 full-system regressions failed
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_system_audit_20261014.lua:15: in function 'check'
+	tests/test_system_audit_20261014.lua:250: in main chunk
+	[C]: in ?

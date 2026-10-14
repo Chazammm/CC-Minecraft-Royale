@@ -3,6 +3,9 @@ import json
 import sys
 import tempfile
 import unittest
+import subprocess
+import shutil
+import textwrap
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -86,6 +89,50 @@ class ReportRetentionTests(unittest.TestCase):
         self.assertTrue(all(not p.name.startswith("bogus") for p in plan))
         self.assertEqual([row["timestamp_ms"] for row in entries if row["kind"] == "mechanics"],
                          sorted(row["timestamp_ms"] for row in entries if row["kind"] == "mechanics"))
+
+    def test_push_race_recomputes_new_pins_and_index(self):
+        # Real local Git race: the cleanup clone plans a deletion, then another
+        # clone pins that report on main. A stale rebase must not delete it.
+        fixture = Path(self.tmp.name) / "git-race"
+        fixture.mkdir()
+        remote, cleaner, writer = fixture / "remote.git", fixture / "cleaner", fixture / "writer"
+        def git(cwd, *args):
+            return subprocess.run(["git", *args], cwd=cwd, check=True,
+                                  capture_output=True, text=True)
+        git(fixture, "init", "--bare", "--initial-branch=main", str(remote))
+        git(fixture, "clone", str(remote), str(cleaner))
+        git(cleaner, "config", "user.name", "audit")
+        git(cleaner, "config", "user.email", "audit@example.invalid")
+        shutil.copytree(self.root / "reports", cleaner / "reports")
+        (cleaner / "scripts").mkdir()
+        shutil.copyfile(Path(__file__).resolve().parents[1] / "scripts/prune_reports.py",
+                        cleaner / "scripts/prune_reports.py")
+        git(cleaner, "add", ".")
+        git(cleaner, "commit", "-m", "initial reports")
+        git(cleaner, "push", "origin", "HEAD:main")
+        git(fixture, "clone", str(remote), str(writer))
+        git(writer, "config", "user.name", "audit writer")
+        git(writer, "config", "user.email", "writer@example.invalid")
+        oldest = self.paths["mechanics"][0].relative_to(self.root)
+        run(cleaner, apply=True)  # the original workflow's planning snapshot
+        (writer / "reports/retention_pins.txt").write_text(oldest.as_posix() + "\n")
+        new_report = Path("reports/history/mechanics/1790000005000_mechanics_report.txt")
+        (writer / new_report).write_text("NEW REPORT\n")
+        git(writer, "add", ".")
+        git(writer, "commit", "-m", "pin old report and upload new report")
+        git(writer, "push", "origin", "HEAD:main")
+        workflow = (Path(__file__).resolve().parents[1] / ".github/workflows/report-retention.yml").read_text()
+        script = textwrap.dedent(workflow.split("name: Commit bounded history to main", 1)[1]
+                                 .split("run: |", 1)[1])
+        result = subprocess.run(["bash", "-c", script], cwd=cleaner,
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertTrue((cleaner / oldest).is_file(), "Raced pin was deleted by stale cleanup")
+        self.assertTrue((cleaner / new_report).is_file(), "Raced upload was lost")
+        index = json.loads((cleaner / "reports/history_index.json").read_text())["retained"]
+        self.assertTrue(any(row["path"] == oldest.as_posix() and row["pinned"] for row in index))
+        self.assertTrue(any(row["path"] == new_report.as_posix() for row in index),
+                        "Index was computed against stale main")
 
 
 if __name__ == "__main__":

@@ -202,8 +202,13 @@ while true do
         local playerId = hardware.playerForMonitor(hw, monitorName)
 
         if playerId then
-            local layout = render.layoutFor(hw.monitors[playerId])
-            Game.handleTouch(state, playerId, x, y, layout)
+            local ok, layout = pcall(render.layoutFor, hw.monitors[playerId])
+            if ok then
+                Game.handleTouch(state, playerId, x, y, layout)
+            else
+                -- A queued touch may outlive the peripheral that emitted it.
+                reportRenderError(layout)
+            end
             if state.exitRequested then
                 Music.stop(music, true)
                 hardware.clear(hw)

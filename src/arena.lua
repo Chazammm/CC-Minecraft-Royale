@@ -26,8 +26,8 @@ function arena.distanceToGroundReach(x, y)
     if inBridge(x) then return 0 end
 
     local distance = math.min(
-        math.abs(y - A.riverTop),
-        math.abs(A.riverBottom - y)
+        math.abs(y - (A.riverTop - 0.01)),
+        math.abs((A.riverBottom + 0.01) - y)
     )
 
     for _, center in ipairs(A.bridgeCenters) do
@@ -93,7 +93,7 @@ function arena.groundReachPoint(entity, target)
             entity.x, entity.y, candidate.x, candidate.y
         ) or 0
 
-        if reach and targetD2 <= (reach + 0.001)^2 then
+        if reach and targetD2 <= (reach + 1e-9)^2 then
             if bestTravelD2 == math.huge
                 or travelD2 < bestTravelD2 - 1e-9
                 or (math.abs(travelD2 - bestTravelD2) <= 1e-9
@@ -150,7 +150,10 @@ local function sideOfRiver(y)
     return 0
 end
 
-function arena.laneForX(x)
+function arena.laneForX(x, owner)
+    -- Optional owner only resolves the exact centre tie. World lane labels
+    -- used by destruction/placement remain unchanged when owner is omitted.
+    if x == A.width / 2 and owner == 2 then return "left" end
     return x < A.width / 2 and "left" or "right"
 end
 
@@ -187,13 +190,15 @@ local function insideUnlockedPocket(state, playerId, x, y)
     end
 end
 
-local function nearestBridge(x1, y1, x2, y2)
+local function nearestBridge(x1, y1, x2, y2, owner)
     local best = A.bridgeCenters[1]
     local bestScore = math.huge
     local midY = (A.riverTop + A.riverBottom) / 2
     for _, bx in ipairs(A.bridgeCenters) do
         local score = util.distance(x1, y1, bx, midY) + util.distance(bx, midY, x2, y2)
-        if score < bestScore then
+        if score < bestScore
+            or (score == bestScore and owner == 2 and bx > best)
+        then
             bestScore = score
             best = bx
         end
@@ -218,7 +223,7 @@ function arena.navigationPoint(entity, target)
     local ts = sideOfRiver(target.y)
 
     if es == 0 then
-        local bx = nearestBridge(entity.x, entity.y, target.x, target.y)
+        local bx = nearestBridge(entity.x, entity.y, target.x, target.y, entity.owner)
         if ts < 0 then
             return bx, A.riverTop - 2
         elseif ts > 0 then
@@ -228,7 +233,7 @@ function arena.navigationPoint(entity, target)
     end
 
     if ts ~= 0 and es ~= ts then
-        local bx = nearestBridge(entity.x, entity.y, target.x, target.y)
+        local bx = nearestBridge(entity.x, entity.y, target.x, target.y, entity.owner)
         return bx, (A.riverTop + A.riverBottom) / 2
     end
 

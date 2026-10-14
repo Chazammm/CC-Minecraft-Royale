@@ -74,14 +74,14 @@ print(("PROFILE|headless_control|ticks=%d|bot_actions=%d"):format(
     totalTicks,
     totalActions
 ))
--- Reviewed control results after acquisition-time target locking
--- (2026-10-11, 3 seeded matches). The intentional targeting contract changed
--- the old 9231/340 control to 9143/339. Performance may change; decisions,
--- tick cadence and gameplay outcomes must not change silently from here.
-assert(totalTicks == 9143,
+-- Reviewed 2026-10-14 control after AF-040/053 mirrored spawn/tie fixes
+-- and AF-055 exact engine/bot timers: 9143/339 -> 9174/336 on BOTH Lua versions.
+-- See docs/SYSTEM_AUDIT_20261014.md. Card/config values remain unchanged.
+-- Performance may change; gameplay must not change silently from here.
+assert(totalTicks == 9174,
     "Headless gameplay baseline changed deterministic match tick counts: got "
         .. tostring(totalTicks))
-assert(totalActions == 339,
+assert(totalActions == 336,
     "Headless gameplay baseline changed deterministic bot action counts: got "
         .. tostring(totalActions))
 Game.update = originalGameUpdate

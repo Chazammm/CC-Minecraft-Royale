@@ -54,7 +54,7 @@ local pass, fail, errors, total = reportBody:match(
 assert(total, "Mechanics report omitted summary")
 pass, fail, errors, total =
     tonumber(pass), tonumber(fail), tonumber(errors), tonumber(total)
-assert(total >= 24, "Mechanics suite unexpectedly lost test cases")
+assert(total >= 32, "Mechanics suite unexpectedly lost test cases")
 assert(pass == total and fail == 0 and errors == 0,
     ("In-game mechanics check: %d PASS / %d FAIL / %d ERROR of %d")
         :format(pass, fail, errors, total))

@@ -1,13 +1,38 @@
+local util = require("src.util")
 local benchmark = {}
 
+function benchmark.parseSeed(value, default)
+    if value == nil then value = default or 1 end
+    value = tonumber(value)
+    -- Retain exact integer arithmetic on both Cobalt/Lua 5.2 doubles and
+    -- Lua 5.4 integers. Reject infinities before report staging or RNG changes.
+    if not util.isFiniteNumber(value)
+        or value < -9007199254740991 or value > 9007199254740991
+    then return nil, "Seed must be a finite number within the exact integer range" end
+    return math.floor(value)
+end
+
 function benchmark.newRandomInt(seed)
-    local state = math.floor(tonumber(seed) or 1) % 2147483647
+    local parsed, err = benchmark.parseSeed(seed, 1)
+    if not parsed then error(err, 0) end
+    local state = parsed % 2147483647
     if state <= 0 then state = 1 end
 
     return function(maximum)
         state = (state * 48271) % 2147483647
         return (state % maximum) + 1
     end
+end
+
+function benchmark.pairedGameplaySeed(baseSeed, pairIndex, contextIndex, side)
+    -- Reduce before adding offsets: baseSeed may already be at the exact
+    -- double-integer limit, where baseSeed + offset loses replay bits.
+    local modulus = 2147483646
+    local value = baseSeed % modulus
+    value = (value + ((pairIndex or 0) % modulus) * 1000003 % modulus) % modulus
+    value = (value + ((contextIndex or 0) % modulus) * 9176 % modulus) % modulus
+    value = (value + ((side or 0) % modulus) * 104729 % modulus) % modulus
+    return value + 1
 end
 
 function benchmark.copy(list)
