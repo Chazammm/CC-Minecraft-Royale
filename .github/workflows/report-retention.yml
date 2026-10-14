@@ -35,31 +35,31 @@ jobs:
       - name: Verify report retention safety tests
         run: python3 -m unittest discover -s tests -p test_report_retention.py -v
 
-      - name: Apply report retention and regenerate searchable index
-        run: python3 scripts/prune_reports.py --apply
-
       - name: Commit bounded history to main
         shell: bash
         run: |
           set -euo pipefail
-          git add -- reports/history reports/history_index.json
-          if git diff --cached --quiet; then
-            echo "No report changes: nothing to commit."
-            exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "chore(reports): retain recent diagnostics and rebuild history index"
           # An ongoing CC:Tweaked upload may advance main during cleanup.
-          # Never force-push; only rebase and retry boundedly.
+          # Recompute from the latest pins/files after every rejected push.
+          # Rebasing stale deletions could silently remove a newly pinned report.
           for attempt in 1 2 3; do
+            python3 scripts/prune_reports.py --apply
+            git add -- reports/history reports/history_index.json
+            if git diff --cached --quiet; then
+              echo "No report changes: nothing to commit."
+              exit 0
+            fi
+            git commit -m "chore(reports): retain recent diagnostics and rebuild history index"
             if git push origin HEAD:main; then
               echo "Retention commit pushed."
               exit 0
             fi
-            echo "Push raced with main update; fetching and rebasing ($attempt/3)."
+            echo "Push raced with main update; recomputing from new main ($attempt/3)."
             git fetch origin main
-            git rebase origin/main
+            # Only discard this workflow's generated, unpublished cleanup.
+            git reset --hard origin/main
           done
           echo "Unable to safely push retention; no forced update performed."
           exit 1

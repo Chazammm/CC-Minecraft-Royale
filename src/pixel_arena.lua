@@ -1366,6 +1366,21 @@ local function rosterMoved(state, cached)
     return moved
 end
 
+function pixelArena.invalidate(monitor)
+    cache[monitor] = nil
+end
+
+local function renderFrame(box, cached)
+    local ok, err = pcall(box.render, box)
+    if not ok then
+        -- Failed physical writes never acknowledge the cached logical image.
+        -- Retry the complete image on the next render, even if it is static.
+        cached.framePixels = nil
+        cached.lastBlitLines = {}
+        error(err, 0)
+    end
+end
+
 function pixelArena.draw(monitor, state, playerId, rect, forceFullEncode)
     local box, cached = getSurface(monitor, rect)
 
@@ -1427,9 +1442,9 @@ function pixelArena.draw(monitor, state, playerId, rect, forceFullEncode)
         -- snapshot behind: a unit can move back to the SAME old position,
         -- and skipping the return frame would otherwise leave ghost pixels.
         cached.framePixels = nil
-        box:render()
+        renderFrame(box, cached)
     elseif canvasChanged(box, cached) then
-        box:render()
+        renderFrame(box, cached)
     end
 end
 

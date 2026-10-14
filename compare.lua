@@ -134,7 +134,7 @@ if args[2] == nil or string.lower(tostring(args[2])) == "all" then
     for _, spec in ipairs(DEFAULT_COMPARISONS) do
         comparisons[#comparisons + 1] = spec
     end
-    seed = math.floor(tonumber(args[3]) or DEFAULT_SEED)
+    seed = args[3]
 else
     local a = tostring(args[2])
     local b = tostring(args[3] or "")
@@ -150,7 +150,14 @@ else
         b = b,
         note = "Custom controlled replacement comparison",
     }
-    seed = math.floor(tonumber(args[4]) or DEFAULT_SEED)
+    seed = args[4]
+end
+
+local seedError
+seed, seedError = benchmark.parseSeed(seed, DEFAULT_SEED)
+if not seed then
+    nativePrint("ERROR: " .. seedError)
+    return
 end
 
 local randomInt = benchmark.newRandomInt(seed)
@@ -290,13 +297,7 @@ local function runMatch(
 end
 
 local function pairedGameplaySeed(baseSeed, comparisonIndex, contextIndex, side)
-    local value = (
-        baseSeed
-        + comparisonIndex * 1000003
-        + contextIndex * 9176
-        + side * 104729
-    ) % 2147483646
-    return value + 1
+    return benchmark.pairedGameplaySeed(baseSeed, comparisonIndex, contextIndex, side)
 end
 
 local mean = benchmark.mean

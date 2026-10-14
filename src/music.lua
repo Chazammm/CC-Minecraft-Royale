@@ -68,10 +68,10 @@ local function seekTo(handle, offset)
     -- Compatibility fallback for older ComputerCraft file handles.
     local left = offset
     while left > 0 do
-        local chunk = handle.read(math.min(left, 16384))
+        local okRead, chunk = pcall(handle.read, math.min(left, 16384))
         -- A zero-byte read cannot advance the cursor. Without this guard a
         -- faulty/EOF file wrapper permanently hangs the music thread.
-        if not chunk or #chunk == 0 then return false end
+        if not okRead or type(chunk) ~= "string" or #chunk == 0 then return false end
         left = left - #chunk
     end
     return true
@@ -82,11 +82,12 @@ local function packForTrack(track)
 end
 
 local function localPackAvailable(pack)
-    return pack
-        and fs
-        and fs.exists
-        and fs.exists(pack.path)
-        and (not fs.getSize or not pack.size or fs.getSize(pack.path) == pack.size)
+    if not pack or not fs or not fs.exists then return false end
+    local ok, available = pcall(function()
+        return fs.exists(pack.path)
+            and (not fs.getSize or not pack.size or fs.getSize(pack.path) == pack.size)
+    end)
+    return ok and available == true
 end
 
 local function allLocalPacksAvailable()
@@ -209,10 +210,11 @@ local function openSource(controller, track, relativeOffset)
     local handle
     if localPackAvailable(pack) then
         abandonPendingRequest(controller)
-        handle = fs.open(pack.path, "rb")
-        if not handle then return false, "MUSIC PACK OPEN FAILED" end
+        local opened
+        opened, handle = pcall(fs.open, pack.path, "rb")
+        if not opened or not handle then return false, "MUSIC PACK OPEN FAILED" end
         if not seekTo(handle, track.offset + relativeOffset) then
-            handle.close()
+            pcall(handle.close)
             return false, "MUSIC SEEK FAILED"
         end
         controller.source = "local"
@@ -408,6 +410,7 @@ function Music.pump(controller)
     -- one decoded chunk pending and wait for speaker_audio_empty before adding
     -- another. Large chunks are substantially less prone to stutter.
     if controller.pending then
+        if controller.retryAt and nowSeconds() < controller.retryAt then return false end
         local ok, queued = pcall(
             controller.speaker.playAudio,
             controller.pending,
@@ -421,6 +424,7 @@ function Music.pump(controller)
 
         controller.pending = nil
         controller.error = nil
+        controller.retryAt = 0
         controller.consecutiveFailures = 0
         return true
     end
@@ -438,7 +442,7 @@ function Music.pump(controller)
     local amount = math.min(manifest.chunkBytes or 16384, controller.remaining)
     local okRead, data = pcall(controller.handle.read, amount)
 
-    if not okRead or not data or #data == 0 then
+    if not okRead or type(data) ~= "string" or #data == 0 then
         if controller.remaining > 0 then
             if (controller.reconnectAttempts or 0) >= 3 then
                 -- Skip a persistently broken track instead of killing music
@@ -460,7 +464,11 @@ function Music.pump(controller)
     controller.bytesRead = (controller.bytesRead or 0) + #data
     controller.reconnectAttempts = 0
 
-    local decoded = controller.decoder(data)
+    local decodedOk, decoded = pcall(controller.decoder, data)
+    if not decodedOk then
+        scheduleRetry(controller, "MUSIC DECODE FAILED: " .. tostring(decoded), 0.75)
+        return false
+    end
     local okPlay, queued = pcall(
         controller.speaker.playAudio,
         decoded,
@@ -505,9 +513,16 @@ local function handleHttpSuccess(controller, url, response)
         return true
     end
 
-    local code = response and response.getResponseCode
-        and select(1, response.getResponseCode())
-        or 200
+    local code = 200
+    if response and response.getResponseCode then
+        local ok, status = pcall(response.getResponseCode)
+        if not ok then
+            if response.close then pcall(response.close) end
+            scheduleRetry(controller, "MUSIC HTTP METADATA FAILED", 1.5)
+            return true
+        end
+        code = status
+    end
 
     if code ~= 200 and code ~= 206 then
         if response and response.close then pcall(response.close) end

@@ -3,6 +3,7 @@ local cards = require("src.cards")
 local arena = require("src.arena")
 local Game = require("src.game")
 local spatial = require("src.spatial")
+local util = require("src.util")
 
 local Bot = {}
 
@@ -97,6 +98,13 @@ local OFFENSE_SCORE = {
 
 local function otherPlayer(playerId)
     return playerId == 1 and 2 or 1
+end
+
+local function preferredTowerTie(playerId, candidate, current)
+    if not current then return true end
+    -- On an equal-HP choice, choose the same visible lane on each monitor.
+    return playerId == 2 and candidate.x > current.x
+        or (playerId ~= 2 and candidate.x < current.x)
 end
 
 local function copyDeck(deck)
@@ -439,7 +447,7 @@ local function buildDecisionView(state, playerId)
                             + unitDps(entity) / 45
                         if score > view.counterpushScore then
                             view.counterpushScore = score
-                            view.counterpushLane = entity.x < 50 and 25 or 75
+                            view.counterpushLane = arena.laneForX(entity.x, entity.owner) == "left" and 25 or 75
                         end
                     end
                 end
@@ -454,7 +462,9 @@ local function buildDecisionView(state, playerId)
                     local ratio = entity.hp / math.max(1, entity.maxHp)
                     view.enemyTowerHp = view.enemyTowerHp + ratio
                     if entity.towerType == "princess"
-                        and ratio < view.weakestEnemyPrincessRatio
+                        and (ratio < view.weakestEnemyPrincessRatio
+                            or (ratio == view.weakestEnemyPrincessRatio
+                                and preferredTowerTie(playerId, entity, view.weakestEnemyPrincess)))
                     then
                         view.weakestEnemyPrincessRatio = ratio
                         view.weakestEnemyPrincess = entity
@@ -1010,7 +1020,9 @@ local function weakestEnemyPrincess(state, playerId, view)
             and entity.towerType == "princess"
         then
             local ratio = entity.hp / math.max(1, entity.maxHp)
-            if ratio < bestRatio then
+            if ratio < bestRatio
+                or (ratio == bestRatio and preferredTowerTie(playerId, entity, best))
+            then
                 bestRatio = ratio
                 best = entity
             end
@@ -1072,7 +1084,7 @@ local function counterpushLane(state, playerId, view)
 
                 if score > bestScore then
                     bestScore = score
-                    bestLane = entity.x < 50 and 25 or 75
+                    bestLane = arena.laneForX(entity.x, entity.owner) == "left" and 25 or 75
                 end
             end
         end
@@ -1088,6 +1100,7 @@ local function offensivePlacement(bot, state, card, view)
     local targetTower = weakestEnemyPrincess(state, playerId, view)
     local laneX = targetTower and targetTower.x
         or (((bot.decisionCount + (bot.styleSeed or 0)) % 2) == 0 and 25 or 75)
+    if not targetTower and playerId == 2 then laneX = config.ARENA.width - laneX end
     local lateGame = state.overtime or (state.timeLeft and state.timeLeft <= 60)
 
     if cfg.counterpush and bot.mode ~= "easy" then
@@ -1107,6 +1120,7 @@ local function offensivePlacement(bot, state, card, view)
     if card.id == "villager" then
         local y = playerId == 1 and 142 or 18
         local x = (bot.decisionCount % 2 == 0) and 38 or 62
+        if playerId == 2 then x = config.ARENA.width - x end
         return clampOwnPlacement(playerId, x, y)
     end
 
@@ -1563,7 +1577,7 @@ function Bot.update(bot, state, dt)
         player.emeralds = math.min(player.maxEmeralds, player.emeralds + rate * dt)
     end
 
-    bot.thinkTimer = bot.thinkTimer - dt
+    bot.thinkTimer = util.tickRemaining(bot.thinkTimer, dt)
     if bot.thinkTimer > 0 then return end
 
     -- Benchmark states only need opponent memory at decision time. Catching up

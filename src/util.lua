@@ -1,5 +1,18 @@
 local util = {}
 
+function util.isFiniteNumber(value)
+    return type(value) == "number" and value == value
+        and value ~= math.huge and value ~= -math.huge
+end
+
+-- IEEE-754 subtraction may leave a sub-nanosecond positive residue at an
+-- exact tick boundary. Do not turn that residue into a full extra game tick.
+function util.tickRemaining(value, dt)
+    local remaining = value - dt
+    if math.abs(remaining) <= 1e-9 then return 0 end
+    return remaining
+end
+
 function util.clamp(v, lo, hi)
     if v < lo then return lo end
     if v > hi then return hi end
@@ -26,7 +39,7 @@ function util.deepcopy(value)
 end
 
 function util.formatTime(seconds)
-    seconds = math.max(0, math.ceil(seconds))
+    seconds = math.max(0, math.ceil(seconds - 1e-9))
     local m = math.floor(seconds / 60)
     local s = seconds % 60
     return string.format("%d:%02d", m, s)

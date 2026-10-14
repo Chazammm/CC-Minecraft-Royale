@@ -1,0 +1,462 @@
+{
+  "5.2:syntax": {
+    "exit": 0,
+    "output": ""
+  },
+  "5.2:tests/test_anvil_grid_parity.lua": {
+    "exit": 0,
+    "seconds": 0.06854101299904869,
+    "output": "Anvil exhaustive/grid parity passed (183 comparisons)\n"
+  },
+  "5.2:tests/test_arena_skin_parity.lua": {
+    "exit": 0,
+    "seconds": 1.1781179730005533,
+    "output": "Arena skin parity passed (314874 terrain pixels, 68034 coordinate checks, 240 identical combat ticks)\n"
+  },
+  "5.2:tests/test_atomic_token_reconfig.lua": {
+    "exit": 0,
+    "seconds": 0.0023602949986525346,
+    "output": "GitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nAtomic token reconfiguration fault scenarios passed: 11\n"
+  },
+  "5.2:tests/test_audit_fixes_20261010.lua": {
+    "exit": 0,
+    "seconds": 0.012403140999595053,
+    "output": "Third-audit fix regressions passed (35 assertions)\n"
+  },
+  "5.2:tests/test_audit_followups.lua": {
+    "exit": 0,
+    "seconds": 0.04178209100064123,
+    "output": "Audit follow-up tests passed\n"
+  },
+  "5.2:tests/test_audit_hardening_20261010.lua": {
+    "exit": 0,
+    "seconds": 0.11319430700132216,
+    "output": "October 2026 audit hardening tests passed\n"
+  },
+  "5.2:tests/test_audit_io_boundaries.lua": {
+    "exit": 0,
+    "seconds": 0.0025635410001996206,
+    "output": "HTTP boundary faults passed: 24 checks, 7 requests\n"
+  },
+  "5.2:tests/test_audit_monitor_boundaries.lua": {
+    "exit": 0,
+    "seconds": 0.10880440500113764,
+    "output": "Monitor resize/interaction boundaries passed: 47 checks\n"
+  },
+  "5.2:tests/test_audit_regressions.lua": {
+    "exit": 0,
+    "seconds": 0.01079001199832419,
+    "output": "Audit regression tests passed\n"
+  },
+  "5.2:tests/test_audit_runtime_gc.lua": {
+    "exit": 0,
+    "seconds": 1.3851490630004264,
+    "output": "CraftOS audit-runner GC compatibility passed: 6 checks\n"
+  },
+  "5.2:tests/test_cli_manifest.lua": {
+    "exit": 0,
+    "seconds": 0.014509503000226687,
+    "output": "Usage: simulate <100-1000> [mixed|fixed] [seed]\nExamples:\n  simulate 100\n  simulate 137 mixed\n  simulate 500 mixed\n  simulate 1000 fixed\nERROR: Match count must be a whole number from 100 to 1000.\nUsage: simulate <100-1000> [mixed|fixed] [seed]\nExamples:\n  simulate 100\n  simulate 137 mixed\n  simulate 500 mixed\n  simulate 1000 fixed\nCLI and manifest tests passed\n"
+  },
+  "5.2:tests/test_core_invariant_stress.lua": {
+    "exit": 0,
+    "seconds": 1.1753240550006012,
+    "output": "Core invariant stress passed: 8 matches, 22804 ticks, 1341 snapshots, 286355 assertions\n"
+  },
+  "5.2:tests/test_diagnostic_contracts.lua": {
+    "exit": 0,
+    "seconds": 0.794882341999255,
+    "output": "Diagnostic contracts passed: 2267 real match snapshots, 5 detected faults, 3 live countdown comparisons\n"
+  },
+  "5.2:tests/test_finite_river_bounds.lua": {
+    "exit": 0,
+    "seconds": 0.0014137600010144524,
+    "output": "Finite river geometry invariant passed\n"
+  },
+  "5.2:tests/test_headless_runner.lua": {
+    "exit": 0,
+    "seconds": 0.24903982000068936,
+    "output": "Headless runner parity tests passed\n"
+  },
+  "5.2:tests/test_install_manifest.lua": {
+    "exit": 0,
+    "seconds": 0.006934057999387733,
+    "output": "Installer manifest tests passed\n"
+  },
+  "5.2:tests/test_installer_false_returns.lua": {
+    "exit": 0,
+    "seconds": 0.002897885000493261,
+    "output": "CC-Minecraft Royale installer\n--------------------------------\nCC-Minecraft Royale installer\n--------------------------------\nPinned repository commit: aaaaaaaaaaaa\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n\nAll files downloaded and Lua syntax preflight passed.\nApplying low-space atomic update...\nCC-Minecraft Royale installer\n--------------------------------\nPinned repository commit: aaaaaaaaaaaa\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n\nAll files downloaded and Lua syntax preflight passed.\nApplying low-space atomic update...\nInstaller false-return fault injections passed: 5\n"
+  },
+  "5.2:tests/test_lobby_state_mutators.lua": {
+    "exit": 0,
+    "seconds": 0.005687585999112343,
+    "output": "Lobby state mutation guards passed\n"
+  },
+  "5.2:tests/test_mechanics_full_ci.lua": {
+    "exit": 0,
+    "seconds": 0.1345712909987924,
+    "output": "[boot_deck               ] PASS\n[evolution_cycle         ] PASS\n[evolution_ruleset       ] PASS\n[admin_evolution_spawn   ] PASS\n[evo_diamond_golem       ] PASS\n[guardian_targeting      ] PASS\n[guardian_beam           ] PASS\n[evo_elder_guardian      ] PASS\n[evo_emerald_bank        ] PASS\n[evo_charged_creeper     ] PASS\n[evo_ghast_portal        ] PASS\n[evo_mega_mite           ] PASS\n[evoker_fangs_vex        ] PASS\n[tower_bridge_range      ] PASS\n[target_lock             ] PASS\n[building_decay          ] PASS\n[nether_portal           ] PASS\n[magma_split             ] PASS\n[anvil_aoe               ] PASS\n[creeper_fuse            ] PASS\n[skeleton_kite           ] PASS\n[outpost_anti_air        ] PASS\n[match_flow              ] PASS\n[bot_smoke               ] PASS\n[terminal_delayed_spell  ] PASS\n[exact_timer_cadence     ] PASS\n[tower_lock_retarget     ] PASS\n[terminal_projectiles    ] PASS\n[spawn_side_mirror       ] PASS\n[bridge_flying_paths     ] PASS\n[consecutive_match_reset ] PASS\n[ui_state_independence   ] PASS\n\nMechanics tests complete: 32 PASS / 0 FAIL / 0 ERROR\nReport written to: mechanics_report.txt\nGitHub auto-sync not configured. Run once: report_sync setup\nFull in-game mechanics suite passed in Lua CI: 32/32\n"
+  },
+  "5.2:tests/test_mechanics_isolation.lua": {
+    "exit": 0,
+    "seconds": 0.13872951899975305,
+    "output": "Mechanics exception isolation passed (definition values and references restored)\n"
+  },
+  "5.2:tests/test_music_fault_boundaries.lua": {
+    "exit": 0,
+    "seconds": 0.003575606000595144,
+    "output": "Optional music fault isolation passed: 10 checks\n"
+  },
+  "5.2:tests/test_music_seek_failures.lua": {
+    "exit": 0,
+    "seconds": 0.0018845780014089542,
+    "output": "Music seek fallback failure diagnostics passed\n"
+  },
+  "5.2:tests/test_pixel_failure_recovery.lua": {
+    "exit": 0,
+    "seconds": 0.07543418600107543,
+    "output": "Pixel failure acknowledgement and same-size monitor recovery passed\n"
+  },
+  "5.2:tests/test_pixel_frame_diff.lua": {
+    "exit": 0,
+    "seconds": 0.10968107699954999,
+    "output": "PixelBox frame-diff regressions passed (38 checks)\n"
+  },
+  "5.2:tests/test_platform_stubs.lua": {
+    "exit": 0,
+    "seconds": 0.00644017999911739,
+    "output": "Platform stub tests passed\n"
+  },
+  "5.2:tests/test_preset_false_returns.lua": {
+    "exit": 0,
+    "seconds": 0.0028540489984152373,
+    "output": "Preset false-return transaction regressions passed: 37\n"
+  },
+  "5.2:tests/test_preset_recovery_matrix.lua": {
+    "exit": 0,
+    "seconds": 0.0042771219996211585,
+    "output": "Preset recovery matrix passed: 125 scenarios / 232 assertions\n"
+  },
+  "5.2:tests/test_preset_transaction_integrity.lua": {
+    "exit": 0,
+    "seconds": 0.002549069000451709,
+    "output": "Preset transaction integrity oracle passed: 11\n"
+  },
+  "5.2:tests/test_projectile_speed_schema.lua": {
+    "exit": 0,
+    "seconds": 0.0037307589991542045,
+    "output": "Projectile-speed schema invariant passed\n"
+  },
+  "5.2:tests/test_recovery_hardening.lua": {
+    "exit": 0,
+    "seconds": 0.013896581000153674,
+    "output": "CC-Minecraft Royale installer\n--------------------------------\nInterrupted previous update detected (previous-interrupted-sha).\nReinstalling every managed file from one pinned commit.\nCustom startup.lua detected - leaving it untouched.\nPinned repository commit: abcdef123456\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n\nAll files downloaded and Lua syntax preflight passed.\nApplying low-space atomic update...\n\nAPPLY FAILED - restoring previous installation...\nRecovery hardening tests passed\n"
+  },
+  "5.2:tests/test_refactor_parity.lua": {
+    "exit": 0,
+    "seconds": 0.011046997999073938,
+    "output": "Refactor parity tests passed\n"
+  },
+  "5.2:tests/test_release_gate.lua": {
+    "exit": 0,
+    "seconds": 0.002895911000450724,
+    "output": "Release gate passed: 61 fixed audit IDs, 5 tracked follow-ups\n"
+  },
+  "5.2:tests/test_report_logout_false.lua": {
+    "exit": 0,
+    "seconds": 0.0016410620009992272,
+    "output": "GitHub token logout false-return regression passed\n"
+  },
+  "5.2:tests/test_report_token_write_failures.lua": {
+    "exit": 0,
+    "seconds": 0.001734662999297143,
+    "output": "GitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nToken setup IO fault tests passed: 19\n"
+  },
+  "5.2:tests/test_report_transaction_integrity.lua": {
+    "exit": 0,
+    "seconds": 0.0012559709994093282,
+    "output": "Report publishing integrity oracle passed: 11\n"
+  },
+  "5.2:tests/test_side_symmetry.lua": {
+    "exit": 0,
+    "seconds": 0.007712126000114949,
+    "output": "Side symmetry tests passed\n"
+  },
+  "5.2:tests/test_simulation_contracts.lua": {
+    "exit": 0,
+    "seconds": 0.009118753998336615,
+    "output": "Simulation input contracts passed: 97 checks\n"
+  },
+  "5.2:tests/test_sprite_roster.lua": {
+    "exit": 0,
+    "seconds": 0.7671449740009848,
+    "output": "Native sprite roster passed (35 models, 556 renderer checks)\n"
+  },
+  "5.2:tests/test_system_audit_20261014.lua": {
+    "exit": 0,
+    "seconds": 0.01999613199950545,
+    "output": "System audit regressions passed: 23 cases, 160 checks\n"
+  },
+  "5.2:tests/test_timer_precision.lua": {
+    "exit": 0,
+    "seconds": 0.04552735600009328,
+    "output": "Timer precision passed: 90 checks, exact cooldowns/lifetimes/countdown/regulation\n"
+  },
+  "5.2:tests/test_token_backup_recovery.lua": {
+    "exit": 0,
+    "seconds": 0.001991999999518157,
+    "output": "Interrupted token promotion backup recovery passed\n"
+  },
+  "5.2:tests/test_token_corrupt_active_fallback.lua": {
+    "exit": 0,
+    "seconds": 0.001622824000151013,
+    "output": "Token degraded-active recovery oracle passed: 3\n"
+  },
+  "5.2:tests/test_touch_disconnect.lua": {
+    "exit": 0,
+    "seconds": 0.010091244001159794,
+    "output": "Queued monitor-touch disconnect recovery passed: 8 checks\n"
+  },
+  "5.2:tests/test_v1.lua": {
+    "exit": 0,
+    "seconds": 0.06993114299984882,
+    "output": "Smoke tests passed\n"
+  },
+  "5.2:profile": {
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.378501|mean_ms=126.1670|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.306877|mean_ms=0.0338\nPROFILE|headless_bot_update|count=18174|cpu_s=0.060857|mean_ms=0.0033\nPROFILE|headless_other|count=3|cpu_s=0.010767|mean_ms=3.5890\nPROFILE|crowded_bot_regular_decisions|count=35|cpu_s=0.004153|mean_ms=0.1187|enemy_units=30\nPROFILE|crowded_bot_anvil_decisions|count=35|cpu_s=0.007097|mean_ms=0.2028|enemy_units=30\nPROFILE|static_arena_0_units_2_monitors|count=12|cpu_s=0.016560|mean_ms=1.3800|first_ms=51.1570|initial_blits=80|unchanged_blits=0\nPROFILE|static_arena_30_units_2_monitors|count=12|cpu_s=0.033186|mean_ms=2.7655|first_ms=3.0550|initial_blits=38|unchanged_blits=0\nPROFILE|pixelbox_cached_static_0|count=36|cpu_s=0.030474|mean_ms=0.8465\nPROFILE|pixelbox_exhaustive_static_0|count=36|cpu_s=0.043115|mean_ms=1.1976\nPROFILE|pixelbox_ratio_static_0|cached_over_exhaustive=0.707\nPROFILE|pixelbox_cached_static_30|count=36|cpu_s=0.043925|mean_ms=1.2201\nPROFILE|pixelbox_exhaustive_static_30|count=36|cpu_s=0.057457|mean_ms=1.5960\nPROFILE|pixelbox_ratio_static_30|cached_over_exhaustive=0.764\nPROFILE|pixelbox_cached_moving_30|count=36|cpu_s=0.060137|mean_ms=1.6705\nPROFILE|pixelbox_exhaustive_moving_30|count=36|cpu_s=0.060740|mean_ms=1.6872\nPROFILE|pixelbox_ratio_moving_30|cached_over_exhaustive=0.990\nPerformance profile complete (no gameplay files modified).\n"
+  },
+  "5.4:syntax": {
+    "exit": 0,
+    "output": "Lua 5.4 syntax passed (79 files)\n"
+  },
+  "5.4:tests/test_anvil_grid_parity.lua": {
+    "exit": 0,
+    "seconds": 0.0778278699999646,
+    "output": "Anvil exhaustive/grid parity passed (183 comparisons)\n"
+  },
+  "5.4:tests/test_arena_skin_parity.lua": {
+    "exit": 0,
+    "seconds": 0.6896438869989652,
+    "output": "Arena skin parity passed (314874 terrain pixels, 68034 coordinate checks, 240 identical combat ticks)\n"
+  },
+  "5.4:tests/test_atomic_token_reconfig.lua": {
+    "exit": 0,
+    "seconds": 0.018278421001014067,
+    "output": "GitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nAtomic token reconfiguration fault scenarios passed: 11\n"
+  },
+  "5.4:tests/test_audit_fixes_20261010.lua": {
+    "exit": 0,
+    "seconds": 0.025089720000323723,
+    "output": "Third-audit fix regressions passed (35 assertions)\n"
+  },
+  "5.4:tests/test_audit_followups.lua": {
+    "exit": 0,
+    "seconds": 0.03757158100052038,
+    "output": "Audit follow-up tests passed\n"
+  },
+  "5.4:tests/test_audit_hardening_20261010.lua": {
+    "exit": 0,
+    "seconds": 0.07113108799967449,
+    "output": "October 2026 audit hardening tests passed\n"
+  },
+  "5.4:tests/test_audit_io_boundaries.lua": {
+    "exit": 0,
+    "seconds": 0.019525278999935836,
+    "output": "HTTP boundary faults passed: 24 checks, 7 requests\n"
+  },
+  "5.4:tests/test_audit_monitor_boundaries.lua": {
+    "exit": 0,
+    "seconds": 0.08493370799988043,
+    "output": "Monitor resize/interaction boundaries passed: 47 checks\n"
+  },
+  "5.4:tests/test_audit_regressions.lua": {
+    "exit": 0,
+    "seconds": 0.025992050001150346,
+    "output": "Audit regression tests passed\n"
+  },
+  "5.4:tests/test_audit_runtime_gc.lua": {
+    "exit": 0,
+    "seconds": 0.7795439609999448,
+    "output": "CraftOS audit-runner GC compatibility passed: 6 checks\n"
+  },
+  "5.4:tests/test_cli_manifest.lua": {
+    "exit": 0,
+    "seconds": 0.028622320998692885,
+    "output": "Usage: simulate <100-1000> [mixed|fixed] [seed]\nExamples:\n  simulate 100\n  simulate 137 mixed\n  simulate 500 mixed\n  simulate 1000 fixed\nERROR: Match count must be a whole number from 100 to 1000.\nUsage: simulate <100-1000> [mixed|fixed] [seed]\nExamples:\n  simulate 100\n  simulate 137 mixed\n  simulate 500 mixed\n  simulate 1000 fixed\nCLI and manifest tests passed\n"
+  },
+  "5.4:tests/test_core_invariant_stress.lua": {
+    "exit": 0,
+    "seconds": 1.0423554049993982,
+    "output": "Core invariant stress passed: 8 matches, 22804 ticks, 1341 snapshots, 286355 assertions\n"
+  },
+  "5.4:tests/test_diagnostic_contracts.lua": {
+    "exit": 0,
+    "seconds": 0.8830160119996435,
+    "output": "Diagnostic contracts passed: 2267 real match snapshots, 5 detected faults, 3 live countdown comparisons\n"
+  },
+  "5.4:tests/test_finite_river_bounds.lua": {
+    "exit": 0,
+    "seconds": 0.022491773001092952,
+    "output": "Finite river geometry invariant passed\n"
+  },
+  "5.4:tests/test_headless_runner.lua": {
+    "exit": 0,
+    "seconds": 0.24795020900091913,
+    "output": "Headless runner parity tests passed\n"
+  },
+  "5.4:tests/test_install_manifest.lua": {
+    "exit": 0,
+    "seconds": 0.02608058800069557,
+    "output": "Installer manifest tests passed\n"
+  },
+  "5.4:tests/test_installer_false_returns.lua": {
+    "exit": 0,
+    "seconds": 0.022774678998757736,
+    "output": "CC-Minecraft Royale installer\n--------------------------------\nCC-Minecraft Royale installer\n--------------------------------\nPinned repository commit: aaaaaaaaaaaa\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n\nAll files downloaded and Lua syntax preflight passed.\nApplying low-space atomic update...\nCC-Minecraft Royale installer\n--------------------------------\nPinned repository commit: aaaaaaaaaaaa\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n\nAll files downloaded and Lua syntax preflight passed.\nApplying low-space atomic update...\nInstaller false-return fault injections passed: 5\n"
+  },
+  "5.4:tests/test_lobby_state_mutators.lua": {
+    "exit": 0,
+    "seconds": 0.025747906000106013,
+    "output": "Lobby state mutation guards passed\n"
+  },
+  "5.4:tests/test_mechanics_full_ci.lua": {
+    "exit": 0,
+    "seconds": 0.19065495100039698,
+    "output": "[boot_deck               ] PASS\n[evolution_cycle         ] PASS\n[evolution_ruleset       ] PASS\n[admin_evolution_spawn   ] PASS\n[evo_diamond_golem       ] PASS\n[guardian_targeting      ] PASS\n[guardian_beam           ] PASS\n[evo_elder_guardian      ] PASS\n[evo_emerald_bank        ] PASS\n[evo_charged_creeper     ] PASS\n[evo_ghast_portal        ] PASS\n[evo_mega_mite           ] PASS\n[evoker_fangs_vex        ] PASS\n[tower_bridge_range      ] PASS\n[target_lock             ] PASS\n[building_decay          ] PASS\n[nether_portal           ] PASS\n[magma_split             ] PASS\n[anvil_aoe               ] PASS\n[creeper_fuse            ] PASS\n[skeleton_kite           ] PASS\n[outpost_anti_air        ] PASS\n[match_flow              ] PASS\n[bot_smoke               ] PASS\n[terminal_delayed_spell  ] PASS\n[exact_timer_cadence     ] PASS\n[tower_lock_retarget     ] PASS\n[terminal_projectiles    ] PASS\n[spawn_side_mirror       ] PASS\n[bridge_flying_paths     ] PASS\n[consecutive_match_reset ] PASS\n[ui_state_independence   ] PASS\n\nMechanics tests complete: 32 PASS / 0 FAIL / 0 ERROR\nReport written to: mechanics_report.txt\nGitHub auto-sync not configured. Run once: report_sync setup\nFull in-game mechanics suite passed in Lua CI: 32/32\n"
+  },
+  "5.4:tests/test_mechanics_isolation.lua": {
+    "exit": 0,
+    "seconds": 0.147006182000041,
+    "output": "Mechanics exception isolation passed (definition values and references restored)\n"
+  },
+  "5.4:tests/test_music_fault_boundaries.lua": {
+    "exit": 0,
+    "seconds": 0.019930700000259094,
+    "output": "Optional music fault isolation passed: 10 checks\n"
+  },
+  "5.4:tests/test_music_seek_failures.lua": {
+    "exit": 0,
+    "seconds": 0.019677457999932813,
+    "output": "Music seek fallback failure diagnostics passed\n"
+  },
+  "5.4:tests/test_pixel_failure_recovery.lua": {
+    "exit": 0,
+    "seconds": 0.08241425300002447,
+    "output": "Pixel failure acknowledgement and same-size monitor recovery passed\n"
+  },
+  "5.4:tests/test_pixel_frame_diff.lua": {
+    "exit": 0,
+    "seconds": 0.13139885400050844,
+    "output": "PixelBox frame-diff regressions passed (38 checks)\n"
+  },
+  "5.4:tests/test_platform_stubs.lua": {
+    "exit": 0,
+    "seconds": 0.021803020001243567,
+    "output": "Platform stub tests passed\n"
+  },
+  "5.4:tests/test_preset_false_returns.lua": {
+    "exit": 0,
+    "seconds": 0.019397050999032217,
+    "output": "Preset false-return transaction regressions passed: 37\n"
+  },
+  "5.4:tests/test_preset_recovery_matrix.lua": {
+    "exit": 0,
+    "seconds": 0.020748676999573945,
+    "output": "Preset recovery matrix passed: 125 scenarios / 232 assertions\n"
+  },
+  "5.4:tests/test_preset_transaction_integrity.lua": {
+    "exit": 0,
+    "seconds": 0.01894105899918941,
+    "output": "Preset transaction integrity oracle passed: 11\n"
+  },
+  "5.4:tests/test_projectile_speed_schema.lua": {
+    "exit": 0,
+    "seconds": 0.01956484900074429,
+    "output": "Projectile-speed schema invariant passed\n"
+  },
+  "5.4:tests/test_recovery_hardening.lua": {
+    "exit": 0,
+    "seconds": 0.031775646000824054,
+    "output": "CC-Minecraft Royale installer\n--------------------------------\nInterrupted previous update detected (previous-interrupted-sha).\nReinstalling every managed file from one pinned commit.\nCustom startup.lua detected - leaving it untouched.\nPinned repository commit: abcdef123456\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n\nAll files downloaded and Lua syntax preflight passed.\nApplying low-space atomic update...\n\nAPPLY FAILED - restoring previous installation...\nRecovery hardening tests passed\n"
+  },
+  "5.4:tests/test_refactor_parity.lua": {
+    "exit": 0,
+    "seconds": 0.028126453998993384,
+    "output": "Refactor parity tests passed\n"
+  },
+  "5.4:tests/test_release_gate.lua": {
+    "exit": 0,
+    "seconds": 0.020292684999731136,
+    "output": "Release gate passed: 61 fixed audit IDs, 5 tracked follow-ups\n"
+  },
+  "5.4:tests/test_report_logout_false.lua": {
+    "exit": 0,
+    "seconds": 0.01880373199855967,
+    "output": "GitHub token logout false-return regression passed\n"
+  },
+  "5.4:tests/test_report_token_write_failures.lua": {
+    "exit": 0,
+    "seconds": 0.018409969999993336,
+    "output": "GitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nToken setup IO fault tests passed: 19\n"
+  },
+  "5.4:tests/test_report_transaction_integrity.lua": {
+    "exit": 0,
+    "seconds": 0.017888533000586904,
+    "output": "Report publishing integrity oracle passed: 11\n"
+  },
+  "5.4:tests/test_side_symmetry.lua": {
+    "exit": 0,
+    "seconds": 0.024029023001276073,
+    "output": "Side symmetry tests passed\n"
+  },
+  "5.4:tests/test_simulation_contracts.lua": {
+    "exit": 0,
+    "seconds": 0.02598126300108561,
+    "output": "Simulation input contracts passed: 97 checks\n"
+  },
+  "5.4:tests/test_sprite_roster.lua": {
+    "exit": 0,
+    "seconds": 0.6063073660006921,
+    "output": "Native sprite roster passed (35 models, 556 renderer checks)\n"
+  },
+  "5.4:tests/test_system_audit_20261014.lua": {
+    "exit": 0,
+    "seconds": 0.033498175000204355,
+    "output": "System audit regressions passed: 23 cases, 160 checks\n"
+  },
+  "5.4:tests/test_timer_precision.lua": {
+    "exit": 0,
+    "seconds": 0.05368612300117093,
+    "output": "Timer precision passed: 90 checks, exact cooldowns/lifetimes/countdown/regulation\n"
+  },
+  "5.4:tests/test_token_backup_recovery.lua": {
+    "exit": 0,
+    "seconds": 0.02215321499897982,
+    "output": "Interrupted token promotion backup recovery passed\n"
+  },
+  "5.4:tests/test_token_corrupt_active_fallback.lua": {
+    "exit": 0,
+    "seconds": 0.02427465700020548,
+    "output": "Token degraded-active recovery oracle passed: 3\n"
+  },
+  "5.4:tests/test_touch_disconnect.lua": {
+    "exit": 0,
+    "seconds": 0.027376182999432785,
+    "output": "Queued monitor-touch disconnect recovery passed: 8 checks\n"
+  },
+  "5.4:tests/test_v1.lua": {
+    "exit": 0,
+    "seconds": 0.05881829499958258,
+    "output": "Smoke tests passed\n"
+  },
+  "5.4:profile": {
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.387386|mean_ms=129.1287|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.312295|mean_ms=0.0344\nPROFILE|headless_bot_update|count=18174|cpu_s=0.064157|mean_ms=0.0035\nPROFILE|headless_other|count=3|cpu_s=0.010934|mean_ms=3.6447\nPROFILE|crowded_bot_regular_decisions|count=35|cpu_s=0.006654|mean_ms=0.1901|enemy_units=30\nPROFILE|crowded_bot_anvil_decisions|count=35|cpu_s=0.007630|mean_ms=0.2180|enemy_units=30\nPROFILE|static_arena_0_units_2_monitors|count=12|cpu_s=0.012304|mean_ms=1.0253|first_ms=47.3830|initial_blits=80|unchanged_blits=0\nPROFILE|static_arena_30_units_2_monitors|count=12|cpu_s=0.026090|mean_ms=2.1742|first_ms=2.9970|initial_blits=38|unchanged_blits=0\nPROFILE|pixelbox_cached_static_0|count=36|cpu_s=0.018333|mean_ms=0.5093\nPROFILE|pixelbox_exhaustive_static_0|count=36|cpu_s=0.025095|mean_ms=0.6971\nPROFILE|pixelbox_ratio_static_0|cached_over_exhaustive=0.731\nPROFILE|pixelbox_cached_static_30|count=36|cpu_s=0.036725|mean_ms=1.0201\nPROFILE|pixelbox_exhaustive_static_30|count=36|cpu_s=0.045668|mean_ms=1.2686\nPROFILE|pixelbox_ratio_static_30|cached_over_exhaustive=0.804\nPROFILE|pixelbox_cached_moving_30|count=36|cpu_s=0.046017|mean_ms=1.2782\nPROFILE|pixelbox_exhaustive_moving_30|count=36|cpu_s=0.045580|mean_ms=1.2661\nPROFILE|pixelbox_ratio_moving_30|cached_over_exhaustive=1.010\nPerformance profile complete (no gameplay files modified).\n"
+  },
+  "python": {
+    "exit": 0,
+    "output": "Retention: keep 41 historical reports, prune 7; archive: archive/reports-pre-retention-20261013; mode: apply\nRetention: keep 40 historical reports, prune 8; archive: archive/reports-pre-retention-20261013; mode: dry-run\nRetention: keep 40 historical reports, prune 8; archive: archive/reports-pre-retention-20261013; mode: apply\nRetention: keep 40 historical reports, prune 0; archive: archive/reports-pre-retention-20261013; mode: apply\nRetention: keep 40 historical reports, prune 8; archive: archive/reports-pre-retention-20261013; mode: apply\ntest_invalid_pins_fail_closed_without_any_deletion (test_report_retention.ReportRetentionTests.test_invalid_pins_fail_closed_without_any_deletion) ... ok\ntest_pinned_old_mechanics_run_survives (test_report_retention.ReportRetentionTests.test_pinned_old_mechanics_run_survives) ... ok\ntest_prunes_known_old_reports_and_indexes_survivors (test_report_retention.ReportRetentionTests.test_prunes_known_old_reports_and_indexes_survivors) ... ok\ntest_push_race_recomputes_new_pins_and_index (test_report_retention.ReportRetentionTests.test_push_race_recomputes_new_pins_and_index) ... ok\ntest_sorting_uses_timestamp_not_filename_order (test_report_retention.ReportRetentionTests.test_sorting_uses_timestamp_not_filename_order) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.234s\n\nOK\n"
+  }
+}

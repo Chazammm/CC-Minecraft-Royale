@@ -25,11 +25,14 @@ for line in registry:gmatch("[^\r\n]+") do
             assert(line:find("FIXED_CI", 1, true),
                 "Fixed audit item must specify automated status: " .. id)
             local testCount = 0
-            for testPath in line:gmatch("tests/[%w_]+%.lua") do
+            for testPath in line:gmatch("tests/[%w_]+%.[%w]+") do
                 local content = read(testPath)
                 assert(#content > 0, "Empty regression test: " .. testPath)
+                local pythonName = testPath:match("tests/(test_[%w_]+%.py)$")
                 assert(workflow:find("lua5.4 " .. testPath, 1, true)
-                    or workflow:find("lua5.2 " .. testPath, 1, true),
+                    or workflow:find("lua5.2 " .. testPath, 1, true)
+                    or (pythonName and workflow:find(
+                        "python3 -m unittest discover -s tests -p " .. pythonName, 1, true)),
                     id .. " regression not executed by CI: " .. testPath)
                 testCount = testCount + 1
             end

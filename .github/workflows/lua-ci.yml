@@ -150,4 +150,42 @@ jobs:
           python3 -m unittest discover -s tests -p test_report_retention.py -v
           python3 scripts/prune_reports.py
 
+      - name: Revision-stamped production CLI and deterministic replay
+        run: |
+          lua5.2 scripts/audit_cli_host.lua simulate.lua /tmp/cc-balance-52.txt "$GITHUB_SHA" 100 mixed 20261014
+          lua5.4 scripts/audit_cli_host.lua simulate.lua /tmp/cc-balance-54.txt "$GITHUB_SHA" 100 mixed 20261014
+          cmp /tmp/cc-balance-52.txt /tmp/cc-balance-54.txt
+          lua5.4 scripts/audit_cli_host.lua mechanics_test.lua /tmp/cc-mechanics.txt "$GITHUB_SHA"
+          lua5.4 scripts/audit_cli_host.lua audit_matches.lua /tmp/cc-audit.txt "$GITHUB_SHA" 100 20261014
 
+
+
+      - name: Complete-system audit and remaining dual-Lua regressions
+        run: |
+          lua5.2 tests/test_audit_runtime_gc.lua
+          lua5.4 tests/test_audit_runtime_gc.lua
+          lua5.2 tests/test_audit_followups.lua
+          lua5.2 tests/test_audit_io_boundaries.lua
+          lua5.4 tests/test_audit_io_boundaries.lua
+          lua5.2 tests/test_audit_monitor_boundaries.lua
+          lua5.4 tests/test_audit_monitor_boundaries.lua
+          lua5.2 tests/test_cli_manifest.lua
+          lua5.2 tests/test_diagnostic_contracts.lua
+          lua5.4 tests/test_diagnostic_contracts.lua
+          lua5.2 tests/test_install_manifest.lua
+          lua5.2 tests/test_mechanics_isolation.lua
+          lua5.4 tests/test_mechanics_isolation.lua
+          lua5.2 tests/test_music_fault_boundaries.lua
+          lua5.4 tests/test_music_fault_boundaries.lua
+          lua5.2 tests/test_pixel_failure_recovery.lua
+          lua5.4 tests/test_pixel_failure_recovery.lua
+          lua5.2 tests/test_platform_stubs.lua
+          lua5.2 tests/test_recovery_hardening.lua
+          lua5.2 tests/test_simulation_contracts.lua
+          lua5.4 tests/test_simulation_contracts.lua
+          lua5.2 tests/test_system_audit_20261014.lua
+          lua5.4 tests/test_system_audit_20261014.lua
+          lua5.2 tests/test_timer_precision.lua
+          lua5.4 tests/test_timer_precision.lua
+          lua5.2 tests/test_touch_disconnect.lua
+          lua5.4 tests/test_touch_disconnect.lua

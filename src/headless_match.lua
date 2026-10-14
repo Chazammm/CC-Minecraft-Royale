@@ -1,11 +1,16 @@
 local config = require("config")
 local Game = require("src.game")
 local Bot = require("src.bot")
+local util = require("src.util")
+local benchmark = require("src.benchmark_utils")
+local cards = require("src.cards")
 
 local Runner = {}
 
 local function normalizedGameplaySeed(seed)
-    local value = math.floor(tonumber(seed) or 1) % 2147483647
+    local parsed, err = benchmark.parseSeed(seed, 1)
+    if not parsed then error(err, 0) end
+    local value = parsed % 2147483647
     if value <= 0 then value = value + 2147483646 end
     return value
 end
@@ -47,11 +52,31 @@ end
 
 function Runner.run(deck1, deck2, options)
     options = options or {}
-    local dt = tonumber(options.dt or config.TICK_RATE or 0.10)
-    if not dt or dt <= 0 or dt > 0.25 then
+    for owner = 1, 2 do
+        local deck
+        if owner == 1 then deck = deck1 else deck = deck2 end
+        if deck ~= nil and not cards.isValidDeck(deck) then
+            error("Headless player " .. owner .. " deck must contain eight distinct playable cards", 0)
+        end
+    end
+    local dt = tonumber(options.dt == nil and config.TICK_RATE or options.dt)
+    if not util.isFiniteNumber(dt) or dt <= 0 or dt > 0.25 then
         error("Headless dt must be > 0 and <= 0.25 seconds", 0)
     end
-    local botOrderOffset = math.floor(tonumber(options.botOrderOffset) or 0) % 2
+    local offset = options.botOrderOffset == nil and 0 or tonumber(options.botOrderOffset)
+    if not util.isFiniteNumber(offset) then
+        error("Bot order offset must be a finite number", 0)
+    end
+    local botOrderOffset = math.floor(offset) % 2
+    local yieldCheckTicks = options.yieldCheckTicks == nil and 50 or tonumber(options.yieldCheckTicks)
+    if not util.isFiniteNumber(yieldCheckTicks) or yieldCheckTicks < 0
+        or yieldCheckTicks ~= math.floor(yieldCheckTicks)
+    then error("Yield interval must be a finite non-negative integer", 0) end
+    for _, key in ipairs({"configure", "yieldFn", "onTick"}) do
+        if options[key] ~= nil and type(options[key]) ~= "function" then
+            error("Headless " .. key .. " must be a function", 0)
+        end
+    end
 
     if options.gameplaySeed ~= nil then
         math.randomseed(normalizedGameplaySeed(options.gameplaySeed))
@@ -89,6 +114,7 @@ function Runner.run(deck1, deck2, options)
     -- countdown engine updates.
     local transitionTick = math.max(0, skippedTicks - 1)
     updateBots(bot1, bot2, state, dt, transitionTick, botOrderOffset)
+    if options.onTick then options.onTick(state, bot1, bot2, skippedTicks) end
 
     local ticks = skippedTicks
     local maxSimulationSeconds =
@@ -97,12 +123,12 @@ function Runner.run(deck1, deck2, options)
         + (config.MATCH.overtimeTime or 0)
         + tiebreakerBudgetSeconds(state)
     local maxTicks = math.ceil(maxSimulationSeconds / dt)
-    local yieldCheckTicks = options.yieldCheckTicks or 50
 
     while state.phase ~= "result" and ticks < maxTicks do
         Game.update(state, dt)
         updateBots(bot1, bot2, state, dt, ticks, botOrderOffset)
         ticks = ticks + 1
+        if options.onTick then options.onTick(state, bot1, bot2, ticks) end
 
         if options.yieldFn
             and yieldCheckTicks > 0
@@ -115,11 +141,9 @@ function Runner.run(deck1, deck2, options)
     if options.yieldFn then options.yieldFn(false) end
 
     if state.phase ~= "result" then
-        Game.finish(
-            state,
-            nil,
-            options.timeoutReason or "HEADLESS MATCH TIMEOUT"
-        )
+        -- A defensive-budget timeout is a failed simulation, not a genuine
+        -- draw. Never let benchmark aggregators silently score it as 0.5.
+        error(options.timeoutReason or "HEADLESS MATCH TIMEOUT", 0)
     end
 
     return state, bot1, bot2, ticks
