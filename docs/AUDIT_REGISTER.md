@@ -215,3 +215,10 @@ See `QUALITY_GATE.md` for the precise release decision process.
 | --- | --- | --- | --- |
 | VIS-001 | RISK P2, monitor legibility | User-approved redesign of all 35 arena models. Requires native 16-colour sprites, preserved variant selection and team colours, bounded footprints, and real PixelBox rendering. Gameplay, combat timing and balance are unchanged. | `tests/test_sprite_roster.lua` — 556 real-renderer checks in both perspectives; existing `tests/test_pixel_frame_diff.lua` — 38 checks. All 32 local Lua 5.4 suites pass; CI executes the new suite under Lua 5.2 and 5.4. Native and virtual-monitor previews are in `docs/SPRITE_REVAMP.md`. Physical CC:Tweaked monitor validation remains required. |
 
+## Arena appearance redesign — 2026-10-14
+
+| ID | Classification / priority | Prerequisites and scope | Validation / status |
+| --- | --- | --- | --- |
+| VIS-002 | RISK P2, terrain/coordinate parity | Requested arena skin must preserve the 100×160 world, exact river and bridge footprints, six tower coordinates, projection, collision, navigation, deployment and touch zones. Decoration must not consume gameplay RNG or mutate simulation state. | `tests/test_arena_skin_parity.lua` — 314,874 native/encoded terrain pixels, 68,034 coordinate cases, a bridge-width fault injection, and 240 identical combat ticks with old/new/no rendering. All 33 local suites pass in Lua 5.2 and 5.4; CI runs the new suite in both. Actual previews and preserved coordinates: `docs/ARENA_SKIN.md`. Physical monitor validation remains required. |
+
+
