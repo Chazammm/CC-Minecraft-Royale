@@ -121,6 +121,10 @@ jobs:
         run: |
           lua5.2 tests/test_sprite_roster.lua
           lua5.4 tests/test_sprite_roster.lua
+      - name: Cosmetic arena geometry, touch and simulation parity
+        run: |
+          lua5.2 tests/test_arena_skin_parity.lua
+          lua5.4 tests/test_arena_skin_parity.lua
       - name: Read-only performance profile (diagnostic, not timed pass/fail)
         run: |
           lua5.2 tests/performance_profile.lua
@@ -145,4 +149,5 @@ jobs:
         run: |
           python3 -m unittest discover -s tests -p test_report_retention.py -v
           python3 scripts/prune_reports.py
+
 
