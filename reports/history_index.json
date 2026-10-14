@@ -1,0 +1,304 @@
+{
+  "schema_version": 1,
+  "keep_recent_per_kind": 10,
+  "pre_retention_archive_branch": "archive/reports-pre-retention-20261013",
+  "retained": [
+    {
+      "kind": "balance",
+      "path": "reports/history/balance/1791543985878_balance_results.txt",
+      "timestamp_ms": 1791543985878,
+      "code_revision": null,
+      "bytes": 2991,
+      "sha256": "ca85b0c847e3149784976bdbb8b50688989578af7522b04a69c2574804b38f99",
+      "pinned": false
+    },
+    {
+      "kind": "balance",
+      "path": "reports/history/balance/1791551182365_balance_results.txt",
+      "timestamp_ms": 1791551182365,
+      "code_revision": null,
+      "bytes": 3041,
+      "sha256": "bfa2f05dc664aa52fe646aa1a4bc8105899c1202e3a9b073d1408b8a6dffae83",
+      "pinned": false
+    },
+    {
+      "kind": "balance",
+      "path": "reports/history/balance/1791552899072_balance_results.txt",
+      "timestamp_ms": 1791552899072,
+      "code_revision": null,
+      "bytes": 3041,
+      "sha256": "15a1e5e926cfaddef26931b9156e8ae13828c4d68f573b71366758e7a2a7219e",
+      "pinned": false
+    },
+    {
+      "kind": "balance",
+      "path": "reports/history/balance/1791556345911_balance_results.txt",
+      "timestamp_ms": 1791556345911,
+      "code_revision": null,
+      "bytes": 3041,
+      "sha256": "e093b32980a66acc41154dd6aeb2ef1a745275db6b842ae77e5d6feb7d54f35b",
+      "pinned": false
+    },
+    {
+      "kind": "balance",
+      "path": "reports/history/balance/1791557304789_balance_results.txt",
+      "timestamp_ms": 1791557304789,
+      "code_revision": null,
+      "bytes": 3041,
+      "sha256": "ff3dbca79421ba4a54471ef73a514f78bf1058b641f4fbf08d4b34208ca14970",
+      "pinned": false
+    },
+    {
+      "kind": "balance",
+      "path": "reports/history/balance/1791561796886_balance_results.txt",
+      "timestamp_ms": 1791561796886,
+      "code_revision": null,
+      "bytes": 3041,
+      "sha256": "b7fefbafd5728229489c211b764399c2d8da75bd2750f03612bbd2e504e0c5a3",
+      "pinned": false
+    },
+    {
+      "kind": "balance",
+      "path": "reports/history/balance/1791565770520_balance_results.txt",
+      "timestamp_ms": 1791565770520,
+      "code_revision": null,
+      "bytes": 3041,
+      "sha256": "9e41745c53fd8e482a45c75706b353502070b1b59e4bd6face78f2cd96cb62bd",
+      "pinned": false
+    },
+    {
+      "kind": "balance",
+      "path": "reports/history/balance/1791567185493_balance_results.txt",
+      "timestamp_ms": 1791567185493,
+      "code_revision": null,
+      "bytes": 3041,
+      "sha256": "4bce54e9ec1d141a9fec16182c29da83bb32bb2f1c98099a2feffbce954ac41d",
+      "pinned": false
+    },
+    {
+      "kind": "balance",
+      "path": "reports/history/balance/1791569041508_balance_results.txt",
+      "timestamp_ms": 1791569041508,
+      "code_revision": null,
+      "bytes": 3041,
+      "sha256": "4c72e29d3830fff73c036d6f47a0bbcf5b1ec6f0324f4e39b058d4ddd25c4fef",
+      "pinned": false
+    },
+    {
+      "kind": "balance",
+      "path": "reports/history/balance/1791649407928_balance_results.txt",
+      "timestamp_ms": 1791649407928,
+      "code_revision": "7ec97e417279ea7ae6d9b497eddd174004cb2264",
+      "bytes": 3238,
+      "sha256": "9ff06641755c275782b8f105743bed7c277c1284d1f4fb09556fb706944855e8",
+      "pinned": false
+    },
+    {
+      "kind": "comparison",
+      "path": "reports/history/comparison/1791456064527_comparison_results.txt",
+      "timestamp_ms": 1791456064527,
+      "code_revision": null,
+      "bytes": 5037,
+      "sha256": "27c1a884ea8783e56b603e9d07fd03fb0ce3d015ec9691974802c835fa0af16a",
+      "pinned": false
+    },
+    {
+      "kind": "comparison",
+      "path": "reports/history/comparison/1791477024239_comparison_results.txt",
+      "timestamp_ms": 1791477024239,
+      "code_revision": null,
+      "bytes": 2315,
+      "sha256": "e26811f5fded81f8ac5d4e13e5043d8faec40df7913b69fbce8f01368e39df8b",
+      "pinned": false
+    },
+    {
+      "kind": "comparison",
+      "path": "reports/history/comparison/1791566665656_comparison_results.txt",
+      "timestamp_ms": 1791566665656,
+      "code_revision": null,
+      "bytes": 7561,
+      "sha256": "2b8390cc3de286f5d52b8a1566c50b5f4f21c9e5af6212de2153c8387f65f127",
+      "pinned": false
+    },
+    {
+      "kind": "comparison",
+      "path": "reports/history/comparison/1791568655507_comparison_results.txt",
+      "timestamp_ms": 1791568655507,
+      "code_revision": null,
+      "bytes": 2331,
+      "sha256": "666f3a03b9edd2ffdf6b971dbafd0c7c7c72dc000eac02b3326bf1e76f63c353",
+      "pinned": false
+    },
+    {
+      "kind": "comparison",
+      "path": "reports/history/comparison/1791649859380_comparison_results.txt",
+      "timestamp_ms": 1791649859380,
+      "code_revision": "7ec97e417279ea7ae6d9b497eddd174004cb2264",
+      "bytes": 2512,
+      "sha256": "0f9a03a64f7b0e3998b0052f86a891674de1f2d7301ea3d036ae4f78ebb5d48e",
+      "pinned": false
+    },
+    {
+      "kind": "comparison",
+      "path": "reports/history/comparison/1791650871746_comparison_results.txt",
+      "timestamp_ms": 1791650871746,
+      "code_revision": "7ec97e417279ea7ae6d9b497eddd174004cb2264",
+      "bytes": 2500,
+      "sha256": "556d923a4a796d93ff9fc21f03e80650a7f5ff3b3bb92671f2fc07fab09c05ff",
+      "pinned": false
+    },
+    {
+      "kind": "evolution",
+      "path": "reports/history/evolution/1791462347645_evolution_results.txt",
+      "timestamp_ms": 1791462347645,
+      "code_revision": null,
+      "bytes": 3682,
+      "sha256": "e0a3ec846b76d18b913c575bc8cbb2905eb8acbdf3ff1130c17e6f9216a8c02f",
+      "pinned": false
+    },
+    {
+      "kind": "evolution",
+      "path": "reports/history/evolution/1791465208444_evolution_results.txt",
+      "timestamp_ms": 1791465208444,
+      "code_revision": null,
+      "bytes": 5208,
+      "sha256": "7cac3ce239861c86fa4fa7482b674b5fdb89787d5ba00d9c9808710e6dc802c5",
+      "pinned": false
+    },
+    {
+      "kind": "evolution",
+      "path": "reports/history/evolution/1791470549203_evolution_results.txt",
+      "timestamp_ms": 1791470549203,
+      "code_revision": null,
+      "bytes": 6466,
+      "sha256": "0a4f73d01b1e351f28c8c3e0c60a3957d2ca95fff95e5139f8c9481e991f91b4",
+      "pinned": false
+    },
+    {
+      "kind": "evolution",
+      "path": "reports/history/evolution/1791475486644_evolution_results.txt",
+      "timestamp_ms": 1791475486644,
+      "code_revision": null,
+      "bytes": 6476,
+      "sha256": "5cd1461227041485017065f8a5cbbd1d8cf63e61088dc9367c2630ff77ffaa57",
+      "pinned": false
+    },
+    {
+      "kind": "evolution",
+      "path": "reports/history/evolution/1791566990007_evolution_results.txt",
+      "timestamp_ms": 1791566990007,
+      "code_revision": null,
+      "bytes": 6886,
+      "sha256": "1cd01d41d836009e54e0cf51d65d63b99e246793ebe4aab493661bfce8255319",
+      "pinned": false
+    },
+    {
+      "kind": "evolution",
+      "path": "reports/history/evolution/1791568729440_evolution_results.txt",
+      "timestamp_ms": 1791568729440,
+      "code_revision": null,
+      "bytes": 2494,
+      "sha256": "57bcfcc8e1f90b7c5b010f970556e61e6ac91a584cc067b418c1b3609e4f97f8",
+      "pinned": false
+    },
+    {
+      "kind": "evolution",
+      "path": "reports/history/evolution/1791651421418_evolution_results.txt",
+      "timestamp_ms": 1791651421418,
+      "code_revision": "7ec97e417279ea7ae6d9b497eddd174004cb2264",
+      "bytes": 2583,
+      "sha256": "e2b7da1e4229725ac3aefc035faeaa2a49d1cf39c976fe7583b8ce004a1ded3a",
+      "pinned": false
+    },
+    {
+      "kind": "mechanics",
+      "path": "reports/history/mechanics/1791540246600_mechanics_report.txt",
+      "timestamp_ms": 1791540246600,
+      "code_revision": null,
+      "bytes": 15248,
+      "sha256": "c818b941b3b4f820874f73d818f3ce6a6305e27c7b3fc93dd6a5b79e8a266b71",
+      "pinned": false
+    },
+    {
+      "kind": "mechanics",
+      "path": "reports/history/mechanics/1791542522406_mechanics_report.txt",
+      "timestamp_ms": 1791542522406,
+      "code_revision": null,
+      "bytes": 16500,
+      "sha256": "1e2a59df2fc430dbceed3a6fd54128684dec1269e3b9a08557fafeb991834940",
+      "pinned": false
+    },
+    {
+      "kind": "mechanics",
+      "path": "reports/history/mechanics/1791560708850_mechanics_report.txt",
+      "timestamp_ms": 1791560708850,
+      "code_revision": null,
+      "bytes": 16500,
+      "sha256": "2fbffba696783eeccf5370af6748c27046505f754dea2d3374fdf41c1b0e0ea3",
+      "pinned": false
+    },
+    {
+      "kind": "mechanics",
+      "path": "reports/history/mechanics/1791561046633_mechanics_report.txt",
+      "timestamp_ms": 1791561046633,
+      "code_revision": null,
+      "bytes": 16556,
+      "sha256": "651349758290332c139fab8c4525f4fa62064b828c206c8c2b93ca598d28dfe3",
+      "pinned": false
+    },
+    {
+      "kind": "mechanics",
+      "path": "reports/history/mechanics/1791571553014_mechanics_report.txt",
+      "timestamp_ms": 1791571553014,
+      "code_revision": null,
+      "bytes": 16556,
+      "sha256": "cb62495817e21c40399ebe9b42c7709891629dc15641128cf75851e03c51664d",
+      "pinned": false
+    },
+    {
+      "kind": "mechanics",
+      "path": "reports/history/mechanics/1791643852032_mechanics_report.txt",
+      "timestamp_ms": 1791643852032,
+      "code_revision": "b084252affcdb203e4dd2c2de739455c9047a7c2",
+      "bytes": 16610,
+      "sha256": "61a4561cfe4f17284b8435106f40f26b62b9d54dc07197f82939c97c1d83bf75",
+      "pinned": false
+    },
+    {
+      "kind": "mechanics",
+      "path": "reports/history/mechanics/1791644344949_mechanics_report.txt",
+      "timestamp_ms": 1791644344949,
+      "code_revision": "cff184850a5195cfb03c834f7ce0ffdbef0a2a2a",
+      "bytes": 16611,
+      "sha256": "d171e69613c81d3fa547ff54311591bc84af6679619af2fdc58a302307d16e4d",
+      "pinned": false
+    },
+    {
+      "kind": "mechanics",
+      "path": "reports/history/mechanics/1791649214688_mechanics_report.txt",
+      "timestamp_ms": 1791649214688,
+      "code_revision": "7ec97e417279ea7ae6d9b497eddd174004cb2264",
+      "bytes": 16611,
+      "sha256": "19b27a9e83291e757baad4a634a64825f86399dc3bb237110b7b2d79f764d095",
+      "pinned": false
+    },
+    {
+      "kind": "mechanics",
+      "path": "reports/history/mechanics/1791654329913_mechanics_report.txt",
+      "timestamp_ms": 1791654329913,
+      "code_revision": "28ef6cf29ecdb6e417fe0587ee9b731b2663e7c1",
+      "bytes": 16611,
+      "sha256": "6be3700c567514e3e8703fdda805c5caf46034498dec5bb48044832f37b5f098",
+      "pinned": false
+    },
+    {
+      "kind": "mechanics",
+      "path": "reports/history/mechanics/1791734428147_mechanics_report.txt",
+      "timestamp_ms": 1791734428147,
+      "code_revision": "8ee474a700718adcca4bdad219f0e39e927be8cf",
+      "bytes": 16606,
+      "sha256": "bb0883a04f02a6ff73d7df0fe405d5fb092bf23928171d64c5306cdd8ee50cc4",
+      "pinned": false
+    }
+  ]
+}
