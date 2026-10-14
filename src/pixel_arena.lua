@@ -733,75 +733,31 @@ local function drawTerrain(box)
     -- Keep the original geometry and all mixed boundary/rail texels above.
     -- Only decorate complete, solid 2x3 PixelBox cells. This preserves even
     -- the encoded land/water/bridge footprint at every monitor resolution.
-    local towers = require("src.arena").towerBlueprints()
     local maxTileX = box.width / 2 - 1
     local maxTileY = box.height / 3 - 1
-    local waterTop, waterBottom = math.floor(riverY1), math.ceil(riverY2)
     for y = 1, box.height - 2, 3 do
         for x = 1, box.width - 1, 2 do
             local base = box.canvas[y][x]
-            local solid = true
-            for dy = 0, 2 do
-                for dx = 0, 1 do
-                    if box.canvas[y + dy][x + dx] ~= base then solid = false end
+            -- Leave the field flat and quiet, just like the original arena.
+            if base == colors.blue or base == colors.brown then
+                local solid = true
+                for dy = 0, 2 do
+                    for dx = 0, 1 do
+                        if box.canvas[y + dy][x + dx] ~= base then solid = false end
+                    end
                 end
-            end
-            if solid then
-                local tx = (x - 1) / 2
-                local ty = (y - 1) / 3
-                -- Mirror the surface pattern; never use the gameplay RNG.
-                local cx = math.min(tx, maxTileX - tx)
-                local cy = math.min(ty, maxTileY - ty)
-                if base == colors.green then
-                    local wx = (x - 0.5) / (box.width - 1) * A.width
-                    local wy = y / (box.height - 1) * A.height
-                    local stone = (y + 2 < waterTop and waterTop - (y + 2) <= 3)
-                        or (y > waterBottom and y - waterBottom <= 3)
-                    local quiet = false
-                    for _, tower in ipairs(towers) do
-                        local dx = math.abs(wx - tower.x)
-                        local dy = math.abs(wy - tower.y)
-                        if dx <= 12 and dy <= 18 then quiet = true end
-                        -- Small stone foundations under the existing towers.
-                        if dx <= 8 and dy <= 10 and (dx <= 6 or dy <= 8) then
-                            stone = true
-                        end
-                        if tower.towerType == "princess" then
-                            local bank = tower.y < A.riverTop
-                                and A.riverTop or A.riverBottom
-                            if wy >= math.min(tower.y, bank)
-                                and wy <= math.max(tower.y, bank)
-                            then
-                                local nearest, distance = A.bridgeCenters[1], math.huge
-                                for _, bridge in ipairs(A.bridgeCenters) do
-                                    local d = math.abs(bridge - tower.x)
-                                    if d < distance then nearest, distance = bridge, d end
-                                end
-                                local progress = (wy - tower.y) / (bank - tower.y)
-                                local laneX = tower.x + (nearest - tower.x) * progress
-                                if math.abs(wx - laneX) <= 3 and cy % 3 ~= 1 then
-                                    stone = true
-                                end
-                            end
-                        end
-                    end
-                    local color = colors.green
-                    if stone then
-                        color = colors.lightGray
-                    elseif not quiet and (cx * 17 + cy * 23) % 37 == 0 then
-                        color = colors.lime
-                    end
-                    fillRect(box, x, y, x + 1, y + 2, color)
-                elseif base == colors.blue then
-                    -- Wavelets stay entirely inside existing open-water cells.
-                    local wave = (cx + cy * 3) % 11
-                    if wave == 0 or wave == 1 then
+                if solid then
+                    local tx = (x - 1) / 2
+                    local ty = (y - 1) / 3
+                    local cx = math.min(tx, maxTileX - tx)
+                    local cy = math.min(ty, maxTileY - ty)
+                    -- Sparse, mirrored glints; never consume gameplay RNG.
+                    if base == colors.blue and (cx + cy * 3) % 13 == 0 then
                         fillRect(box, x, y + 1, x + 1, y + 1, colors.lightBlue)
+                    elseif base == colors.brown then
+                        -- Understated plank seams use the existing rail colour.
+                        fillRect(box, x, y + 1, x + 1, y + 1, colors.gray)
                     end
-                elseif base == colors.brown then
-                    -- Plank seams/highlights stay inside the original deck.
-                    local grain = cx % 4 == 0 and colors.orange or colors.gray
-                    fillRect(box, x, y + 1, x + 1, y + 1, grain)
                 end
             end
         end

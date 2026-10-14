@@ -1,8 +1,11 @@
 # Arena appearance: fixed coordinates
 
-The arena now has sparse grass highlights, stone tower foundations and stepping
-paths, stone banks, water wavelets, and wooden bridge grain. These are background
-colours only; they add no obstacles, entities, deployment rules or collision.
+The arena keeps the original flat green field, blue river and brown bridges.
+Only sparse light-blue water glints and simple gray plank seams add detail.
+The earlier stone foundations, stepping paths, riverbanks, lime grass patches
+and orange bridge highlights have been removed following visual feedback.
+These are background colours only; they add no obstacles, entities, deployment
+rules or collision.
 
 ![Actual before and after](../assets/arena/before-after.png)
 
@@ -24,9 +27,8 @@ river and bridge drawing is retained. Decoration is confined to complete,
 solid 2×3 PixelBox cells: mixed boundary and rail cells retain their original
 pixels. This preserves land, water and bridge footprints both before and after
 terminal encoding. Every colour used within an interior cell belongs to that
-cell's original terrain class. Grass details avoid tower health bars.
+cell's original terrain class. Grass is completely unchanged from the original arena.
 
-Paths and foundations use the existing `arena.towerBlueprints()` coordinates.
 The paint is cached with the existing terrain cache. It uses no random numbers
 and adds no per-tick terrain painting. Existing sprites, coordinate transforms,
 collision, navigation, deployment, touch handling and gameplay files are unchanged.
