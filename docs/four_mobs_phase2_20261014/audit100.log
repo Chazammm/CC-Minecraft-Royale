@@ -1,0 +1,32 @@
+CC Royale deterministic invariant audit
+CODE_REVISION|tree:22577a3d6a4db92c638881e9a8c87ae8d3982a0c
+CLOCK_SOURCE|os.clock: native Lua CPU time; CraftOS computer uptime
+AUDIT_INPUT|matches=100|seed=20261014|cards=25
+AUDIT_PROGRESS|matches=50|ticks=137026|gc_kib=521.32
+AUDIT_PROGRESS|matches=100|ticks=267182|gc_kib=521.34
+AUDIT_RESULT|matches=100|p1=50|p2=50|draws=0|ticks=267182|fingerprint=1216322018|clock_s=33.5222|gc_min_kib=521.32|gc_max_kib=521.34
+AUDIT_CARD|zombie|deck_appearances=68
+AUDIT_CARD|skeleton|deck_appearances=50
+AUDIT_CARD|iron_golem|deck_appearances=58
+AUDIT_CARD|bat_swarm|deck_appearances=70
+AUDIT_CARD|cannon|deck_appearances=64
+AUDIT_CARD|arrows|deck_appearances=64
+AUDIT_CARD|creeper|deck_appearances=80
+AUDIT_CARD|slime|deck_appearances=60
+AUDIT_CARD|blaze|deck_appearances=78
+AUDIT_CARD|witch|deck_appearances=62
+AUDIT_CARD|evoker|deck_appearances=62
+AUDIT_CARD|enderman|deck_appearances=70
+AUDIT_CARD|spider|deck_appearances=60
+AUDIT_CARD|snow_golem|deck_appearances=54
+AUDIT_CARD|villager|deck_appearances=62
+AUDIT_CARD|endermite|deck_appearances=52
+AUDIT_CARD|wolf|deck_appearances=70
+AUDIT_CARD|falling_anvil|deck_appearances=74
+AUDIT_CARD|nether_portal|deck_appearances=66
+AUDIT_CARD|wither_skeleton|deck_appearances=58
+AUDIT_CARD|magma_cube|deck_appearances=66
+AUDIT_CARD|pillager_outpost|deck_appearances=58
+AUDIT_CARD|ravager_rider|deck_appearances=66
+AUDIT_CARD|baby_ender_dragon|deck_appearances=56
+AUDIT_CARD|minoshroom|deck_appearances=72

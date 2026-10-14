@@ -1,0 +1,40 @@
+CC-Minecraft Royale controlled Evolution impact analysis
+CODE_REVISION|tree:22577a3d6a4db92c638881e9a8c87ae8d3982a0c
+Tick: 0.10s
+Contexts/evolution: 25   Evolutions: 1   Total matches: 100   Seed: 20261014
+Each context compares the exact same subject deck and opponent deck with side swapping.
+BASE disables all Evolution Slots. EVO enables only the tested card's Evolution Slot.
+Corresponding BASE/EVO matches use the same deterministic gameplay seed; current combat has no random branches.
+This measures the raw contribution of that Evolution Slot, not its opportunity cost versus another Evolution.
+
+RUN 1/1: Spider -> Hero Spider
+  10/25 contexts  (40/100 total matches)
+  20/25 contexts  (80/100 total matches)
+  25/25 contexts  (100/100 total matches)
+
+EVOLUTION|spider|base=Spider|evolved=Hero Spider
+RULE|cycles=2|evolves_on_play=3|base_cost=2.0|evo_cost=2.0
+SCORE|BASE=56.00%|EVO=64.00%|DELTA_EVO_MINUS_BASE=+8.00pp
+PAIRED_95CI|mean=+8.00pp|low=-8.51pp|high=+24.51pp|signal=LEAN BOOST
+CONTEXT_EDGE|BASE=1|EVO=3|TIE=21
+BASE_CARD|plays/match=8.96|unit/E=90.32|tower/E=4.07|kills/match=3.72|avg_match=271.1s
+EVO_CARD|plays/match=9.04|evo/match=2.72|evo_share=30.1%|reached=100.0%|unit/E=101.13|tower/E=3.46|kills/match=4.24|avg_match=272.9s
+UTILITY_BASE|bonus/match=0.00|slow/play=0.00|hits/play=0.00
+UTILITY_EVO|bonus/match=0.00|slow/play=2.69|hits/play=0.00
+SUBJECT_SLOTS|1:5,2:7,3:6,4:1,5:0,6:2,7:4,8:0
+
+HOW TO READ
+DELTA_EVO_MINUS_BASE isolates the tested Evolution against the same card/deck with no Evolution Slot.
+PAIRED_95CI uses a Student-t interval over context-by-context BASE/EVO differences after swapping P1/P2.
+reached = percent of EVO matches where the card actually cycled far enough to deploy at least one Evolution.
+evo_share = percent of that card's actual plays that were evolved in the EVO variant.
+CLEAR BOOST means the paired interval is entirely above zero; CLEAR LARGE BOOST also exceeds +10pp.
+A large boost is not automatically overpowered: Evolution Slots are supposed to add power and have cycle/opportunity costs.
+Use mixed simulation afterward to judge the resulting card/deck meta.
+
+Recommended:
+  evo_compare 30 all             -- 720-match first pass with 6 current Evolutions
+  evo_compare 100 <card_id>      -- confirm one Evolution
+  simulate 1000 mixed            -- overall meta after Evolutions
+
+Saved report: evolution_results.txt

@@ -1,0 +1,37 @@
+{
+  "audit1000": {
+    "exit": 0,
+    "seconds": 357.3604441569987,
+    "command": "audit_matches.lua 1000 20261014"
+  },
+  "audit100": {
+    "exit": 0,
+    "seconds": 33.55385115300305,
+    "command": "audit_matches.lua 100 20261014"
+  },
+  "mixed100": {
+    "exit": 0,
+    "seconds": 10.817639397995663,
+    "command": "simulate.lua 100 mixed 20261014"
+  },
+  "hero25": {
+    "exit": 0,
+    "seconds": 12.11440782900172,
+    "command": "evo_compare.lua 25 spider 20261014"
+  },
+  "rider25": {
+    "exit": 0,
+    "seconds": 13.229015972996422,
+    "command": "compare.lua 25 ravager_rider iron_golem 20261014"
+  },
+  "dragon25": {
+    "exit": 0,
+    "seconds": 12.399912786997447,
+    "command": "compare.lua 25 baby_ender_dragon blaze 20261014"
+  },
+  "mino25": {
+    "exit": 0,
+    "seconds": 12.198533416005375,
+    "command": "compare.lua 25 minoshroom iron_golem 20261014"
+  }
+}
