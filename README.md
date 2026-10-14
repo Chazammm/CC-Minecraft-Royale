@@ -49,7 +49,7 @@ Each monitor shows its own side at the bottom through a mirrored 180-degree view
 
 ## Current selectable cards
 
-There are currently **22 selectable cards**:
+There are currently **25 selectable cards**:
 
 1. Zombie
 2. Skeleton
@@ -73,6 +73,9 @@ There are currently **22 selectable cards**:
 20. Wither Skeleton
 21. Magma Cube
 22. Pillager Outpost
+23. Ravager Rider
+24. Baby Ender Dragon
+25. Minoshroom
 
 **Guardian is currently benched as a DEV-ONLY card.** Guardian and Elder Guardian remain implemented and directly spawnable in the admin sandbox, but neither appears in normal card selection, random decks, bot/simulation card pools or the normal Evolution Slot.
 
@@ -203,7 +206,7 @@ The bot uses the normal card API and Emerald economy rather than special spawn c
 
 The lobby includes:
 
-- 22-card paginated collection
+- 25-card paginated collection
 - 8-card deck builder
 - 1 extra **Evolution Slot** below the normal deck
 - Random 8-card deck button
@@ -515,3 +518,14 @@ Read [`docs/PERFORMANCE_OPTIMIZATION_20261010.md`](docs/PERFORMANCE_OPTIMIZATION
 for real CPU measurements, baseline comparison, and the still-pending
 in-game hardware validation. Changes do **not** modify attack behavior,
 sprite resolution, bot scoring rules or benchmark simulation timesteps.
+
+## Four-mob integration (Phase 2)
+
+- **Ravager Rider (5E):** 1300 HP, speed 4.4. Building-only primary hit deals twice Iron Golem damage at twice its attack interval (currently 220 / 3s). Its independently locked Pillager shoots enemy ground/air troops for 20 damage every 2s, range 15, including while marching or attacking a building. First building impact is immediate once per life.
+- **Baby Ender Dragon (5E):** 600 HP, 70 splash damage every 1.8s, range 14, splash radius 4, speed 5.2. Flying; splash affects ground and air.
+- **Minoshroom (8E):** 2100 HP, 300 single-target ground melee damage every 2.4s, range 2.5, speed 3.6. Two hits defeat the unmodified 523-HP Zombie.
+- **Hero Spider (Spider Evolution, cycle 2):** third eligible play evolves. HP 275, damage 38.76, interval 0.8/1.02, unchanged range 2.2 and speed 10.5. Web starts ready, range 12, subsequent launches 10s apart. Enemy ground troops only; no air/water-only mobs, structures or already affected/reserved targets. Permanent movement/attack-frequency factors 0.25, no stacking. Status survives source death and is cleared on final target removal. Ordinary attacks and web use separate clocks.
+
+New sprites and effects use native Lua pixel rows in `src/assets/four_mobs/`; no PNG/GIF loading occurs at runtime. The installer includes every new runtime dependency. Live and simulation combat continue to share the same Game engine. Permanent modifier calculations are shared with Bot forecasts. The existing deck size, boot-empty selection, three preset slots, river/bridge coordinates, ruleset and Dev-only Guardian restrictions remain in place.
+
+Host CI covers new mechanics, renderer dispatch, both monitor perspectives, full live/headless matches and deterministic replays. Physical CC:Tweaked monitors still require field validation.

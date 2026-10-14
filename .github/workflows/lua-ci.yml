@@ -61,6 +61,14 @@ jobs:
         run: lua5.4 tests/test_audit_hardening_20261010.lua
       - name: Third-audit regression tests
         run: lua5.4 tests/test_audit_fixes_20261010.lua
+      - name: Four mobs, Hero Spider mechanics, rendering and simulation parity
+        run: |
+          lua5.2 tests/test_four_mobs.lua
+          lua5.4 tests/test_four_mobs.lua
+          lua5.2 tests/test_four_mob_rendering.lua
+          lua5.4 tests/test_four_mob_rendering.lua
+          lua5.2 tests/test_four_mob_simulations.lua
+          lua5.4 tests/test_four_mob_simulations.lua
       - name: Audit register and release quality gate
         run: lua5.4 tests/test_release_gate.lua
       - name: Deep-audit preset filesystem false-return tests

@@ -2,6 +2,7 @@ local config = require("config")
 local cards = require("src.cards")
 local arena = require("src.arena")
 local Game = require("src.game")
+local modifiers = require("src.combat_modifiers")
 local spatial = require("src.spatial")
 local util = require("src.util")
 
@@ -64,6 +65,7 @@ local ANVIL_CARD = cards.get("falling_anvil")
 -- Static scoring tables are shared between decisions instead of being
 -- allocated again for every card evaluation.
 local POWER_PRIORITY = {
+    ravager_rider = 8, baby_ender_dragon = 6, minoshroom = 9,
     iron_golem = 9,
     guardian = 8.5,
     villager = 8,
@@ -75,6 +77,7 @@ local POWER_PRIORITY = {
 }
 
 local OFFENSE_SCORE = {
+    ravager_rider = 6.5, baby_ender_dragon = 5.5, minoshroom = 6.5,
     iron_golem = 7,
     witch = 6,
     evoker = 6.2,
@@ -244,7 +247,8 @@ local function estimatedBodyDps(body)
         dps = math.max(dps, burst / math.max(2.0, fuse + 1.0))
     end
 
-    return dps
+    if body.secondaryAttack then dps=dps+body.secondaryAttack.damage/body.secondaryAttack.interval end
+    return dps * modifiers.attackFrequency(body)
 end
 
 local function cardCombatValue(card)
@@ -263,6 +267,7 @@ local function cardCombatValue(card)
         end
         if body.globalEnemyMoveSlow then utility = utility + 35 end
         if body.teleport then utility = utility + 18 end
+        if body.heroWebAbility then utility = utility + 24 end
         if body.flying then utility = utility + 6 end
 
         local range = tonumber(body.attackRange) or 0
@@ -526,6 +531,8 @@ end
 
 unitDps = function(entity)
     local dps = directUnitDps(entity)
+    if entity.secondaryAttack then dps=dps+entity.secondaryAttack.damage/entity.secondaryAttack.interval end
+    dps=dps*modifiers.attackFrequency(entity)
     local spec = entity.periodicSpawn
 
     if spec and spec.template then
@@ -702,11 +709,7 @@ local function predictedAnvilPosition(state, entity, delay)
         return x, y, 1.0
     end
 
-    local speed = entity.moveSpeed or 0
-    if entity.slowRemaining and entity.slowRemaining > 0 then
-        speed = speed * (entity.slowFactor or 1)
-    end
-    speed = speed * (entity.globalMoveSpeedFactor or 1)
+    local speed = modifiers.moveSpeed(entity)
 
     local target = botEntityById(state, entity.targetId)
     if not target then
@@ -1000,6 +1003,7 @@ local function defensivePlacement(bot, card, threat)
         or card.id == "skeleton"
         or card.id == "witch"
         or card.id == "evoker"
+        or card.id == "baby_ender_dragon"
     then
         return clampOwnPlacement(playerId, threat.x, threat.y + back * 13)
     end
@@ -1124,7 +1128,7 @@ local function offensivePlacement(bot, state, card, view)
         return clampOwnPlacement(playerId, x, y)
     end
 
-    if card.id == "iron_golem" or card.id == "witch" or card.id == "evoker" then
+    if card.id == "iron_golem" or card.id == "witch" or card.id == "evoker" or card.id == "ravager_rider" or card.id == "minoshroom" then
         local y
         if lateGame then
             y = playerId == 1 and 96 or 64
@@ -1181,7 +1185,9 @@ local function shouldSaveForPowerCard(bot, state, ctx, arrowScore, cfg, view)
                 end
 
                 -- Only wait a short time; never sit forever on a distant expensive card.
-                if gap <= 2.25 and p > bestPriority then
+                -- The new 8E tank needs to bank from the normal 5E opening.
+                local maxGap = card.id == "minoshroom" and 3.25 or 2.25
+                if gap <= maxGap and p > bestPriority then
                     bestPriority = p
                     bestCost = playCost
                 end
@@ -1265,6 +1271,7 @@ local function scoreCard(
         if card.kind == "unit"
             and card.unit
             and card.unit.targetMode == "buildings"
+            and not card.unit.secondaryAttack
             and threat.kind == "unit"
         then
             return -math.huge
@@ -1275,6 +1282,7 @@ local function scoreCard(
         if threat.flying then
             if card.kind == "unit"
                 and not card.unit.canAttackAir
+                and not card.unit.secondaryAttack
                 and not card.unit.passive
             then
                 return -math.huge
@@ -1331,6 +1339,12 @@ local function scoreCard(
             score = score + (ctx.nearbyThreats >= 2 and 5.0 or 3.2)
         elseif card.id == "bat_swarm" and not threat.canAttackAir then
             score = score + 5
+        elseif card.id == "baby_ender_dragon" then
+            score = score + (ctx.nearbyThreats>=2 and 5 or 3)
+        elseif card.id == "minoshroom" and not threat.flying then
+            score = score + ((threat.maxHp or 0)>=900 and 6 or 2)
+        elseif card.id == "ravager_rider" then
+            score = score + 1 -- rider contributes only 10 DPS against troops
         elseif card.id == "blaze" then
             score = score + (threat.flying and 4 or 2)
         elseif card.id == "creeper" and ctx.nearbyThreats >= 2 then

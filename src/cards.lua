@@ -325,6 +325,19 @@ cards.list = {
             canAttackAir = false,
             targetMode = "any",
         },
+        evolution = {
+            cycles = 2, name = "Hero Spider", color = colors.red,
+            description = "+10% HP; +2% damage/attack rate. Every 10s: permanent 75% move/attack slow on one ground troop.",
+            statMultipliers = { maxHp = 1.10, damage = 1.02, attackCooldown = 1 / 1.02 },
+            abilities = {
+                visualVariant = "hero_spider", preciseAttackTiming = true,
+                heroWebAbility = {
+                    interval = 10, initialDelay = 0, range = 12,
+                    projectileSpeed = 40, projectileVisual = "hero_web",
+                    moveFactor = 0.25, attackFactor = 0.25,
+                },
+            },
+        },
     },
     {
         id = "snow_golem",
@@ -604,7 +617,52 @@ cards.list = {
             lifetime = 35,
         },
     },
+    {
+        id = "ravager_rider", name = "Ravager Rider", icon = "R",
+        cost = 5, kind = "unit", color = colors.gray,
+        unit = {
+            maxHp = 1300, moveSpeed = 4.4,
+            attackRange = 3, aggroRange = 50,
+            canAttackAir = false, targetMode = "buildings",
+            visualVariant = "ravager_rider", initialBuildingImpact = true,
+            secondaryAttack = {
+                damage = 20, interval = 2, range = 15,
+                projectileSpeed = 58, projectileVisual = "rider_bolt",
+            },
+        },
+    },
+    {
+        id = "baby_ender_dragon", name = "Baby Ender Dragon", icon = "Q",
+        cost = 5, kind = "unit", color = colors.purple,
+        unit = {
+            maxHp = 600, damage = 70, moveSpeed = 5.2,
+            attackRange = 14, attackCooldown = 1.8, aggroRange = 30,
+            flying = true, canAttackAir = true, targetMode = "any",
+            projectileSpeed = 38, projectileVisual = "ender_fireball",
+            projectileSplashRadius = 4, projectileSplashEffect = "ender_splash",
+            visualVariant = "baby_ender_dragon",
+        },
+    },
+    {
+        id = "minoshroom", name = "Minoshroom", icon = "M",
+        cost = 8, kind = "unit", color = colors.red,
+        unit = {
+            maxHp = 2100, damage = 300, moveSpeed = 3.6,
+            attackRange = 2.5, attackCooldown = 2.4, aggroRange = 28,
+            canAttackAir = false, targetMode = "any", visualVariant = "minoshroom",
+        },
+    },
 }
+
+-- Relative weapon values have one source of truth, including future approved
+-- Iron Golem tuning. Resolve once before registry construction/validation.
+local ironBase, riderBody
+for _,card in ipairs(cards.list) do
+    if card.id == "iron_golem" then ironBase = card.unit end
+    if card.id == "ravager_rider" then riderBody = card.unit end
+end
+riderBody.damage = ironBase.damage * 2
+riderBody.attackCooldown = ironBase.attackCooldown * 2
 
 cards.internalUnits = {
     mini_slime = {
@@ -876,6 +934,24 @@ cards.info = {
         description = "Defensive structure with lower stats than Cannon but the major advantage of shooting air and ground.",
         goodAgainst = "Bat Swarm, Blaze, mixed pushes",
         badAgainst = "Iron Golem, spells, heavy building pressure",
+    },
+    ravager_rider = {
+        role = "Dual-weapon building tank",
+        description = "Ravager hits buildings; its rider independently shoots ground and air. Immediate first building hit.",
+        goodAgainst = "buildings, tanks supported by fragile troops",
+        badAgainst = "swarms, kiting, concentrated tank damage",
+    },
+    baby_ender_dragon = {
+        role = "Flying splash support",
+        description = "Slow flying support. Ender fireballs splash ground and air enemies within radius 4.",
+        goodAgainst = "clustered ground and air units, swarms",
+        badAgainst = "ranged focus, spread units, high-HP tanks",
+    },
+    minoshroom = {
+        role = "Heavy single-target melee",
+        description = "Slow ground tank with 300 damage per axe hit. Two hits defeat a normal Zombie; cannot hit air.",
+        goodAgainst = "ground tanks, heavy melee units",
+        badAgainst = "air, swarms, ranged kiting",
     },
 }
 function cards.getInfo(id)
@@ -1233,6 +1309,15 @@ function cards.validate()
         lockedTargetId = true,
         attackCooldownLeft = true,
         sourceCardId = true,
+        heroWeb = true,
+        heroWebReservation = true,
+        pendingWebShotId = true,
+        webCooldownLeft = true,
+        riderTargetId = true,
+        riderCooldownLeft = true,
+        initialBuildingImpactUsed = true,
+        visualAnimation = true,
+
         summonerId = true,
         summonerAliveTracked = true,
         _spatialKey = true,
@@ -1418,6 +1503,32 @@ function cards.validate()
             positiveField(label .. ".hybridAttack", hybrid, "rangedCooldown")
         end
 
+        for _, key in ipairs({ "secondaryAttack", "heroWebAbility" }) do
+            local spec = mechanicTable(label, payload, key)
+            if spec then
+                local name = label .. "." .. key
+                for _, field in ipairs({ "interval", "range", "projectileSpeed" }) do
+                    if spec[field] == nil then error("Invalid card data: " .. name .. "." .. field .. " required", 0) end
+                    positiveField(name, spec, field)
+                end
+                if type(spec.projectileVisual) ~= "string" or spec.projectileVisual == "" then
+                    error("Invalid card data: " .. name .. ".projectileVisual required", 0)
+                end
+                if key == "secondaryAttack" then
+                    if spec.damage == nil then error("Invalid card data: " .. name .. ".damage required", 0) end
+                    nonNegativeField(name, spec, "damage")
+                else
+                    nonNegativeField(name, spec, "initialDelay")
+                    for _, field in ipairs({ "moveFactor", "attackFactor" }) do
+                        finite(name .. "." .. field, spec[field])
+                        if spec[field] <= 0 or spec[field] > 1 then
+                            error("Invalid card data: " .. name .. "." .. field .. " must be >0 and <=1", 0)
+                        end
+                    end
+                end
+            end
+        end
+
         nonNegativeField(label, payload, "projectileSplashRadius")
         nonNegativeField(label, payload, "emeraldBoost")
 
@@ -1451,11 +1562,19 @@ function cards.validate()
             end
         end
 
+        if (payload.secondaryAttack or payload.heroWebAbility) and kind ~= "unit" then
+            error("Invalid card data: " .. label .. " auxiliary weapons require a unit", 0)
+        end
+        if payload.initialBuildingImpact and (kind ~= "unit" or payload.targetMode ~= "buildings") then
+            error("Invalid card data: " .. label .. " initial impact requires building-only unit targeting", 0)
+        end
         local booleanFields = {
             "flying",
             "canAttackAir",
             "passive",
             "waterOnly",
+            "preciseAttackTiming",
+            "initialBuildingImpact",
         }
         for _, key in ipairs(booleanFields) do
             if payload[key] ~= nil and type(payload[key]) ~= "boolean" then

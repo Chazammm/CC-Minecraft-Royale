@@ -1,5 +1,6 @@
 local config = require("config")
 local pixelbox = require("lib.pixelbox_lite")
+local mobAssets = require("src.mob_assets")
 
 local pixelArena = {}
 
@@ -600,14 +601,14 @@ local function normalizeSprites()
 end
 normalizeSprites()
 
-local function spriteFor(entity)
+local function spriteFor(entity, clock)
     if entity.visualVariant and SPRITES[entity.visualVariant] then
         return SPRITES[entity.visualVariant]
     end
     if entity.kind == "tower" then
         return entity.towerType == "king" and SPRITES.king_tower or SPRITES.princess_tower
     end
-    return SPRITES[NAME_TO_SPRITE[entity.name]] or SPRITES.zombie
+    return mobAssets.sprite(entity, clock) or SPRITES[NAME_TO_SPRITE[entity.name]] or SPRITES.zombie
 end
 
 local function getSurface(monitor, rect)
@@ -795,6 +796,18 @@ local function alignTexelY(y)
     return math.floor((y - 1) / 3) * 3 + 1
 end
 
+local function drawNativeFrame(box, frame, px, py, flipX)
+    local x1=alignTexelX(px-frame.width/2)
+    local y1=alignTexelY(py-frame.height/2)
+    for y,row in ipairs(frame.rows) do
+        for x=1,#row do
+            local token=row:sub(x,x)
+            local color=PALETTE[token]
+            if color then put(box,x1+(flipX and frame.width-x or x-1),y1+y-1,color) end
+        end
+    end
+end
+
 local function drawHp(box, entity, playerId, cx, topY, width)
     local ratio = math.max(0, math.min(1, entity.hp / math.max(1, entity.maxHp)))
     local maxW = entity.kind == "tower" and math.max(12, width + 4) or math.max(5, width)
@@ -818,8 +831,8 @@ local function drawHp(box, entity, playerId, cx, topY, width)
     fillRect(box, x1, y, x1 + filled - 1, y + 1, barColor)
 end
 
-local function drawSprite(box, entity, playerId, frameClock)
-    local sprite = spriteFor(entity)
+local function drawSprite(box, entity, playerId, frameClock, mobClock)
+    local sprite = spriteFor(entity, mobClock or frameClock)
     local cx, cy = worldToPixel(box, playerId, entity.x, entity.y)
 
     -- Snap the sprite origin to Pixelbox's 2x3 texel grid. This removes most
@@ -872,6 +885,9 @@ local function drawSprite(box, entity, playerId, frameClock)
         end
     end
 
+    if entity.heroWeb then
+        drawNativeFrame(box, mobAssets.effect("hero_web_status"), x1+sprite.width-1, y1+sprite.height-1)
+    end
     drawHp(box, entity, playerId, x1 + sprite.width / 2, y1, sprite.width)
 end
 
@@ -890,7 +906,12 @@ end
 local function drawProjectile(box, state, playerId, projectile)
     local px, py = worldToPixel(box, playerId, projectile.x, projectile.y)
 
-    if projectile.visual == "arrow" then
+    local frame=mobAssets.effect(projectile.visual, state.visualTime or 0)
+    if frame then
+        local target=getEntityById(state,projectile.targetId)
+        local tx=target and select(1,worldToPixel(box,playerId,target.x,target.y)) or px
+        drawNativeFrame(box,frame,px,py,projectile.visual=="rider_bolt" and tx<px)
+    elseif projectile.visual == "arrow" then
         local target = getEntityById(state, projectile.targetId)
         local dx, dy = 1, 0
         if target then
@@ -1195,7 +1216,12 @@ local function drawEvokerFangs(box, playerId, effect, impact)
 end
 
 local function drawEffect(box, playerId, effect)
-    if effect.kind == "arrows" then
+    local progress=1-(effect.ttl or 0)/math.max(.001,effect.duration or .3)
+    local frame=mobAssets.effect(effect.kind,0,progress)
+    if frame then
+        local px,py=worldToPixel(box,playerId,effect.x,effect.y)
+        drawNativeFrame(box,frame,px,py)
+    elseif effect.kind == "arrows" then
         drawArrowVolley(box, playerId, effect)
     elseif effect.kind == "hit" then
         drawHit(box, playerId, effect)
@@ -1400,7 +1426,7 @@ function pixelArena.draw(monitor, state, playerId, rect, forceFullEncode)
     if playerId == 1 then
         for _, entity in ipairs(drawEntities) do
             if entity.alive then
-                drawSprite(box, entity, playerId, frameClock)
+                drawSprite(box, entity, playerId, frameClock, state.visualTime)
             end
         end
     else
@@ -1415,7 +1441,7 @@ function pixelArena.draw(monitor, state, playerId, rect, forceFullEncode)
             end
             for j = first, i do
                 if drawEntities[j].alive then
-                    drawSprite(box, drawEntities[j], playerId, frameClock)
+                    drawSprite(box, drawEntities[j], playerId, frameClock, state.visualTime)
                 end
             end
             i = first - 1

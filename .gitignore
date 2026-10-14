@@ -22,3 +22,7 @@ mechanics_report.txt
 Thumbs.db
 *.tmp
 *.swp
+
+# Host-only Python test caches
+__pycache__/
+*.py[cod]
