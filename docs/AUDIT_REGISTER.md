@@ -224,6 +224,19 @@ See `QUALITY_GATE.md` for the precise release decision process.
 
 ## Complete-system audit — 2026-10-14
 
+### VIS-003 — Four-mob Phase-1 asset package (no gameplay activation)
+
+RISK P2, visual readability and future integration. User authorizes native
+Ravager Rider, Baby Ender Dragon, Minoshroom and Hero Spider art, prepared
+animation/effect frames, isolated renderer tests and balancing proposals ONLY.
+`assets/proposed/four_mobs_phase1/` remains absent from card registration,
+runtime imports and installer manifests. Animation sequencing, new projectile
+dispatch, dual attacks and permanent Hero Web are explicitly NOT IMPLEMENTED.
+Validation: `assets/proposed/four_mobs_phase1/tools/test_assets.lua` and
+`assets/proposed/four_mobs_phase1/tools/validate_previews.py`; statuses and
+limitations are recorded in the package's `VALIDATION.md`. Phase 2 and merge
+remain blocked on explicit user authorization, not on a technical assumption.
+
 | ID | Classification / priority | Root cause / reproduction | Minimal fix | Validation / status |
 | --- | --- | --- | --- | --- |
 | AF-039 | CONFIRMED P1, terminal-state mutation | The projectile outer loop continued after a winning impact, so a later projectile damaged another tower after `Game.finish`. Independent regression loses 100 extra HP on the baseline. | Stop the battle projectile batch immediately on its first result transition. | `tests/test_system_audit_20261014.lua` — FIXED_CI (dual-Lua automated regression; hardware untested) |

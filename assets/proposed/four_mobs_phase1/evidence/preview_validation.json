@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "checks": 383,
+  "pngs": 10,
+  "gifs": 11,
+  "baselineFilesVerified": 164,
+  "gameplayIntegration": "NOT_STARTED",
+  "newGameplayTests": "NOT_TESTED",
+  "physicalMonitor": "NOT_TESTED"
+}

@@ -1,0 +1,30 @@
+name: Phase 1 assets (no gameplay activation)
+on:
+  push:
+    branches:
+      - assets/phase1-four-mobs-20261014
+permissions:
+  contents: read
+jobs:
+  isolated-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Host-only dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.2 lua5.4 python3-pil fonts-dejavu-core
+      - name: Native sprite and real renderer checks
+        run: |
+          lua5.2 assets/proposed/four_mobs_phase1/tools/test_assets.lua /tmp/assets52.json
+          lua5.4 assets/proposed/four_mobs_phase1/tools/test_assets.lua /tmp/assets54.json
+          cmp /tmp/assets52.json /tmp/assets54.json
+      - name: Exact capture parity across Lua versions
+        run: |
+          cp assets/proposed/four_mobs_phase1/evidence/captures.json /tmp/committed-captures.json
+          lua5.2 assets/proposed/four_mobs_phase1/tools/capture.lua
+          cmp /tmp/committed-captures.json assets/proposed/four_mobs_phase1/evidence/captures.json
+          lua5.4 assets/proposed/four_mobs_phase1/tools/capture.lua
+          python3 assets/proposed/four_mobs_phase1/tools/compare_captures.py /tmp/committed-captures.json assets/proposed/four_mobs_phase1/evidence/captures.json
+      - name: Preview authenticity, immutable baseline and proposal arithmetic
+        run: python3 assets/proposed/four_mobs_phase1/tools/validate_previews.py /tmp/preview-tests.json

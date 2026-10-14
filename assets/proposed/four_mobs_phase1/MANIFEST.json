@@ -1,0 +1,219 @@
+{
+  "assetSchema": 1,
+  "baseCommit": "4490cbdd00c2a7995155eb6bcb5828b3ac65d04e",
+  "phase1": "COMPLETE",
+  "phase2": "NOT_STARTED_WAITING_FOR_APPROVAL",
+  "runtimeRegistered": false,
+  "nativeUnitFrames": 25,
+  "effectFrames": 15,
+  "files": {
+    ".gitignore": {
+      "bytes": 23,
+      "sha256": "6feaded4e28ea86e001a6751b4e3d960e8b7c31b9616ff9936b79297086e809b"
+    },
+    "BALANCE.md": {
+      "bytes": 5798,
+      "sha256": "ffc84e010f3f66890ee3667859de0e73dd4b9527b23647921f07790c6ee310d1"
+    },
+    "BALANCE_PROPOSALS.json": {
+      "bytes": 1646,
+      "sha256": "bc6627f2f43115be065203fe06983fe454860e2c6afc7d1c805e16a38cda8304"
+    },
+    "FILE_LIST.md": {
+      "bytes": 1957,
+      "sha256": "b43abc398f99bcd4223d926835520553bd844fef14b4a65fbe0e439c06ee3784"
+    },
+    "PHASE2_PLAN.md": {
+      "bytes": 9735,
+      "sha256": "12b2d4a8d06303120bb1471ee8956423d044468a8bff45149183a40b37c97f1b"
+    },
+    "README.md": {
+      "bytes": 5730,
+      "sha256": "0397d515caf89b50aea99370e89daede9138ed442653ef7c3b41aaa602d99309"
+    },
+    "VALIDATION.md": {
+      "bytes": 3963,
+      "sha256": "10a54fb15343f42b164603557ded2055ae3afe3b34eaf3dbe535ffcc31076c0b"
+    },
+    "effects/baby_ender_dragon.lua": {
+      "bytes": 1806,
+      "sha256": "4097025b6c7cab2cde3fbcee09b793dcb763444b882ce3c86dabe8b11008b071"
+    },
+    "effects/hero_spider.lua": {
+      "bytes": 2016,
+      "sha256": "7aa3d1307b993e78725fd845ce6118464eaec3bb2c4995db493af3a7efc0fb60"
+    },
+    "effects/minoshroom.lua": {
+      "bytes": 1155,
+      "sha256": "0781bfac8d5cd89393d7f4db817aed040893948de1f74c95414033ec862add4c"
+    },
+    "effects/ravager_rider.lua": {
+      "bytes": 1582,
+      "sha256": "8f591e32788e1fb3e3fe275d4fa92f93b67bbd0480fe315cacbe5116d50b8c71"
+    },
+    "evidence/assets_lua52.json": {
+      "bytes": 236,
+      "sha256": "5a4f048a9d6ec7aaa2bed8e68793f918033b649c111373095eb5f9ebaf58c162"
+    },
+    "evidence/assets_lua54.json": {
+      "bytes": 236,
+      "sha256": "5a4f048a9d6ec7aaa2bed8e68793f918033b649c111373095eb5f9ebaf58c162"
+    },
+    "evidence/baseline_guard.json": {
+      "bytes": 14429,
+      "sha256": "88fd195b03f418046c4ad835e2ede45801a1751a47006bf53c1013f69ab4adce"
+    },
+    "evidence/baseline_regressions.json": {
+      "bytes": 30615,
+      "sha256": "d7e36aff20afce723881d406883c7a8d76e3da32540a65e8b5264f5f55c8e7bf"
+    },
+    "evidence/captures.json": {
+      "bytes": 50249,
+      "sha256": "6c2c966c17766a392807b257a08d608f282382b6dba168a09f48537efad430fb"
+    },
+    "evidence/existing_regressions.json": {
+      "bytes": 30617,
+      "sha256": "068ce26b89ecde4cdc87ec841194edae56705c10c3eeae9fc8cbae09db1135ae"
+    },
+    "evidence/preview_validation.json": {
+      "bytes": 211,
+      "sha256": "f831a4bc0eb384011c4e91ffc5321fbffe4c23dd50e81d7ace67ae6321496c82"
+    },
+    "previews/atlas_layout.json": {
+      "bytes": 4095,
+      "sha256": "9e00683c7cbcc48c63b5391884328a6e8dd57a6c46fbd7e499fd43985d0ba07d"
+    },
+    "previews/baby_ender_dragon_atlas.png": {
+      "bytes": 962,
+      "sha256": "28acf3d2d102d030a9fd875871d937ac30a8240b5e403f4aec9983c58d428883"
+    },
+    "previews/baby_ender_dragon_attack.gif": {
+      "bytes": 31436,
+      "sha256": "a17fda8c7080258dbdcc76a574b7c0c5eecbdad5466da6e45d248548121a9a88"
+    },
+    "previews/baby_ender_dragon_fly.gif": {
+      "bytes": 30481,
+      "sha256": "2812477e3d318d8a389a10cd30bebb33890cb4a90d9d5afe27d5f469a6eec7a4"
+    },
+    "previews/baby_ender_dragon_set.png": {
+      "bytes": 30738,
+      "sha256": "1dd023a7b10ab022898b03948800378bc264698371037c19e717bc9af066a12e"
+    },
+    "previews/hero_spider_atlas.png": {
+      "bytes": 741,
+      "sha256": "b5ef402c324a79508a4035584f83ea27b71cc05bdc39c0a33e6c6bbfe2a1b468"
+    },
+    "previews/hero_spider_melee.gif": {
+      "bytes": 20393,
+      "sha256": "887a83a8979c89d17b0d339dd00a6edbfa33bf652f36b1c05f388276477e6913"
+    },
+    "previews/hero_spider_set.png": {
+      "bytes": 29546,
+      "sha256": "0e00522ba5f2350df0eddf5df6e69660540cfaf415e51d3f3e09b34c47a8248a"
+    },
+    "previews/hero_spider_walk.gif": {
+      "bytes": 27179,
+      "sha256": "50ab664d4c0d882daefd33ffd93cef704917af87d3cf5f2ebb93f6c670f2b54a"
+    },
+    "previews/hero_spider_web.gif": {
+      "bytes": 27246,
+      "sha256": "e272a337663bd454a5a5797b41df7cf23cba878483fbdf1f202d7422e3d0775b"
+    },
+    "previews/minoshroom_atlas.png": {
+      "bytes": 771,
+      "sha256": "45f8716f08e52aef445f7429f45578d77b51f38b7cba0f0acad58e224645d566"
+    },
+    "previews/minoshroom_attack.gif": {
+      "bytes": 39904,
+      "sha256": "c67b9b32f1be799cf6610aeca716f0f1df11ff25a26f1f2f354bc9b6121d3920"
+    },
+    "previews/minoshroom_set.png": {
+      "bytes": 28424,
+      "sha256": "239a68b489f29672ad576e708bb80cee1cdf95df2b77ea35250938eb79836c6d"
+    },
+    "previews/minoshroom_walk.gif": {
+      "bytes": 32039,
+      "sha256": "e57e037069342b3a45ce222fe0a3c5f1bc579256a9d386244931619aef7fc44b"
+    },
+    "previews/monitor_roster.png": {
+      "bytes": 29105,
+      "sha256": "1f7cf3d3b8080cb9c2944896dad3e585a904168ce9dd7557b6f6557a009e0d1a"
+    },
+    "previews/native_roster.png": {
+      "bytes": 29902,
+      "sha256": "a687d4202e19ed3b304e9a0d9ab145431e54f846cb4dfbe9d488361a56c762b4"
+    },
+    "previews/ravager_rider_atlas.png": {
+      "bytes": 829,
+      "sha256": "a96ca1f01e72525e9b460837a57cce0bc5e68b9063467b72a4add39a8e852bbc"
+    },
+    "previews/ravager_rider_building_attack.gif": {
+      "bytes": 33109,
+      "sha256": "dc7362ee6b4e17a3948f83e17c5f482042ff602c695eeb4c2f271593b70ed9c8"
+    },
+    "previews/ravager_rider_combined.gif": {
+      "bytes": 32290,
+      "sha256": "41f893333ae6ba6dae0dbea5c8232ad6e3e63ed561ef77f2974e692df5847960"
+    },
+    "previews/ravager_rider_rider_shot.gif": {
+      "bytes": 32163,
+      "sha256": "45d2d85b4580c5773b67a8619b54b69dc94d57971ec0c8c3c6dada0e9fed6a31"
+    },
+    "previews/ravager_rider_set.png": {
+      "bytes": 29841,
+      "sha256": "c27d3887cc46e2f5109333b6d4bb55fe981b3da573ad97a6d602be0ce5eb93b2"
+    },
+    "previews/ravager_rider_walk.gif": {
+      "bytes": 31200,
+      "sha256": "e8f21cd344c9bcaa7533647b3633f82341eedd017c16afebaf405aa9642f542a"
+    },
+    "sprites/baby_ender_dragon.lua": {
+      "bytes": 4979,
+      "sha256": "54660eca76b71439d3a6250f5c01041feabb62b79442ba9ee57f3ce562af4590"
+    },
+    "sprites/hero_spider.lua": {
+      "bytes": 9012,
+      "sha256": "8aff08fdcb81050b38860d4d25ea9ca78be70064469d56812d5827904f2e3dea"
+    },
+    "sprites/minoshroom.lua": {
+      "bytes": 6198,
+      "sha256": "bd19048dad7a6445dab2e1e5cb3d45e98df19baa27deb1c2b676db8438f4d315"
+    },
+    "sprites/ravager_rider.lua": {
+      "bytes": 8608,
+      "sha256": "7f33e8c7917cf13edb35ebb9bc0897a82f85ab938b70c967206d68a940d0f6b0"
+    },
+    "tools/balance.py": {
+      "bytes": 2018,
+      "sha256": "88c7cd31a3adb7e646861fa91c7a1fabc51bdd00b784d867a7e1d4a8276c3b23"
+    },
+    "tools/build_assets.py": {
+      "bytes": 12077,
+      "sha256": "2d777a0c67eeec59120ad75a07c11f6670cb43da0f9179c8a4b81030247d518b"
+    },
+    "tools/capture.lua": {
+      "bytes": 1953,
+      "sha256": "16154cfb87aa5da001aafb66dad62365dc04dce4badaa9d7bd81c3fec2249029"
+    },
+    "tools/compare_captures.py": {
+      "bytes": 1069,
+      "sha256": "6b6aa66a4269a8a7045a83472e35d5abe88f527db0adf1499f77c0b86f32b218"
+    },
+    "tools/harness.lua": {
+      "bytes": 7058,
+      "sha256": "b8b791f9492f0fee25097ff0997b43bdc939fd987fa96ec43e753c06907f1d5a"
+    },
+    "tools/preview.py": {
+      "bytes": 6884,
+      "sha256": "a2153883eb3d7bb42355020b25c559c56a196bb954e471cf2a6fb38a87a41b47"
+    },
+    "tools/test_assets.lua": {
+      "bytes": 7824,
+      "sha256": "6d68e28069605e88d8c480131776fd771100644939741f7b08caa46946097806"
+    },
+    "tools/validate_previews.py": {
+      "bytes": 4442,
+      "sha256": "d55ab3bf72e20a7fe78fe39d9c463786c9fcff1c38f9e6834d0b29dcef799029"
+    }
+  }
+}

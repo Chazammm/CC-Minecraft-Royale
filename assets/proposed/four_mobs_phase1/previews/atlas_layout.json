@@ -1,0 +1,250 @@
+{
+  "ravager_rider": {
+    "units/building_hit": {
+      "x": 2,
+      "y": 3,
+      "width": 16,
+      "height": 18
+    },
+    "units/building_windup": {
+      "x": 22,
+      "y": 3,
+      "width": 16,
+      "height": 18
+    },
+    "units/combined_hit_shot": {
+      "x": 42,
+      "y": 3,
+      "width": 16,
+      "height": 18
+    },
+    "units/idle": {
+      "x": 62,
+      "y": 3,
+      "width": 16,
+      "height": 18
+    },
+    "units/rider_reload": {
+      "x": 2,
+      "y": 27,
+      "width": 16,
+      "height": 18
+    },
+    "units/rider_shot": {
+      "x": 22,
+      "y": 27,
+      "width": 16,
+      "height": 18
+    },
+    "units/walk_a": {
+      "x": 42,
+      "y": 27,
+      "width": 16,
+      "height": 18
+    },
+    "units/walk_b": {
+      "x": 62,
+      "y": 27,
+      "width": 16,
+      "height": 18
+    },
+    "effects/crossbow_bolt": {
+      "x": 2,
+      "y": 51,
+      "width": 8,
+      "height": 3
+    },
+    "effects/initial_impact_a": {
+      "x": 22,
+      "y": 51,
+      "width": 7,
+      "height": 7
+    },
+    "effects/initial_impact_b": {
+      "x": 42,
+      "y": 51,
+      "width": 7,
+      "height": 7
+    },
+    "effects/muzzle": {
+      "x": 62,
+      "y": 51,
+      "width": 5,
+      "height": 3
+    }
+  },
+  "baby_ender_dragon": {
+    "units/attack_charge": {
+      "x": 2,
+      "y": 3,
+      "width": 16,
+      "height": 16
+    },
+    "units/attack_release": {
+      "x": 22,
+      "y": 3,
+      "width": 16,
+      "height": 16
+    },
+    "units/flight_down": {
+      "x": 42,
+      "y": 3,
+      "width": 16,
+      "height": 16
+    },
+    "units/flight_up": {
+      "x": 62,
+      "y": 3,
+      "width": 16,
+      "height": 16
+    },
+    "units/idle": {
+      "x": 2,
+      "y": 27,
+      "width": 16,
+      "height": 16
+    },
+    "effects/fireball_a": {
+      "x": 22,
+      "y": 27,
+      "width": 5,
+      "height": 5
+    },
+    "effects/fireball_b": {
+      "x": 42,
+      "y": 27,
+      "width": 5,
+      "height": 5
+    },
+    "effects/splash_a": {
+      "x": 62,
+      "y": 27,
+      "width": 9,
+      "height": 9
+    },
+    "effects/splash_b": {
+      "x": 2,
+      "y": 51,
+      "width": 9,
+      "height": 9
+    }
+  },
+  "minoshroom": {
+    "units/idle": {
+      "x": 2,
+      "y": 3,
+      "width": 16,
+      "height": 18
+    },
+    "units/recovery": {
+      "x": 22,
+      "y": 3,
+      "width": 16,
+      "height": 18
+    },
+    "units/swing": {
+      "x": 42,
+      "y": 3,
+      "width": 16,
+      "height": 18
+    },
+    "units/walk_a": {
+      "x": 62,
+      "y": 3,
+      "width": 16,
+      "height": 18
+    },
+    "units/walk_b": {
+      "x": 2,
+      "y": 27,
+      "width": 16,
+      "height": 18
+    },
+    "units/windup": {
+      "x": 22,
+      "y": 27,
+      "width": 16,
+      "height": 18
+    },
+    "effects/axe_hit_a": {
+      "x": 42,
+      "y": 27,
+      "width": 8,
+      "height": 7
+    },
+    "effects/axe_hit_b": {
+      "x": 62,
+      "y": 27,
+      "width": 8,
+      "height": 7
+    }
+  },
+  "hero_spider": {
+    "units/idle": {
+      "x": 2,
+      "y": 3,
+      "width": 16,
+      "height": 10
+    },
+    "units/melee_bite": {
+      "x": 22,
+      "y": 3,
+      "width": 16,
+      "height": 10
+    },
+    "units/walk_a": {
+      "x": 42,
+      "y": 3,
+      "width": 16,
+      "height": 10
+    },
+    "units/walk_b": {
+      "x": 62,
+      "y": 3,
+      "width": 16,
+      "height": 10
+    },
+    "units/web_charge": {
+      "x": 2,
+      "y": 27,
+      "width": 16,
+      "height": 10
+    },
+    "units/web_release": {
+      "x": 22,
+      "y": 27,
+      "width": 16,
+      "height": 10
+    },
+    "effects/web_hit_a": {
+      "x": 42,
+      "y": 27,
+      "width": 9,
+      "height": 9
+    },
+    "effects/web_hit_b": {
+      "x": 62,
+      "y": 27,
+      "width": 9,
+      "height": 9
+    },
+    "effects/web_projectile_a": {
+      "x": 2,
+      "y": 51,
+      "width": 5,
+      "height": 5
+    },
+    "effects/web_projectile_b": {
+      "x": 22,
+      "y": 51,
+      "width": 5,
+      "height": 5
+    },
+    "effects/web_status": {
+      "x": 42,
+      "y": 51,
+      "width": 3,
+      "height": 3
+    }
+  }
+}
