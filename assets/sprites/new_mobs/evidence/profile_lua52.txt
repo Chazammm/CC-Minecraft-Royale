@@ -1,0 +1,19 @@
+PROFILE|headless_control|ticks=9174|bot_actions=336
+PROFILE|headless_3_matches|count=3|cpu_s=0.569656|mean_ms=189.8853|ticks=9174|bot_actions=336
+PROFILE|headless_game_update|count=9084|cpu_s=0.454708|mean_ms=0.0501
+PROFILE|headless_bot_update|count=18174|cpu_s=0.097374|mean_ms=0.0054
+PROFILE|headless_other|count=3|cpu_s=0.017574|mean_ms=5.8580
+PROFILE|crowded_bot_regular_decisions|count=35|cpu_s=0.006230|mean_ms=0.1780|enemy_units=30
+PROFILE|crowded_bot_anvil_decisions|count=35|cpu_s=0.008398|mean_ms=0.2399|enemy_units=30
+PROFILE|static_arena_0_units_2_monitors|count=12|cpu_s=0.018172|mean_ms=1.5143|first_ms=60.5780|initial_blits=80|unchanged_blits=0
+PROFILE|static_arena_30_units_2_monitors|count=12|cpu_s=0.035012|mean_ms=2.9177|first_ms=3.7200|initial_blits=38|unchanged_blits=0
+PROFILE|pixelbox_cached_static_0|count=36|cpu_s=0.026066|mean_ms=0.7241
+PROFILE|pixelbox_exhaustive_static_0|count=36|cpu_s=0.035214|mean_ms=0.9782
+PROFILE|pixelbox_ratio_static_0|cached_over_exhaustive=0.740
+PROFILE|pixelbox_cached_static_30|count=36|cpu_s=0.048513|mean_ms=1.3476
+PROFILE|pixelbox_exhaustive_static_30|count=36|cpu_s=0.060759|mean_ms=1.6877
+PROFILE|pixelbox_ratio_static_30|cached_over_exhaustive=0.798
+PROFILE|pixelbox_cached_moving_30|count=36|cpu_s=0.061880|mean_ms=1.7189
+PROFILE|pixelbox_exhaustive_moving_30|count=36|cpu_s=0.062897|mean_ms=1.7471
+PROFILE|pixelbox_ratio_moving_30|cached_over_exhaustive=0.984
+Performance profile complete (no gameplay files modified).
