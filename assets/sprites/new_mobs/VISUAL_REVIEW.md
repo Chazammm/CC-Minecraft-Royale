@@ -1,5 +1,10 @@
 # Visual review — first round, 2026-10-15
 
+Historical audit of revision 1. The user requested a corrective pass; see
+[REVISION2.md](REVISION2.md) and the [actual before/after sheet](revision_comparison.png)
+for the updated artwork. The original findings below are preserved as review
+history, not rewritten as approval.
+
 Reviewed art revision: `22952924d1dceed8e01c85d63ed3fd7780229946`.
 **Recommendation: request visual changes before approving the full set.**
 This is an assistant's art audit, not owner approval. Technical validation and

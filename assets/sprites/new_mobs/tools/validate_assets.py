@@ -69,10 +69,37 @@ for key,(x1,y1,x2,y2,t) in regions.items():
  pic=encoded(left[key]);rgb=tuple(bytes.fromhex(TOKENS[t][1:]))
  check(any(pic.getpixel((x+4,y+6))==rgb for y in range(y1,y2) for x in range(x1,x2)),
        'Identity cue lost during encoding '+key)
+# Revisions must preserve the repaired identity cues through lossy encoding.
+def cue_pixels(key, bounds, token):
+ pic=encoded(left[key]);color=tuple(bytes.fromhex(TOKENS[token][1:]))
+ x1,y1,x2,y2=bounds
+ return {(x,y) for y in range(y1,y2) for x in range(x1,x2) if pic.getpixel((x+4,y+6))==color}
+# Two separated nostrils and three separated gold crown tips, rather than a mask/band.
+check(len(cue_pixels('piglich',(4,6,12,9),'K'))==2,'Piglich nostrils merged or disappeared')
+points=cue_pixels('piglich',(4,0,12,1),'Y')
+check(sum((x-1,y) not in points for x,y in points)==3,'Piglich crown tips flattened')
+check(len(cue_pixels('piglich',(0,0,16,18),'R'))<=4,'Piglich eyes dominate the face again')
+check(bool(cue_pixels('martian_raptor',(12,4,16,8),'C')),'Raptor tail tip disappeared')
+for region in [(0,6,2,12),(14,6,16,12)]:
+ check(len(cue_pixels('sculk_behemoth',region,'C'))>=4,'Behemoth arm energy vein lost')
+for region in [(8,6,10,9),(12,9,14,12)]:
+ check(len(cue_pixels('wilden_chimera',region,'O'))>=4,'Chimera spike cluster lost')
+check(not cue_pixels('cyclops',(0,8,16,15),'I'),'Cyclops pink torso spots returned')
+
 # This feature is strictly additive; fail if any pre-existing tracked path changes.
 repo=ROOT.parents[2]
 if (repo/'.git').exists():
  changed=subprocess.check_output(['git','diff','--name-only',manifest['baseRevision']],cwd=repo,text=True).splitlines()
  check(all(p.startswith('assets/sprites/new_mobs/') or p=='.github/workflows/new-mob-assets.yml' for p in changed),
        'Unexpected existing-file/gameplay changes: '+repr(changed))
+ # Prove the before/after sheet uses actual unmodified previous shipped files.
+ previous=manifest['previousArtRevision']
+ original_paths={'pixelbox_lua52.json':'evidence/pixelbox_lua52.json',
+                 'native_sprites.lua':'cc_tweaked/sprites.lua'}
+ original_paths.update({'love2d/'+key+'.png':'love2d/'+key+'.png' for key in NAMES})
+ for archived,original in original_paths.items():
+  actual=(ROOT/'evidence/revision1'/archived).read_bytes()
+  expected=subprocess.check_output(['git','show',previous+':assets/sprites/new_mobs/'+original],cwd=repo)
+  check(actual==expected,'Before/after baseline was altered: '+archived)
+
 print(f'PASS: {checks} asset checks; source exports, alpha, dimensions, cues, palettes, hashes, exact previews, cross-Lua pixels and additive-only scope')

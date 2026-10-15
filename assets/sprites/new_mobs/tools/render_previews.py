@@ -84,6 +84,24 @@ def compositions(data):
         x=i%3*512;y=110+i//3*490
         paste(detail,Image.open(ROOT/'love2d'/(key+'.png')).convert('RGBA'),(x,y),2)
     result['evidence/love_pixel_inspection.png']=detail
+    # Revision 1 is preserved as real PNGs/terminal captures, never redrawn.
+    before = json.loads((ROOT/'evidence/revision1/pixelbox_lua52.json').read_text())
+    revision = Image.new('RGB',(1440,1460),BG)
+    header(revision,'CC ROYALE / ART REVISION 2',
+           'Revision 1 (2295292) vs current files · identical canvas scale · real PixelBox captures')
+    d=ImageDraw.Draw(revision)
+    for x,title in [(300,'LÖVE · before'),(600,'LÖVE · revised'),(950,'PixelBox · before'),(1250,'PixelBox · revised')]:
+        d.text((x,124),title,font=font(17),anchor='mm',fill='#9CB4B4')
+    for i,(key,label) in enumerate(zip(NAMES,LABELS)):
+        y=150+i*260
+        d.text((16,y+105),label.replace(' ','\n'),font=font(16),fill='#F2EEE1')
+        paste(revision,Image.open(ROOT/'evidence/revision1/love2d'/(key+'.png')).convert('RGBA'),(172,y))
+        paste(revision,Image.open(ROOT/'love2d'/(key+'.png')).convert('RGBA'),(472,y))
+        for cx,frame in [(950,before[key]),(1250,data[key])]:
+            pix=encoded(frame)
+            paste(revision,pix,(cx-pix.width*7//2,y+30),7)
+        d.line((16,y+255,1424,y+255),fill='#294344')
+    result['revision_comparison.png']=revision
     return result
 
 def main():

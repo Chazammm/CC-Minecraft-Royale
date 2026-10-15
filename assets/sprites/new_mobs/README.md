@@ -1,6 +1,7 @@
 # Five mobs — dual-platform asset library
 
-Technically usable first art set, **awaiting the owner's visual approval**.
+Second art pass after the [first visual audit](VISUAL_REVIEW.md),
+**awaiting the owner's visual approval**.
 Five original LÖVE design masters and five deliberately simplified CC rasters.
 No card, runtime registration, gameplay code, installer entry or existing asset
 is changed. Normal matches cannot select these five sprites.
@@ -8,7 +9,8 @@ is changed. Normal matches cannot select these five sprites.
 ![LÖVE roster](new_mob_roster.png)
 ![Actual PixelBox monitor output](cc_tweaked_roster.png)
 
-[Full comparison](sprite_comparison.png) · [Native pixels, including 1× swatches](cc_native_roster.png)
+[Revision 1 → 2 comparison](revision_comparison.png) · [Revision notes](REVISION2.md)
+· [Full platform comparison](sprite_comparison.png) · [Native pixels, including 1× swatches](cc_native_roster.png)
 · [2× master inspection](evidence/love_pixel_inspection.png)
 
 ## Files and dimensions
@@ -19,11 +21,11 @@ by the IDs below; individual CC PNGs are exports, not runtime inputs.
 
 | Name / ID | Origin | LÖVE RGBA | Opaque bounds (x, y, w, h) | Native CC |
 | --- | --- | --- | --- | --- |
-| Piglich / `piglich` | Allthemodium, associated with ATM10 | [256×256](love2d/piglich.png) | 54, 16, 148, 224 | [16×18](cc_tweaked/previews/piglich.png) |
-| Martian Raptor / `martian_raptor` | Ad Astra | [256×256](love2d/martian_raptor.png) | 17, 111, 223, 129 | [16×15](cc_tweaked/previews/martian_raptor.png) |
-| Cyclops / `cyclops` | Ice and Fire | [256×256](love2d/cyclops.png) | 59, 16, 138, 224 | [16×18](cc_tweaked/previews/cyclops.png) |
-| Wilden Chimera / `wilden_chimera` | Ars Nouveau | [256×256](love2d/wilden_chimera.png) | 16, 23, 224, 217 | [16×18](cc_tweaked/previews/wilden_chimera.png) |
-| Sculk Behemoth / `sculk_behemoth` | Original custom Deep Dark creature | [256×256](love2d/sculk_behemoth.png) | 16, 35, 224, 204 | [16×18](cc_tweaked/previews/sculk_behemoth.png) |
+| Piglich / `piglich` | Allthemodium, associated with ATM10 | [256×256](love2d/piglich.png) | 43, 16, 169, 224 | [16×18](cc_tweaked/previews/piglich.png) |
+| Martian Raptor / `martian_raptor` | Ad Astra | [256×256](love2d/martian_raptor.png) | 16, 132, 224, 108 | [16×14](cc_tweaked/previews/martian_raptor.png) |
+| Cyclops / `cyclops` | Ice and Fire | [256×256](love2d/cyclops.png) | 47, 16, 161, 224 | [16×18](cc_tweaked/previews/cyclops.png) |
+| Wilden Chimera / `wilden_chimera` | Ars Nouveau | [256×256](love2d/wilden_chimera.png) | 16, 78, 224, 162 | [16×18](cc_tweaked/previews/wilden_chimera.png) |
+| Sculk Behemoth / `sculk_behemoth` | Original custom Deep Dark creature | [256×256](love2d/sculk_behemoth.png) | 16, 30, 224, 210 | [16×18](cc_tweaked/previews/sculk_behemoth.png) |
 
 [MANIFEST.json](MANIFEST.json) records exact files, zero-based exclusive bounds,
 palettes, per-mob source references and revisions, anchors and SHA-256 hashes.
@@ -33,8 +35,9 @@ palettes, per-mob source references and revisions, anchors and SHA-256 hashes.
 
 The approved roster pages in `assets/sprites/approved-model-revamp-*.webp`, the
 existing native sprite roster and the user's `after.jpg` establish the colourful,
-blocky, readable style. The new masters use a front three-quarter arena view;
-the quadruped and raptor face left so their tails remain legible. They are
+blocky, readable style. The revised humanoid masters face nearly forward with
+broader, cleaner planes. The quadruped and raptor use shallow left-facing arena
+views so their tails remain legible. They are
 original interpretations, not copied mod textures or upscaled CC sprites.
 
 The model and texture links below are pinned to the actual source revisions
@@ -45,7 +48,7 @@ for the Raptor and Cyclops. These renders are reference aids, not shipped art.
 | Mob | Primary reference | Identity carried into both platforms |
 | --- | --- | --- |
 | Piglich | [Allthemodium model](https://github.com/AllTheMods/AllTheModium/blob/1d39a7cbbe7b69769bd28f09b758a3cdfa47167e/src/main/resources/assets/allthemodium/geo/piglich_anim.geo.json), [texture](https://github.com/AllTheMods/AllTheModium/blob/1d39a7cbbe7b69769bd28f09b758a3cdfa47167e/src/main/resources/assets/allthemodium/textures/entity/piglich.png), branch `1.21.x` | Grey boar/skull head, red eyes, pale tusks, gold crown, salmon arms, charcoal shoulders/coat and gold trim. Broad planted stance replaces the reference model's crossed rest legs. No invented weapon. |
-| Martian Raptor | [Ad Astra model](https://github.com/terrarium-earth/Ad-Astra/blob/45abf0ec05ea837c3df457f42ae440b6675e9cf0/src/main/java/earth/terrarium/adastra/client/models/entities/mobs/MartianRaptorModel.java), [texture](https://github.com/terrarium-earth/Ad-Astra/blob/45abf0ec05ea837c3df457f42ae440b6675e9cf0/src/main/resources/assets/ad_astra/textures/entity/mob/martian_raptor.png), branch `1.21.1` | Unusual paired green head lobes, striped green/teal skin, split-looking jaws, pale belly and hind legs, long ridged tail and claws. |
+| Martian Raptor | [Ad Astra model](https://github.com/terrarium-earth/Ad-Astra/blob/45abf0ec05ea837c3df457f42ae440b6675e9cf0/src/main/java/earth/terrarium/adastra/client/models/entities/mobs/MartianRaptorModel.java), [texture](https://github.com/terrarium-earth/Ad-Astra/blob/45abf0ec05ea837c3df457f42ae440b6675e9cf0/src/main/resources/assets/ad_astra/textures/entity/mob/martian_raptor.png), branch `1.21.1` | Broad low striped side-head blocks, dark olive brow plates, angular green snout, pale belly and bent hind legs, dark toe/claw marks and a clearly separated ridged tail. |
 | Cyclops | [Ice and Fire model](https://github.com/AlexModGuy/Ice_and_Fire/blob/02b2922003cbce3c67dad55dfea79acf1721e0db/src/main/java/com/github/alexthe666/iceandfire/client/model/ModelCyclops.java), [texture variant 0](https://github.com/AlexModGuy/Ice_and_Fire/blob/02b2922003cbce3c67dad55dfea79acf1721e0db/src/main/resources/assets/iceandfire/textures/models/cyclops/cyclops_0.png), branch `1.18.2` | One large eye, short central horn, bare tan body, long heavy arms, projecting toothed jaw, ragged brown loincloth with pale edge. No equipment added. |
 | Wilden Chimera | [Ars Nouveau model](https://github.com/baileyholl/Ars-Nouveau/blob/fd8c9520722bb96a3e75febaf770d7078db5ac43/src/main/resources/assets/ars_nouveau/geo/wilden_chimera.geo.json), [texture](https://github.com/baileyholl/Ars-Nouveau/blob/fd8c9520722bb96a3e75febaf770d7078db5ac43/src/main/resources/assets/ars_nouveau/textures/entity/wilden_chimera.png), branch `main` | Single dark horned face, red eyes, white four-legged body, orange spikes, green/teal lower legs and tail, folded brown wing mass. The source model has four legs and configurable horns, wings and spikes. This is an equipped ground pose with folded wings, not a multi-headed fantasy chimera. |
 | Sculk Behemoth | Original design for this library | Recessed slit head, uneven sculk growths on broad shoulder plates, massive clawed forearms, short legs and a cyan chest fracture. Distinct from the Warden's antennae and exposed ribcage. |
@@ -53,10 +56,14 @@ for the Raptor and Cyclops. These renders are reference aids, not shipped art.
 **Reference limits and interpretation:** these are the pinned upstream versions,
 not a verification of the user's installed ATM10 jars/resource packs. The Raptor
 source explicitly labels its model “legacy”; future replacements may differ.
-Its master includes small front clawlets as a stylistic interpretation: the
-inspected Java model has no separately named forelimb bones. Those clawlets are
-not asserted to be canonical. The CC Raptor compresses tail length and crest
-striping to keep head, tail and two hind feet legible. The Cyclops uses one
+Revision 2 uses an additional [secondary in-game view](https://www.minecraft-guides.com/mod/ad-astra/wiki/mars/)
+([image](https://www.minecraft-guides.com/wp-content/uploads/2026/06/AdAstraMod_Raptor-1024x576.png))
+to cross-check head proportions and posture against the primary geometry.
+The previously unverified front clawlets are removed, tall head sails are
+replaced with lower box-like forms, and feet are dark green rather than large
+ivory talons. The screenshot does not verify the user's installed pack.
+The CC Raptor keeps a compressed but distinctly horizontal head/body/tail
+arrangement and two separate hind feet. The Cyclops uses one
 uninjured texture variant; other variants are not represented. The Chimera's
 far fourth leg is partly occluded in the master's three-quarter pose; all four
 feet are explicit in CC rows. The Behemoth's entire anatomy is custom.
@@ -73,12 +80,15 @@ technical export. No claim of hand-painted source pixels is made.
 CC tokens exactly match `src/pixel_arena.lua`:
 `K W S D G L B A C R Y N P M O I`; `.` is transparent. No custom palette is
 installed. Each sprite uses a subset recorded in the manifest. Team identity
-uses the existing HP bar, not recoloured creature anatomy. Pink substitutes
-for skin highlights; the dark brown skin/cloth of the Cyclops is limited by
-the native palette. The Chimera uses cyan (`C`) for its green/teal paws because
-native green (`G`) is also the arena grass. This intentional adaptation keeps
-its four feet visible. Behemoth cyan/light-blue clusters preserve its visor and
-energy fracture. No sprite exceeds the existing 16×18 test envelope.
+uses the existing HP bar, not recoloured creature anatomy. Piglich uses pink
+skin, small red eyes and a pale snout/tusk region. Cyclops uses brown skin
+without pink torso spots; its skin/cloth shading is limited by the palette.
+Raptor dark teal stripes are approximated with cyan, and its feet use dark
+grey/black with a small cyan edge. Chimera has dark grey paws with a thin cyan
+(`C`) rim, replacing the first pass's large cyan foot blocks. Native green
+(`G`) is also arena grass, so using it alone would hide these feet.
+Behemoth dark grey/black planes add limb mass; narrow cyan/light-blue clusters
+preserve its visor, arm veins and chest fracture. No sprite exceeds 16×18.
 
 PixelBox retains only two colours per 2×3 terminal cell. It can merge small
 claws, crown points, fur or stripes. The monitor preview is decoded from the
@@ -93,8 +103,8 @@ logical pixels; physical monitor cell aspect and palette settings may differ.
 
 All LÖVE canvases use the **zero-based foot anchor `(128, 240)`**. Each sprite
 has at least 16 pixels of canvas margin. Content is fitted inside 224×224 with
-the same foot line; the Raptor is naturally wider and shorter. The Behemoth's
-last opaque row is y=238 after nearest sampling, one pixel above that line.
+the same foot line; the Raptor is naturally wider and shorter. All current
+opaque bounds end at the exclusive y=240 foot line.
 Use [`love2d/index.lua`](love2d/index.lua) for the single-frame metadata:
 
 ```lua

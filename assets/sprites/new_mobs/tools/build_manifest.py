@@ -16,7 +16,8 @@ manifest={'schema':1,'baseRevision':'6e85dc77553bd17422deeb9cb51258cefda06fe5','
           'availableFrames':['idle'],'futureAnimationStates':['movement','attack','hurt','death'],
           'loveCanvas':[256,256],'loveAnchor':[128,240],'loveFilter':'nearest','loveAlpha':'binary',
           'nativePalette':'src/pixel_arena.lua PALETTE / default CC RGB',
-          'nativeModule':'assets/sprites/new_mobs/cc_tweaked/sprites.lua','assets':{}}
+          'nativeModule':'assets/sprites/new_mobs/cc_tweaked/sprites.lua','artRevision':2,
+          'previousArtRevision':'22952924d1dceed8e01c85d63ed3fd7780229946','assets':{}}
 for key,label,origin in zip(NAMES,LABELS,ORIGINS):
  im=Image.open(ROOT/'love2d'/(key+'.png')).convert('RGBA');cc=data[key]
  colors=sorted({p[:3] for p in im.getdata() if p[3]})
@@ -24,9 +25,14 @@ for key,label,origin in zip(NAMES,LABELS,ORIGINS):
  if key in refs:
   repo,rev,model,texture=refs[key]
   reference={'repository':repo,'revision':rev,'model':'https://github.com/'+repo+'/blob/'+rev+'/'+model,'texture':'https://github.com/'+repo+'/blob/'+rev+'/'+texture}
+ if key=='martian_raptor':
+  reference['additionalVisualReference']={'kind':'secondary_ingame_view',
+   'page':'https://www.minecraft-guides.com/mod/ad-astra/wiki/mars/',
+   'image':'https://www.minecraft-guides.com/wp-content/uploads/2026/06/AdAstraMod_Raptor-1024x576.png',
+   'accessed':'2026-10-15'}
  entry={'name':label,'origin':origin,'reference':reference,
         'loveFile':'love2d/'+key+'.png','sourceFile':'source/'+key+'.png',
-        'loveDimensions':list(im.size),'loveBounds':list(im.getbbox()),'loveAnchor':[128,240],
+        'sourceDimensions':list(Image.open(ROOT/'source'/(key+'.png')).size),'loveDimensions':list(im.size),'loveBounds':list(im.getbbox()),'loveAnchor':[128,240],
         'loveOpaquePixels':sum(p[3]>0 for p in im.getdata()),'lovePalette':['#%02x%02x%02x'%p for p in colors],
         'nativeKey':key,'nativeDimensions':[cc['width'],cc['height']],
         'nativeRendererAnchor':[cc['width']/2,cc['height']/2],
