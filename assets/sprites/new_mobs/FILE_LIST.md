@@ -5,6 +5,7 @@ All paths below are relative to this directory.
 - [MANIFEST.json](MANIFEST.json)
 - [README.md](README.md)
 - [VALIDATION.md](VALIDATION.md)
+- [VISUAL_REVIEW.md](VISUAL_REVIEW.md)
 - [cc_native_roster.png](cc_native_roster.png)
 - [cc_tweaked/previews/cyclops.png](cc_tweaked/previews/cyclops.png)
 - [cc_tweaked/previews/cyclops_pixelbox.png](cc_tweaked/previews/cyclops_pixelbox.png)
