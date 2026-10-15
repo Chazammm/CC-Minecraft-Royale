@@ -1,0 +1,494 @@
+{
+  "schema": 1,
+  "baseRevision": "6e85dc77553bd17422deeb9cb51258cefda06fe5",
+  "activation": "asset_library_only",
+  "availableFrames": [
+    "idle"
+  ],
+  "futureAnimationStates": [
+    "movement",
+    "attack",
+    "hurt",
+    "death"
+  ],
+  "loveCanvas": [
+    256,
+    256
+  ],
+  "loveAnchor": [
+    128,
+    240
+  ],
+  "loveFilter": "nearest",
+  "loveAlpha": "binary",
+  "nativePalette": "src/pixel_arena.lua PALETTE / default CC RGB",
+  "nativeModule": "assets/sprites/new_mobs/cc_tweaked/sprites.lua",
+  "assets": {
+    "piglich": {
+      "name": "Piglich",
+      "origin": "Allthemodium",
+      "reference": {
+        "repository": "AllTheMods/AllTheModium",
+        "revision": "1d39a7cbbe7b69769bd28f09b758a3cdfa47167e",
+        "model": "https://github.com/AllTheMods/AllTheModium/blob/1d39a7cbbe7b69769bd28f09b758a3cdfa47167e/src/main/resources/assets/allthemodium/geo/piglich_anim.geo.json",
+        "texture": "https://github.com/AllTheMods/AllTheModium/blob/1d39a7cbbe7b69769bd28f09b758a3cdfa47167e/src/main/resources/assets/allthemodium/textures/entity/piglich.png"
+      },
+      "loveFile": "love2d/piglich.png",
+      "sourceFile": "source/piglich.png",
+      "loveDimensions": [
+        256,
+        256
+      ],
+      "loveBounds": [
+        54,
+        16,
+        202,
+        240
+      ],
+      "loveAnchor": [
+        128,
+        240
+      ],
+      "loveOpaquePixels": 21838,
+      "lovePalette": [
+        "#0e0b0e",
+        "#171317",
+        "#1b161c",
+        "#1e181c",
+        "#1f1314",
+        "#221e24",
+        "#272227",
+        "#2a252a",
+        "#2b262e",
+        "#2d2930",
+        "#312d34",
+        "#3c3129",
+        "#3d3637",
+        "#401e0e",
+        "#413a3e",
+        "#464043",
+        "#542916",
+        "#56452d",
+        "#646c37",
+        "#6d4e0a",
+        "#79371e",
+        "#8c5223",
+        "#947c4d",
+        "#9da999",
+        "#b76144",
+        "#b97540",
+        "#cbc6c0",
+        "#d07959",
+        "#d78261",
+        "#dd8553",
+        "#e58e54",
+        "#e6e3df",
+        "#ea9576",
+        "#eaac78",
+        "#f8a355",
+        "#f9a582",
+        "#fcad8a",
+        "#fcba62",
+        "#fcf5a7",
+        "#fde03b"
+      ],
+      "nativeKey": "piglich",
+      "nativeDimensions": [
+        16,
+        18
+      ],
+      "nativeRendererAnchor": [
+        8.0,
+        9.0
+      ],
+      "nativeTokens": [
+        "D",
+        "I",
+        "K",
+        "N",
+        "R",
+        "S",
+        "W",
+        "Y"
+      ],
+      "nativePreview": "cc_tweaked/previews/piglich.png",
+      "pixelboxPreview": "cc_tweaked/previews/piglich_pixelbox.png",
+      "sha256": {
+        "love2d/piglich.png": "c9675c0c941a59036b103240fdc6a20663f309c1b077b1b475d47fa6e08652a9",
+        "source/piglich.png": "6a3e7a725c9c259786313717b2e2c5ab2297b4cd8214e2eadf205146399811ba",
+        "cc_tweaked/previews/piglich.png": "6e4233feeb2007c2d9ce195219721662138f7aed3889ef0ccb23904f9aa2ce56"
+      }
+    },
+    "martian_raptor": {
+      "name": "Martian Raptor",
+      "origin": "Ad Astra",
+      "reference": {
+        "repository": "terrarium-earth/Ad-Astra",
+        "revision": "45abf0ec05ea837c3df457f42ae440b6675e9cf0",
+        "model": "https://github.com/terrarium-earth/Ad-Astra/blob/45abf0ec05ea837c3df457f42ae440b6675e9cf0/src/main/java/earth/terrarium/adastra/client/models/entities/mobs/MartianRaptorModel.java",
+        "texture": "https://github.com/terrarium-earth/Ad-Astra/blob/45abf0ec05ea837c3df457f42ae440b6675e9cf0/src/main/resources/assets/ad_astra/textures/entity/mob/martian_raptor.png"
+      },
+      "loveFile": "love2d/martian_raptor.png",
+      "sourceFile": "source/martian_raptor.png",
+      "loveDimensions": [
+        256,
+        256
+      ],
+      "loveBounds": [
+        17,
+        111,
+        240,
+        240
+      ],
+      "loveAnchor": [
+        128,
+        240
+      ],
+      "loveOpaquePixels": 12312,
+      "lovePalette": [
+        "#002e30",
+        "#003839",
+        "#004540",
+        "#012e30",
+        "#013939",
+        "#014840",
+        "#015348",
+        "#01633e",
+        "#02433d",
+        "#025642",
+        "#026d38",
+        "#058033",
+        "#062122",
+        "#076733",
+        "#091011",
+        "#0a9032",
+        "#149b2b",
+        "#172d2d",
+        "#1aa02b",
+        "#204337",
+        "#23b029",
+        "#30b82a",
+        "#38c12a",
+        "#3da03c",
+        "#3dc62a",
+        "#43cb2a",
+        "#50d12c",
+        "#5c5b37",
+        "#74e531",
+        "#8def37",
+        "#a2c574",
+        "#cec79f",
+        "#d9d1a6",
+        "#e0d8ab",
+        "#e9dfb1",
+        "#f0e7b8",
+        "#f7efc4",
+        "#fcf4c5",
+        "#fef9cf",
+        "#fefbd9"
+      ],
+      "nativeKey": "martian_raptor",
+      "nativeDimensions": [
+        16,
+        15
+      ],
+      "nativeRendererAnchor": [
+        8.0,
+        7.5
+      ],
+      "nativeTokens": [
+        "C",
+        "G",
+        "K",
+        "L",
+        "W",
+        "Y"
+      ],
+      "nativePreview": "cc_tweaked/previews/martian_raptor.png",
+      "pixelboxPreview": "cc_tweaked/previews/martian_raptor_pixelbox.png",
+      "sha256": {
+        "love2d/martian_raptor.png": "79853ff9c9fa434752882cc2a4c4bf8d660cabd99d87ba61834683e726c37124",
+        "source/martian_raptor.png": "d117fe1875a92b9a1b2da396f3b8fe686815de21a161961c08264cc2214a4577",
+        "cc_tweaked/previews/martian_raptor.png": "3b352a3c009579bd1b8c9d39082327e81fbef6fcd5373d231f8500e01b603190"
+      }
+    },
+    "cyclops": {
+      "name": "Cyclops",
+      "origin": "Ice and Fire",
+      "reference": {
+        "repository": "AlexModGuy/Ice_and_Fire",
+        "revision": "02b2922003cbce3c67dad55dfea79acf1721e0db",
+        "model": "https://github.com/AlexModGuy/Ice_and_Fire/blob/02b2922003cbce3c67dad55dfea79acf1721e0db/src/main/java/com/github/alexthe666/iceandfire/client/model/ModelCyclops.java",
+        "texture": "https://github.com/AlexModGuy/Ice_and_Fire/blob/02b2922003cbce3c67dad55dfea79acf1721e0db/src/main/resources/assets/iceandfire/textures/models/cyclops/cyclops_0.png"
+      },
+      "loveFile": "love2d/cyclops.png",
+      "sourceFile": "source/cyclops.png",
+      "loveDimensions": [
+        256,
+        256
+      ],
+      "loveBounds": [
+        59,
+        16,
+        197,
+        240
+      ],
+      "loveAnchor": [
+        128,
+        240
+      ],
+      "loveOpaquePixels": 18905,
+      "lovePalette": [
+        "#2c1305",
+        "#361b09",
+        "#41210c",
+        "#552a11",
+        "#673c2a",
+        "#764737",
+        "#844d3a",
+        "#885340",
+        "#8c5744",
+        "#925946",
+        "#935c48",
+        "#96604c",
+        "#9b604c",
+        "#9e654f",
+        "#a26752",
+        "#a56a54",
+        "#aa6d56",
+        "#ab745e",
+        "#ad7059",
+        "#b3765e",
+        "#b77860",
+        "#b97b62",
+        "#bb7d64",
+        "#be7f65",
+        "#bf8267",
+        "#c08469",
+        "#c2856a",
+        "#c2876c",
+        "#c4856a",
+        "#c5886c",
+        "#c6896e",
+        "#c8896e",
+        "#c88b6f",
+        "#ca8c70",
+        "#ca8f73",
+        "#cca68e",
+        "#d29476",
+        "#d9cfc1",
+        "#e1a384",
+        "#f1ebdf"
+      ],
+      "nativeKey": "cyclops",
+      "nativeDimensions": [
+        16,
+        18
+      ],
+      "nativeRendererAnchor": [
+        8.0,
+        9.0
+      ],
+      "nativeTokens": [
+        "D",
+        "I",
+        "K",
+        "N",
+        "S",
+        "W"
+      ],
+      "nativePreview": "cc_tweaked/previews/cyclops.png",
+      "pixelboxPreview": "cc_tweaked/previews/cyclops_pixelbox.png",
+      "sha256": {
+        "love2d/cyclops.png": "025982e652319b0339f43d454f9157dc46634fb55aaeb67e0ecacd10714c2ad8",
+        "source/cyclops.png": "50be1db5e8844a7796b62cd7f9ff0fe808d57cd8fbee2eae1044d54d2acbe56b",
+        "cc_tweaked/previews/cyclops.png": "2f1779dc5ffd286945c1f4216775a233350a0bb56415848bb86bee862aa72f48"
+      }
+    },
+    "wilden_chimera": {
+      "name": "Wilden Chimera",
+      "origin": "Ars Nouveau",
+      "reference": {
+        "repository": "baileyholl/Ars-Nouveau",
+        "revision": "fd8c9520722bb96a3e75febaf770d7078db5ac43",
+        "model": "https://github.com/baileyholl/Ars-Nouveau/blob/fd8c9520722bb96a3e75febaf770d7078db5ac43/src/main/resources/assets/ars_nouveau/geo/wilden_chimera.geo.json",
+        "texture": "https://github.com/baileyholl/Ars-Nouveau/blob/fd8c9520722bb96a3e75febaf770d7078db5ac43/src/main/resources/assets/ars_nouveau/textures/entity/wilden_chimera.png"
+      },
+      "loveFile": "love2d/wilden_chimera.png",
+      "sourceFile": "source/wilden_chimera.png",
+      "loveDimensions": [
+        256,
+        256
+      ],
+      "loveBounds": [
+        16,
+        23,
+        240,
+        240
+      ],
+      "loveAnchor": [
+        128,
+        240
+      ],
+      "loveOpaquePixels": 26563,
+      "lovePalette": [
+        "#0b130f",
+        "#225043",
+        "#2b6453",
+        "#2d1d17",
+        "#32251d",
+        "#326e5c",
+        "#3c2a20",
+        "#3f3227",
+        "#4b3a2e",
+        "#594b40",
+        "#645243",
+        "#657b6a",
+        "#6d5d4f",
+        "#736659",
+        "#7a6a59",
+        "#7e7061",
+        "#8e7b6a",
+        "#8f8b7d",
+        "#90816f",
+        "#959a8d",
+        "#a49a8c",
+        "#b06d44",
+        "#bf4e26",
+        "#ccc5c4",
+        "#cfa881",
+        "#d0321a",
+        "#d9d0cf",
+        "#ded7d3",
+        "#e3c499",
+        "#e4dfdc",
+        "#eb8839",
+        "#ece2d4",
+        "#f0eae3",
+        "#f1e9d8",
+        "#f6efe5",
+        "#f8f3ed",
+        "#fbf7f1",
+        "#fcfaf9",
+        "#fd6d18",
+        "#fdfdfc"
+      ],
+      "nativeKey": "wilden_chimera",
+      "nativeDimensions": [
+        16,
+        18
+      ],
+      "nativeRendererAnchor": [
+        8.0,
+        9.0
+      ],
+      "nativeTokens": [
+        "C",
+        "G",
+        "K",
+        "N",
+        "O",
+        "R",
+        "S",
+        "W"
+      ],
+      "nativePreview": "cc_tweaked/previews/wilden_chimera.png",
+      "pixelboxPreview": "cc_tweaked/previews/wilden_chimera_pixelbox.png",
+      "sha256": {
+        "love2d/wilden_chimera.png": "0b2463b2047695025d383627244c3d1e19789e2677d7850bf005c45c81134db4",
+        "source/wilden_chimera.png": "a71281c26f4c6be127efd392a0d3c096c6a7a75cd5fa8aad6b86c3649f5d2540",
+        "cc_tweaked/previews/wilden_chimera.png": "7251407b3ea2c0c0775dc3fb8cf551da69cb7bbdeb773903c31689f14817df33"
+      }
+    },
+    "sculk_behemoth": {
+      "name": "Sculk Behemoth",
+      "origin": "Original · Deep Dark",
+      "reference": {
+        "kind": "original_custom_design"
+      },
+      "loveFile": "love2d/sculk_behemoth.png",
+      "sourceFile": "source/sculk_behemoth.png",
+      "loveDimensions": [
+        256,
+        256
+      ],
+      "loveBounds": [
+        16,
+        35,
+        240,
+        239
+      ],
+      "loveAnchor": [
+        128,
+        240
+      ],
+      "loveOpaquePixels": 26567,
+      "lovePalette": [
+        "#020205",
+        "#022a3c",
+        "#05070c",
+        "#054965",
+        "#060407",
+        "#060e18",
+        "#062133",
+        "#06354e",
+        "#065874",
+        "#06d4dc",
+        "#073e59",
+        "#08070a",
+        "#08080f",
+        "#080a13",
+        "#081422",
+        "#081a2b",
+        "#0a0d19",
+        "#0b0d18",
+        "#0c0e1a",
+        "#0c728e",
+        "#0e101b",
+        "#0e1424",
+        "#0f2a46",
+        "#121624",
+        "#12172c",
+        "#131a2f",
+        "#141d34",
+        "#14213b",
+        "#191f31",
+        "#1b2238",
+        "#1d2947",
+        "#25293a",
+        "#262f48",
+        "#263656",
+        "#2f4e69",
+        "#323746",
+        "#383f55",
+        "#535765",
+        "#67747e",
+        "#7fccce"
+      ],
+      "nativeKey": "sculk_behemoth",
+      "nativeDimensions": [
+        16,
+        18
+      ],
+      "nativeRendererAnchor": [
+        8.0,
+        9.0
+      ],
+      "nativeTokens": [
+        "A",
+        "C",
+        "D",
+        "K",
+        "S"
+      ],
+      "nativePreview": "cc_tweaked/previews/sculk_behemoth.png",
+      "pixelboxPreview": "cc_tweaked/previews/sculk_behemoth_pixelbox.png",
+      "sha256": {
+        "love2d/sculk_behemoth.png": "cd2eb3e8096c7e99e6498d2bc0f3db101b0051719c3c1efec81f3b39ffb3ec59",
+        "source/sculk_behemoth.png": "5618987777a20e6f77d849eb7f781378a8f5fea25e0c260969cfe1816f33ebcc",
+        "cc_tweaked/previews/sculk_behemoth.png": "c238acbd4618111c7054470faa4abdb2097cd0006c911ab002d8591abd4776d4"
+      }
+    }
+  },
+  "nativeModuleSha256": "4adfbf5aa26c781ad4716864dc991d8710b1306ec1fa8d7c674b190eb52fe25d"
+}
