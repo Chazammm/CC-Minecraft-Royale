@@ -1,0 +1,25 @@
+{
+  "sourceReview": "https://github.com/Chazammm/CC-Minecraft-Royale/pull/21",
+  "sourceRevision": "a0da310becfbdb028780ab698fa3d80a047e46a5",
+  "loveSha256": {
+    "king_frog": "4b21072bd91b808ebe2f8ac42074f7ed59195d128d41f74ae4c69dfb8d81abf9",
+    "nether_worm": "41d01475833de12222a86a75d205c0ac1381f47969cd8ec9d616d335e5130b0f"
+  },
+  "nativeModule": "src/assets/custom_mobs/frames.lua",
+  "anchors": {
+    "love2d": [
+      128,
+      240
+    ],
+    "native": "existing renderer center / 2x3 snapped"
+  },
+  "nativeMaxDimensions": [
+    16,
+    18
+  ],
+  "implementation": [
+    "king_frog",
+    "nether_worm"
+  ],
+  "nativeSha256": "a3b4f380a66168d238e0cbd6493a3dd2a2681f4932846a6162af7981853da66a"
+}
