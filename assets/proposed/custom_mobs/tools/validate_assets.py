@@ -91,7 +91,24 @@ proposed={x['id']:x for x in proposals['cards']}
 w=proposed['nether_worm'];ore=proposed['ore_centipede']
 check(w['placement']=='all_arena_walkable_ground' and not w['ability']['reburrow'],'Worm arena-wide contract lost')
 check(w['ability']['warning']+w['ability']['exposedEmergence']==2,'Warning/emergence timing changed')
-check(w['damage']*w['ability']['structureMultiplier']==33.25,'Structure damage arithmetic')
+frog=proposed['king_frog']
+check(proposals['implementationCandidates']==['king_frog','nether_worm'],'Unexpected implementation scope')
+check(set(proposals['deferredConcepts'])=={'netherite_crab','ore_centipede'},'Deferred concepts lost')
+check(frog['cost']==3 and frog['hp']==550 and w['cost']==3 and w['hp']==350,'Owner cost/HP revision lost')
+check(frog['range']==2.5 and frog['ability']['pullRange']==12 and frog['ability']['pullToDistance']==frog['range'],'Frog hook does not reach melee')
+check(frog['ability']['maxPullDistance']==frog['ability']['pullRange']-frog['range'],'Frog displacement mismatch')
+check(frog['ability']['hookDamage']==0 and frog['ability']['followUp']=='normal_melee_attack','Frog hook became a ranged damage attack')
+check(frog['ability']['groundUnitsOnly'] and not frog['ability']['smallGroundUnitsOnly'],'Frog still restricts pulls to small units')
+check(w['ability']['unitMultiplier']==1 and w['ability']['buildingMultiplier']==1,'Worm normal targets are damage-reduced')
+check(w['damage']*w['ability']['towerMultiplier']==47.5 and 'structureMultiplier' not in w['ability'],'Worm tower-only 50% reduction lost')
+check(w['damage']==95 and w['ability']['openerBonus']==85,'Unrequested base/opener damage change')
+check(len(cue('king_frog_tongue',(6,10,8,14),'I'))>=6,'Frog tongue extension lost during encoding')
+warning=data['nether_worm_warning'];warning_image=encoded(warning)
+check(warning['pipeline']=='ISOLATED_GROUND_FRAME_AND_ACTUAL_PIXELBOX' and warning['hasHealthBar'] is False,'Warning captured as unit')
+check(set(warning_image.crop((4,0,20,6)).get_flattened_data())=={tuple(bytes.fromhex(TOKENS['G'][1:]))},'Ground warning has HP bar pixels')
+check(tuple(bytes.fromhex(TOKENS['A'][1:])) in set(encoded(data['nether_worm_emerging']).get_flattened_data()),'Emerging target lost HP bar')
+base_cards={c['id']:c for c in current['cards']}
+check(base_cards['villager']['kind']=='unit' and base_cards['villager']['unit']['maxHp']==185,'Bank/Villager classification reference changed')
 check(ore['ability']['charges']*ore['ability']['healPerCharge']==360 and not ore['ability']['arenaMining'],'Finite reserve changed')
 repo=ROOT.parents[2]
 if (repo/'.git').exists():

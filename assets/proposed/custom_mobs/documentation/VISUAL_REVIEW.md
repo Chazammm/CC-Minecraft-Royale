@@ -31,7 +31,15 @@ The raw CC rows were visually inspected before and after actual sextant encoding
 ## Remaining limits
 
 - Four complete static LÖVE poses, not full movement/combat/death animation sets or layered editable Aseprite files. Original PNGs and reproducible export scripts are supplied.
-- Thirteen native poses are isolated studies, not active animation state handling. Warning study uses the unit harness and its test HP bar; future warning must be a ground effect. Native feeding frames compress ore art rather than removing physical collision segments.
+- Thirteen native poses are isolated studies, not active animation state handling. Warning now uses a separate ground-overlay capture without a fake entity or HP bar. Native feeding frames compress ore art rather than removing physical collision segments.
 - No running LÖVE application / GPU capture, physical CC:Tweaked hardware, real monitor aspect/timing measurement or many-unit new-mob benchmark. Logical-pixel enlargements use square pixels; physical terminal cells may have a different apparent aspect.
 - Native palette cannot reproduce burgundy Nether Worm shadows or subtle netherite violet exactly. No global palette remap was introduced; team/terrain colors retain their established meaning.
 - Stat and ability proposals have no new-mechanic simulation validation. No production changes, live cards, special attacks or bot behavior are included.
+
+## Second review — owner-selected pair
+
+All four master PNGs, the native roster, all13 native poses and actual PixelBox output were inspected again. No alpha/crop defects were found in the four masters; they are unchanged. King Frog remains recognizably quadruped and royal; Worm keeps the distinct rising coil, maw/teeth and lava seam. Native detail loss remains visible: the Frog summarizes rear toes/cape and the Worm loses fine plate segmentation/shadow shades. These are not full directional/animation sets or physical monitor inspection.
+
+Two concrete defects were corrected: the Frog's earlier circular mouth study did not communicate an extended tongue; it now has a narrow pink ribbon projecting between the forefeet. The Worm warning was incorrectly presented with the unit harness's test HP bar; its capture now overlays only the ground pixels into the real PixelBox pipeline, with no unit entity or health bar. Emergence retains its HP bar, matching the future targetability contract. New cue checks cover tongue extension and absence of a warning HP bar.
+
+Only King Frog and Nether Worm are candidates for subsequent implementation, at3E/550HP and3E/350HP. This review does not approve or activate gameplay. Their focused comparison is `previews/selected_pair_review.png`; the four-mob art library is retained for future use.

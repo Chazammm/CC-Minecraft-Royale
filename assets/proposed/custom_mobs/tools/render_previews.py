@@ -76,6 +76,22 @@ def compositions(data,monitor_data=None):
   paste(poses,pix,(cx-pix.width*3,y),6)
   ImageDraw.Draw(poses).text((cx,y+207),key.replace('_',' '),font=font(13),anchor='mm',fill='#F2EEE1')
  result['previews/native_poses.png']=poses
+ selected=Image.new('RGB',(1280,810),BG)
+ header(selected,'KING FROG + NETHER WORM / SECOND REVIEW','Selected for subsequent implementation / exact LÖVE files and actual PixelBox bytes / design only')
+ d=ImageDraw.Draw(selected)
+ for x,title in ((390,'LÖVE master / 1x'),(800,'Native CC / 10x'),(1090,'PixelBox / 7x')):d.text((x,122),title,font=font(17),anchor='mm',fill='#9CB4B4')
+ proposals=json.loads((ROOT/'balance/proposals.json').read_text())
+ specs={c['id']:c for c in proposals['cards']}
+ for i,key in enumerate(('king_frog','nether_worm')):
+  y=160+320*i;spec=specs[key]
+  d.text((20,y+85),spec['name'].replace(' ','\n'),font=font(19),fill='#F2EEE1')
+  d.text((20,y+145),f"{spec['cost']}E / {spec['hp']}HP",font=font(16),fill='#9CB4B4')
+  asset=Image.open(ROOT/'love2d'/(key+'.png')).convert('RGBA');logical=native(data[key]);pic=encoded(data[key])
+  paste(selected,asset,(390-asset.width//2,y))
+  paste(selected,logical,(800-logical.width*5,y+240-logical.height*10),10)
+  paste(selected,pic,(1090-pic.width*7//2,y+25),7)
+  d.line((20,y+301,1260,y+301),fill='#294344')
+ result['previews/selected_pair_review.png']=selected
  return result
 
 SEQUENCES={

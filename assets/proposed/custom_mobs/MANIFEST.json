@@ -424,9 +424,9 @@
     }
   },
   "hashes": {
-    "cc_tweaked/sprites.lua": "5fa8d59333947675e1fca9c3072ae3d9256e16e296e4e6793d6a7ce7da3c6a8a",
+    "cc_tweaked/sprites.lua": "ab169414415dec449aa5261594b2ec9aa987024015dbf769171e990826e861e5",
     "love2d/index.lua": "9587e60f912a1fab57ef7673be75240585c3b6cca2a989ddd9387407719df6b3",
     "balance/current_cards.json": "20639c308e97b5c885244c8d8ffd220f28affeb11d2e21a11f5a780b303d1db1",
-    "balance/proposals.json": "d5de3be1c05475f55042a655bbbaa93af6dbd5201a758b32f489f785cf2651c3"
+    "balance/proposals.json": "17af36d31de5881af69ce86ed543edf2aa92625557e391dfc45757d485712941"
   }
 }

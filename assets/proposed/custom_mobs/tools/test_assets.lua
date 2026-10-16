@@ -37,6 +37,7 @@ local surface=assert(find(arena.draw,'getSurface'))
 local project=assert(find(arena.draw,'worldToPixel'))
 local alignX=assert(find(arena.draw,'alignTexelX'))
 local alignY=assert(find(arena.draw,'alignTexelY'))
+local drawNativeFrame=assert(find(arena.draw,'drawNativeFrame'))
 local liveAssets=require('src.mob_assets')
 local cards=require('src.cards')
 local oldSprites=json(sprites)
@@ -46,6 +47,10 @@ local captures={};local count=0
 
 for _ in pairs(assets) do count=count+1 end
 check(count==13,'Unexpected asset count')
+local villager=assert(cards.get('villager'))
+check(villager.kind=='unit' and villager.unit.passive==true,'Villager no longer a passive unit')
+check(villager.evolution.abilities.visualVariant=='emerald_bank'
+    and villager.evolution.statMultipliers.maxHp==1.05,'Bank evolution reference changed')
 local loveIndex=assert(loadfile(root..'love2d/index.lua','t',{}))()
 for _,key in ipairs({'netherite_crab','king_frog','nether_worm','ore_centipede'}) do
     local meta=assert(loveIndex[key]);local width=(key=='netherite_crab' or key=='ore_centipede') and 384 or 256
@@ -88,7 +93,46 @@ local function copyCanvas(box)
     local a={};for y=1,box.height do a[y]={};for x=1,box.width do a[y][x]=box.canvas[y][x] end end
     return a
 end
+local function captureGroundEffect(key,viewer,w,h)
+    local frame=assets[key];local m={};local record={calls=0,rows={}};records[m]=record
+    local rect={x1=1,y1=1,x2=w,y2=h}
+    local state={phase='battle',entities={},effects={},projectiles={},visualTime=0}
+    local ok,result=pcall(function()
+        local before=json(state);arena.draw(m,state,viewer,rect)
+        local empty=signature(record);local box=surface(m,rect);local terrain=copyCanvas(box)
+        local cx,cy=project(box,viewer,50,40)
+        local x1,y1=alignX(cx-frame.width/2),alignY(cy-frame.height/2)
+        drawNativeFrame(box,frame,cx,cy);box:render()
+        local normal=signature(record);check(normal~=empty,'Invisible ground warning')
+        check(json(state)==before,'Effect capture mutated state')
+        check(#state.entities==0,'Ground warning became an alive entity')
+        for y,row in ipairs(frame.rows) do for x=1,#row do
+            local token=row:sub(x,x);local expected=palette[token] or terrain[y1+y-1][x1+x-1]
+            check(box.canvas[y1+y-1][x1+x-1]==expected,'Ground effect raster/transparency')
+        end end
+        for y=y1-6,y1-1 do for x=x1,x1+frame.width-1 do
+            check(box.canvas[y][x]==terrain[y][x],'Ground warning has an HP bar')
+        end end
+        local writes=record.calls;box:render();check(record.calls==writes,'Ground effect emitted redundant blits')
+        local crop={}
+        local col1,col2=math.floor((x1-1)/2)-1,math.ceil((x1-1+frame.width)/2)+2
+        local row1,row2=math.floor((y1-1)/3)-1,math.ceil((y1-1+frame.height)/3)+1
+        for y=row1,row2 do local line=record.rows[y];local bytes={}
+            for x=col1,col2 do bytes[#bytes+1]=line.chars:byte(x) end
+            crop[#crop+1]={bytes=bytes,fg=line.fg:sub(col1,col2),bg=line.bg:sub(col1,col2)}
+        end
+        arena.draw(m,state,viewer,rect,true)
+        check(signature(record)==empty,'Removed ground effect left ghosts')
+        return {width=frame.width,height=frame.height,rows=frame.rows,terminalCrop=crop,
+            origin={x=x1,y=y1},viewer=viewer,monitor={w=w,h=h},
+            pipeline='ISOLATED_GROUND_FRAME_AND_ACTUAL_PIXELBOX',hasHealthBar=false}
+    end)
+    arena.invalidate(m);records[m]=nil
+    if not ok then error(result,0) end
+    return result
+end
 local function capture(key,viewer,w,h)
+    if key=='nether_worm_warning' then return captureGroundEffect(key,viewer,w,h) end
     local frame=assets[key];local saved=sprites.__new_mob_preview
     local m={};local record={calls=0,rows={}};records[m]=record
     local rect={x1=1,y1=1,x2=w,y2=h}

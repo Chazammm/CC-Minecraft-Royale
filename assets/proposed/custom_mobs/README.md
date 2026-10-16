@@ -3,6 +3,10 @@
 **Four finished static design masters and compatible native art, proposed mechanics only.**
 Based on current `main` **6e85dc77553bd17422deeb9cb51258cefda06fe5** (2026-10-16).
 This package adds no playable card, production import, gameplay timer, balance change or renderer change.
+
+**Owner revision:** only **King Frog** and **Nether Worm** are selected for subsequent implementation; Crab and Centipede remain deferred assets/concepts. Frog: **3E /550 HP**, Fisherman-style tongue hook followed by melee. Worm: **3E /350 HP**, arena-wide placement, normal95 damage to units/buildings and47.5 to either crown-tower type. The existing unit-only opener remains separately documented.
+
+[Focused King Frog / Nether Worm sprite review](previews/selected_pair_review.png).
 The current repository has **25 base cards**, not the historic 22. Existing PR #20 is separate and is not a dependency.
 
 ![Four LÖVE design masters](previews/high_res_roster.png)

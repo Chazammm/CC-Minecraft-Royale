@@ -1,0 +1,67 @@
+{
+  "scope": "targeted_sprite_rendering_regressions_not_gameplay_validation",
+  "runs": [
+    {
+      "lua": "5.2",
+      "test": "test_sprite_roster.lua",
+      "exit": 0,
+      "seconds": 0.767
+    },
+    {
+      "lua": "5.2",
+      "test": "test_pixel_frame_diff.lua",
+      "exit": 0,
+      "seconds": 0.111
+    },
+    {
+      "lua": "5.2",
+      "test": "test_four_mob_rendering.lua",
+      "exit": 0,
+      "seconds": 1.572
+    },
+    {
+      "lua": "5.2",
+      "test": "test_pixel_failure_recovery.lua",
+      "exit": 0,
+      "seconds": 0.082
+    },
+    {
+      "lua": "5.2",
+      "test": "test_audit_monitor_boundaries.lua",
+      "exit": 0,
+      "seconds": 0.086
+    },
+    {
+      "lua": "5.4",
+      "test": "test_sprite_roster.lua",
+      "exit": 0,
+      "seconds": 0.499
+    },
+    {
+      "lua": "5.4",
+      "test": "test_pixel_frame_diff.lua",
+      "exit": 0,
+      "seconds": 0.081
+    },
+    {
+      "lua": "5.4",
+      "test": "test_four_mob_rendering.lua",
+      "exit": 0,
+      "seconds": 1.06
+    },
+    {
+      "lua": "5.4",
+      "test": "test_pixel_failure_recovery.lua",
+      "exit": 0,
+      "seconds": 0.063
+    },
+    {
+      "lua": "5.4",
+      "test": "test_audit_monitor_boundaries.lua",
+      "exit": 0,
+      "seconds": 0.068
+    }
+  ],
+  "total": 10,
+  "failed": 0
+}
