@@ -6,9 +6,9 @@
     ]
   },
   {
-    "log": "final_cli_2_simulate_500_mixed_20261016.log",
+    "log": "final_cli52_1_simulate_100_mixed_20261016.log",
     "summary": [
-      "OBSERVED_CLI|matches=500|ticks=1353732|max_entities=27|max_projectiles=5"
+      "OBSERVED_CLI|matches=100|ticks=268940|max_entities=25|max_projectiles=5"
     ]
   },
   {
@@ -18,21 +18,63 @@
     ]
   },
   {
-    "log": "final_invariants_2_audit_matches_500_20261017.log",
+    "log": "final_cli_2_simulate_500_mixed_20261016.log",
     "summary": [
-      "AUDIT_RESULT|matches=500|p1=250|p2=250|draws=0|ticks=1390432|fingerprint=2064265957|clock_s=168.2466|gc_min_kib=482.50|gc_max_kib=482.88"
+      "OBSERVED_CLI|matches=500|ticks=1353732|max_entities=27|max_projectiles=5"
     ]
   },
   {
-    "log": "final_cli52_1_simulate_100_mixed_20261016.log",
+    "log": "final_cli_3_simulate_1000_mixed_20261016.log",
     "summary": [
-      "OBSERVED_CLI|matches=100|ticks=268940|max_entities=25|max_projectiles=5"
+      "OBSERVED_CLI|matches=1000|ticks=2713368|max_entities=27|max_projectiles=6"
+    ]
+  },
+  {
+    "log": "final_cli_4_simulate_100_fixed_20261016.log",
+    "summary": [
+      "OBSERVED_CLI|matches=100|ticks=303500|max_entities=18|max_projectiles=5"
+    ]
+  },
+  {
+    "log": "final_cli_5_compare_10_all_20261016.log",
+    "summary": [
+      "OBSERVED_CLI|matches=240|ticks=666378|max_entities=23|max_projectiles=5"
+    ]
+  },
+  {
+    "log": "final_cli_6_compare_10_king_frog_nether_worm_20261016.log",
+    "summary": [
+      "OBSERVED_CLI|matches=40|ticks=106952|max_entities=26|max_projectiles=5"
+    ]
+  },
+  {
+    "log": "final_cli_7_evo_compare_10_all_20261016.log",
+    "summary": [
+      "OBSERVED_CLI|matches=240|ticks=671264|max_entities=25|max_projectiles=5"
+    ]
+  },
+  {
+    "log": "final_cross52_1_audit_matches_1000_20261016.log",
+    "summary": [
+      "AUDIT_RESULT|matches=1000|p1=499|p2=501|draws=0|ticks=2710362|fingerprint=1116991901|clock_s=572.3980|gc_min_kib=551.76|gc_max_kib=552.26"
     ]
   },
   {
     "log": "final_invariants_1_audit_matches_100_20261016.log",
     "summary": [
       "AUDIT_RESULT|matches=100|p1=50|p2=50|draws=0|ticks=268988|fingerprint=1999327400|clock_s=49.9916|gc_min_kib=482.72|gc_max_kib=482.74"
+    ]
+  },
+  {
+    "log": "final_invariants_2_audit_matches_500_20261017.log",
+    "summary": [
+      "AUDIT_RESULT|matches=500|p1=250|p2=250|draws=0|ticks=1390432|fingerprint=2064265957|clock_s=168.2466|gc_min_kib=482.50|gc_max_kib=482.88"
+    ]
+  },
+  {
+    "log": "final_invariants_3_audit_matches_1000_20261016.log",
+    "summary": [
+      "AUDIT_RESULT|matches=1000|p1=499|p2=501|draws=0|ticks=2710362|fingerprint=1116991901|clock_s=478.0218|gc_min_kib=482.42|gc_max_kib=483.13"
     ]
   }
 ]

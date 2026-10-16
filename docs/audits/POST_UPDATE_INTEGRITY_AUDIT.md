@@ -1,5 +1,7 @@
 # CC Royale – Post-Update Integrity Audit
 
+Review: [Pull Request #23](https://github.com/Chazammm/CC-Minecraft-Royale/pull/23), aufbauend auf #22.
+
 ## A. Repository-Snapshot und Aussagegrenze
 
 Stand: 16.10.2026 (UTC). Dies ist ein frischer Audit, keine Übernahme historischer PASS-Angaben.
@@ -206,7 +208,7 @@ REGRESSIONS ADDED: 2 Lua-Suiten, 1 Python-Datei mit 3 Fällen; bestehende Gates 
 HARDWARE VERIFICATION: UNVERIFIED HARDWARE
 UNVERIFIED AREAS: reale CraftOS-Installation/HTTP/Audio/Monitor/JVM; LÖVE-Laufzeit; OP-007-Ursache
 FINAL ASSESSMENT: Host-Prüfungen bestanden; keine uneingeschränkte Release-/Hardwarefreigabe
-PULL REQUEST: Veröffentlichung nach diesem Evidenz-Commit; konkreter Link folgt im Review-Commit (gestapelt auf #22, kein Merge)
+PULL REQUEST: https://github.com/Chazammm/CC-Minecraft-Royale/pull/23 (gestapelt auf #22, kein Merge)
 ```
 
 Die geprüften Match-/Karten-/Evo-/Renderingpfade sind technisch konsistent in den ausgeführten Szenarien. Der Langlauf hat einen echten Diagnose-Fehlalarm gefunden, den die ursprüngliche grüne Suite nicht erkannte. Dieser und vier weitere Absicherungslücken sind reproduziert, minimal korrigiert und erneut geprüft. Es wurde kein bestätigter Gameplay- oder Balancefehler durch eigenmächtige Werteänderung verdeckt.
