@@ -1,0 +1,121 @@
+{
+  "schema": 1,
+  "status": "proposal_only_not_playable_not_balance_validated",
+  "units": "HP and damage: game units; intervals: seconds; speed: arena units/second; range: arena units",
+  "cards": [
+    {
+      "id": "netherite_crab",
+      "name": "Netherite Crab",
+      "kind": "unit",
+      "role": "armored_ground_frontline",
+      "cost": 5,
+      "hp": 1200,
+      "damage": 90,
+      "attackInterval": 1.3,
+      "moveSpeed": 3.8,
+      "range": 3,
+      "aggroRange": 27,
+      "targets": [
+        "ground_units",
+        "buildings",
+        "towers"
+      ],
+      "ability": {
+        "name": "claw_guard",
+        "reduction": 0.35,
+        "windup": 0.3,
+        "duration": 0.8,
+        "cooldown": 5,
+        "movementDuringGuard": false,
+        "attacksDuringGuard": false,
+        "directional": false
+      }
+    },
+    {
+      "id": "king_frog",
+      "name": "King Frog",
+      "kind": "unit",
+      "role": "support_control",
+      "cost": 4,
+      "hp": 520,
+      "damage": 40,
+      "attackInterval": 1.4,
+      "moveSpeed": 5,
+      "range": 12,
+      "aggroRange": 27,
+      "targets": [
+        "ground_units",
+        "buildings",
+        "towers"
+      ],
+      "ability": {
+        "name": "royal_tongue",
+        "pullDistance": 4,
+        "cooldown": 4.2,
+        "windup": 0.25,
+        "smallGroundUnitsOnly": true,
+        "pullBuildings": false,
+        "pullFlying": false,
+        "aura": false
+      }
+    },
+    {
+      "id": "nether_worm",
+      "name": "Nether Worm",
+      "kind": "unit",
+      "role": "ground_support_assassin",
+      "cost": 4,
+      "hp": 380,
+      "damage": 95,
+      "attackInterval": 1.2,
+      "moveSpeed": 9,
+      "range": 2.5,
+      "aggroRange": 14,
+      "targets": [
+        "ground_units",
+        "buildings",
+        "towers"
+      ],
+      "placement": "all_arena_walkable_ground",
+      "ability": {
+        "name": "burrow_ambush",
+        "warning": 1.4,
+        "exposedEmergence": 0.6,
+        "openerBonus": 85,
+        "openerWindow": 2,
+        "openerUses": 1,
+        "structureMultiplier": 0.35,
+        "reburrow": false
+      }
+    },
+    {
+      "id": "ore_centipede",
+      "name": "Ore Centipede",
+      "kind": "unit",
+      "role": "finite_sustain_ground_tank",
+      "cost": 6,
+      "hp": 1650,
+      "damage": 105,
+      "attackInterval": 1.6,
+      "moveSpeed": 3.5,
+      "range": 3,
+      "aggroRange": 27,
+      "targets": [
+        "ground_units",
+        "buildings",
+        "towers"
+      ],
+      "ability": {
+        "name": "consume_ore",
+        "charges": 3,
+        "healPerCharge": 120,
+        "channel": 1,
+        "cooldown": 6,
+        "threshold": 0.7,
+        "damageInterrupts": true,
+        "oreTypesChangeStats": false,
+        "arenaMining": false
+      }
+    }
+  ]
+}

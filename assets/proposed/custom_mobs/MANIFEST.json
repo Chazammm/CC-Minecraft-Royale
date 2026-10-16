@@ -1,0 +1,432 @@
+{
+  "schema": 1,
+  "status": "proposed_assets_only_no_gameplay_activation",
+  "baseRevision": "6e85dc77553bd17422deeb9cb51258cefda06fe5",
+  "inspected": "2026-10-16",
+  "styleReference": "assets/sprites/approved-model-revamp-1.webp",
+  "nativeModule": "cc_tweaked/sprites.lua",
+  "nativePalette": "src/pixel_arena.lua PALETTE; default ComputerCraft RGB; dot alpha",
+  "nativeMaxDimensions": [
+    16,
+    18
+  ],
+  "loveFilter": "nearest",
+  "loveAlpha": "binary",
+  "loveFrames": [
+    "idle"
+  ],
+  "nativePoses": [
+    "king_frog",
+    "king_frog_tongue",
+    "nether_worm",
+    "nether_worm_bite",
+    "nether_worm_emerging",
+    "nether_worm_warning",
+    "netherite_crab",
+    "netherite_crab_guard",
+    "ore_centipede",
+    "ore_centipede_feeding",
+    "ore_centipede_reserve_0",
+    "ore_centipede_reserve_1",
+    "ore_centipede_reserve_2"
+  ],
+  "assets": {
+    "netherite_crab": {
+      "name": "Netherite Crab",
+      "origin": "Custom / CC Royale",
+      "reference": {
+        "kind": "original_custom_adaptation",
+        "primary": "https://www.minecraft.net/en-us/article/mob-vote-crab",
+        "image": "https://www.minecraft.net/content/dam/minecraftnet/games/minecraft/game-updates/CRAB_Header_1170x500.jpg",
+        "note": "Unreleased 2023 Mob Vote concept; one huge claw in reference. Our asymmetric pair and netherite armor are original additions."
+      },
+      "referenceAccessed": "2026-10-16",
+      "loveFile": "love2d/netherite_crab.png",
+      "sourceFile": "source/netherite_crab.png",
+      "sourceDimensions": [
+        1536,
+        1024
+      ],
+      "loveDimensions": [
+        384,
+        256
+      ],
+      "loveBounds": [
+        16,
+        54,
+        368,
+        240
+      ],
+      "loveAnchor": [
+        192,
+        240
+      ],
+      "loveOpaquePixels": 36389,
+      "lovePalette": [
+        "#003558",
+        "#011f36",
+        "#012540",
+        "#01375a",
+        "#070811",
+        "#071321",
+        "#080307",
+        "#09070d",
+        "#0e0a12",
+        "#0f070b",
+        "#10080d",
+        "#12070a",
+        "#130406",
+        "#185479",
+        "#1c080a",
+        "#1d0303",
+        "#1d1219",
+        "#21151d",
+        "#261921",
+        "#292f3e",
+        "#2c171c",
+        "#2f2128",
+        "#31232a",
+        "#36252c",
+        "#3b2328",
+        "#3b2b33",
+        "#3b2c34",
+        "#402f39",
+        "#4b3138",
+        "#4e3948",
+        "#5e3c43",
+        "#651c0e",
+        "#684c60",
+        "#6e7391",
+        "#7a576c",
+        "#9e361a",
+        "#a2594f",
+        "#d79178",
+        "#f4caa8",
+        "#fa7436"
+      ],
+      "nativeKey": "netherite_crab",
+      "nativeDimensions": [
+        16,
+        12
+      ],
+      "nativeRendererAnchor": [
+        8.0,
+        6.0
+      ],
+      "nativeTokens": [
+        "C",
+        "D",
+        "K",
+        "O",
+        "P",
+        "S",
+        "W"
+      ],
+      "nativePreview": "cc_tweaked/previews/netherite_crab.png",
+      "pixelboxPreview": "cc_tweaked/previews/netherite_crab_pixelbox.png",
+      "sha256": {
+        "source/netherite_crab.png": "e0b306eb3ef6d9478e5bcf60fa8bd4ef2061c78bd72c414738339517de20e279",
+        "love2d/netherite_crab.png": "53018e02a9953c78095842a1cf01d76b521ad05a1942f15dbce1307cc1f68aa2",
+        "cc_tweaked/previews/netherite_crab.png": "00cd6e5e31911dd68f20138a836adc181b0cab6d7efa31af600f6c4c0752d34f",
+        "cc_tweaked/previews/netherite_crab_pixelbox.png": "bf4b63c71a09ff6c93a1c3fc40be89c8ab9961047350abf0474aa547c3d7525c"
+      }
+    },
+    "king_frog": {
+      "name": "King Frog",
+      "origin": "Custom / CC Royale",
+      "reference": {
+        "kind": "original_custom_adaptation",
+        "primary": "https://www.minecraft.net/en-us/article/mob-menagerie--frog",
+        "image": "https://www.minecraft.net/content/dam/minecraftnet/games/minecraft/screenshots/frog_C.jpg",
+        "note": "Orange vanilla frog anatomy; crown and short mantle are original additions."
+      },
+      "referenceAccessed": "2026-10-16",
+      "loveFile": "love2d/king_frog.png",
+      "sourceFile": "source/king_frog.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "loveDimensions": [
+        256,
+        256
+      ],
+      "loveBounds": [
+        16,
+        73,
+        240,
+        240
+      ],
+      "loveAnchor": [
+        128,
+        240
+      ],
+      "loveOpaquePixels": 20960,
+      "lovePalette": [
+        "#231e21",
+        "#301435",
+        "#53211a",
+        "#561c6b",
+        "#5e2913",
+        "#6c2f21",
+        "#71331a",
+        "#77361a",
+        "#793e1f",
+        "#853a3e",
+        "#893f22",
+        "#8a3f1b",
+        "#90643b",
+        "#914425",
+        "#943d3d",
+        "#954424",
+        "#954627",
+        "#9a4827",
+        "#9a4c23",
+        "#af522b",
+        "#b16d30",
+        "#b38551",
+        "#bc5730",
+        "#c05c30",
+        "#c76033",
+        "#ca6733",
+        "#cda35d",
+        "#cf8c48",
+        "#d26839",
+        "#d3ac69",
+        "#d76c3c",
+        "#db713f",
+        "#de7341",
+        "#e77946",
+        "#e7c047",
+        "#e8b05a",
+        "#f5864d",
+        "#f5a356",
+        "#fa8f55",
+        "#fdde5e"
+      ],
+      "nativeKey": "king_frog",
+      "nativeDimensions": [
+        16,
+        16
+      ],
+      "nativeRendererAnchor": [
+        8.0,
+        8.0
+      ],
+      "nativeTokens": [
+        "K",
+        "N",
+        "O",
+        "P",
+        "Y"
+      ],
+      "nativePreview": "cc_tweaked/previews/king_frog.png",
+      "pixelboxPreview": "cc_tweaked/previews/king_frog_pixelbox.png",
+      "sha256": {
+        "source/king_frog.png": "4b32f92801c0a821a7a4bb0c799735139042205ed03222722862737e419b7f24",
+        "love2d/king_frog.png": "4b21072bd91b808ebe2f8ac42074f7ed59195d128d41f74ae4c69dfb8d81abf9",
+        "cc_tweaked/previews/king_frog.png": "8aed8e0c5141ef3f8c1256136992a53c2df43adac21c8b153aaff2c19ad83400",
+        "cc_tweaked/previews/king_frog_pixelbox.png": "934571db446b2b4e17c5c721542f9d6c22afda7ccc4fd51f751642ba34119634"
+      }
+    },
+    "nether_worm": {
+      "name": "Nether Worm",
+      "origin": "Custom / CC Royale",
+      "reference": {
+        "kind": "original_custom_design",
+        "note": "Original Nether organism; no canonical Minecraft mob claimed."
+      },
+      "referenceAccessed": "2026-10-16",
+      "loveFile": "love2d/nether_worm.png",
+      "sourceFile": "source/nether_worm.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "loveDimensions": [
+        256,
+        256
+      ],
+      "loveBounds": [
+        16,
+        41,
+        240,
+        239
+      ],
+      "loveAnchor": [
+        128,
+        240
+      ],
+      "loveOpaquePixels": 24004,
+      "lovePalette": [
+        "#010000",
+        "#170203",
+        "#1e0407",
+        "#20070a",
+        "#231115",
+        "#2e0408",
+        "#2f161c",
+        "#32070c",
+        "#321b21",
+        "#370c11",
+        "#3a050a",
+        "#3a2329",
+        "#3d070e",
+        "#43070d",
+        "#442930",
+        "#470a12",
+        "#4d060b",
+        "#4f0c14",
+        "#4f0f17",
+        "#500a13",
+        "#522c32",
+        "#54353c",
+        "#5c0a10",
+        "#5f121b",
+        "#5f3d44",
+        "#651c25",
+        "#6b121a",
+        "#75141b",
+        "#821c24",
+        "#90100f",
+        "#922329",
+        "#953e3e",
+        "#a46849",
+        "#a92729",
+        "#db2a17",
+        "#ef3b14",
+        "#f1b43b",
+        "#f8d769",
+        "#fc7402",
+        "#fdf696"
+      ],
+      "nativeKey": "nether_worm",
+      "nativeDimensions": [
+        16,
+        17
+      ],
+      "nativeRendererAnchor": [
+        8.0,
+        8.5
+      ],
+      "nativeTokens": [
+        "D",
+        "K",
+        "O",
+        "R",
+        "W"
+      ],
+      "nativePreview": "cc_tweaked/previews/nether_worm.png",
+      "pixelboxPreview": "cc_tweaked/previews/nether_worm_pixelbox.png",
+      "sha256": {
+        "source/nether_worm.png": "facd50d59ea61a49485c33452c52bf09db374b5e2e34c891f7678114abf937a3",
+        "love2d/nether_worm.png": "41d01475833de12222a86a75d205c0ac1381f47969cd8ec9d616d335e5130b0f",
+        "cc_tweaked/previews/nether_worm.png": "a454b6545bc70c6d194e71e2265feaf0bd773e3d163603d4db3762b218325d68",
+        "cc_tweaked/previews/nether_worm_pixelbox.png": "df5406b4a7237c28c5cec0a739f328f63aacd92594c99469fa8ec961c06744c8"
+      }
+    },
+    "ore_centipede": {
+      "name": "Ore Centipede",
+      "origin": "Custom / CC Royale",
+      "reference": {
+        "kind": "original_custom_design",
+        "note": "Original ore-eating arthropod; no canonical Minecraft mob claimed."
+      },
+      "referenceAccessed": "2026-10-16",
+      "loveFile": "love2d/ore_centipede.png",
+      "sourceFile": "source/ore_centipede.png",
+      "sourceDimensions": [
+        1536,
+        1024
+      ],
+      "loveDimensions": [
+        384,
+        256
+      ],
+      "loveBounds": [
+        16,
+        80,
+        368,
+        240
+      ],
+      "loveAnchor": [
+        192,
+        240
+      ],
+      "loveOpaquePixels": 28026,
+      "lovePalette": [
+        "#090707",
+        "#0e0d0d",
+        "#141010",
+        "#191618",
+        "#1e1d20",
+        "#262327",
+        "#2c2a2f",
+        "#2e323e",
+        "#383032",
+        "#3b393f",
+        "#3f3d43",
+        "#423f45",
+        "#444249",
+        "#494042",
+        "#4c494e",
+        "#4e4b52",
+        "#4f5059",
+        "#52616c",
+        "#575459",
+        "#5c565a",
+        "#6a6367",
+        "#722c15",
+        "#726c70",
+        "#7dc1c0",
+        "#817777",
+        "#8f8687",
+        "#929796",
+        "#988c8a",
+        "#a34216",
+        "#ada2a0",
+        "#ae9d93",
+        "#c1b5b0",
+        "#c8631b",
+        "#cd0b0c",
+        "#d48534",
+        "#deccab",
+        "#e2b25f",
+        "#ecdcb9",
+        "#f1e6dc",
+        "#f9f7f2"
+      ],
+      "nativeKey": "ore_centipede",
+      "nativeDimensions": [
+        16,
+        11
+      ],
+      "nativeRendererAnchor": [
+        8.0,
+        5.5
+      ],
+      "nativeTokens": [
+        "A",
+        "D",
+        "O",
+        "R",
+        "S",
+        "W"
+      ],
+      "nativePreview": "cc_tweaked/previews/ore_centipede.png",
+      "pixelboxPreview": "cc_tweaked/previews/ore_centipede_pixelbox.png",
+      "sha256": {
+        "source/ore_centipede.png": "5f156aa1a7fc07b0578908f9c338a76dbdf843d55d0c0d5a77fd20cb7d27b40d",
+        "love2d/ore_centipede.png": "bb70624950f1544534bf8c2097975f2391110964d6db0698b5d4f7931181ded0",
+        "cc_tweaked/previews/ore_centipede.png": "c2bd0e40316f62ddcba2550d109ed2e810a6924d94aab85651cfcd4bcfe70f72",
+        "cc_tweaked/previews/ore_centipede_pixelbox.png": "be5127b9ce801f9b1ead12fda891a37ead1c842cdabb0b136b78a5ad67e1d716"
+      }
+    }
+  },
+  "hashes": {
+    "cc_tweaked/sprites.lua": "5fa8d59333947675e1fca9c3072ae3d9256e16e296e4e6793d6a7ce7da3c6a8a",
+    "love2d/index.lua": "9587e60f912a1fab57ef7673be75240585c3b6cca2a989ddd9387407719df6b3",
+    "balance/current_cards.json": "20639c308e97b5c885244c8d8ffd220f28affeb11d2e21a11f5a780b303d1db1",
+    "balance/proposals.json": "d5de3be1c05475f55042a655bbbaa93af6dbd5201a758b32f489f785cf2651c3"
+  }
+}
