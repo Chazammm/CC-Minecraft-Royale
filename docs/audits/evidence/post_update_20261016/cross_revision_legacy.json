@@ -1,0 +1,82 @@
+[
+  {
+    "scope": "main",
+    "lua": "5.2",
+    "revision": "6e85dc77553bd17422deeb9cb51258cefda06fe5",
+    "sha256": "cb64ab4022ef91351cfe1dcfce5872b1797d25cd41e2b5dc14d50e83588c97bd",
+    "bytes": 6985089,
+    "checkpoints": 768,
+    "matches": 8,
+    "seconds": 12.157,
+    "endings": [
+      "END|case=1|ticks=3046|winner=2|actions=100",
+      "END|case=2|ticks=3046|winner=1|actions=100",
+      "END|case=3|ticks=1936|winner=1|actions=55",
+      "END|case=4|ticks=1936|winner=2|actions=55",
+      "END|case=5|ticks=2089|winner=1|actions=71",
+      "END|case=6|ticks=2089|winner=2|actions=71",
+      "END|case=7|ticks=2496|winner=2|actions=81",
+      "END|case=8|ticks=2496|winner=1|actions=81"
+    ]
+  },
+  {
+    "scope": "main",
+    "lua": "5.4",
+    "revision": "6e85dc77553bd17422deeb9cb51258cefda06fe5",
+    "sha256": "cb64ab4022ef91351cfe1dcfce5872b1797d25cd41e2b5dc14d50e83588c97bd",
+    "bytes": 6985089,
+    "checkpoints": 768,
+    "matches": 8,
+    "seconds": 11.885,
+    "endings": [
+      "END|case=1|ticks=3046|winner=2|actions=100",
+      "END|case=2|ticks=3046|winner=1|actions=100",
+      "END|case=3|ticks=1936|winner=1|actions=55",
+      "END|case=4|ticks=1936|winner=2|actions=55",
+      "END|case=5|ticks=2089|winner=1|actions=71",
+      "END|case=6|ticks=2089|winner=2|actions=71",
+      "END|case=7|ticks=2496|winner=2|actions=81",
+      "END|case=8|ticks=2496|winner=1|actions=81"
+    ]
+  },
+  {
+    "scope": "candidate",
+    "lua": "5.2",
+    "revision": "259da467f26025bf816307d5ab1539257b6236b2",
+    "sha256": "cb64ab4022ef91351cfe1dcfce5872b1797d25cd41e2b5dc14d50e83588c97bd",
+    "bytes": 6985089,
+    "checkpoints": 768,
+    "matches": 8,
+    "seconds": 15.846,
+    "endings": [
+      "END|case=1|ticks=3046|winner=2|actions=100",
+      "END|case=2|ticks=3046|winner=1|actions=100",
+      "END|case=3|ticks=1936|winner=1|actions=55",
+      "END|case=4|ticks=1936|winner=2|actions=55",
+      "END|case=5|ticks=2089|winner=1|actions=71",
+      "END|case=6|ticks=2089|winner=2|actions=71",
+      "END|case=7|ticks=2496|winner=2|actions=81",
+      "END|case=8|ticks=2496|winner=1|actions=81"
+    ]
+  },
+  {
+    "scope": "candidate",
+    "lua": "5.4",
+    "revision": "259da467f26025bf816307d5ab1539257b6236b2",
+    "sha256": "cb64ab4022ef91351cfe1dcfce5872b1797d25cd41e2b5dc14d50e83588c97bd",
+    "bytes": 6985089,
+    "checkpoints": 768,
+    "matches": 8,
+    "seconds": 2.826,
+    "endings": [
+      "END|case=1|ticks=3046|winner=2|actions=100",
+      "END|case=2|ticks=3046|winner=1|actions=100",
+      "END|case=3|ticks=1936|winner=1|actions=55",
+      "END|case=4|ticks=1936|winner=2|actions=55",
+      "END|case=5|ticks=2089|winner=1|actions=71",
+      "END|case=6|ticks=2089|winner=2|actions=71",
+      "END|case=7|ticks=2496|winner=2|actions=81",
+      "END|case=8|ticks=2496|winner=1|actions=81"
+    ]
+  }
+]

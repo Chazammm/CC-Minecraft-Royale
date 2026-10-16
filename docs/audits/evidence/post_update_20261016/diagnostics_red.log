@@ -1,0 +1,5 @@
+/workspace/scratch/bin/lua5.4: tests/test_post_update_diagnostics.lua:25: Observer accepted invalid ordinary projectile x=-nan
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_post_update_diagnostics.lua:25: in main chunk
+	[C]: in ?

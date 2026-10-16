@@ -1,0 +1,306 @@
+[
+  {
+    "path": "assets/arena/after.png",
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 672,
+    "height": 845,
+    "frames": 1
+  },
+  {
+    "path": "assets/arena/before-after.png",
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 1368,
+    "height": 845,
+    "frames": 1
+  },
+  {
+    "path": "assets/arena/before.png",
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 672,
+    "height": 845,
+    "frames": 1
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/baby_ender_dragon_atlas.png",
+    "format": "PNG",
+    "mode": "RGBA",
+    "width": 80,
+    "height": 72,
+    "frames": 1
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/baby_ender_dragon_attack.gif",
+    "format": "GIF",
+    "mode": "P",
+    "width": 420,
+    "height": 420,
+    "frames": 4
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/baby_ender_dragon_fly.gif",
+    "format": "GIF",
+    "mode": "P",
+    "width": 420,
+    "height": 420,
+    "frames": 4
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/baby_ender_dragon_set.png",
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 1440,
+    "height": 940,
+    "frames": 1
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/hero_spider_atlas.png",
+    "format": "PNG",
+    "mode": "RGBA",
+    "width": 80,
+    "height": 72,
+    "frames": 1
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/hero_spider_melee.gif",
+    "format": "GIF",
+    "mode": "P",
+    "width": 420,
+    "height": 420,
+    "frames": 3
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/hero_spider_set.png",
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 1440,
+    "height": 940,
+    "frames": 1
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/hero_spider_walk.gif",
+    "format": "GIF",
+    "mode": "P",
+    "width": 420,
+    "height": 420,
+    "frames": 4
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/hero_spider_web.gif",
+    "format": "GIF",
+    "mode": "P",
+    "width": 420,
+    "height": 420,
+    "frames": 4
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/minoshroom_atlas.png",
+    "format": "PNG",
+    "mode": "RGBA",
+    "width": 80,
+    "height": 48,
+    "frames": 1
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/minoshroom_attack.gif",
+    "format": "GIF",
+    "mode": "P",
+    "width": 420,
+    "height": 420,
+    "frames": 5
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/minoshroom_set.png",
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 1440,
+    "height": 940,
+    "frames": 1
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/minoshroom_walk.gif",
+    "format": "GIF",
+    "mode": "P",
+    "width": 420,
+    "height": 420,
+    "frames": 4
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/monitor_roster.png",
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 1440,
+    "height": 590,
+    "frames": 1
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/native_roster.png",
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 1440,
+    "height": 590,
+    "frames": 1
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_atlas.png",
+    "format": "PNG",
+    "mode": "RGBA",
+    "width": 80,
+    "height": 72,
+    "frames": 1
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_building_attack.gif",
+    "format": "GIF",
+    "mode": "P",
+    "width": 420,
+    "height": 420,
+    "frames": 4
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_combined.gif",
+    "format": "GIF",
+    "mode": "P",
+    "width": 420,
+    "height": 420,
+    "frames": 4
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_rider_shot.gif",
+    "format": "GIF",
+    "mode": "P",
+    "width": 420,
+    "height": 420,
+    "frames": 4
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_set.png",
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 1440,
+    "height": 940,
+    "frames": 1
+  },
+  {
+    "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_walk.gif",
+    "format": "GIF",
+    "mode": "P",
+    "width": 420,
+    "height": 420,
+    "frames": 4
+  },
+  {
+    "path": "assets/sprites/approved-model-revamp-1.webp",
+    "format": "WEBP",
+    "mode": "RGB",
+    "width": 1060,
+    "height": 860,
+    "frames": 1
+  },
+  {
+    "path": "assets/sprites/approved-model-revamp-2.webp",
+    "format": "WEBP",
+    "mode": "RGB",
+    "width": 1060,
+    "height": 624,
+    "frames": 1
+  },
+  {
+    "path": "assets/sprites/frog_worm/love2d/king_frog.png",
+    "format": "PNG",
+    "mode": "RGBA",
+    "width": 256,
+    "height": 256,
+    "frames": 1
+  },
+  {
+    "path": "assets/sprites/frog_worm/love2d/nether_worm.png",
+    "format": "PNG",
+    "mode": "RGBA",
+    "width": 256,
+    "height": 256,
+    "frames": 1
+  },
+  {
+    "path": "assets/sprites/frog_worm/previews/comparison.png",
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 1200,
+    "height": 800,
+    "frames": 1
+  },
+  {
+    "path": "assets/sprites/frog_worm/previews/gameplay_1x.png",
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 102,
+    "height": 120,
+    "frames": 1
+  },
+  {
+    "path": "assets/sprites/frog_worm/previews/gameplay_6x.png",
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 612,
+    "height": 720,
+    "frames": 1
+  },
+  {
+    "path": "assets/sprites/frog_worm/previews/king_frog_native.png",
+    "format": "PNG",
+    "mode": "RGBA",
+    "width": 16,
+    "height": 16,
+    "frames": 1
+  },
+  {
+    "path": "assets/sprites/frog_worm/previews/king_frog_pixelbox.png",
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 24,
+    "height": 27,
+    "frames": 1
+  },
+  {
+    "path": "assets/sprites/frog_worm/previews/nether_worm_native.png",
+    "format": "PNG",
+    "mode": "RGBA",
+    "width": 16,
+    "height": 17,
+    "frames": 1
+  },
+  {
+    "path": "assets/sprites/frog_worm/previews/nether_worm_pixelbox.png",
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 24,
+    "height": 27,
+    "frames": 1
+  },
+  {
+    "path": "assets/sprites/frog_worm/previews/runtime_poses.png",
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 1200,
+    "height": 860,
+    "frames": 1
+  },
+  {
+    "path": "assets/sprites/native-sprite-roster.png",
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 1500,
+    "height": 2220,
+    "frames": 1
+  },
+  {
+    "path": "assets/sprites/pixelbox-sprite-roster.png",
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 1500,
+    "height": 2220,
+    "frames": 1
+  }
+]

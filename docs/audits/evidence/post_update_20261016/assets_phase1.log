@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/workspace/CC-Royale-audit/assets/proposed/four_mobs_phase1/tools/validate_previews.py", line 67, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/workspace/CC-Royale-audit/assets/proposed/four_mobs_phase1/tools/validate_previews.py", line 51, in main
+    check(blob(original)==sha,'Existing file modified outside the Phase-1 documentation: '+path)
+  File "/workspace/CC-Royale-audit/assets/proposed/four_mobs_phase1/tools/validate_previews.py", line 10, in check
+    assert ok,message
+           ^^
+AssertionError: Existing file modified outside the Phase-1 documentation: .github/workflows/lua-ci.yml

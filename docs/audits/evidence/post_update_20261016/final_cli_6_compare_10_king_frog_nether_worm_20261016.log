@@ -1,0 +1,68 @@
+CC-Minecraft Royale controlled replacement analysis
+CODE_REVISION|259da467f26025bf816307d5ab1539257b6236b2
+Tick: 0.10s
+Contexts/comparison: 10   Comparisons: 1   Total matches: 40   Seed: 20261016
+Each context uses the same 7-card shell, same opponent deck and same replacement slot.
+Evolutions are disabled so this remains a pure BASE-card replacement benchmark.
+A and B each play once as P1 and once as P2. Compared cards are excluded from all other slots.
+Paired deterministic gameplay seeds are retained for future random combat mechanics; current combat itself is deterministic.
+
+RUN 1/1: King Frog vs Nether Worm
+  10/10 contexts  (40/40 total matches)
+
+COMPARISON|king_frog_vs_nether_worm|King Frog|Nether Worm
+NOTE|Custom controlled replacement comparison
+COST|A=3|B=3
+SCORE|A=60.00%|B=80.00%|DELTA_B_MINUS_A=+20.00pp
+PAIRED_95CI|mean=+20.00pp|low=-10.16pp|high=+50.16pp|signal=LEAN B
+CONTEXT_EDGE|A=0|B=2|TIE=8
+A_CARD|plays/match=6.80|evo/match=0.00|evo_share=0.0%|unit/E=41.48|tower/E=0.20|kills/match=2.10|avg_match=278.1s
+B_CARD|plays/match=6.60|evo/match=0.00|evo_share=0.0%|unit/E=68.20|tower/E=3.84|kills/match=4.10|avg_match=256.4s
+REPLACEMENT_SLOTS|1:2,2:0,3:0,4:0,5:1,6:3,7:3,8:1
+
+HOW TO READ
+DELTA_B_MINUS_A: positive means B won more often in otherwise identical deck contexts.
+PAIRED_95CI: Student-t interval from context-by-context A/B differences after side swapping.
+If the entire interval is above/below zero, the edge is much more convincing than a raw mixed win rate.
+NEAR-EVEN means the measured delta is under 3 percentage points and the interval crosses zero.
+LEAN means an observed edge whose interval still crosses zero; collect more contexts before balancing.
+CLEAR means the paired interval excludes zero. CLEAR ++ also has at least an 8pp measured edge.
+Diagnostic comparisons (Golem/Enderman etc.) compare impact, not identical tactical roles.
+evo/match and evo_share show how often the compared card actually reached its Evolution.
+
+Recommended:
+  compare 30 all        -- broad first pass
+  compare 100 A B       -- confirm one suspicious pair
+
+Saved report: comparison_results.txt
+
+View it with: type comparison_results.txt
+GitHub auto-sync not configured. Run once: report_sync setup
+OBSERVED_CLI|matches=40|ticks=106952|max_entities=26|max_projectiles=5
+OBSERVED_PLAYS|arrows|48
+OBSERVED_PLAYS|baby_ender_dragon|106
+OBSERVED_PLAYS|bat_swarm|162
+OBSERVED_PLAYS|blaze|122
+OBSERVED_PLAYS|cannon|150
+OBSERVED_PLAYS|creeper|70
+OBSERVED_PLAYS|enderman|104
+OBSERVED_PLAYS|endermite|192
+OBSERVED_PLAYS|evoker|44
+OBSERVED_PLAYS|falling_anvil|188
+OBSERVED_PLAYS|iron_golem|90
+OBSERVED_PLAYS|king_frog|136
+OBSERVED_PLAYS|magma_cube|164
+OBSERVED_PLAYS|minoshroom|34
+OBSERVED_PLAYS|nether_portal|78
+OBSERVED_PLAYS|nether_worm|132
+OBSERVED_PLAYS|pillager_outpost|156
+OBSERVED_PLAYS|ravager_rider|88
+OBSERVED_PLAYS|skeleton|124
+OBSERVED_PLAYS|slime|150
+OBSERVED_PLAYS|snow_golem|228
+OBSERVED_PLAYS|spider|156
+OBSERVED_PLAYS|villager|14
+OBSERVED_PLAYS|witch|172
+OBSERVED_PLAYS|wither_skeleton|178
+OBSERVED_PLAYS|wolf|170
+OBSERVED_PLAYS|zombie|198

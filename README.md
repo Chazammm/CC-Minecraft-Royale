@@ -36,6 +36,7 @@ Each monitor shows its own side at the bottom through a mirrored 180-degree view
 - Flying units cross the river directly
 - Troops and buildings can normally be deployed only on the player's half
 - Global spells can target anywhere
+- Nether Worm alone deploys on legal ground in either half, including the enemy backfield; open water and building/tower overlap are invalid
 - Units use lane-aware Crown Tower objectives plus aggro, retargeting and distraction logic
 - A troop attacks its lane's Princess Tower first; after that tower falls it advances toward the King Tower instead of crossing to the opposite Princess Tower
 - Destroying a Princess Tower unlocks a limited deployment pocket in that lane on the enemy side
@@ -49,7 +50,7 @@ Each monitor shows its own side at the bottom through a mirrored 180-degree view
 
 ## Current selectable cards
 
-There are currently **25 selectable cards**:
+There are currently **27 selectable cards**:
 
 1. Zombie
 2. Skeleton
@@ -76,12 +77,17 @@ There are currently **25 selectable cards**:
 23. Ravager Rider
 24. Baby Ender Dragon
 25. Minoshroom
+26. King Frog
+27. Nether Worm
 
 **Guardian is currently benched as a DEV-ONLY card.** Guardian and Elder Guardian remain implemented and directly spawnable in the admin sandbox, but neither appears in normal card selection, random decks, bot/simulation card pools or the normal Evolution Slot.
 
 Nether Portal summons the internal-only Piglin unit; Piglin is not directly selectable. Magma Cube splits into the internal-only Mini Magma Cube. Evoker summons the internal-only Vex unit.
 
 ## Important special mechanics
+
+- **King Frog (3E)**: 550 HP, tongue hook at range 12, then normal 40-damage melee every 1.4s at range 2.5. Pulls enemy ground units of any size; no air/building pulls or hook damage.
+- **Nether Worm (3E)**: 350 HP, arena-wide ground ambush with 1.4s warning and 0.6s targetable emergence. Normal bites deal 95 every 1.2s to units/buildings, 47.5 to Princess/King towers. A single +85 unit-only opener expires after 2s; no repeat burrow. Prefers nearby economy/support units, then local targets. [Implementation, previews and tests](docs/frog_worm/IMPLEMENTATION.md).
 
 - **Falling Anvil**: delayed 2.7-second AoE, can hit multiple ground and flying targets
 - **Nether Portal**: periodic Piglin spawner
@@ -206,7 +212,7 @@ The bot uses the normal card API and Emerald economy rather than special spawn c
 
 The lobby includes:
 
-- 25-card paginated collection
+- 27-card paginated collection
 - 8-card deck builder
 - 1 extra **Evolution Slot** below the normal deck
 - Random 8-card deck button

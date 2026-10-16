@@ -1,0 +1,707 @@
+{
+  "kind": "host_regression_tests_not_a_hardware_benchmark",
+  "total": 100,
+  "failed": 0,
+  "runs": [
+    {
+      "lua": "5.2",
+      "test": "test_anvil_grid_parity.lua",
+      "exit": 0,
+      "seconds": 0.072,
+      "output": "Anvil exhaustive/grid parity passed (183 comparisons)\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_arena_skin_parity.lua",
+      "exit": 0,
+      "seconds": 0.814,
+      "output": "Arena skin parity passed (314874 terrain pixels, 68034 coordinate checks, 240 identical combat ticks)\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_atomic_token_reconfig.lua",
+      "exit": 0,
+      "seconds": 0.003,
+      "output": "GitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nAtomic token reconfiguration fault scenarios passed: 11\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_audit_fixes_20261010.lua",
+      "exit": 0,
+      "seconds": 0.014,
+      "output": "Third-audit fix regressions passed (35 assertions)\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_audit_followups.lua",
+      "exit": 0,
+      "seconds": 0.025,
+      "output": "Audit follow-up tests passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_audit_hardening_20261010.lua",
+      "exit": 0,
+      "seconds": 0.064,
+      "output": "October 2026 audit hardening tests passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_audit_io_boundaries.lua",
+      "exit": 0,
+      "seconds": 0.002,
+      "output": "HTTP boundary faults passed: 24 checks, 7 requests\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_audit_monitor_boundaries.lua",
+      "exit": 0,
+      "seconds": 0.083,
+      "output": "Monitor resize/interaction boundaries passed: 47 checks\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_audit_regressions.lua",
+      "exit": 0,
+      "seconds": 0.014,
+      "output": "Audit regression tests passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_audit_runtime_gc.lua",
+      "exit": 0,
+      "seconds": 0.99,
+      "output": "CraftOS audit-runner GC compatibility passed: 6 checks\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_cli_manifest.lua",
+      "exit": 0,
+      "seconds": 0.014,
+      "output": "Usage: simulate <100-1000> [mixed|fixed] [seed]\nExamples:\n  simulate 100\n  simulate 137 mixed\n  simulate 500 mixed\n  simulate 1000 fixed\nERROR: Match count must be a whole number from 100 to 1000.\nUsage: simulate <100-1000> [mixed|fixed] [seed]\nExamples:\n  simulate 100\n  simulate 137 mixed\n  simulate 500 mixed\n  simulate 1000 fixed\nCLI and manifest tests passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_core_invariant_stress.lua",
+      "exit": 0,
+      "seconds": 1.321,
+      "output": "Core invariant stress passed: 8 matches, 22977 ticks, 1351 snapshots, 290695 assertions\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_diagnostic_contracts.lua",
+      "exit": 0,
+      "seconds": 0.962,
+      "output": "Diagnostic contracts passed: 2267 real match snapshots, 5 detected faults, 3 live countdown comparisons\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_finite_river_bounds.lua",
+      "exit": 0,
+      "seconds": 0.002,
+      "output": "Finite river geometry invariant passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_four_mob_rendering.lua",
+      "exit": 0,
+      "seconds": 1.563,
+      "output": "Four-mob live renderer: 150 poses captured, 42377 checks, 25 approved frames preserved\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_four_mob_simulations.lua",
+      "exit": 0,
+      "seconds": 2.412,
+      "output": "Four-mob simulation parity: 294 checks, 2 full live/headless matches + deterministic replays\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_four_mobs.lua",
+      "exit": 0,
+      "seconds": 0.066,
+      "output": "Four-mob mechanics passed: 43 cases\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_frog_worm.lua",
+      "exit": 0,
+      "seconds": 0.039,
+      "output": "Frog/Worm real-engine mechanics: 43 cases passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_frog_worm_rendering.lua",
+      "exit": 0,
+      "seconds": 1.028,
+      "output": "Frog/Worm live renderer: 54 pose/view/size cases + gameplay scene, 25267 checks\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_frog_worm_simulations.lua",
+      "exit": 0,
+      "seconds": 2.487,
+      "output": "P1 seed=20261017 ticks=3058 winner=2 frog_plays=11 worm_plays=12\nP2 seed=20261018 ticks=3058 winner=1 frog_plays=11 worm_plays=12\nFrog/Worm full-match parity: 262 checks, both owners, live/headless + seeded replay\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_headless_runner.lua",
+      "exit": 0,
+      "seconds": 0.305,
+      "output": "Headless runner parity tests passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_install_manifest.lua",
+      "exit": 0,
+      "seconds": 0.008,
+      "output": "Installer manifest tests passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_installer_false_returns.lua",
+      "exit": 0,
+      "seconds": 0.004,
+      "output": "CC-Minecraft Royale installer\n--------------------------------\nCC-Minecraft Royale installer\n--------------------------------\nPinned repository commit: aaaaaaaaaaaa\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n\nAll files downloaded and Lua syntax preflight passed.\nApplying low-space atomic update...\nCC-Minecraft Royale installer\n--------------------------------\nPinned repository commit: aaaaaaaaaaaa\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n\nAll files downloaded and Lua syntax preflight passed.\nApplying low-space atomic update...\nInstaller false-return fault injections passed: 5\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_lobby_state_mutators.lua",
+      "exit": 0,
+      "seconds": 0.008,
+      "output": "Lobby state mutation guards passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_mechanics_full_ci.lua",
+      "exit": 0,
+      "seconds": 0.279,
+      "output": "_p1 ] PASS\n[frog_worm_placement_p1  ] PASS\n[frog_worm_deploy_timing_p1] PASS\n[frog_worm_exposed_p1    ] PASS\n[frog_worm_damage_matrix_p1] PASS\n[frog_worm_opener_p1     ] PASS\n[frog_worm_bank_assassination_p1] PASS\n[frog_worm_economy_lock_p1] PASS\n[frog_worm_refund_p1     ] PASS\n[frog_worm_correction_p1 ] PASS\n[frog_worm_bot_air_defense_p1] PASS\n[frog_worm_bot_p1        ] PASS\n[frog_worm_hook_melee_p2 ] PASS\n[frog_worm_hook_heavy_bank_p2] PASS\n[frog_worm_moving_hook_melee_p2] PASS\n[frog_worm_hook_filters_p2] PASS\n[frog_worm_hook_terrain_p2] PASS\n[frog_worm_hook_cancel_clock_p2] PASS\n[frog_worm_multi_hook_p2 ] PASS\n[frog_worm_placement_p2  ] PASS\n[frog_worm_deploy_timing_p2] PASS\n[frog_worm_exposed_p2    ] PASS\n[frog_worm_damage_matrix_p2] PASS\n[frog_worm_opener_p2     ] PASS\n[frog_worm_bank_assassination_p2] PASS\n[frog_worm_economy_lock_p2] PASS\n[frog_worm_refund_p2     ] PASS\n[frog_worm_correction_p2 ] PASS\n[frog_worm_bot_air_defense_p2] PASS\n[frog_worm_bot_p2        ] PASS\n[frog_worm_attack_cadence] PASS\n[frog_worm_cleanup       ] PASS\n[frog_worm_staggered_deployments] PASS\n[frog_worm_refund_cap    ] PASS\n[frog_worm_mirrored_ambush] PASS\n[frog_worm_schemas       ] PASS\n\nMechanics tests complete: 118 PASS / 0 FAIL / 0 ERROR\nReport written to: mechanics_report.txt\nGitHub auto-sync not configured. Run once: report_sync setup\nFull in-game mechanics suite passed in Lua CI: 118/118\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_mechanics_isolation.lua",
+      "exit": 0,
+      "seconds": 0.276,
+      "output": "Mechanics exception isolation passed (definition values and references restored)\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_music_fault_boundaries.lua",
+      "exit": 0,
+      "seconds": 0.004,
+      "output": "Optional music fault isolation passed: 10 checks\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_music_seek_failures.lua",
+      "exit": 0,
+      "seconds": 0.003,
+      "output": "Music seek fallback failure diagnostics passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_pixel_failure_recovery.lua",
+      "exit": 0,
+      "seconds": 0.079,
+      "output": "Pixel failure acknowledgement and same-size monitor recovery passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_pixel_frame_diff.lua",
+      "exit": 0,
+      "seconds": 0.112,
+      "output": "PixelBox frame-diff regressions passed (38 checks)\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_platform_stubs.lua",
+      "exit": 0,
+      "seconds": 0.008,
+      "output": "Platform stub tests passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_preset_false_returns.lua",
+      "exit": 0,
+      "seconds": 0.004,
+      "output": "Preset false-return transaction regressions passed: 37\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_preset_recovery_matrix.lua",
+      "exit": 0,
+      "seconds": 0.006,
+      "output": "Preset recovery matrix passed: 125 scenarios / 232 assertions\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_preset_transaction_integrity.lua",
+      "exit": 0,
+      "seconds": 0.004,
+      "output": "Preset transaction integrity oracle passed: 11\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_projectile_speed_schema.lua",
+      "exit": 0,
+      "seconds": 0.004,
+      "output": "Projectile-speed schema invariant passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_recovery_hardening.lua",
+      "exit": 0,
+      "seconds": 0.018,
+      "output": "CC-Minecraft Royale installer\n--------------------------------\nInterrupted previous update detected (previous-interrupted-sha).\nReinstalling every managed file from one pinned commit.\nCustom startup.lua detected - leaving it untouched.\nPinned repository commit: abcdef123456\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n\nAll files downloaded and Lua syntax preflight passed.\nApplying low-space atomic update...\n\nAPPLY FAILED - restoring previous installation...\nRecovery hardening tests passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_refactor_parity.lua",
+      "exit": 0,
+      "seconds": 0.014,
+      "output": "Refactor parity tests passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_release_gate.lua",
+      "exit": 0,
+      "seconds": 0.003,
+      "output": "Release gate passed: 61 fixed audit IDs, 5 tracked follow-ups\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_report_logout_false.lua",
+      "exit": 0,
+      "seconds": 0.002,
+      "output": "GitHub token logout false-return regression passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_report_token_write_failures.lua",
+      "exit": 0,
+      "seconds": 0.002,
+      "output": "GitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nToken setup IO fault tests passed: 19\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_report_transaction_integrity.lua",
+      "exit": 0,
+      "seconds": 0.002,
+      "output": "Report publishing integrity oracle passed: 11\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_side_symmetry.lua",
+      "exit": 0,
+      "seconds": 0.01,
+      "output": "Side symmetry tests passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_simulation_contracts.lua",
+      "exit": 0,
+      "seconds": 0.011,
+      "output": "Simulation input contracts passed: 97 checks\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_sprite_roster.lua",
+      "exit": 0,
+      "seconds": 0.755,
+      "output": "Native sprite roster passed (35 models, 556 renderer checks)\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_system_audit_20261014.lua",
+      "exit": 0,
+      "seconds": 0.02,
+      "output": "System audit regressions passed: 23 cases, 160 checks\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_timer_precision.lua",
+      "exit": 0,
+      "seconds": 0.047,
+      "output": "Timer precision passed: 90 checks, exact cooldowns/lifetimes/countdown/regulation\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_token_backup_recovery.lua",
+      "exit": 0,
+      "seconds": 0.003,
+      "output": "Interrupted token promotion backup recovery passed\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_token_corrupt_active_fallback.lua",
+      "exit": 0,
+      "seconds": 0.002,
+      "output": "Token degraded-active recovery oracle passed: 3\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_touch_disconnect.lua",
+      "exit": 0,
+      "seconds": 0.013,
+      "output": "Queued monitor-touch disconnect recovery passed: 8 checks\n"
+    },
+    {
+      "lua": "5.2",
+      "test": "test_v1.lua",
+      "exit": 0,
+      "seconds": 0.052,
+      "output": "Smoke tests passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_anvil_grid_parity.lua",
+      "exit": 0,
+      "seconds": 0.057,
+      "output": "Anvil exhaustive/grid parity passed (183 comparisons)\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_arena_skin_parity.lua",
+      "exit": 0,
+      "seconds": 0.658,
+      "output": "Arena skin parity passed (314874 terrain pixels, 68034 coordinate checks, 240 identical combat ticks)\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_atomic_token_reconfig.lua",
+      "exit": 0,
+      "seconds": 0.003,
+      "output": "GitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nAtomic token reconfiguration fault scenarios passed: 11\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_audit_fixes_20261010.lua",
+      "exit": 0,
+      "seconds": 0.01,
+      "output": "Third-audit fix regressions passed (35 assertions)\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_audit_followups.lua",
+      "exit": 0,
+      "seconds": 0.022,
+      "output": "Audit follow-up tests passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_audit_hardening_20261010.lua",
+      "exit": 0,
+      "seconds": 0.05,
+      "output": "October 2026 audit hardening tests passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_audit_io_boundaries.lua",
+      "exit": 0,
+      "seconds": 0.003,
+      "output": "HTTP boundary faults passed: 24 checks, 7 requests\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_audit_monitor_boundaries.lua",
+      "exit": 0,
+      "seconds": 0.066,
+      "output": "Monitor resize/interaction boundaries passed: 47 checks\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_audit_regressions.lua",
+      "exit": 0,
+      "seconds": 0.012,
+      "output": "Audit regression tests passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_audit_runtime_gc.lua",
+      "exit": 0,
+      "seconds": 0.709,
+      "output": "CraftOS audit-runner GC compatibility passed: 6 checks\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_cli_manifest.lua",
+      "exit": 0,
+      "seconds": 0.012,
+      "output": "Usage: simulate <100-1000> [mixed|fixed] [seed]\nExamples:\n  simulate 100\n  simulate 137 mixed\n  simulate 500 mixed\n  simulate 1000 fixed\nERROR: Match count must be a whole number from 100 to 1000.\nUsage: simulate <100-1000> [mixed|fixed] [seed]\nExamples:\n  simulate 100\n  simulate 137 mixed\n  simulate 500 mixed\n  simulate 1000 fixed\nCLI and manifest tests passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_core_invariant_stress.lua",
+      "exit": 0,
+      "seconds": 1.022,
+      "output": "Core invariant stress passed: 8 matches, 22977 ticks, 1351 snapshots, 290695 assertions\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_diagnostic_contracts.lua",
+      "exit": 0,
+      "seconds": 0.809,
+      "output": "Diagnostic contracts passed: 2267 real match snapshots, 5 detected faults, 3 live countdown comparisons\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_finite_river_bounds.lua",
+      "exit": 0,
+      "seconds": 0.002,
+      "output": "Finite river geometry invariant passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_four_mob_rendering.lua",
+      "exit": 0,
+      "seconds": 1.088,
+      "output": "Four-mob live renderer: 150 poses captured, 42377 checks, 25 approved frames preserved\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_four_mob_simulations.lua",
+      "exit": 0,
+      "seconds": 2.428,
+      "output": "Four-mob simulation parity: 294 checks, 2 full live/headless matches + deterministic replays\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_four_mobs.lua",
+      "exit": 0,
+      "seconds": 0.051,
+      "output": "Four-mob mechanics passed: 43 cases\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_frog_worm.lua",
+      "exit": 0,
+      "seconds": 0.034,
+      "output": "Frog/Worm real-engine mechanics: 43 cases passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_frog_worm_rendering.lua",
+      "exit": 0,
+      "seconds": 0.951,
+      "output": "Frog/Worm live renderer: 54 pose/view/size cases + gameplay scene, 25267 checks\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_frog_worm_simulations.lua",
+      "exit": 0,
+      "seconds": 2.082,
+      "output": "P1 seed=20261017 ticks=3058 winner=2 frog_plays=11 worm_plays=12\nP2 seed=20261018 ticks=3058 winner=1 frog_plays=11 worm_plays=12\nFrog/Worm full-match parity: 262 checks, both owners, live/headless + seeded replay\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_headless_runner.lua",
+      "exit": 0,
+      "seconds": 0.252,
+      "output": "Headless runner parity tests passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_install_manifest.lua",
+      "exit": 0,
+      "seconds": 0.007,
+      "output": "Installer manifest tests passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_installer_false_returns.lua",
+      "exit": 0,
+      "seconds": 0.004,
+      "output": "CC-Minecraft Royale installer\n--------------------------------\nCC-Minecraft Royale installer\n--------------------------------\nPinned repository commit: aaaaaaaaaaaa\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n\nAll files downloaded and Lua syntax preflight passed.\nApplying low-space atomic update...\nCC-Minecraft Royale installer\n--------------------------------\nPinned repository commit: aaaaaaaaaaaa\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n\nAll files downloaded and Lua syntax preflight passed.\nApplying low-space atomic update...\nInstaller false-return fault injections passed: 5\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_lobby_state_mutators.lua",
+      "exit": 0,
+      "seconds": 0.008,
+      "output": "Lobby state mutation guards passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_mechanics_full_ci.lua",
+      "exit": 0,
+      "seconds": 0.227,
+      "output": "_p1 ] PASS\n[frog_worm_placement_p1  ] PASS\n[frog_worm_deploy_timing_p1] PASS\n[frog_worm_exposed_p1    ] PASS\n[frog_worm_damage_matrix_p1] PASS\n[frog_worm_opener_p1     ] PASS\n[frog_worm_bank_assassination_p1] PASS\n[frog_worm_economy_lock_p1] PASS\n[frog_worm_refund_p1     ] PASS\n[frog_worm_correction_p1 ] PASS\n[frog_worm_bot_air_defense_p1] PASS\n[frog_worm_bot_p1        ] PASS\n[frog_worm_hook_melee_p2 ] PASS\n[frog_worm_hook_heavy_bank_p2] PASS\n[frog_worm_moving_hook_melee_p2] PASS\n[frog_worm_hook_filters_p2] PASS\n[frog_worm_hook_terrain_p2] PASS\n[frog_worm_hook_cancel_clock_p2] PASS\n[frog_worm_multi_hook_p2 ] PASS\n[frog_worm_placement_p2  ] PASS\n[frog_worm_deploy_timing_p2] PASS\n[frog_worm_exposed_p2    ] PASS\n[frog_worm_damage_matrix_p2] PASS\n[frog_worm_opener_p2     ] PASS\n[frog_worm_bank_assassination_p2] PASS\n[frog_worm_economy_lock_p2] PASS\n[frog_worm_refund_p2     ] PASS\n[frog_worm_correction_p2 ] PASS\n[frog_worm_bot_air_defense_p2] PASS\n[frog_worm_bot_p2        ] PASS\n[frog_worm_attack_cadence] PASS\n[frog_worm_cleanup       ] PASS\n[frog_worm_staggered_deployments] PASS\n[frog_worm_refund_cap    ] PASS\n[frog_worm_mirrored_ambush] PASS\n[frog_worm_schemas       ] PASS\n\nMechanics tests complete: 118 PASS / 0 FAIL / 0 ERROR\nReport written to: mechanics_report.txt\nGitHub auto-sync not configured. Run once: report_sync setup\nFull in-game mechanics suite passed in Lua CI: 118/118\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_mechanics_isolation.lua",
+      "exit": 0,
+      "seconds": 0.371,
+      "output": "Mechanics exception isolation passed (definition values and references restored)\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_music_fault_boundaries.lua",
+      "exit": 0,
+      "seconds": 0.005,
+      "output": "Optional music fault isolation passed: 10 checks\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_music_seek_failures.lua",
+      "exit": 0,
+      "seconds": 0.003,
+      "output": "Music seek fallback failure diagnostics passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_pixel_failure_recovery.lua",
+      "exit": 0,
+      "seconds": 0.064,
+      "output": "Pixel failure acknowledgement and same-size monitor recovery passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_pixel_frame_diff.lua",
+      "exit": 0,
+      "seconds": 0.08,
+      "output": "PixelBox frame-diff regressions passed (38 checks)\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_platform_stubs.lua",
+      "exit": 0,
+      "seconds": 0.006,
+      "output": "Platform stub tests passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_preset_false_returns.lua",
+      "exit": 0,
+      "seconds": 0.004,
+      "output": "Preset false-return transaction regressions passed: 37\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_preset_recovery_matrix.lua",
+      "exit": 0,
+      "seconds": 0.005,
+      "output": "Preset recovery matrix passed: 125 scenarios / 232 assertions\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_preset_transaction_integrity.lua",
+      "exit": 0,
+      "seconds": 0.004,
+      "output": "Preset transaction integrity oracle passed: 11\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_projectile_speed_schema.lua",
+      "exit": 0,
+      "seconds": 0.004,
+      "output": "Projectile-speed schema invariant passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_recovery_hardening.lua",
+      "exit": 0,
+      "seconds": 0.014,
+      "output": "CC-Minecraft Royale installer\n--------------------------------\nInterrupted previous update detected (previous-interrupted-sha).\nReinstalling every managed file from one pinned commit.\nCustom startup.lua detected - leaving it untouched.\nPinned repository commit: abcdef123456\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n\nAll files downloaded and Lua syntax preflight passed.\nApplying low-space atomic update...\n\nAPPLY FAILED - restoring previous installation...\nRecovery hardening tests passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_refactor_parity.lua",
+      "exit": 0,
+      "seconds": 0.012,
+      "output": "Refactor parity tests passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_release_gate.lua",
+      "exit": 0,
+      "seconds": 0.003,
+      "output": "Release gate passed: 61 fixed audit IDs, 5 tracked follow-ups\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_report_logout_false.lua",
+      "exit": 0,
+      "seconds": 0.002,
+      "output": "GitHub token logout false-return regression passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_report_token_write_failures.lua",
+      "exit": 0,
+      "seconds": 0.002,
+      "output": "GitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nGitHub report sync setup\n------------------------\nRepo: Chazammm/CC-Minecraft-Royale\nUse a fine-grained token restricted to this repo\nwith Contents: Read and write.\nThe token is stored only on this Minecraft computer at:\n  .cc_royale/github_token.txt\n\nToken setup IO fault tests passed: 19\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_report_transaction_integrity.lua",
+      "exit": 0,
+      "seconds": 0.002,
+      "output": "Report publishing integrity oracle passed: 11\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_side_symmetry.lua",
+      "exit": 0,
+      "seconds": 0.015,
+      "output": "Side symmetry tests passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_simulation_contracts.lua",
+      "exit": 0,
+      "seconds": 0.01,
+      "output": "Simulation input contracts passed: 97 checks\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_sprite_roster.lua",
+      "exit": 0,
+      "seconds": 0.607,
+      "output": "Native sprite roster passed (35 models, 556 renderer checks)\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_system_audit_20261014.lua",
+      "exit": 0,
+      "seconds": 0.018,
+      "output": "System audit regressions passed: 23 cases, 160 checks\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_timer_precision.lua",
+      "exit": 0,
+      "seconds": 0.039,
+      "output": "Timer precision passed: 90 checks, exact cooldowns/lifetimes/countdown/regulation\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_token_backup_recovery.lua",
+      "exit": 0,
+      "seconds": 0.002,
+      "output": "Interrupted token promotion backup recovery passed\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_token_corrupt_active_fallback.lua",
+      "exit": 0,
+      "seconds": 0.002,
+      "output": "Token degraded-active recovery oracle passed: 3\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_touch_disconnect.lua",
+      "exit": 0,
+      "seconds": 0.011,
+      "output": "Queued monitor-touch disconnect recovery passed: 8 checks\n"
+    },
+    {
+      "lua": "5.4",
+      "test": "test_v1.lua",
+      "exit": 0,
+      "seconds": 0.045,
+      "output": "Smoke tests passed\n"
+    }
+  ]
+}

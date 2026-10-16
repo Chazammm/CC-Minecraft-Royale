@@ -1,0 +1,34 @@
+name: King Frog and Nether Worm
+on:
+  push:
+    paths:
+      - '**.lua'
+      - assets/sprites/frog_worm/**
+      - .github/workflows/frog-worm.yml
+  pull_request:
+    paths:
+      - '**.lua'
+      - assets/sprites/frog_worm/**
+      - install.lua
+      - mechanics_test.lua
+      - .github/workflows/frog-worm.yml
+permissions:
+  contents: read
+jobs:
+  mechanics-rendering-parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Host dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.2 lua5.4 fonts-dejavu-core
+          python -m pip install Pillow==12.3.0
+      - name: Actual registered sprites, effects and exact previews
+        run: |
+          lua5.2 tests/test_frog_worm_rendering.lua /tmp/frog-worm52.json
+          lua5.4 tests/test_frog_worm_rendering.lua /tmp/frog-worm54.json
+          python assets/sprites/frog_worm/tools/previews.py --check --capture52 /tmp/frog-worm52.json --capture54 /tmp/frog-worm54.json

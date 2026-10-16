@@ -78,6 +78,7 @@ local POWER_PRIORITY = {
 
 local OFFENSE_SCORE = {
     ravager_rider = 6.5, baby_ender_dragon = 5.5, minoshroom = 6.5,
+    king_frog = 3.7,
     iron_golem = 7,
     witch = 6,
     evoker = 6.2,
@@ -999,6 +1000,10 @@ local function defensivePlacement(bot, card, threat)
         return clampOwnPlacement(playerId, 50, threat.y + back * 10)
     end
 
+    if card.id == "king_frog" then
+        return clampOwnPlacement(playerId,threat.x,threat.y+back*9)
+    end
+
     if card.id == "snow_golem"
         or card.id == "skeleton"
         or card.id == "witch"
@@ -1147,6 +1152,43 @@ local function offensivePlacement(bot, state, card, view)
     return clampOwnPlacement(playerId, laneX, y)
 end
 
+-- Forecast the delayed ambush, using the exact same ground validator as plays.
+-- Forecast only an affordable in-hand Worm, once per decision.
+local function bestWormTarget(state,playerId,view,defending)
+    local bestX,bestY,bestScore=nil,nil,-math.huge
+    local direction=playerId==2 and -1 or 1
+    for _,target in ipairs(view.enemyEntities) do
+        if target.alive and target.kind~="tower" and not target.flying and not target.waterOnly
+            and (not target.remainingLifetime or target.remainingLifetime>2) then
+            local tx,ty,confidence=predictedAnvilPosition(state,target,2)
+            if tx and ty then
+                local value=(target.emeraldBoost or 0)>0 and 14
+                    or (target.kind=="building" and 7)
+                    or ((target.attackRange or 0)>=10 and 9 or 5)
+                if defending and (playerId==1 and ty>config.ARENA.riverBottom
+                    or playerId==2 and ty<config.ARENA.riverTop) then value=value+6 end
+                for _,radius in ipairs({3,7}) do
+                    for i=0,7 do
+                        local angle=i*math.pi/4
+                        local x,y=tx+direction*radius*math.cos(angle),ty+direction*radius*math.sin(angle)
+                        if arena.placementAllowed(playerId,x,y,"burrow",state) then
+                            local score=value*(confidence or 1)-radius*.1
+                            for _,tower in ipairs(view.enemyTowers) do
+                                if tower.alive
+                                    and util.distanceSquared(x,y,tower.x,tower.y)<=(tower.attackRange or 0)^2 then
+                                    score=score-(tower.targetId and .7 or 1.8)
+                                end
+                            end
+                            if score>bestScore+1e-9 then bestX,bestY,bestScore=x,y,score end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return bestX,bestY,bestScore
+end
+
 local function shouldSaveForPowerCard(bot, state, ctx, arrowScore, cfg, view)
     cfg = cfg or difficultyConfig(bot)
     if not cfg.saveForPower then return false end
@@ -1225,7 +1267,8 @@ local function scoreCard(
     anvilScore,
     cfg,
     defenseThreshold,
-    view
+    view,
+    wormScore
 )
     local player = state.players[bot.playerId]
     local playCost = Game.getCardPlayCost(state, bot.playerId, card.id) or card.cost
@@ -1242,7 +1285,11 @@ local function scoreCard(
     -- spending cheap cards before reaching 7E. When safe, reserve the last
     -- couple of Emeralds so Villager gets a real chance to enter the match.
 
-    if card.id == "arrows" then
+    if card.id == "nether_worm" then
+        if defending and threat.flying then return -math.huge end
+        if not wormScore or wormScore<cfg.minPlayScore then return -math.huge end
+        score=wormScore
+    elseif card.id == "arrows" then
         if arrowScore >= cfg.arrowThreshold then
             score = 8 + arrowScore
         else
@@ -1329,6 +1376,8 @@ local function scoreCard(
             if threat.name == "Iron Golem" or threat.name == "Creeper" then score = score + 4 end
         elseif card.id == "enderman" and (threat.attackRange or 0) >= 10 then
             score = score + 5
+        elseif card.id == "king_frog" and not threat.flying then
+            score=score+((threat.attackRange or 0)>=10 and 5 or 2)
         elseif card.id == "snow_golem" then
             score = score + (threat.flying and 5 or 4)
         elseif card.id == "skeleton" then
@@ -1461,6 +1510,11 @@ local function choosePlay(bot, state)
     end
 
     local defenseThreshold = botDefenseThreshold(bot, state, cfg, view)
+    local wormX,wormY,wormScore
+    if handHasCard(player,"nether_worm") and player.emeralds+0.0001>=3 then
+        wormX,wormY,wormScore=bestWormTarget(state,bot.playerId,view,
+            ctx.primaryThreat and ctx.primaryThreatScore>=defenseThreshold)
+    end
     local best = nil
     local bestScore = -math.huge
 
@@ -1477,7 +1531,8 @@ local function choosePlay(bot, state)
                 anvilScore,
                 cfg,
                 defenseThreshold,
-                view
+                view,
+                wormScore
             )
             if score > bestScore then
                 bestScore = score
@@ -1488,7 +1543,9 @@ local function choosePlay(bot, state)
 
     if not best or bestScore < cfg.minPlayScore then return nil end
 
-    if best.card.id == "arrows" and arrowX then
+    if best.card.id == "nether_worm" and wormX then
+        best.x,best.y=wormX,wormY
+    elseif best.card.id == "arrows" and arrowX then
         best.x, best.y = arrowX, arrowY
     elseif best.card.id == "falling_anvil" and anvilX then
         best.x, best.y = anvilX, anvilY
@@ -1648,6 +1705,10 @@ function Bot.status(bot, state)
         knownCards = bot.memory and bot.memory.knownCards or {},
         enemyPlayIndex = bot.memory and bot.memory.enemyPlayIndex or 0,
     }
+end
+
+function Bot.debugWormTarget(state,playerId)
+    return bestWormTarget(state,playerId,buildDecisionView(state,playerId),false)
 end
 
 return Bot

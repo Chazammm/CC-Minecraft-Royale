@@ -53,7 +53,7 @@ function diagnostics.combatSnapshot(state)
     local snapshot={}
     for _,key in ipairs({'phase','countdown','timeLeft','overtime','tiebreaker',
         'winner','resultReason','nextEntityId','nextWebShotId','combatTick','entities','projectiles',
-        'pendingSpells','stats','ruleset','destroyedSideTowers','emeraldBoost'}) do
+        'pendingSpells','pendingDeployments','nextDeploymentId','stats','ruleset','destroyedSideTowers','emeraldBoost'}) do
         snapshot[key]=state[key]
     end
     snapshot.players={}
@@ -74,6 +74,18 @@ function diagnostics.assertState(state,context)
     local webShots={}
     finite(state.nextWebShotId or 1,'next web shot ID')
     for _,projectile in ipairs(state.projectiles or {}) do
+        if projectile.alive then
+            for _,field in ipairs({'x','y','damage','speed','targetId'}) do
+                finite(projectile[field],'projectile '..field)
+            end
+            check(projectile.owner==1 or projectile.owner==2,'invalid projectile owner')
+            check(projectile.damage>=0 and projectile.speed>0,'invalid projectile damage/speed')
+            check(projectile.targetId>0 and projectile.targetId==math.floor(projectile.targetId),
+                'invalid projectile target ID')
+            for _,field in ipairs({'lastTargetX','lastTargetY'}) do
+                if projectile[field]~=nil then finite(projectile[field],'projectile '..field) end
+            end
+        end
         if projectile.alive and projectile.heroWebSpec then
             local id=projectile.webShotId
             finite(id,'web shot ID')
@@ -82,6 +94,18 @@ function diagnostics.assertState(state,context)
             check(projectile.damage==0,'web projectile deals unintended ordinary damage')
             webShots[id]=projectile
         end
+    end
+    local deployments={}
+    for _,pending in ipairs(state.pendingDeployments or {}) do
+        finite(pending.id,'deployment ID');finite(pending.remaining,'deployment timer')
+        finite(pending.x,'deployment x');finite(pending.y,'deployment y')
+        check(pending.owner==1 or pending.owner==2,'invalid deployment owner')
+        check(not deployments[pending.id] and pending.id>0 and pending.id==math.floor(pending.id),
+            'duplicate/invalid deployment ID')
+        deployments[pending.id]=true
+        check(pending.remaining>=0 and pending.remaining<=pending.duration+1e-8,'deployment timer bounds')
+        check(pending.state=='BURROWED' and pending.cardId=='nether_worm','invalid deployment state')
+        check((state.nextDeploymentId or 0)>pending.id,'deployment ID reused')
     end
     for _,entity in ipairs(state.entities) do
         check(type(entity.id)=='number' and entity.id>0
@@ -123,7 +147,7 @@ function diagnostics.assertState(state,context)
             local shot=webShots[entity.pendingWebShotId]
             check(entity.alive and shot and shot.sourceEntityId==entity.id,'orphan source web reservation')
         end
-        for _,field in ipairs({'attackCooldownLeft','riderCooldownLeft','webCooldownLeft'}) do
+        for _,field in ipairs({'attackCooldownLeft','riderCooldownLeft','webCooldownLeft','tongueCooldownLeft','emergenceRemaining','wormOpenerRemaining'}) do
             if entity[field]~=nil then finite(entity[field],field) end
         end
         check(state.nextEntityId>entity.id,'nextEntityId reused')
@@ -131,8 +155,17 @@ function diagnostics.assertState(state,context)
     for _,shot in pairs(webShots) do
         local target=live[shot.targetId]
         local reservation=target and target.heroWebReservation
-        check(reservation and reservation.shotId==shot.webShotId
-            and reservation.sourceEntityId==shot.sourceEntityId,'web projectile missing its reservation')
+        -- Later projectiles can kill a victim after this web was processed.
+        -- Its flight/source reservation is cancelled on the next update;
+        -- an absent victim at this boundary is not a broken live transaction.
+        if target then
+            check(reservation and reservation.shotId==shot.webShotId
+                and reservation.sourceEntityId==shot.sourceEntityId,'web projectile missing its reservation')
+        end
+        local source=live[shot.sourceEntityId]
+        if source then
+            check(source.pendingWebShotId==shot.webShotId,'web projectile missing its source reservation')
+        end
     end
     for id,entity in pairs(state.entityById) do
         check(seen[id]==entity,'orphan ID lookup')

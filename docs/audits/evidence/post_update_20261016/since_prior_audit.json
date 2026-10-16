@@ -1,0 +1,514 @@
+{
+  "infrastructure": [
+    {
+      "status": "A",
+      "path": ".github/workflows/frog-worm.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/lua-ci.yml"
+    },
+    {
+      "status": "A",
+      "path": ".github/workflows/phase1-assets.yml"
+    },
+    {
+      "status": "M",
+      "path": "install.lua"
+    }
+  ],
+  "gameplay": [
+    {
+      "status": "M",
+      "path": ".gitignore"
+    },
+    {
+      "status": "M",
+      "path": "src/arena.lua"
+    },
+    {
+      "status": "M",
+      "path": "src/bot.lua"
+    },
+    {
+      "status": "M",
+      "path": "src/cards.lua"
+    },
+    {
+      "status": "A",
+      "path": "src/combat_modifiers.lua"
+    },
+    {
+      "status": "A",
+      "path": "src/custom_mob_rules.lua"
+    },
+    {
+      "status": "M",
+      "path": "src/game.lua"
+    }
+  ],
+  "documentation": [
+    {
+      "status": "M",
+      "path": "README.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/AUDIT_REGISTER.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/FOUR_MOBS_PHASE2_20261014.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/four_mobs_phase2_20261014/audit100.log"
+    },
+    {
+      "status": "A",
+      "path": "docs/four_mobs_phase2_20261014/audit1000.log"
+    },
+    {
+      "status": "A",
+      "path": "docs/four_mobs_phase2_20261014/audit100_lua54.log"
+    },
+    {
+      "status": "A",
+      "path": "docs/four_mobs_phase2_20261014/clean_suites.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/four_mobs_phase2_20261014/dragon25.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/four_mobs_phase2_20261014/hero25.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/four_mobs_phase2_20261014/live_arena.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/four_mobs_phase2_20261014/live_arena_captures.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/four_mobs_phase2_20261014/manifest.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/four_mobs_phase2_20261014/mino25.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/four_mobs_phase2_20261014/mixed100.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/four_mobs_phase2_20261014/rider25.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/four_mobs_phase2_20261014/runs.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/frog_worm/IMPLEMENTATION.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/frog_worm/VALIDATION.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/frog_worm/performance.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/frog_worm/regressions.json"
+    }
+  ],
+  "assets": [
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/.gitignore"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/BALANCE.md"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/BALANCE_PROPOSALS.json"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/FILE_LIST.md"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/MANIFEST.json"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/PHASE2_PLAN.md"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/README.md"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/VALIDATION.md"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/effects/baby_ender_dragon.lua"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/effects/hero_spider.lua"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/effects/minoshroom.lua"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/effects/ravager_rider.lua"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/evidence/assets_lua52.json"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/evidence/assets_lua54.json"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/evidence/baseline_guard.json"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/evidence/baseline_regressions.json"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/evidence/captures.json"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/evidence/existing_regressions.json"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/evidence/preview_validation.json"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/atlas_layout.json"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/baby_ender_dragon_atlas.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/baby_ender_dragon_attack.gif"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/baby_ender_dragon_fly.gif"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/baby_ender_dragon_set.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/hero_spider_atlas.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/hero_spider_melee.gif"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/hero_spider_set.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/hero_spider_walk.gif"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/hero_spider_web.gif"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/minoshroom_atlas.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/minoshroom_attack.gif"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/minoshroom_set.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/minoshroom_walk.gif"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/monitor_roster.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/native_roster.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_atlas.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_building_attack.gif"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_combined.gif"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_rider_shot.gif"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_set.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_walk.gif"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/sprites/baby_ender_dragon.lua"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/sprites/hero_spider.lua"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/sprites/minoshroom.lua"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/sprites/ravager_rider.lua"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/tools/balance.py"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/tools/build_assets.py"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/tools/capture.lua"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/tools/compare_captures.py"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/tools/harness.lua"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/tools/preview.py"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/tools/test_assets.lua"
+    },
+    {
+      "status": "A",
+      "path": "assets/proposed/four_mobs_phase1/tools/validate_previews.py"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/MANIFEST.json"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/README.md"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/evidence/capture52.json"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/evidence/capture54.json"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/love2d/index.lua"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/love2d/king_frog.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/love2d/nether_worm.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/previews/comparison.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/previews/gameplay_1x.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/previews/gameplay_6x.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/previews/king_frog_native.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/previews/king_frog_pixelbox.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/previews/nether_worm_native.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/previews/nether_worm_pixelbox.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/previews/runtime_poses.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/tools/previews.py"
+    },
+    {
+      "status": "A",
+      "path": "src/assets/custom_mobs/dispatch.lua"
+    },
+    {
+      "status": "A",
+      "path": "src/assets/custom_mobs/frames.lua"
+    },
+    {
+      "status": "A",
+      "path": "src/assets/four_mobs/effects/baby_ender_dragon.lua"
+    },
+    {
+      "status": "A",
+      "path": "src/assets/four_mobs/effects/hero_spider.lua"
+    },
+    {
+      "status": "A",
+      "path": "src/assets/four_mobs/effects/minoshroom.lua"
+    },
+    {
+      "status": "A",
+      "path": "src/assets/four_mobs/effects/ravager_rider.lua"
+    },
+    {
+      "status": "A",
+      "path": "src/assets/four_mobs/sprites/baby_ender_dragon.lua"
+    },
+    {
+      "status": "A",
+      "path": "src/assets/four_mobs/sprites/hero_spider.lua"
+    },
+    {
+      "status": "A",
+      "path": "src/assets/four_mobs/sprites/minoshroom.lua"
+    },
+    {
+      "status": "A",
+      "path": "src/assets/four_mobs/sprites/ravager_rider.lua"
+    }
+  ],
+  "tests/diagnostics": [
+    {
+      "status": "M",
+      "path": "mechanics_test.lua"
+    },
+    {
+      "status": "M",
+      "path": "src/diagnostics.lua"
+    },
+    {
+      "status": "A",
+      "path": "src/four_mob_mechanics.lua"
+    },
+    {
+      "status": "A",
+      "path": "src/frog_worm_mechanics.lua"
+    },
+    {
+      "status": "A",
+      "path": "tests/fixtures/four_mob_approved_pixels.lua"
+    },
+    {
+      "status": "A",
+      "path": "tests/test_four_mob_rendering.lua"
+    },
+    {
+      "status": "A",
+      "path": "tests/test_four_mob_simulations.lua"
+    },
+    {
+      "status": "A",
+      "path": "tests/test_four_mobs.lua"
+    },
+    {
+      "status": "A",
+      "path": "tests/test_frog_worm.lua"
+    },
+    {
+      "status": "A",
+      "path": "tests/test_frog_worm_rendering.lua"
+    },
+    {
+      "status": "A",
+      "path": "tests/test_frog_worm_simulations.lua"
+    },
+    {
+      "status": "M",
+      "path": "tests/test_v1.lua"
+    }
+  ],
+  "rendering": [
+    {
+      "status": "A",
+      "path": "src/mob_assets.lua"
+    },
+    {
+      "status": "M",
+      "path": "src/pixel_arena.lua"
+    },
+    {
+      "status": "M",
+      "path": "src/render.lua"
+    }
+  ]
+}

@@ -41,8 +41,8 @@ local function assertTrue(value, message)
     if not value then error(message or "assertTrue failed") end
 end
 
-assertEq(#cards.list, 25, "Card pool must contain twenty-five selectable cards including the three new mobs")
-assertEq(#cards.all, 26, "Card registry must contain selectable cards plus dev-only Guardian")
+assertEq(#cards.list, 27, "Card pool must contain twenty-seven selectable cards including King Frog and Nether Worm")
+assertEq(#cards.all, 28, "Card registry must contain selectable cards plus dev-only Guardian")
 assertTrue(not cards.isSelectable("guardian"), "Guardian must be DEV ONLY and absent from normal card selection")
 assertEq(#cards.defaultDeck(), 8, "Default deck must contain eight cards")
 assertTrue(cards.isValidDeck(cards.defaultDeck()), "Default deck must be valid")

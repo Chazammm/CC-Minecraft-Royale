@@ -5,6 +5,7 @@ local arena = require("src.arena")
 local spatial = require("src.spatial")
 local presets = require("src.presets")
 local modifiers = require("src.combat_modifiers")
+local customRules = require("src.custom_mob_rules")
 
 local Game = {}
 
@@ -26,6 +27,8 @@ local function newPlayerStats()
     return {
         cardsPlayed = 0,
         emeraldSpent = 0,
+        deploymentRefunds = 0,
+        cancelledDeployments = 0,
         emeraldGenerated = 0,
         villagerBonus = 0,
         emeraldWasted = 0,
@@ -57,6 +60,8 @@ local function getCardStats(state, playerId, cardId)
         stat = {
             plays = 0,
             emeraldSpent = 0,
+            deploymentRefunds = 0,
+            cancelledDeployments = 0,
             unitDamage = 0,
             towerDamage = 0,
             kills = 0,
@@ -227,6 +232,14 @@ local RESERVED_ENTITY_FIELDS = {
     riderCooldownLeft = true,
     initialBuildingImpactUsed = true,
     visualAnimation = true,
+    tongueCooldownLeft = true,
+    tongueWindup = true,
+    lastFrogPullTick = true,
+    emergenceRemaining = true,
+    birthRemainder = true,
+    wormOpenerRemaining = true,
+    wormOpenerUsed = true,
+    burrowState = true,
 
     summonerId = true,
     summonerAliveTracked = true,
@@ -333,10 +346,17 @@ local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color, 
         and (entity.heroWebAbility.initialDelay or entity.heroWebAbility.interval) or nil
     entity.riderCooldownLeft = entity.secondaryAttack and 0 or nil
     entity.riderTargetId = nil
+    entity.tongueCooldownLeft = entity.tongueHook and 0 or nil
+    if entity.burrow then
+        entity.emergenceRemaining = entity.burrow.emergence
+        entity.burrowState = "EMERGING"
+        entity.wormOpenerUsed = false
+    end
     if entity.initialBuildingImpact then entity.initialBuildingImpactUsed = false end
     if not state.headlessSimulation and (
         entity.visualVariant == "ravager_rider" or entity.visualVariant == "baby_ender_dragon"
         or entity.visualVariant == "minoshroom" or entity.visualVariant == "hero_spider"
+        or entity.visualVariant == "king_frog" or entity.visualVariant == "nether_worm"
     ) then
         entity.visualAnimation = { walkTime = 0 }
     end
@@ -499,6 +519,7 @@ end
 local function targetAllowed(attacker, candidate)
     if not candidate.alive or candidate.owner == attacker.owner then return false end
     if candidate.flying and not attacker.canAttackAir then return false end
+    if (attacker.tongueHook or attacker.burrow) and candidate.waterOnly then return false end
     -- Ground-erupting Fang attacks cannot interact with water-only targets.
     -- Reject them during acquisition so the Evoker never locks a Guardian it
     -- can never damage.
@@ -532,6 +553,10 @@ end
 
 local function isBuilding(candidate)
     return candidate.kind == "building"
+end
+
+local function isTower(candidate)
+    return candidate.kind == "tower"
 end
 
 local function isNonTower(candidate)
@@ -638,6 +663,13 @@ local function preferredTowerObjective(state, entity)
     return lanePrincess or kingTower or fallbackPrincess
 end
 
+local function isEconomyUnit(candidate)
+    return candidate.kind=="unit" and (candidate.emeraldBoost or 0)>0
+end
+local function isGroundUnit(candidate)
+    return candidate.kind=="unit" and not candidate.flying and not candidate.waterOnly
+end
+
 local function acquireTarget(state, entity)
     if entity.passive or entity.targetMode == "none" then
         return nil
@@ -651,6 +683,13 @@ local function acquireTarget(state, entity)
         return findNearest(state, entity, isUnit, entity.attackRange)
     end
 
+    if entity.burrow then
+        local economy=findNearest(state,entity,isEconomyUnit,entity.aggroRange)
+        if economy then return economy end
+        local troop=findNearest(state,entity,isGroundUnit,entity.aggroRange)
+        if troop then return troop end
+    end
+
     -- Troops/buildings may distract a marching unit, but towers do not take
     -- part in generic aggro selection. Tower choice is lane-aware below.
     local filter = entity.targetMode == "buildings"
@@ -658,6 +697,10 @@ local function acquireTarget(state, entity)
     local nearby = findNearest(state, entity, filter, entity.aggroRange)
 
     if nearby then return nearby end
+    if entity.burrow then
+        local localTower=findNearest(state,entity,isTower,entity.aggroRange)
+        if localTower then return localTower end
+    end
 
     local tower = preferredTowerObjective(state, entity)
     if tower then return tower end
@@ -917,6 +960,7 @@ local function clearRemovedMobState(state)
         entity.heroWebReservation = nil
         entity.pendingWebShotId = nil
         entity.riderTargetId = nil
+        entity.tongueWindup = nil
     end
 end
 
@@ -936,6 +980,8 @@ local function deactivateEntity(state, entity)
 
     spatial.remove(state, entity)
     entity.alive = false
+    entity.tongueWindup = nil
+    if entity.burrow then entity.burrowState = "DEAD" end
     entity.heroWeb = nil
     entity.heroWebReservation = nil
     entity.pendingWebShotId = nil
@@ -1619,6 +1665,12 @@ local function performAttack(state, entity, target)
         return
     end
 
+    if entity.burrow then
+        damageEntity(state,target,customRules.wormDamage(entity,target),entity.owner,entity.sourceCardId,entity.id)
+        modifiers.arm(entity,"attackCooldownLeft",entity.attackCooldown)
+        return
+    end
+
     if entity.projectileSpeed then
         spawnProjectile(state, entity, target)
     else
@@ -1634,9 +1686,71 @@ local function performAttack(state, entity, target)
     modifiers.arm(entity, "attackCooldownLeft", entity.attackCooldown or 1)
 end
 
-local ANIMATION_TIMERS = { "primaryLeft", "riderLeft", "webLeft" }
+-- Tongue is a zero-damage displacement transaction, separate from melee.
+local function updateTongue(state,entity,target,distance,dt)
+    local spec=entity.tongueHook
+    if not spec then return false end
+    local pending=entity.tongueWindup
+    if pending then
+        local victim=getEntityById(state,pending.targetId)
+        if not customRules.hookEligible(entity,victim)
+            or util.distanceSquared(entity.x,entity.y,victim.x,victim.y)>spec.range^2+1e-9 then
+            entity.tongueWindup=nil
+            return true
+        end
+        pending.remaining=util.tickRemaining(pending.remaining,dt)
+        if pending.remaining>1e-9 then return true end
+        entity.tongueWindup=nil
+        if victim.lastFrogPullTick~=state.combatTick then
+            local oldX,oldY=victim.x,victim.y
+            victim.x,victim.y=customRules.pullPosition(entity,victim,spec)
+            victim.lastFrogPullTick=state.combatTick
+            spatial.index(state,victim)
+            entity.targetId=victim.id;entity.lockedTargetId=victim.id
+            if entity.visualAnimation then entity.visualAnimation.tongueLeft=.2 end
+            if not state.headlessSimulation then
+                state.effects[#state.effects+1]={kind="frog_tongue",x=entity.x,y=entity.y,
+                    x2=oldX,y2=oldY,owner=entity.owner,ttl=.2,duration=.2}
+            end
+            emitSound(state,"minecraft:entity.frog.tongue",.5,1)
+            -- The zero-damage pull is complete. A ready ordinary melee hit
+            -- must not lose its opportunity to the victim's traversal order.
+            if (entity.attackCooldownLeft or 0)<=1e-9
+                and util.distanceSquared(entity.x,entity.y,victim.x,victim.y)<=entity.attackRange^2+1e-9 then
+                performAttack(state,entity,victim)
+            end
+        end
+        -- An unready/terrain-blocked melee waits for ordinary subsequent updates.
+        return true
+    end
+    if target and distance>entity.attackRange+1e-9 and distance<=spec.range+1e-9
+        and (entity.tongueCooldownLeft or 0)<=1e-9 and customRules.hookEligible(entity,target) then
+        entity.tongueCooldownLeft=spec.cooldown
+        entity.tongueWindup={targetId=target.id,remaining=spec.windup}
+        return true
+    end
+    return false
+end
+
+local ANIMATION_TIMERS = { "primaryLeft", "riderLeft", "webLeft", "tongueLeft" }
 local function updateCombatEntity(state, entity, dt)
     if not entity.alive then return end
+    if entity.birthRemainder~=nil then dt=entity.birthRemainder;entity.birthRemainder=nil end
+    if entity.emergenceRemaining then
+        if entity.damageFlash then entity.damageFlash=math.max(0,util.tickRemaining(entity.damageFlash,dt)) end
+        updateMovementSlows(entity,dt)
+        entity.emergenceRemaining=math.max(0,util.tickRemaining(entity.emergenceRemaining,dt))
+        if entity.emergenceRemaining<=1e-9 then
+            entity.emergenceRemaining=nil;entity.burrowState="ACTIVE"
+            entity.wormOpenerRemaining=entity.burrow.openerWindow
+        end
+        -- Exposed throughout emergence; never grant an attack on its unlock tick.
+        return
+    end
+    if entity.wormOpenerRemaining then
+        entity.wormOpenerRemaining=math.max(0,util.tickRemaining(entity.wormOpenerRemaining,dt))
+    end
+    if entity.tongueHook then modifiers.advance(entity,"tongueCooldownLeft",dt) end
     if entity.visualAnimation then
         local animation = entity.visualAnimation
         animation.moving = false
@@ -1723,6 +1837,7 @@ local function updateCombatEntity(state, entity, dt)
     end
 
     if entity.passive or entity.targetMode == "none" then
+        entity.tongueWindup=nil
         -- Passive/non-targeting state invalidates any prior combat commitment.
         -- Clear the lock and target-specific transient state as well as
         -- targetId so toggling the entity active later cannot resurrect stale
@@ -1780,6 +1895,7 @@ local function updateCombatEntity(state, entity, dt)
     end
 
     if not target then
+        if entity.tongueWindup then updateTongue(state,entity,nil,math.huge,dt) end
         if modifiers.precise(entity) then entity.attackCooldownLeft = math.max(0, entity.attackCooldownLeft) end
         entity.fuseRemaining = nil
         if entity.beam then
@@ -1795,6 +1911,8 @@ local function updateCombatEntity(state, entity, dt)
     local dy = target.y - entity.y
     local distance = math.sqrt(dx * dx + dy * dy)
     local attackRange = entity.attackRange or 0
+
+    if entity.tongueHook and updateTongue(state,entity,target,distance,dt) then return end
 
     if entity.hybridAttack and not target.flying then
         attackRange = entity.hybridAttack.meleeRange or 2.5
@@ -2328,6 +2446,8 @@ function Game.new(soundCallback, options)
         projectiles = {},
         effects = {},
         pendingSpells = {},
+        pendingDeployments = {},
+        nextDeploymentId = 1,
         nextEntityId = 1,
         nextWebShotId = 1,
         visualTime = 0,
@@ -2382,6 +2502,8 @@ function Game.resetLobby(state)
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
+    state.pendingDeployments = {}
+    state.nextDeploymentId = 1
     state.nextEntityId = 1
     state.nextWebShotId = 1
     state.visualTime = 0
@@ -2439,6 +2561,8 @@ function Game.startCountdown(state)
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
+    state.pendingDeployments = {}
+    state.nextDeploymentId = 1
     state.nextEntityId = 1
     state.nextWebShotId = 1
     state.visualTime = 0
@@ -2504,12 +2628,15 @@ end
 function Game.finish(state, winner, reason)
     if state.phase == "result" then return end
     cancelWebProjectiles(state)
+    for _,entity in ipairs(state.entities) do entity.tongueWindup=nil end
     state.phase = "result"
     state.winner = winner
     state.resultReason = reason or "MATCH OVER"
     state.players[1].selectedSlot = nil
     state.players[2].selectedSlot = nil
     state.pendingSpells = {}
+    state.pendingDeployments = {}
+    state.nextDeploymentId = 1
 
     if winner then
         emitSound(state, "minecraft:ui.toast.challenge_complete", 1.0, 1.0)
@@ -2540,6 +2667,8 @@ local function startTiebreaker(state)
     state.timeLeft = 0
     state.projectiles = {}
     state.pendingSpells = {}
+    state.pendingDeployments = {}
+    state.nextDeploymentId = 1
     state.effects = {}
     state.players[1].selectedSlot = nil
     state.players[2].selectedSlot = nil
@@ -2723,6 +2852,57 @@ local function updatePendingSpells(state, dt)
     for i = write, count do pendingSpells[i] = nil end
 end
 
+local function queueBurrow(state,owner,card,x,y,cost)
+    local spec=card.unit.burrow
+    state.pendingDeployments[#state.pendingDeployments+1]={
+        id=state.nextDeploymentId,kind="nether_worm_warning",owner=owner,cardId=card.id,
+        x=x,y=y,remaining=spec.warning,duration=spec.warning,cost=cost,
+        unit=util.deepcopy(card.unit),name=card.name,icon=card.icon,color=card.color,
+        battlePlay=state.phase=="battle",state="BURROWED",
+    }
+    state.nextDeploymentId=state.nextDeploymentId+1
+end
+local function cancelBurrow(state,pending)
+    local player=state.players[pending.owner]
+    local refund=math.min(pending.cost,math.max(0,player.maxEmeralds-player.emeralds))
+    player.emeralds=player.emeralds+refund
+    setFeedback(player,"BURROW BLOCKED - REFUNDED")
+    if pending.battlePlay and state.stats then
+        local stats=state.stats.players[pending.owner]
+        local cardStats=getCardStats(state,pending.owner,pending.cardId)
+        for _,record in ipairs({stats,cardStats}) do
+            record.deploymentRefunds=(record.deploymentRefunds or 0)+refund
+            record.cancelledDeployments=(record.cancelledDeployments or 0)+1
+        end
+    end
+end
+local function updatePendingDeployments(state,dt)
+    local pendingList=state.pendingDeployments
+    local write=1
+    for read=1,#pendingList do
+        local pending=pendingList[read]
+        pending.remaining=util.tickRemaining(pending.remaining,dt)
+        if not pending.finalized and pending.remaining<=.3+1e-9 then
+            local x,y=arena.findBurrowPosition(pending.owner,pending.x,pending.y,state)
+            if x then pending.x,pending.y=x,y else pending.blocked=true end
+            pending.finalized=true
+        end
+        if pending.remaining<=1e-9 then
+            if pending.blocked or not arena.placementAllowed(pending.owner,pending.x,pending.y,"burrow",state) then
+                cancelBurrow(state,pending)
+            else
+                local entity=spawnUnitFromStats(state,pending.owner,pending.unit,pending.x,pending.y,
+                    pending.name,pending.icon,pending.color,pending.cardId)
+                entity.birthRemainder=math.max(0,-pending.remaining)
+                addEffect(state,"spawn",entity.x,entity.y,3,.25,entity.owner)
+            end
+        else
+            pendingList[write]=pending;write=write+1
+        end
+    end
+    for i=write,#pendingList do pendingList[i]=nil end
+end
+
 local function castArrows(state, playerId, card, x, y)
     addEffect(state, "arrows", x, y, card.spell.radius, 0.45, playerId)
 
@@ -2872,7 +3052,9 @@ function Game.playCardFromSlot(state, playerId, slot, x, y)
         if evolutionCycles == nil then evolutionCycles = 2 end
     end
 
-    if activeCard.kind == "unit" then
+    if activeCard.kind == "unit" and activeCard.unit.burrow then
+        queueBurrow(state,playerId,activeCard,x,y,playCost)
+    elseif activeCard.kind == "unit" then
         spawnCardUnit(state, playerId, activeCard, x, y)
         addEffect(state, evolutionUsed and "evolution_spawn" or "spawn", x, y, activeCard.spawnCount and 5 or 3.5, 0.30, playerId)
     elseif activeCard.kind == "building" then
@@ -3658,6 +3840,7 @@ function Game.update(state, dt)
 
     updatePendingSpells(state, dt)
     if isBattle and state.phase ~= "battle" then return end
+    updatePendingDeployments(state,dt)
     updateGlobalMovementAuras(state)
 
     -- Freeze the entity count for this tick. Summons/splits created while
@@ -3753,6 +3936,8 @@ local function clearSimulation(state)
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
+    state.pendingDeployments = {}
+    state.nextDeploymentId = 1
     state.nextEntityId = 1
     state.nextWebShotId = 1
     state.visualTime = 0
@@ -3971,6 +4156,8 @@ function Game.debugClearUnits(state)
     state.projectiles = {}
     state.effects = {}
     state.pendingSpells = {}
+    state.pendingDeployments = {}
+    state.nextDeploymentId = 1
 end
 
 function Game.debugSpatialRadiusIds(state, owner, x, y, radius)
@@ -4019,6 +4206,8 @@ function Game.getMatchStats(state, playerId)
         elapsed = state.stats.elapsed,
         cardsPlayed = playerStats.cardsPlayed,
         emeraldSpent = playerStats.emeraldSpent,
+        deploymentRefunds = playerStats.deploymentRefunds,
+        cancelledDeployments = playerStats.cancelledDeployments,
         emeraldGenerated = playerStats.emeraldGenerated,
         villagerBonus = playerStats.villagerBonus,
         emeraldWasted = playerStats.emeraldWasted,

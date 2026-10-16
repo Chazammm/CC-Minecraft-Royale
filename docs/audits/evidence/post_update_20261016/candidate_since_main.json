@@ -1,0 +1,174 @@
+{
+  "infrastructure": [
+    {
+      "status": "A",
+      "path": ".github/workflows/frog-worm.yml"
+    },
+    {
+      "status": "M",
+      "path": "install.lua"
+    }
+  ],
+  "documentation": [
+    {
+      "status": "M",
+      "path": "README.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/frog_worm/IMPLEMENTATION.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/frog_worm/VALIDATION.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/frog_worm/performance.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/frog_worm/regressions.json"
+    }
+  ],
+  "assets": [
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/MANIFEST.json"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/README.md"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/evidence/capture52.json"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/evidence/capture54.json"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/love2d/index.lua"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/love2d/king_frog.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/love2d/nether_worm.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/previews/comparison.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/previews/gameplay_1x.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/previews/gameplay_6x.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/previews/king_frog_native.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/previews/king_frog_pixelbox.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/previews/nether_worm_native.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/previews/nether_worm_pixelbox.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/previews/runtime_poses.png"
+    },
+    {
+      "status": "A",
+      "path": "assets/sprites/frog_worm/tools/previews.py"
+    },
+    {
+      "status": "A",
+      "path": "src/assets/custom_mobs/dispatch.lua"
+    },
+    {
+      "status": "A",
+      "path": "src/assets/custom_mobs/frames.lua"
+    }
+  ],
+  "tests/diagnostics": [
+    {
+      "status": "M",
+      "path": "mechanics_test.lua"
+    },
+    {
+      "status": "M",
+      "path": "src/diagnostics.lua"
+    },
+    {
+      "status": "A",
+      "path": "src/frog_worm_mechanics.lua"
+    },
+    {
+      "status": "A",
+      "path": "tests/test_frog_worm.lua"
+    },
+    {
+      "status": "A",
+      "path": "tests/test_frog_worm_rendering.lua"
+    },
+    {
+      "status": "A",
+      "path": "tests/test_frog_worm_simulations.lua"
+    },
+    {
+      "status": "M",
+      "path": "tests/test_v1.lua"
+    }
+  ],
+  "gameplay": [
+    {
+      "status": "M",
+      "path": "src/arena.lua"
+    },
+    {
+      "status": "M",
+      "path": "src/bot.lua"
+    },
+    {
+      "status": "M",
+      "path": "src/cards.lua"
+    },
+    {
+      "status": "A",
+      "path": "src/custom_mob_rules.lua"
+    },
+    {
+      "status": "M",
+      "path": "src/game.lua"
+    }
+  ],
+  "rendering": [
+    {
+      "status": "M",
+      "path": "src/mob_assets.lua"
+    },
+    {
+      "status": "M",
+      "path": "src/pixel_arena.lua"
+    },
+    {
+      "status": "M",
+      "path": "src/render.lua"
+    }
+  ]
+}

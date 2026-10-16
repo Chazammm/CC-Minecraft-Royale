@@ -1,0 +1,22 @@
+CC Royale deterministic invariant audit
+CODE_REVISION|5b6b89264e1a7591b2bc5a9a9e639baf28f25706
+CLOCK_SOURCE|os.clock: native Lua CPU time; CraftOS computer uptime
+AUDIT_INPUT|matches=500|seed=20261016|cards=27
+AUDIT_PROGRESS|matches=50|ticks=137096|gc_kib=481.67
+AUDIT_PROGRESS|matches=100|ticks=268988|gc_kib=481.78
+AUDIT_PROGRESS|matches=150|ticks=396730|gc_kib=481.75
+AUDIT_PROGRESS|matches=200|ticks=535378|gc_kib=481.68
+AUDIT_PROGRESS|matches=250|ticks=675510|gc_kib=481.59
+AUDIT_PROGRESS|matches=300|ticks=820456|gc_kib=481.45
+AUDIT_PROGRESS|matches=350|ticks=953130|gc_kib=481.65
+AUDIT_PROGRESS|matches=400|ticks=1091370|gc_kib=481.61
+/workspace/scratch/bin/lua5.4: ./src/diagnostics.lua:71: seed=20261016 match=443 tick=1986: web projectile missing its reservation
+stack traceback:
+	[C]: in function 'assert'
+	./src/diagnostics.lua:71: in local 'check'
+	./src/diagnostics.lua:146: in function 'src.diagnostics.assertState'
+	audit_matches.lua:67: in field 'onTick'
+	./src/headless_match.lua:131: in function 'src.headless_match.run'
+	audit_matches.lua:58: in main chunk
+	scripts/audit_cli_host.lua:23: in main chunk
+	[C]: in ?

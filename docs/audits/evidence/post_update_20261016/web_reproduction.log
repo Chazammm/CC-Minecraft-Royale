@@ -1,0 +1,5 @@
+DECK_A|enderman,snow_golem,cannon,nether_portal,spider,iron_golem,king_frog,witch
+DECK_B|zombie,skeleton,slime,blaze,wolf,bat_swarm,evoker,endermite
+OBSERVER_FAILURE|./src/diagnostics.lua:71: repro tick 1986: web projectile missing its reservation
+WEB|shot=2|target=74|target_alive=nil|target_hp=nil|reservation=nil|source_pending=2
+FINAL|result|winner=2|observer_failures=1

@@ -1,0 +1,1442 @@
+[
+  {
+    "lua": "5.2",
+    "file": "admin.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "assets/proposed/four_mobs_phase1/effects/baby_ender_dragon.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "assets/proposed/four_mobs_phase1/effects/hero_spider.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "assets/proposed/four_mobs_phase1/effects/minoshroom.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "assets/proposed/four_mobs_phase1/effects/ravager_rider.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "assets/proposed/four_mobs_phase1/sprites/baby_ender_dragon.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "assets/proposed/four_mobs_phase1/sprites/hero_spider.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "assets/proposed/four_mobs_phase1/sprites/minoshroom.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "assets/proposed/four_mobs_phase1/sprites/ravager_rider.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "assets/proposed/four_mobs_phase1/tools/capture.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "assets/proposed/four_mobs_phase1/tools/harness.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "assets/proposed/four_mobs_phase1/tools/test_assets.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "assets/sprites/frog_worm/love2d/index.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "audit_matches.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "compare.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "config.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "diagnose.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "evo_compare.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "install.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "lib/pixelbox_lite.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "main.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "mechanics_test.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "report_sync.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "scripts/audit_cli_host.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "scripts/audit_legacy_trace.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "scripts/audit_observed_cli.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "scripts/audit_side_pairs.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "scripts/audit_worm_scaling.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "simulate.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/admin_render.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/arena.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/assets/custom_mobs/dispatch.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/assets/custom_mobs/frames.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/assets/four_mobs/effects/baby_ender_dragon.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/assets/four_mobs/effects/hero_spider.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/assets/four_mobs/effects/minoshroom.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/assets/four_mobs/effects/ravager_rider.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/assets/four_mobs/sprites/baby_ender_dragon.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/assets/four_mobs/sprites/hero_spider.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/assets/four_mobs/sprites/minoshroom.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/assets/four_mobs/sprites/ravager_rider.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/benchmark_utils.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/bot.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/cards.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/combat_modifiers.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/custom_mob_rules.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/diagnostics.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/four_mob_mechanics.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/frog_worm_mechanics.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/game.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/hardware.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/headless_match.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/mechanics_audit.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/mob_assets.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/music.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/music_manifest.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/pixel_arena.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/presets.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/render.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/report_output.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/report_sync.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/spatial.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/ui_buffer.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/util.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "src/version.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "startup.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/fixtures/four_mob_approved_pixels.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/performance_profile.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_anvil_grid_parity.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_arena_skin_parity.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_atomic_token_reconfig.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_audit_fixes_20261010.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_audit_followups.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_audit_hardening_20261010.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_audit_io_boundaries.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_audit_monitor_boundaries.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_audit_regressions.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_audit_runtime_gc.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_cli_manifest.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_core_invariant_stress.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_diagnostic_contracts.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_finite_river_bounds.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_four_mob_rendering.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_four_mob_simulations.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_four_mobs.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_frog_worm.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_frog_worm_rendering.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_frog_worm_simulations.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_headless_runner.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_install_manifest.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_installer_false_returns.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_lobby_state_mutators.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_mechanics_full_ci.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_mechanics_isolation.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_music_fault_boundaries.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_music_seek_failures.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_pixel_failure_recovery.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_pixel_frame_diff.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_platform_stubs.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_post_update_diagnostics.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_preset_false_returns.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_preset_recovery_matrix.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_preset_transaction_integrity.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_projectile_speed_schema.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_recovery_hardening.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_refactor_parity.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_release_gate.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_report_logout_false.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_report_token_write_failures.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_report_transaction_integrity.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_side_symmetry.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_simulation_contracts.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_sprite_roster.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_system_audit_20261014.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_timer_precision.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_token_backup_recovery.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_token_corrupt_active_fallback.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_touch_disconnect.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_v1.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.2",
+    "file": "tests/test_web_observer_boundary.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "admin.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "assets/proposed/four_mobs_phase1/effects/baby_ender_dragon.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "assets/proposed/four_mobs_phase1/effects/hero_spider.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "assets/proposed/four_mobs_phase1/effects/minoshroom.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "assets/proposed/four_mobs_phase1/effects/ravager_rider.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "assets/proposed/four_mobs_phase1/sprites/baby_ender_dragon.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "assets/proposed/four_mobs_phase1/sprites/hero_spider.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "assets/proposed/four_mobs_phase1/sprites/minoshroom.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "assets/proposed/four_mobs_phase1/sprites/ravager_rider.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "assets/proposed/four_mobs_phase1/tools/capture.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "assets/proposed/four_mobs_phase1/tools/harness.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "assets/proposed/four_mobs_phase1/tools/test_assets.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "assets/sprites/frog_worm/love2d/index.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "audit_matches.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "compare.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "config.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "diagnose.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "evo_compare.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "install.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "lib/pixelbox_lite.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "main.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "mechanics_test.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "report_sync.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "scripts/audit_cli_host.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "scripts/audit_legacy_trace.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "scripts/audit_observed_cli.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "scripts/audit_side_pairs.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "scripts/audit_worm_scaling.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "simulate.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/admin_render.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/arena.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/assets/custom_mobs/dispatch.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/assets/custom_mobs/frames.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/assets/four_mobs/effects/baby_ender_dragon.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/assets/four_mobs/effects/hero_spider.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/assets/four_mobs/effects/minoshroom.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/assets/four_mobs/effects/ravager_rider.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/assets/four_mobs/sprites/baby_ender_dragon.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/assets/four_mobs/sprites/hero_spider.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/assets/four_mobs/sprites/minoshroom.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/assets/four_mobs/sprites/ravager_rider.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/benchmark_utils.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/bot.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/cards.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/combat_modifiers.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/custom_mob_rules.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/diagnostics.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/four_mob_mechanics.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/frog_worm_mechanics.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/game.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/hardware.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/headless_match.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/mechanics_audit.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/mob_assets.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/music.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/music_manifest.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/pixel_arena.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/presets.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/render.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/report_output.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/report_sync.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/spatial.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/ui_buffer.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/util.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "src/version.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "startup.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/fixtures/four_mob_approved_pixels.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/performance_profile.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_anvil_grid_parity.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_arena_skin_parity.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_atomic_token_reconfig.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_audit_fixes_20261010.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_audit_followups.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_audit_hardening_20261010.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_audit_io_boundaries.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_audit_monitor_boundaries.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_audit_regressions.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_audit_runtime_gc.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_cli_manifest.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_core_invariant_stress.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_diagnostic_contracts.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_finite_river_bounds.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_four_mob_rendering.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_four_mob_simulations.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_four_mobs.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_frog_worm.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_frog_worm_rendering.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_frog_worm_simulations.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_headless_runner.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_install_manifest.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_installer_false_returns.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_lobby_state_mutators.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_mechanics_full_ci.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_mechanics_isolation.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_music_fault_boundaries.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_music_seek_failures.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_pixel_failure_recovery.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_pixel_frame_diff.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_platform_stubs.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_post_update_diagnostics.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_preset_false_returns.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_preset_recovery_matrix.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_preset_transaction_integrity.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_projectile_speed_schema.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_recovery_hardening.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_refactor_parity.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_release_gate.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_report_logout_false.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_report_token_write_failures.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_report_transaction_integrity.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_side_symmetry.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_simulation_contracts.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_sprite_roster.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_system_audit_20261014.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_timer_precision.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_token_backup_recovery.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_token_corrupt_active_fallback.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_touch_disconnect.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_v1.lua",
+    "exit": 0,
+    "output": ""
+  },
+  {
+    "lua": "5.4",
+    "file": "tests/test_web_observer_boundary.lua",
+    "exit": 0,
+    "output": ""
+  }
+]
