@@ -1,0 +1,577 @@
+{
+  "baseline": "6e85dc77553bd17422deeb9cb51258cefda06fe5",
+  "executed": "2026-10-16",
+  "kind": "host_regression_tests_not_monitor_benchmark",
+  "luaVersions": [
+    "5.2.4",
+    "5.4.8"
+  ],
+  "runs": [
+    {
+      "lua": "5.2",
+      "test": "test_anvil_grid_parity.lua",
+      "exit": 0,
+      "seconds": 0.073
+    },
+    {
+      "lua": "5.2",
+      "test": "test_arena_skin_parity.lua",
+      "exit": 0,
+      "seconds": 0.813
+    },
+    {
+      "lua": "5.2",
+      "test": "test_atomic_token_reconfig.lua",
+      "exit": 0,
+      "seconds": 0.004
+    },
+    {
+      "lua": "5.2",
+      "test": "test_audit_fixes_20261010.lua",
+      "exit": 0,
+      "seconds": 0.01
+    },
+    {
+      "lua": "5.2",
+      "test": "test_audit_followups.lua",
+      "exit": 0,
+      "seconds": 0.024
+    },
+    {
+      "lua": "5.2",
+      "test": "test_audit_hardening_20261010.lua",
+      "exit": 0,
+      "seconds": 0.061
+    },
+    {
+      "lua": "5.2",
+      "test": "test_audit_io_boundaries.lua",
+      "exit": 0,
+      "seconds": 0.003
+    },
+    {
+      "lua": "5.2",
+      "test": "test_audit_monitor_boundaries.lua",
+      "exit": 0,
+      "seconds": 0.113
+    },
+    {
+      "lua": "5.2",
+      "test": "test_audit_regressions.lua",
+      "exit": 0,
+      "seconds": 0.012
+    },
+    {
+      "lua": "5.2",
+      "test": "test_audit_runtime_gc.lua",
+      "exit": 0,
+      "seconds": 1.768
+    },
+    {
+      "lua": "5.2",
+      "test": "test_cli_manifest.lua",
+      "exit": 0,
+      "seconds": 0.013
+    },
+    {
+      "lua": "5.2",
+      "test": "test_core_invariant_stress.lua",
+      "exit": 0,
+      "seconds": 1.629
+    },
+    {
+      "lua": "5.2",
+      "test": "test_diagnostic_contracts.lua",
+      "exit": 0,
+      "seconds": 0.968
+    },
+    {
+      "lua": "5.2",
+      "test": "test_finite_river_bounds.lua",
+      "exit": 0,
+      "seconds": 0.002
+    },
+    {
+      "lua": "5.2",
+      "test": "test_four_mob_rendering.lua",
+      "exit": 0,
+      "seconds": 1.584
+    },
+    {
+      "lua": "5.2",
+      "test": "test_four_mob_simulations.lua",
+      "exit": 0,
+      "seconds": 3.053
+    },
+    {
+      "lua": "5.2",
+      "test": "test_four_mobs.lua",
+      "exit": 0,
+      "seconds": 0.067
+    },
+    {
+      "lua": "5.2",
+      "test": "test_headless_runner.lua",
+      "exit": 0,
+      "seconds": 0.487
+    },
+    {
+      "lua": "5.2",
+      "test": "test_install_manifest.lua",
+      "exit": 0,
+      "seconds": 0.02
+    },
+    {
+      "lua": "5.2",
+      "test": "test_installer_false_returns.lua",
+      "exit": 0,
+      "seconds": 0.007
+    },
+    {
+      "lua": "5.2",
+      "test": "test_lobby_state_mutators.lua",
+      "exit": 0,
+      "seconds": 0.034
+    },
+    {
+      "lua": "5.2",
+      "test": "test_mechanics_full_ci.lua",
+      "exit": 0,
+      "seconds": 0.251
+    },
+    {
+      "lua": "5.2",
+      "test": "test_mechanics_isolation.lua",
+      "exit": 0,
+      "seconds": 0.358
+    },
+    {
+      "lua": "5.2",
+      "test": "test_music_fault_boundaries.lua",
+      "exit": 0,
+      "seconds": 0.004
+    },
+    {
+      "lua": "5.2",
+      "test": "test_music_seek_failures.lua",
+      "exit": 0,
+      "seconds": 0.003
+    },
+    {
+      "lua": "5.2",
+      "test": "test_pixel_failure_recovery.lua",
+      "exit": 0,
+      "seconds": 0.079
+    },
+    {
+      "lua": "5.2",
+      "test": "test_pixel_frame_diff.lua",
+      "exit": 0,
+      "seconds": 0.18
+    },
+    {
+      "lua": "5.2",
+      "test": "test_platform_stubs.lua",
+      "exit": 0,
+      "seconds": 0.021
+    },
+    {
+      "lua": "5.2",
+      "test": "test_preset_false_returns.lua",
+      "exit": 0,
+      "seconds": 0.004
+    },
+    {
+      "lua": "5.2",
+      "test": "test_preset_recovery_matrix.lua",
+      "exit": 0,
+      "seconds": 0.02
+    },
+    {
+      "lua": "5.2",
+      "test": "test_preset_transaction_integrity.lua",
+      "exit": 0,
+      "seconds": 0.007
+    },
+    {
+      "lua": "5.2",
+      "test": "test_projectile_speed_schema.lua",
+      "exit": 0,
+      "seconds": 0.004
+    },
+    {
+      "lua": "5.2",
+      "test": "test_recovery_hardening.lua",
+      "exit": 0,
+      "seconds": 0.043
+    },
+    {
+      "lua": "5.2",
+      "test": "test_refactor_parity.lua",
+      "exit": 0,
+      "seconds": 0.013
+    },
+    {
+      "lua": "5.2",
+      "test": "test_release_gate.lua",
+      "exit": 0,
+      "seconds": 0.004
+    },
+    {
+      "lua": "5.2",
+      "test": "test_report_logout_false.lua",
+      "exit": 0,
+      "seconds": 0.002
+    },
+    {
+      "lua": "5.2",
+      "test": "test_report_token_write_failures.lua",
+      "exit": 0,
+      "seconds": 0.004
+    },
+    {
+      "lua": "5.2",
+      "test": "test_report_transaction_integrity.lua",
+      "exit": 0,
+      "seconds": 0.002
+    },
+    {
+      "lua": "5.2",
+      "test": "test_side_symmetry.lua",
+      "exit": 0,
+      "seconds": 0.01
+    },
+    {
+      "lua": "5.2",
+      "test": "test_simulation_contracts.lua",
+      "exit": 0,
+      "seconds": 0.011
+    },
+    {
+      "lua": "5.2",
+      "test": "test_sprite_roster.lua",
+      "exit": 0,
+      "seconds": 1.057
+    },
+    {
+      "lua": "5.2",
+      "test": "test_system_audit_20261014.lua",
+      "exit": 0,
+      "seconds": 0.02
+    },
+    {
+      "lua": "5.2",
+      "test": "test_timer_precision.lua",
+      "exit": 0,
+      "seconds": 0.053
+    },
+    {
+      "lua": "5.2",
+      "test": "test_token_backup_recovery.lua",
+      "exit": 0,
+      "seconds": 0.002
+    },
+    {
+      "lua": "5.2",
+      "test": "test_token_corrupt_active_fallback.lua",
+      "exit": 0,
+      "seconds": 0.004
+    },
+    {
+      "lua": "5.2",
+      "test": "test_touch_disconnect.lua",
+      "exit": 0,
+      "seconds": 0.013
+    },
+    {
+      "lua": "5.2",
+      "test": "test_v1.lua",
+      "exit": 0,
+      "seconds": 0.053
+    },
+    {
+      "lua": "5.4",
+      "test": "test_anvil_grid_parity.lua",
+      "exit": 0,
+      "seconds": 0.056
+    },
+    {
+      "lua": "5.4",
+      "test": "test_arena_skin_parity.lua",
+      "exit": 0,
+      "seconds": 0.932
+    },
+    {
+      "lua": "5.4",
+      "test": "test_atomic_token_reconfig.lua",
+      "exit": 0,
+      "seconds": 0.006
+    },
+    {
+      "lua": "5.4",
+      "test": "test_audit_fixes_20261010.lua",
+      "exit": 0,
+      "seconds": 0.019
+    },
+    {
+      "lua": "5.4",
+      "test": "test_audit_followups.lua",
+      "exit": 0,
+      "seconds": 0.031
+    },
+    {
+      "lua": "5.4",
+      "test": "test_audit_hardening_20261010.lua",
+      "exit": 0,
+      "seconds": 0.051
+    },
+    {
+      "lua": "5.4",
+      "test": "test_audit_io_boundaries.lua",
+      "exit": 0,
+      "seconds": 0.003
+    },
+    {
+      "lua": "5.4",
+      "test": "test_audit_monitor_boundaries.lua",
+      "exit": 0,
+      "seconds": 0.103
+    },
+    {
+      "lua": "5.4",
+      "test": "test_audit_regressions.lua",
+      "exit": 0,
+      "seconds": 0.026
+    },
+    {
+      "lua": "5.4",
+      "test": "test_audit_runtime_gc.lua",
+      "exit": 0,
+      "seconds": 1.076
+    },
+    {
+      "lua": "5.4",
+      "test": "test_cli_manifest.lua",
+      "exit": 0,
+      "seconds": 0.022
+    },
+    {
+      "lua": "5.4",
+      "test": "test_core_invariant_stress.lua",
+      "exit": 0,
+      "seconds": 1.423
+    },
+    {
+      "lua": "5.4",
+      "test": "test_diagnostic_contracts.lua",
+      "exit": 0,
+      "seconds": 0.77
+    },
+    {
+      "lua": "5.4",
+      "test": "test_finite_river_bounds.lua",
+      "exit": 0,
+      "seconds": 0.002
+    },
+    {
+      "lua": "5.4",
+      "test": "test_four_mob_rendering.lua",
+      "exit": 0,
+      "seconds": 1.053
+    },
+    {
+      "lua": "5.4",
+      "test": "test_four_mob_simulations.lua",
+      "exit": 0,
+      "seconds": 2.489
+    },
+    {
+      "lua": "5.4",
+      "test": "test_four_mobs.lua",
+      "exit": 0,
+      "seconds": 0.058
+    },
+    {
+      "lua": "5.4",
+      "test": "test_headless_runner.lua",
+      "exit": 0,
+      "seconds": 0.326
+    },
+    {
+      "lua": "5.4",
+      "test": "test_install_manifest.lua",
+      "exit": 0,
+      "seconds": 0.01
+    },
+    {
+      "lua": "5.4",
+      "test": "test_installer_false_returns.lua",
+      "exit": 0,
+      "seconds": 0.005
+    },
+    {
+      "lua": "5.4",
+      "test": "test_lobby_state_mutators.lua",
+      "exit": 0,
+      "seconds": 0.011
+    },
+    {
+      "lua": "5.4",
+      "test": "test_mechanics_full_ci.lua",
+      "exit": 0,
+      "seconds": 0.231
+    },
+    {
+      "lua": "5.4",
+      "test": "test_mechanics_isolation.lua",
+      "exit": 0,
+      "seconds": 0.294
+    },
+    {
+      "lua": "5.4",
+      "test": "test_music_fault_boundaries.lua",
+      "exit": 0,
+      "seconds": 0.004
+    },
+    {
+      "lua": "5.4",
+      "test": "test_music_seek_failures.lua",
+      "exit": 0,
+      "seconds": 0.002
+    },
+    {
+      "lua": "5.4",
+      "test": "test_pixel_failure_recovery.lua",
+      "exit": 0,
+      "seconds": 0.064
+    },
+    {
+      "lua": "5.4",
+      "test": "test_pixel_frame_diff.lua",
+      "exit": 0,
+      "seconds": 0.129
+    },
+    {
+      "lua": "5.4",
+      "test": "test_platform_stubs.lua",
+      "exit": 0,
+      "seconds": 0.013
+    },
+    {
+      "lua": "5.4",
+      "test": "test_preset_false_returns.lua",
+      "exit": 0,
+      "seconds": 0.013
+    },
+    {
+      "lua": "5.4",
+      "test": "test_preset_recovery_matrix.lua",
+      "exit": 0,
+      "seconds": 0.013
+    },
+    {
+      "lua": "5.4",
+      "test": "test_preset_transaction_integrity.lua",
+      "exit": 0,
+      "seconds": 0.003
+    },
+    {
+      "lua": "5.4",
+      "test": "test_projectile_speed_schema.lua",
+      "exit": 0,
+      "seconds": 0.026
+    },
+    {
+      "lua": "5.4",
+      "test": "test_recovery_hardening.lua",
+      "exit": 0,
+      "seconds": 0.036
+    },
+    {
+      "lua": "5.4",
+      "test": "test_refactor_parity.lua",
+      "exit": 0,
+      "seconds": 0.029
+    },
+    {
+      "lua": "5.4",
+      "test": "test_release_gate.lua",
+      "exit": 0,
+      "seconds": 0.003
+    },
+    {
+      "lua": "5.4",
+      "test": "test_report_logout_false.lua",
+      "exit": 0,
+      "seconds": 0.002
+    },
+    {
+      "lua": "5.4",
+      "test": "test_report_token_write_failures.lua",
+      "exit": 0,
+      "seconds": 0.002
+    },
+    {
+      "lua": "5.4",
+      "test": "test_report_transaction_integrity.lua",
+      "exit": 0,
+      "seconds": 0.002
+    },
+    {
+      "lua": "5.4",
+      "test": "test_side_symmetry.lua",
+      "exit": 0,
+      "seconds": 0.008
+    },
+    {
+      "lua": "5.4",
+      "test": "test_simulation_contracts.lua",
+      "exit": 0,
+      "seconds": 0.009
+    },
+    {
+      "lua": "5.4",
+      "test": "test_sprite_roster.lua",
+      "exit": 0,
+      "seconds": 0.641
+    },
+    {
+      "lua": "5.4",
+      "test": "test_system_audit_20261014.lua",
+      "exit": 0,
+      "seconds": 0.017
+    },
+    {
+      "lua": "5.4",
+      "test": "test_timer_precision.lua",
+      "exit": 0,
+      "seconds": 0.048
+    },
+    {
+      "lua": "5.4",
+      "test": "test_token_backup_recovery.lua",
+      "exit": 0,
+      "seconds": 0.002
+    },
+    {
+      "lua": "5.4",
+      "test": "test_token_corrupt_active_fallback.lua",
+      "exit": 0,
+      "seconds": 0.005
+    },
+    {
+      "lua": "5.4",
+      "test": "test_touch_disconnect.lua",
+      "exit": 0,
+      "seconds": 0.024
+    },
+    {
+      "lua": "5.4",
+      "test": "test_v1.lua",
+      "exit": 0,
+      "seconds": 0.102
+    }
+  ],
+  "total": 94,
+  "failed": 0
+}
