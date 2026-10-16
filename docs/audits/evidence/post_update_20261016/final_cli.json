@@ -1,0 +1,152 @@
+[
+  {
+    "scope": "candidate+audit",
+    "revision": "259da467f26025bf816307d5ab1539257b6236b2",
+    "lua": "5.4",
+    "command": [
+      "/workspace/scratch/bin/lua5.4",
+      "scripts/audit_observed_cli.lua",
+      "simulate.lua",
+      "/workspace/CC-Royale-audit/docs/audits/evidence/post_update_20261016/final_cli_1_simulate_100_mixed_20261016.txt",
+      "259da467f26025bf816307d5ab1539257b6236b2",
+      "100",
+      "mixed",
+      "20261016"
+    ],
+    "seconds": 46.607,
+    "exit": 0,
+    "log": "final_cli_1_simulate_100_mixed_20261016.log",
+    "report": "final_cli_1_simulate_100_mixed_20261016.txt"
+  },
+  {
+    "scope": "candidate+audit",
+    "revision": "259da467f26025bf816307d5ab1539257b6236b2",
+    "lua": "5.4",
+    "command": [
+      "/workspace/scratch/bin/lua5.4",
+      "scripts/audit_observed_cli.lua",
+      "simulate.lua",
+      "/workspace/CC-Royale-audit/docs/audits/evidence/post_update_20261016/final_cli_2_simulate_500_mixed_20261016.txt",
+      "259da467f26025bf816307d5ab1539257b6236b2",
+      "500",
+      "mixed",
+      "20261016"
+    ],
+    "seconds": 592.498,
+    "exit": 0,
+    "log": "final_cli_2_simulate_500_mixed_20261016.log",
+    "report": "final_cli_2_simulate_500_mixed_20261016.txt"
+  },
+  {
+    "scope": "candidate+audit",
+    "revision": "259da467f26025bf816307d5ab1539257b6236b2",
+    "lua": "5.4",
+    "command": [
+      "/workspace/scratch/bin/lua5.4",
+      "scripts/audit_observed_cli.lua",
+      "simulate.lua",
+      "/workspace/CC-Royale-audit/docs/audits/evidence/post_update_20261016/final_cli_3_simulate_1000_mixed_20261016.txt",
+      "259da467f26025bf816307d5ab1539257b6236b2",
+      "1000",
+      "mixed",
+      "20261016"
+    ],
+    "seconds": 644.649,
+    "exit": 0,
+    "log": "final_cli_3_simulate_1000_mixed_20261016.log",
+    "report": "final_cli_3_simulate_1000_mixed_20261016.txt"
+  },
+  {
+    "scope": "candidate+audit",
+    "revision": "259da467f26025bf816307d5ab1539257b6236b2",
+    "lua": "5.4",
+    "command": [
+      "/workspace/scratch/bin/lua5.4",
+      "scripts/audit_observed_cli.lua",
+      "simulate.lua",
+      "/workspace/CC-Royale-audit/docs/audits/evidence/post_update_20261016/final_cli_4_simulate_100_fixed_20261016.txt",
+      "259da467f26025bf816307d5ab1539257b6236b2",
+      "100",
+      "fixed",
+      "20261016"
+    ],
+    "seconds": 45.45,
+    "exit": 0,
+    "log": "final_cli_4_simulate_100_fixed_20261016.log",
+    "report": "final_cli_4_simulate_100_fixed_20261016.txt"
+  },
+  {
+    "scope": "candidate+audit",
+    "revision": "259da467f26025bf816307d5ab1539257b6236b2",
+    "lua": "5.4",
+    "command": [
+      "/workspace/scratch/bin/lua5.4",
+      "scripts/audit_observed_cli.lua",
+      "compare.lua",
+      "/workspace/CC-Royale-audit/docs/audits/evidence/post_update_20261016/final_cli_5_compare_10_all_20261016.txt",
+      "259da467f26025bf816307d5ab1539257b6236b2",
+      "10",
+      "all",
+      "20261016"
+    ],
+    "seconds": 88.314,
+    "exit": 0,
+    "log": "final_cli_5_compare_10_all_20261016.log",
+    "report": "final_cli_5_compare_10_all_20261016.txt"
+  },
+  {
+    "scope": "candidate+audit",
+    "revision": "259da467f26025bf816307d5ab1539257b6236b2",
+    "lua": "5.4",
+    "command": [
+      "/workspace/scratch/bin/lua5.4",
+      "scripts/audit_observed_cli.lua",
+      "compare.lua",
+      "/workspace/CC-Royale-audit/docs/audits/evidence/post_update_20261016/final_cli_6_compare_10_king_frog_nether_worm_20261016.txt",
+      "259da467f26025bf816307d5ab1539257b6236b2",
+      "10",
+      "king_frog",
+      "nether_worm",
+      "20261016"
+    ],
+    "seconds": 12.958,
+    "exit": 0,
+    "log": "final_cli_6_compare_10_king_frog_nether_worm_20261016.log",
+    "report": "final_cli_6_compare_10_king_frog_nether_worm_20261016.txt"
+  },
+  {
+    "scope": "candidate+audit",
+    "revision": "259da467f26025bf816307d5ab1539257b6236b2",
+    "lua": "5.4",
+    "command": [
+      "/workspace/scratch/bin/lua5.4",
+      "scripts/audit_observed_cli.lua",
+      "evo_compare.lua",
+      "/workspace/CC-Royale-audit/docs/audits/evidence/post_update_20261016/final_cli_7_evo_compare_10_all_20261016.txt",
+      "259da467f26025bf816307d5ab1539257b6236b2",
+      "10",
+      "all",
+      "20261016"
+    ],
+    "seconds": 84.296,
+    "exit": 0,
+    "log": "final_cli_7_evo_compare_10_all_20261016.log",
+    "report": "final_cli_7_evo_compare_10_all_20261016.txt"
+  },
+  {
+    "scope": "candidate+audit",
+    "revision": "259da467f26025bf816307d5ab1539257b6236b2",
+    "lua": "5.4",
+    "command": [
+      "/workspace/scratch/bin/lua5.4",
+      "scripts/audit_cli_host.lua",
+      "mechanics_test.lua",
+      "/workspace/CC-Royale-audit/docs/audits/evidence/post_update_20261016/final_cli_8_mechanics_test_.txt",
+      "259da467f26025bf816307d5ab1539257b6236b2"
+    ],
+    "seconds": 0.315,
+    "exit": 0,
+    "log": "final_cli_8_mechanics_test_.log",
+    "report": "final_cli_8_mechanics_test_.txt"
+  }
+]

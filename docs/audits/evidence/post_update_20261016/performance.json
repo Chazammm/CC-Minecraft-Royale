@@ -1,0 +1,98 @@
+[
+  {
+    "scope": "main",
+    "lua": "5.2",
+    "repeat": 1,
+    "exit": 0,
+    "wallSeconds": 5.915,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.955747|mean_ms=318.5823|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.748311|mean_ms=0.0824\nPROFILE|headless_bot_update|count=18174|cpu_s=0.162510|mean_ms=0.0089\nPROFILE|headless_other|count=3|cpu_s=0.044926|mean_ms=14.9753\nPROFILE|crowded_bot_regular_decisions|count=35|cpu_s=0.008702|mean_ms=0.2486|enemy_units=30\nPROFILE|crowded_bot_anvil_decisions|count=35|cpu_s=0.013108|mean_ms=0.3745|enemy_units=30\nPROFILE|static_arena_0_units_2_monitors|count=12|cpu_s=0.032019|mean_ms=2.6682|first_ms=93.8890|initial_blits=80|unchanged_blits=0\nPROFILE|static_arena_30_units_2_monitors|count=12|cpu_s=0.056921|mean_ms=4.7434|first_ms=4.9710|initial_blits=38|unchanged_blits=0\nPROFILE|pixelbox_cached_static_0|count=36|cpu_s=0.045558|mean_ms=1.2655\nPROFILE|pixelbox_exhaustive_static_0|count=36|cpu_s=0.059391|mean_ms=1.6498\nPROFILE|pixelbox_ratio_static_0|cached_over_exhaustive=0.767\nPROFILE|pixelbox_cached_static_30|count=36|cpu_s=0.090306|mean_ms=2.5085\nPROFILE|pixelbox_exhaustive_static_30|count=36|cpu_s=0.113835|mean_ms=3.1621\nPROFILE|pixelbox_ratio_static_30|cached_over_exhaustive=0.793\nPROFILE|pixelbox_cached_moving_30|count=36|cpu_s=0.125741|mean_ms=3.4928\nPROFILE|pixelbox_exhaustive_moving_30|count=36|cpu_s=0.133731|mean_ms=3.7147\nPROFILE|pixelbox_ratio_moving_30|cached_over_exhaustive=0.940\nPerformance profile complete (no gameplay files modified).\n"
+  },
+  {
+    "scope": "candidate",
+    "lua": "5.2",
+    "repeat": 1,
+    "exit": 0,
+    "wallSeconds": 6.897,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=1.362182|mean_ms=454.0607|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=1.097461|mean_ms=0.1208\nPROFILE|headless_bot_update|count=18174|cpu_s=0.214961|mean_ms=0.0118\nPROFILE|headless_other|count=3|cpu_s=0.049760|mean_ms=16.5867\nPROFILE|crowded_bot_regular_decisions|count=35|cpu_s=0.008969|mean_ms=0.2563|enemy_units=30\nPROFILE|crowded_bot_anvil_decisions|count=35|cpu_s=0.012896|mean_ms=0.3685|enemy_units=30\nPROFILE|static_arena_0_units_2_monitors|count=12|cpu_s=0.033977|mean_ms=2.8314|first_ms=244.9280|initial_blits=80|unchanged_blits=0\nPROFILE|static_arena_30_units_2_monitors|count=12|cpu_s=0.056985|mean_ms=4.7487|first_ms=5.8150|initial_blits=38|unchanged_blits=0\nPROFILE|pixelbox_cached_static_0|count=36|cpu_s=0.044737|mean_ms=1.2427\nPROFILE|pixelbox_exhaustive_static_0|count=36|cpu_s=0.060400|mean_ms=1.6778\nPROFILE|pixelbox_ratio_static_0|cached_over_exhaustive=0.741\nPROFILE|pixelbox_cached_static_30|count=36|cpu_s=0.081977|mean_ms=2.2771\nPROFILE|pixelbox_exhaustive_static_30|count=36|cpu_s=0.105153|mean_ms=2.9209\nPROFILE|pixelbox_ratio_static_30|cached_over_exhaustive=0.780\nPROFILE|pixelbox_cached_moving_30|count=36|cpu_s=0.107324|mean_ms=2.9812\nPROFILE|pixelbox_exhaustive_moving_30|count=36|cpu_s=0.102391|mean_ms=2.8442\nPROFILE|pixelbox_ratio_moving_30|cached_over_exhaustive=1.048\nPerformance profile complete (no gameplay files modified).\n"
+  },
+  {
+    "scope": "main",
+    "lua": "5.4",
+    "repeat": 1,
+    "exit": 0,
+    "wallSeconds": 4.386,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.672414|mean_ms=224.1380|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.539634|mean_ms=0.0594\nPROFILE|headless_bot_update|count=18174|cpu_s=0.107619|mean_ms=0.0059\nPROFILE|headless_other|count=3|cpu_s=0.025161|mean_ms=8.3870\nPROFILE|crowded_bot_regular_decisions|count=35|cpu_s=0.008028|mean_ms=0.2294|enemy_units=30\nPROFILE|crowded_bot_anvil_decisions|count=35|cpu_s=0.011703|mean_ms=0.3344|enemy_units=30\nPROFILE|static_arena_0_units_2_monitors|count=12|cpu_s=0.020884|mean_ms=1.7403|first_ms=84.6780|initial_blits=80|unchanged_blits=0\nPROFILE|static_arena_30_units_2_monitors|count=12|cpu_s=0.043000|mean_ms=3.5833|first_ms=4.1420|initial_blits=38|unchanged_blits=0\nPROFILE|pixelbox_cached_static_0|count=36|cpu_s=0.027954|mean_ms=0.7765\nPROFILE|pixelbox_exhaustive_static_0|count=36|cpu_s=0.037400|mean_ms=1.0389\nPROFILE|pixelbox_ratio_static_0|cached_over_exhaustive=0.747\nPROFILE|pixelbox_cached_static_30|count=36|cpu_s=0.070415|mean_ms=1.9560\nPROFILE|pixelbox_exhaustive_static_30|count=36|cpu_s=0.076772|mean_ms=2.1326\nPROFILE|pixelbox_ratio_static_30|cached_over_exhaustive=0.917\nPROFILE|pixelbox_cached_moving_30|count=36|cpu_s=0.161821|mean_ms=4.4950\nPROFILE|pixelbox_exhaustive_moving_30|count=36|cpu_s=0.187721|mean_ms=5.2145\nPROFILE|pixelbox_ratio_moving_30|cached_over_exhaustive=0.862\nPerformance profile complete (no gameplay files modified).\n"
+  },
+  {
+    "scope": "candidate",
+    "lua": "5.4",
+    "repeat": 1,
+    "exit": 0,
+    "wallSeconds": 5.117,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.902842|mean_ms=300.9473|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.738755|mean_ms=0.0813\nPROFILE|headless_bot_update|count=18174|cpu_s=0.133456|mean_ms=0.0073\nPROFILE|headless_other|count=3|cpu_s=0.030631|mean_ms=10.2103\nPROFILE|crowded_bot_regular_decisions|count=35|cpu_s=0.008091|mean_ms=0.2312|enemy_units=30\nPROFILE|crowded_bot_anvil_decisions|count=35|cpu_s=0.026637|mean_ms=0.7611|enemy_units=30\nPROFILE|static_arena_0_units_2_monitors|count=12|cpu_s=0.021144|mean_ms=1.7620|first_ms=106.1060|initial_blits=80|unchanged_blits=0\nPROFILE|static_arena_30_units_2_monitors|count=12|cpu_s=0.043240|mean_ms=3.6033|first_ms=4.2250|initial_blits=38|unchanged_blits=0\nPROFILE|pixelbox_cached_static_0|count=36|cpu_s=0.066764|mean_ms=1.8546\nPROFILE|pixelbox_exhaustive_static_0|count=36|cpu_s=0.041479|mean_ms=1.1522\nPROFILE|pixelbox_ratio_static_0|cached_over_exhaustive=1.610\nPROFILE|pixelbox_cached_static_30|count=36|cpu_s=0.084026|mean_ms=2.3341\nPROFILE|pixelbox_exhaustive_static_30|count=36|cpu_s=0.083647|mean_ms=2.3235\nPROFILE|pixelbox_ratio_static_30|cached_over_exhaustive=1.005\nPROFILE|pixelbox_cached_moving_30|count=36|cpu_s=0.126423|mean_ms=3.5117\nPROFILE|pixelbox_exhaustive_moving_30|count=36|cpu_s=0.114008|mean_ms=3.1669\nPROFILE|pixelbox_ratio_moving_30|cached_over_exhaustive=1.109\nPerformance profile complete (no gameplay files modified).\n"
+  },
+  {
+    "scope": "main",
+    "lua": "5.2",
+    "repeat": 2,
+    "exit": 0,
+    "wallSeconds": 5.984,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=1.157699|mean_ms=385.8997|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.949852|mean_ms=0.1046\nPROFILE|headless_bot_update|count=18174|cpu_s=0.176594|mean_ms=0.0097\nPROFILE|headless_other|count=3|cpu_s=0.031253|mean_ms=10.4177\nPROFILE|crowded_bot_regular_decisions|count=35|cpu_s=0.008364|mean_ms=0.2390|enemy_units=30\nPROFILE|crowded_bot_anvil_decisions|count=35|cpu_s=0.013228|mean_ms=0.3779|enemy_units=30\nPROFILE|static_arena_0_units_2_monitors|count=12|cpu_s=0.032248|mean_ms=2.6873|first_ms=95.6550|initial_blits=80|unchanged_blits=0\nPROFILE|static_arena_30_units_2_monitors|count=12|cpu_s=0.056193|mean_ms=4.6828|first_ms=5.4630|initial_blits=38|unchanged_blits=0\nPROFILE|pixelbox_cached_static_0|count=36|cpu_s=0.044059|mean_ms=1.2239\nPROFILE|pixelbox_exhaustive_static_0|count=36|cpu_s=0.060792|mean_ms=1.6887\nPROFILE|pixelbox_ratio_static_0|cached_over_exhaustive=0.725\nPROFILE|pixelbox_cached_static_30|count=36|cpu_s=0.082309|mean_ms=2.2864\nPROFILE|pixelbox_exhaustive_static_30|count=36|cpu_s=0.105678|mean_ms=2.9355\nPROFILE|pixelbox_ratio_static_30|cached_over_exhaustive=0.779\nPROFILE|pixelbox_cached_moving_30|count=36|cpu_s=0.120544|mean_ms=3.3484\nPROFILE|pixelbox_exhaustive_moving_30|count=36|cpu_s=0.125173|mean_ms=3.4770\nPROFILE|pixelbox_ratio_moving_30|cached_over_exhaustive=0.963\nPerformance profile complete (no gameplay files modified).\n"
+  },
+  {
+    "scope": "candidate",
+    "lua": "5.2",
+    "repeat": 2,
+    "exit": 0,
+    "wallSeconds": 6.922,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=1.288062|mean_ms=429.3540|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=1.030806|mean_ms=0.1135\nPROFILE|headless_bot_update|count=18174|cpu_s=0.225353|mean_ms=0.0124\nPROFILE|headless_other|count=3|cpu_s=0.031903|mean_ms=10.6343\nPROFILE|crowded_bot_regular_decisions|count=35|cpu_s=0.008889|mean_ms=0.2540|enemy_units=30\nPROFILE|crowded_bot_anvil_decisions|count=35|cpu_s=0.012892|mean_ms=0.3683|enemy_units=30\nPROFILE|static_arena_0_units_2_monitors|count=12|cpu_s=0.051628|mean_ms=4.3023|first_ms=95.1250|initial_blits=80|unchanged_blits=0\nPROFILE|static_arena_30_units_2_monitors|count=12|cpu_s=0.061116|mean_ms=5.0930|first_ms=5.5330|initial_blits=38|unchanged_blits=0\nPROFILE|pixelbox_cached_static_0|count=36|cpu_s=0.045665|mean_ms=1.2685\nPROFILE|pixelbox_exhaustive_static_0|count=36|cpu_s=0.058266|mean_ms=1.6185\nPROFILE|pixelbox_ratio_static_0|cached_over_exhaustive=0.784\nPROFILE|pixelbox_cached_static_30|count=36|cpu_s=0.094575|mean_ms=2.6271\nPROFILE|pixelbox_exhaustive_static_30|count=36|cpu_s=0.115207|mean_ms=3.2002\nPROFILE|pixelbox_ratio_static_30|cached_over_exhaustive=0.821\nPROFILE|pixelbox_cached_moving_30|count=36|cpu_s=0.109210|mean_ms=3.0336\nPROFILE|pixelbox_exhaustive_moving_30|count=36|cpu_s=0.111306|mean_ms=3.0918\nPROFILE|pixelbox_ratio_moving_30|cached_over_exhaustive=0.981\nPerformance profile complete (no gameplay files modified).\n"
+  },
+  {
+    "scope": "main",
+    "lua": "5.4",
+    "repeat": 2,
+    "exit": 0,
+    "wallSeconds": 3.82,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.704740|mean_ms=234.9133|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.566216|mean_ms=0.0623\nPROFILE|headless_bot_update|count=18174|cpu_s=0.111089|mean_ms=0.0061\nPROFILE|headless_other|count=3|cpu_s=0.027435|mean_ms=9.1450\nPROFILE|crowded_bot_regular_decisions|count=35|cpu_s=0.008036|mean_ms=0.2296|enemy_units=30\nPROFILE|crowded_bot_anvil_decisions|count=35|cpu_s=0.011292|mean_ms=0.3226|enemy_units=30\nPROFILE|static_arena_0_units_2_monitors|count=12|cpu_s=0.020002|mean_ms=1.6668|first_ms=78.3150|initial_blits=80|unchanged_blits=0\nPROFILE|static_arena_30_units_2_monitors|count=12|cpu_s=0.042736|mean_ms=3.5613|first_ms=4.0680|initial_blits=38|unchanged_blits=0\nPROFILE|pixelbox_cached_static_0|count=36|cpu_s=0.025885|mean_ms=0.7190\nPROFILE|pixelbox_exhaustive_static_0|count=36|cpu_s=0.035350|mean_ms=0.9819\nPROFILE|pixelbox_ratio_static_0|cached_over_exhaustive=0.732\nPROFILE|pixelbox_cached_static_30|count=36|cpu_s=0.060107|mean_ms=1.6696\nPROFILE|pixelbox_exhaustive_static_30|count=36|cpu_s=0.077055|mean_ms=2.1404\nPROFILE|pixelbox_ratio_static_30|cached_over_exhaustive=0.780\nPROFILE|pixelbox_cached_moving_30|count=36|cpu_s=0.076008|mean_ms=2.1113\nPROFILE|pixelbox_exhaustive_moving_30|count=36|cpu_s=0.075680|mean_ms=2.1022\nPROFILE|pixelbox_ratio_moving_30|cached_over_exhaustive=1.004\nPerformance profile complete (no gameplay files modified).\n"
+  },
+  {
+    "scope": "candidate",
+    "lua": "5.4",
+    "repeat": 2,
+    "exit": 0,
+    "wallSeconds": 3.197,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.508041|mean_ms=169.3470|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.415292|mean_ms=0.0457\nPROFILE|headless_bot_update|count=18174|cpu_s=0.076294|mean_ms=0.0042\nPROFILE|headless_other|count=3|cpu_s=0.016455|mean_ms=5.4850\nPROFILE|crowded_bot_regular_decisions|count=35|cpu_s=0.006227|mean_ms=0.1779|enemy_units=30\nPROFILE|crowded_bot_anvil_decisions|count=35|cpu_s=0.006983|mean_ms=0.1995|enemy_units=30\nPROFILE|static_arena_0_units_2_monitors|count=12|cpu_s=0.019236|mean_ms=1.6030|first_ms=135.4140|initial_blits=80|unchanged_blits=0\nPROFILE|static_arena_30_units_2_monitors|count=12|cpu_s=0.040929|mean_ms=3.4107|first_ms=3.4100|initial_blits=38|unchanged_blits=0\nPROFILE|pixelbox_cached_static_0|count=36|cpu_s=0.039607|mean_ms=1.1002\nPROFILE|pixelbox_exhaustive_static_0|count=36|cpu_s=0.034202|mean_ms=0.9501\nPROFILE|pixelbox_ratio_static_0|cached_over_exhaustive=1.158\nPROFILE|pixelbox_cached_static_30|count=36|cpu_s=0.055542|mean_ms=1.5428\nPROFILE|pixelbox_exhaustive_static_30|count=36|cpu_s=0.072733|mean_ms=2.0204\nPROFILE|pixelbox_ratio_static_30|cached_over_exhaustive=0.764\nPROFILE|pixelbox_cached_moving_30|count=36|cpu_s=0.078990|mean_ms=2.1942\nPROFILE|pixelbox_exhaustive_moving_30|count=36|cpu_s=0.065268|mean_ms=1.8130\nPROFILE|pixelbox_ratio_moving_30|cached_over_exhaustive=1.210\nPerformance profile complete (no gameplay files modified).\n"
+  },
+  {
+    "scope": "main",
+    "lua": "5.2",
+    "repeat": 3,
+    "exit": 0,
+    "wallSeconds": 2.32,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.955294|mean_ms=318.4313|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.745307|mean_ms=0.0820\nPROFILE|headless_bot_update|count=18174|cpu_s=0.182245|mean_ms=0.0100\nPROFILE|headless_other|count=3|cpu_s=0.027742|mean_ms=9.2473\nPROFILE|crowded_bot_regular_decisions|count=35|cpu_s=0.004668|mean_ms=0.1334|enemy_units=30\nPROFILE|crowded_bot_anvil_decisions|count=35|cpu_s=0.007295|mean_ms=0.2084|enemy_units=30\nPROFILE|static_arena_0_units_2_monitors|count=12|cpu_s=0.017319|mean_ms=1.4433|first_ms=61.0930|initial_blits=80|unchanged_blits=0\nPROFILE|static_arena_30_units_2_monitors|count=12|cpu_s=0.066160|mean_ms=5.5133|first_ms=3.5110|initial_blits=38|unchanged_blits=0\nPROFILE|pixelbox_cached_static_0|count=36|cpu_s=0.034823|mean_ms=0.9673\nPROFILE|pixelbox_exhaustive_static_0|count=36|cpu_s=0.039739|mean_ms=1.1039\nPROFILE|pixelbox_ratio_static_0|cached_over_exhaustive=0.876\nPROFILE|pixelbox_cached_static_30|count=36|cpu_s=0.047593|mean_ms=1.3220\nPROFILE|pixelbox_exhaustive_static_30|count=36|cpu_s=0.061212|mean_ms=1.7003\nPROFILE|pixelbox_ratio_static_30|cached_over_exhaustive=0.778\nPROFILE|pixelbox_cached_moving_30|count=36|cpu_s=0.131118|mean_ms=3.6422\nPROFILE|pixelbox_exhaustive_moving_30|count=36|cpu_s=0.081427|mean_ms=2.2619\nPROFILE|pixelbox_ratio_moving_30|cached_over_exhaustive=1.610\nPerformance profile complete (no gameplay files modified).\n"
+  },
+  {
+    "scope": "candidate",
+    "lua": "5.2",
+    "repeat": 3,
+    "exit": 0,
+    "wallSeconds": 3.553,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=1.386899|mean_ms=462.2997|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=1.149713|mean_ms=0.1266\nPROFILE|headless_bot_update|count=18174|cpu_s=0.203106|mean_ms=0.0112\nPROFILE|headless_other|count=3|cpu_s=0.034080|mean_ms=11.3600\nPROFILE|crowded_bot_regular_decisions|count=35|cpu_s=0.012001|mean_ms=0.3429|enemy_units=30\nPROFILE|crowded_bot_anvil_decisions|count=35|cpu_s=0.028386|mean_ms=0.8110|enemy_units=30\nPROFILE|static_arena_0_units_2_monitors|count=12|cpu_s=0.091430|mean_ms=7.6192|first_ms=208.8220|initial_blits=80|unchanged_blits=0\nPROFILE|static_arena_30_units_2_monitors|count=12|cpu_s=0.079682|mean_ms=6.6402|first_ms=20.5160|initial_blits=38|unchanged_blits=0\nPROFILE|pixelbox_cached_static_0|count=36|cpu_s=0.028174|mean_ms=0.7826\nPROFILE|pixelbox_exhaustive_static_0|count=36|cpu_s=0.039134|mean_ms=1.0871\nPROFILE|pixelbox_ratio_static_0|cached_over_exhaustive=0.720\nPROFILE|pixelbox_cached_static_30|count=36|cpu_s=0.045836|mean_ms=1.2732\nPROFILE|pixelbox_exhaustive_static_30|count=36|cpu_s=0.058806|mean_ms=1.6335\nPROFILE|pixelbox_ratio_static_30|cached_over_exhaustive=0.779\nPROFILE|pixelbox_cached_moving_30|count=36|cpu_s=0.129829|mean_ms=3.6064\nPROFILE|pixelbox_exhaustive_moving_30|count=36|cpu_s=0.139012|mean_ms=3.8614\nPROFILE|pixelbox_ratio_moving_30|cached_over_exhaustive=0.934\nPerformance profile complete (no gameplay files modified).\n"
+  },
+  {
+    "scope": "main",
+    "lua": "5.4",
+    "repeat": 3,
+    "exit": 0,
+    "wallSeconds": 1.485,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.484569|mean_ms=161.5230|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.394808|mean_ms=0.0435\nPROFILE|headless_bot_update|count=18174|cpu_s=0.065551|mean_ms=0.0036\nPROFILE|headless_other|count=3|cpu_s=0.024210|mean_ms=8.0700\nPROFILE|crowded_bot_regular_decisions|count=35|cpu_s=0.004774|mean_ms=0.1364|enemy_units=30\nPROFILE|crowded_bot_anvil_decisions|count=35|cpu_s=0.006450|mean_ms=0.1843|enemy_units=30\nPROFILE|static_arena_0_units_2_monitors|count=12|cpu_s=0.011827|mean_ms=0.9856|first_ms=130.5010|initial_blits=80|unchanged_blits=0\nPROFILE|static_arena_30_units_2_monitors|count=12|cpu_s=0.022803|mean_ms=1.9002|first_ms=2.2380|initial_blits=38|unchanged_blits=0\nPROFILE|pixelbox_cached_static_0|count=36|cpu_s=0.015573|mean_ms=0.4326\nPROFILE|pixelbox_exhaustive_static_0|count=36|cpu_s=0.023990|mean_ms=0.6664\nPROFILE|pixelbox_ratio_static_0|cached_over_exhaustive=0.649\nPROFILE|pixelbox_cached_static_30|count=36|cpu_s=0.033436|mean_ms=0.9288\nPROFILE|pixelbox_exhaustive_static_30|count=36|cpu_s=0.043508|mean_ms=1.2086\nPROFILE|pixelbox_ratio_static_30|cached_over_exhaustive=0.769\nPROFILE|pixelbox_cached_moving_30|count=36|cpu_s=0.080658|mean_ms=2.2405\nPROFILE|pixelbox_exhaustive_moving_30|count=36|cpu_s=0.084776|mean_ms=2.3549\nPROFILE|pixelbox_ratio_moving_30|cached_over_exhaustive=0.951\nPerformance profile complete (no gameplay files modified).\n"
+  },
+  {
+    "scope": "candidate",
+    "lua": "5.4",
+    "repeat": 3,
+    "exit": 0,
+    "wallSeconds": 3.703,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.652043|mean_ms=217.3477|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.523313|mean_ms=0.0576\nPROFILE|headless_bot_update|count=18174|cpu_s=0.100404|mean_ms=0.0055\nPROFILE|headless_other|count=3|cpu_s=0.028326|mean_ms=9.4420\nPROFILE|crowded_bot_regular_decisions|count=35|cpu_s=0.004850|mean_ms=0.1386|enemy_units=30\nPROFILE|crowded_bot_anvil_decisions|count=35|cpu_s=0.011172|mean_ms=0.3192|enemy_units=30\nPROFILE|static_arena_0_units_2_monitors|count=12|cpu_s=0.023154|mean_ms=1.9295|first_ms=83.7660|initial_blits=80|unchanged_blits=0\nPROFILE|static_arena_30_units_2_monitors|count=12|cpu_s=0.042075|mean_ms=3.5062|first_ms=4.5760|initial_blits=38|unchanged_blits=0\nPROFILE|pixelbox_cached_static_0|count=36|cpu_s=0.028017|mean_ms=0.7783\nPROFILE|pixelbox_exhaustive_static_0|count=36|cpu_s=0.037228|mean_ms=1.0341\nPROFILE|pixelbox_ratio_static_0|cached_over_exhaustive=0.753\nPROFILE|pixelbox_cached_static_30|count=36|cpu_s=0.060254|mean_ms=1.6737\nPROFILE|pixelbox_exhaustive_static_30|count=36|cpu_s=0.075629|mean_ms=2.1008\nPROFILE|pixelbox_ratio_static_30|cached_over_exhaustive=0.797\nPROFILE|pixelbox_cached_moving_30|count=36|cpu_s=0.288557|mean_ms=8.0155\nPROFILE|pixelbox_exhaustive_moving_30|count=36|cpu_s=0.221713|mean_ms=6.1587\nPROFILE|pixelbox_ratio_moving_30|cached_over_exhaustive=1.301\nPerformance profile complete (no gameplay files modified).\n"
+  }
+]

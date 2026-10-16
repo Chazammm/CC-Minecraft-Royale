@@ -1,0 +1,20 @@
+[
+  {
+    "scope": "candidate+audit",
+    "revision": "259da467f26025bf816307d5ab1539257b6236b2",
+    "lua": "5.2",
+    "command": [
+      "/workspace/scratch/bin/lua5.2",
+      "scripts/audit_cli_host.lua",
+      "audit_matches.lua",
+      "/workspace/CC-Royale-audit/docs/audits/evidence/post_update_20261016/final_cross52_1_audit_matches_1000_20261016.txt",
+      "259da467f26025bf816307d5ab1539257b6236b2",
+      "1000",
+      "20261016"
+    ],
+    "seconds": 1020.242,
+    "exit": 0,
+    "log": "final_cross52_1_audit_matches_1000_20261016.log",
+    "report": null
+  }
+]

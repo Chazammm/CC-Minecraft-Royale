@@ -1,0 +1,101 @@
+[
+  {
+    "mutation": "frog_hp",
+    "file": "src/cards.lua",
+    "test": "tests/test_frog_worm.lua",
+    "baseline": "PASS",
+    "mutantExit": 1,
+    "detected": true,
+    "output": "FAIL frog_worm_definitions: ./src/frog_worm_mechanics.lua:11: value: 551 vs 550\n/workspace/scratch/bin/lua5.4: tests/test_frog_worm.lua:9: 1 Frog/Worm cases failed\nstack traceback:\n\t[C]: in function 'assert'\n\ttests/test_frog_worm.lua:9: in main chunk\n\t[C]: in ?\n"
+  },
+  {
+    "mutation": "tower_damage",
+    "file": "src/custom_mob_rules.lua",
+    "test": "tests/test_frog_worm.lua",
+    "baseline": "PASS",
+    "mutantExit": 1,
+    "detected": true,
+    "output": "FAIL frog_worm_damage_matrix_p1: ./src/frog_worm_mechanics.lua:11: Tower-only damage princess: 1406 vs 1453.5\nFAIL frog_worm_damage_matrix_p2: ./src/frog_worm_mechanics.lua:11: Tower-only damage princess: 1406 vs 1453.5\n/workspace/scratch/bin/lua5.4: tests/test_frog_worm.lua:9: 2 Frog/Worm cases failed\nstack traceback:\n\t[C]: in function 'assert'\n\ttests/test_frog_worm.lua:9: in main chunk\n\t[C]: in ?\n"
+  },
+  {
+    "mutation": "hook_buildings",
+    "file": "src/custom_mob_rules.lua",
+    "test": "tests/test_frog_worm.lua",
+    "baseline": "PASS",
+    "mutantExit": 1,
+    "detected": true,
+    "output": "FAIL frog_worm_hook_filters_p1: ./src/frog_worm_mechanics.lua:11: value: 27.5 vs 35\nFAIL frog_worm_hook_filters_p2: ./src/frog_worm_mechanics.lua:11: value: 72.5 vs 65\n/workspace/scratch/bin/lua5.4: tests/test_frog_worm.lua:9: 2 Frog/Worm cases failed\nstack traceback:\n\t[C]: in function 'assert'\n\ttests/test_frog_worm.lua:9: in main chunk\n\t[C]: in ?\n"
+  },
+  {
+    "mutation": "worm_placement",
+    "file": "src/cards.lua",
+    "test": "tests/test_frog_worm.lua",
+    "baseline": "PASS",
+    "mutantExit": 1,
+    "detected": true,
+    "output": "FAIL frog_worm_definitions: ./src/frog_worm_mechanics.lua:45: assertion failed!\nFAIL frog_worm_schemas: ./src/frog_worm_mechanics.lua:306: Schema missed burrow_flying\n/workspace/scratch/bin/lua5.4: tests/test_frog_worm.lua:9: 2 Frog/Worm cases failed\nstack traceback:\n\t[C]: in function 'assert'\n\ttests/test_frog_worm.lua:9: in main chunk\n\t[C]: in ?\n"
+  },
+  {
+    "mutation": "hero_cycles",
+    "file": "src/cards.lua",
+    "test": "tests/test_four_mobs.lua",
+    "baseline": "PASS",
+    "mutantExit": 1,
+    "detected": true,
+    "output": "/workspace/scratch/bin/lua5.4: tests/test_four_mobs.lua:14: mob_stats: ./src/four_mob_mechanics.lua:50: assertion failed!\nstack traceback:\n\t[C]: in function 'assert'\n\ttests/test_four_mobs.lua:14: in main chunk\n\t[C]: in ?\n"
+  },
+  {
+    "mutation": "duplicate_deck",
+    "file": "src/cards.lua",
+    "test": "tests/test_simulation_contracts.lua",
+    "baseline": "PASS",
+    "mutantExit": 1,
+    "detected": true,
+    "output": "FAIL Invalid deck must fail for owner 1\nFAIL Invalid deck created a match\nFAIL Invalid deck reseeded gameplay RNG\nFAIL Invalid deck must fail for owner 2\nFAIL Invalid deck created a match\nFAIL Invalid deck reseeded gameplay RNG\n/workspace/scratch/bin/lua5.4: tests/test_simulation_contracts.lua:67: 6 simulation-input checks failed\nstack traceback:\n\t[C]: in function 'assert'\n\ttests/test_simulation_contracts.lua:67: in main chunk\n\t[C]: in ?\n"
+  },
+  {
+    "mutation": "invalid_result",
+    "file": "src/headless_match.lua",
+    "test": "tests/test_headless_runner.lua",
+    "baseline": "PASS",
+    "mutantExit": 1,
+    "detected": true,
+    "output": "/workspace/scratch/bin/lua5.4: tests/test_headless_runner.lua:19: Shared runner must preserve winner: expected 2, got 3\nstack traceback:\n\t[C]: in function 'error'\n\ttests/test_headless_runner.lua:19: in local 'assertEq'\n\ttests/test_headless_runner.lua:97: in main chunk\n\t[C]: in ?\n"
+  },
+  {
+    "mutation": "missing_import",
+    "file": "src/util.lua",
+    "test": "tests/test_install_manifest.lua",
+    "baseline": "PASS",
+    "mutantExit": 1,
+    "detected": true,
+    "output": "/workspace/scratch/bin/lua5.4: tests/test_install_manifest.lua:78: src/util.lua requires missing module src/audit_missing_module.lua\nstack traceback:\n\t[C]: in function 'assert'\n\ttests/test_install_manifest.lua:78: in upvalue 'scan'\n\ttests/test_install_manifest.lua:85: in upvalue 'scan'\n\ttests/test_install_manifest.lua:85: in local 'scan'\n\ttests/test_install_manifest.lua:91: in main chunk\n\t[C]: in ?\n"
+  },
+  {
+    "mutation": "missing_registration",
+    "file": "mechanics_test.lua",
+    "test": "tests/test_mechanics_full_ci.lua",
+    "baseline": "PASS",
+    "mutantExit": 1,
+    "detected": true,
+    "output": "b_dragon_splash_p1    ] PASS\n[mob_dragon_dead_primary_p1] PASS\n[mob_river_ravager_rider_p1] PASS\n[mob_river_minoshroom_p1 ] PASS\n[mob_river_evo_spider_p1 ] PASS\n[mob_river_baby_ender_dragon_p1] PASS\n[mob_web_lifetime_p1     ] PASS\n[mob_web_filters_p1      ] PASS\n[mob_web_reservation_p1  ] PASS\n[mob_web_source_inflight_p1] PASS\n[mob_web_clock_p1        ] PASS\n[mob_rider_dual_p2       ] PASS\n[mob_rider_arrival_p2    ] PASS\n[mob_rider_moving_p2     ] PASS\n[mob_mino_two_hits_p2    ] PASS\n[mob_mino_single_p2      ] PASS\n[mob_dragon_splash_p2    ] PASS\n[mob_dragon_dead_primary_p2] PASS\n[mob_river_ravager_rider_p2] PASS\n[mob_river_minoshroom_p2 ] PASS\n[mob_river_evo_spider_p2 ] PASS\n[mob_river_baby_ender_dragon_p2] PASS\n[mob_web_lifetime_p2     ] PASS\n[mob_web_filters_p2      ] PASS\n[mob_web_reservation_p2  ] PASS\n[mob_web_source_inflight_p2] PASS\n[mob_web_clock_p2        ] PASS\n[mob_hero_frequency      ] PASS\n[mob_web_attack_clock    ] PASS\n[mob_evo_api             ] PASS\n[mob_evo_disabled        ] PASS\n[mob_initial_web_ready   ] PASS\n[mob_web_purged_entity   ] PASS\n[mob_result_web_cancel   ] PASS\n[mob_rider_web_rates     ] PASS\n[mob_heavy_matchups      ] PASS\n[mob_winning_primary_freeze] PASS\n\nMechanics tests complete: 75 PASS / 0 FAIL / 0 ERROR\nReport written to: mechanics_report.txt\nGitHub auto-sync not configured. Run once: report_sync setup\n/workspace/scratch/bin/lua5.4: tests/test_mechanics_full_ci.lua:69: Mechanics report omitted successful case frog_worm_definitions\nstack traceback:\n\t[C]: in function 'assert'\n\ttests/test_mechanics_full_ci.lua:69: in main chunk\n\t[C]: in ?\n"
+  },
+  {
+    "mutation": "missing_lua52_gate",
+    "file": ".github/workflows/lua-ci.yml",
+    "test": "tests/test_release_gate.lua",
+    "baseline": "PASS",
+    "mutantExit": 1,
+    "detected": true,
+    "output": "/workspace/scratch/bin/lua5.4: tests/test_release_gate.lua:74: Deep-core diagnostic must run in BOTH Lua versions: tests/test_preset_false_returns.lua\nstack traceback:\n\t[C]: in function 'assert'\n\ttests/test_release_gate.lua:74: in main chunk\n\t[C]: in ?\n"
+  },
+  {
+    "mutation": "bad_sprite_token",
+    "file": "src/assets/custom_mobs/frames.lua",
+    "test": "tests/test_frog_worm_rendering.lua",
+    "baseline": "PASS",
+    "mutantExit": 1,
+    "detected": true,
+    "output": "/workspace/scratch/bin/lua5.4: tests/test_frog_worm_rendering.lua:21: Bad palette token\nstack traceback:\n\t[C]: in function 'assert'\n\ttests/test_frog_worm_rendering.lua:21: in local 'check'\n\ttests/test_frog_worm_rendering.lua:26: in main chunk\n\t[C]: in ?\n"
+  }
+]

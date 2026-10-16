@@ -1,0 +1,1 @@
+Retention: keep 33 historical reports, prune 0; archive: archive/reports-pre-retention-20261013; mode: dry-run

@@ -1,0 +1,32 @@
+[
+  {
+    "lua": "5.2",
+    "repeat": 1,
+    "output": "WORM_SEARCH|enemies=20|decisions=10|placement_calls=3200|cpu_s=0.022660|mean_ms=2.2660\nWORM_SEARCH|enemies=60|decisions=10|placement_calls=9600|cpu_s=0.121202|mean_ms=12.1202\nWORM_SEARCH|enemies=120|decisions=10|placement_calls=19200|cpu_s=0.345833|mean_ms=34.5833\nWORM_SEARCH|enemies=240|decisions=10|placement_calls=38400|cpu_s=1.473842|mean_ms=147.3842\n"
+  },
+  {
+    "lua": "5.2",
+    "repeat": 2,
+    "output": "WORM_SEARCH|enemies=20|decisions=10|placement_calls=3200|cpu_s=0.010635|mean_ms=1.0635\nWORM_SEARCH|enemies=60|decisions=10|placement_calls=9600|cpu_s=0.071539|mean_ms=7.1539\nWORM_SEARCH|enemies=120|decisions=10|placement_calls=19200|cpu_s=0.337604|mean_ms=33.7604\nWORM_SEARCH|enemies=240|decisions=10|placement_calls=38400|cpu_s=1.566344|mean_ms=156.6344\n"
+  },
+  {
+    "lua": "5.2",
+    "repeat": 3,
+    "output": "WORM_SEARCH|enemies=20|decisions=10|placement_calls=3200|cpu_s=0.009185|mean_ms=0.9185\nWORM_SEARCH|enemies=60|decisions=10|placement_calls=9600|cpu_s=0.065680|mean_ms=6.5680\nWORM_SEARCH|enemies=120|decisions=10|placement_calls=19200|cpu_s=0.304742|mean_ms=30.4742\nWORM_SEARCH|enemies=240|decisions=10|placement_calls=38400|cpu_s=1.109675|mean_ms=110.9675\n"
+  },
+  {
+    "lua": "5.4",
+    "repeat": 1,
+    "output": "WORM_SEARCH|enemies=20|decisions=10|placement_calls=3200|cpu_s=0.008306|mean_ms=0.8306\nWORM_SEARCH|enemies=60|decisions=10|placement_calls=9600|cpu_s=0.050314|mean_ms=5.0314\nWORM_SEARCH|enemies=120|decisions=10|placement_calls=19200|cpu_s=0.184435|mean_ms=18.4435\nWORM_SEARCH|enemies=240|decisions=10|placement_calls=38400|cpu_s=0.674157|mean_ms=67.4157\n"
+  },
+  {
+    "lua": "5.4",
+    "repeat": 2,
+    "output": "WORM_SEARCH|enemies=20|decisions=10|placement_calls=3200|cpu_s=0.008017|mean_ms=0.8017\nWORM_SEARCH|enemies=60|decisions=10|placement_calls=9600|cpu_s=0.049413|mean_ms=4.9413\nWORM_SEARCH|enemies=120|decisions=10|placement_calls=19200|cpu_s=0.316722|mean_ms=31.6722\nWORM_SEARCH|enemies=240|decisions=10|placement_calls=38400|cpu_s=1.394714|mean_ms=139.4714\n"
+  },
+  {
+    "lua": "5.4",
+    "repeat": 3,
+    "output": "WORM_SEARCH|enemies=20|decisions=10|placement_calls=3200|cpu_s=0.033353|mean_ms=3.3353\nWORM_SEARCH|enemies=60|decisions=10|placement_calls=9600|cpu_s=0.050033|mean_ms=5.0033\nWORM_SEARCH|enemies=120|decisions=10|placement_calls=19200|cpu_s=0.259613|mean_ms=25.9613\nWORM_SEARCH|enemies=240|decisions=10|placement_calls=38400|cpu_s=1.086700|mean_ms=108.6700\n"
+  }
+]

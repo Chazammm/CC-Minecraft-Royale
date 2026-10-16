@@ -1,0 +1,80 @@
+CC-Minecraft Royale balance benchmark
+CODE_REVISION|259da467f26025bf816307d5ab1539257b6236b2
+Mode: MIXED   Matches: 100   Seed: 20261016   Tick: 0.10s
+27-card pool: 16 are sampled into two disjoint 8-card decks each pair.
+The unused cards change every shuffle; pairs are replayed with sides swapped.
+
+Side-swapped pairs reuse one deterministic gameplay seed; current combat has no random branches, while deck sampling RNG stays independent.
+  20 / 100
+  40 / 100
+  60 / 100
+  80 / 100
+  100 / 100
+
+GLOBAL
+P1 wins: 50 (50.0%)
+P2 wins: 50 (50.0%)
+Draws:   0 (0.0%)
+Avg match: 268.8s
+
+CARD BALANCE
+Card             Score  P/M   U/E   T/E   Flag
+Blaze             75.0  5.0  58.3   5.6 WATCH+
+Magma Cube        69.2  7.2  64.6   3.0 WATCH+
+Zombie            68.2  7.6  81.0   6.8 WATCH+
+Enderman          63.3  2.9  51.6  37.5 WATCH+
+Wolf              63.3  7.1 100.6   5.6 WATCH+
+Villager          63.0  0.5   0.0   0.0 WATCH+
+Nether Portal     62.5  5.5  81.6   3.6 WATCH+
+Bat Swarm         61.8  9.6 101.7   3.2 WATCH+
+Ravager Rider     58.8  4.8  25.6  10.5 WATCH+
+Wither Skeleton   55.6  6.8  76.0   6.3 OK    
+Baby Ender Dragon  53.8  4.1  52.1   6.9 OK    
+Endermite         51.5  9.9  39.8   2.7 OK    
+Arrow Volley      50.0  2.1  81.7   0.0 OK    
+Nether Worm       50.0  8.2  65.9   2.2 OK    
+Evoker            48.5  2.8  73.5   4.8 OK    
+Falling Anvil     45.5  7.5 107.2   3.8 OK    
+Slime             43.3  7.6  56.2   2.5 WATCH-
+Minoshroom        42.9  0.4  11.1  26.0 WATCH-
+Skeleton          42.9  7.6  48.5   1.5 WATCH-
+Spider            40.7  9.3  86.6   2.3 WATCH-
+Iron Golem        39.3  4.5  11.8   6.5 WATCH-
+Cannon            38.2  5.2 132.0   0.0 WATCH-
+Pillager Outpost  37.9  5.1 104.2   0.0 WATCH-
+Snow Golem        37.9  8.4  48.0   1.8 WATCH-
+Creeper           32.1  4.1  67.6   1.9 WATCH-
+King Frog         31.0  7.8  31.8   0.4 WATCH-
+Witch             30.4  4.6  46.9   3.2 WATCH-
+
+UTILITY
+Card             BonusE  Slow/s  Hits/Play
+Villager           3.90    0.00      0.00
+Nether Portal      0.00    0.09      0.00
+Arrow Volley       0.00    0.00      3.51
+Evoker             0.00    0.00      1.91
+Falling Anvil      0.00    0.00      1.33
+Spider             0.00    1.37      0.00
+Snow Golem         0.00    5.05      0.00
+
+EVOLUTIONS
+Card             Slot% Evo/SM  Evo% Cycles EvoCost
+Villager          44.4   0.00   0.0      3     7.0
+Nether Portal     18.8   1.33  27.6      2     3.0
+Endermite         15.2   1.40  15.9      4     1.0
+Spider            77.8   2.76  29.3      2     2.0
+Iron Golem        60.7   1.41  25.8      2     5.0
+Creeper          100.0   1.04  25.4      2     4.0
+
+HOW TO READ
+Score = deck win rate with draws worth half a win.
+P/M   = times played per match while the card is in deck.
+U/E   = unit damage per Emerald spent.
+T/E   = tower damage per Emerald spent.
+WATCH+/- means investigate, not automatic nerf/buff.
+
+Recommended benchmark: simulate 500 mixed
+
+Saved full report to: balance_results.txt
+View it with: type balance_results.txt
+GitHub auto-sync not configured. Run once: report_sync setup

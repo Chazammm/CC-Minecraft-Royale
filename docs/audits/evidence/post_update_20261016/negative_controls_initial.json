@@ -1,0 +1,9 @@
+[
+  {
+    "control": "missing runtime import",
+    "test": "test_install_manifest.lua",
+    "exit": 0,
+    "detected": false,
+    "output": "Installer manifest tests passed\n"
+  }
+]

@@ -1,0 +1,4 @@
+WORM_SEARCH|enemies=20|decisions=10|placement_calls=3200|cpu_s=0.005628|mean_ms=0.5628
+WORM_SEARCH|enemies=60|decisions=10|placement_calls=9600|cpu_s=0.037761|mean_ms=3.7761
+WORM_SEARCH|enemies=120|decisions=10|placement_calls=19200|cpu_s=0.231571|mean_ms=23.1571
+WORM_SEARCH|enemies=240|decisions=10|placement_calls=38400|cpu_s=0.634665|mean_ms=63.4665

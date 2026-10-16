@@ -1,0 +1,135 @@
+CC-Minecraft Royale controlled replacement analysis
+CODE_REVISION|259da467f26025bf816307d5ab1539257b6236b2
+Tick: 0.10s
+Contexts/comparison: 10   Comparisons: 6   Total matches: 240   Seed: 20261016
+Each context uses the same 7-card shell, same opponent deck and same replacement slot.
+Evolutions are disabled so this remains a pure BASE-card replacement benchmark.
+A and B each play once as P1 and once as P2. Compared cards are excluded from all other slots.
+Paired deterministic gameplay seeds are retained for future random combat mechanics; current combat itself is deterministic.
+
+RUN 1/6: Zombie vs Wither Skeleton
+  10/10 contexts  (40/240 total matches)
+
+COMPARISON|zombie_vs_wither|Zombie|Wither Skeleton
+NOTE|Direct 3E melee sidegrade
+COST|A=3|B=3
+SCORE|A=60.00%|B=80.00%|DELTA_B_MINUS_A=+20.00pp
+PAIRED_95CI|mean=+20.00pp|low=-25.24pp|high=+65.24pp|signal=LEAN B
+CONTEXT_EDGE|A=1|B=3|TIE=6
+A_CARD|plays/match=8.30|evo/match=0.00|evo_share=0.0%|unit/E=52.29|tower/E=6.79|kills/match=4.00|avg_match=277.8s
+B_CARD|plays/match=8.30|evo/match=0.00|evo_share=0.0%|unit/E=73.23|tower/E=4.59|kills/match=4.70|avg_match=281.2s
+REPLACEMENT_SLOTS|1:2,2:0,3:0,4:0,5:1,6:3,7:3,8:1
+
+RUN 2/6: Slime vs Magma Cube
+  10/10 contexts  (80/240 total matches)
+
+COMPARISON|slime_vs_magma|Slime|Magma Cube
+NOTE|Direct 3E split-melee sidegrade
+COST|A=3|B=3
+SCORE|A=50.00%|B=50.00%|DELTA_B_MINUS_A=+0.00pp
+PAIRED_95CI|mean=+0.00pp|low=-33.72pp|high=+33.72pp|signal=NEAR-EVEN
+CONTEXT_EDGE|A=1|B=1|TIE=8
+A_CARD|plays/match=7.90|evo/match=0.00|evo_share=0.0%|unit/E=57.48|tower/E=2.74|kills/match=1.60|avg_match=268.6s
+B_CARD|plays/match=7.70|evo/match=0.00|evo_share=0.0%|unit/E=50.83|tower/E=4.00|kills/match=1.00|avg_match=275.2s
+REPLACEMENT_SLOTS|1:2,2:2,3:2,4:1,5:1,6:1,7:1,8:0
+
+RUN 3/6: Cannon vs Pillager Outpost
+  10/10 contexts  (120/240 total matches)
+
+COMPARISON|cannon_vs_outpost|Cannon|Pillager Outpost
+NOTE|Direct 4E defensive-building sidegrade
+COST|A=4|B=4
+SCORE|A=30.00%|B=20.00%|DELTA_B_MINUS_A=-10.00pp
+PAIRED_95CI|mean=-10.00pp|low=-32.62pp|high=+12.62pp|signal=LEAN A
+CONTEXT_EDGE|A=1|B=0|TIE=9
+A_CARD|plays/match=3.80|evo/match=0.00|evo_share=0.0%|unit/E=130.37|tower/E=0.00|kills/match=4.00|avg_match=264.9s
+B_CARD|plays/match=5.20|evo/match=0.00|evo_share=0.0%|unit/E=96.93|tower/E=0.00|kills/match=6.30|avg_match=262.2s
+REPLACEMENT_SLOTS|1:2,2:3,3:0,4:0,5:0,6:1,7:3,8:1
+
+RUN 4/6: Iron Golem vs Enderman
+  10/10 contexts  (160/240 total matches)
+
+COMPARISON|golem_vs_enderman|Iron Golem|Enderman
+NOTE|Diagnostic: same-cost 5E control, not a direct role replacement
+COST|A=5|B=5
+SCORE|A=50.00%|B=70.00%|DELTA_B_MINUS_A=+20.00pp
+PAIRED_95CI|mean=+20.00pp|low=-36.42pp|high=+76.42pp|signal=LEAN B
+CONTEXT_EDGE|A=2|B=4|TIE=4
+A_CARD|plays/match=5.10|evo/match=0.00|evo_share=0.0%|unit/E=4.23|tower/E=2.16|kills/match=0.30|avg_match=295.7s
+B_CARD|plays/match=3.70|evo/match=0.00|evo_share=0.0%|unit/E=48.27|tower/E=31.11|kills/match=2.60|avg_match=288.9s
+REPLACEMENT_SLOTS|1:3,2:3,3:0,4:2,5:0,6:0,7:1,8:1
+
+RUN 5/6: Skeleton vs Snow Golem
+  10/10 contexts  (200/240 total matches)
+
+COMPARISON|skeleton_vs_snow|Skeleton|Snow Golem
+NOTE|Diagnostic: 3E ranged air/ground support comparison
+COST|A=3|B=3
+SCORE|A=30.00%|B=60.00%|DELTA_B_MINUS_A=+30.00pp
+PAIRED_95CI|mean=+30.00pp|low=-18.28pp|high=+78.28pp|signal=LEAN B
+CONTEXT_EDGE|A=1|B=4|TIE=5
+A_CARD|plays/match=8.70|evo/match=0.00|evo_share=0.0%|unit/E=63.39|tower/E=1.72|kills/match=3.40|avg_match=277.6s
+B_CARD|plays/match=9.80|evo/match=0.00|evo_share=0.0%|unit/E=45.62|tower/E=1.86|kills/match=3.00|avg_match=293.2s
+UTILITY_A|bonus/match=0.00|slow/play=0.00|hits/play=0.00
+UTILITY_B|bonus/match=0.00|slow/play=5.02|hits/play=0.00
+REPLACEMENT_SLOTS|1:2,2:1,3:0,4:2,5:0,6:2,7:2,8:1
+
+RUN 6/6: Bat Swarm vs Spider
+  10/10 contexts  (240/240 total matches)
+
+COMPARISON|bats_vs_spider|Bat Swarm|Spider
+NOTE|Diagnostic: 2E fast-pressure comparison
+COST|A=2|B=2
+SCORE|A=70.00%|B=30.00%|DELTA_B_MINUS_A=-40.00pp
+PAIRED_95CI|mean=-40.00pp|low=-76.94pp|high=-3.06pp|signal=CLEAR A++
+CONTEXT_EDGE|A=4|B=0|TIE=6
+A_CARD|plays/match=8.90|evo/match=0.00|evo_share=0.0%|unit/E=129.13|tower/E=2.48|kills/match=5.30|avg_match=267.6s
+B_CARD|plays/match=9.50|evo/match=0.00|evo_share=0.0%|unit/E=82.09|tower/E=1.80|kills/match=5.20|avg_match=277.8s
+REPLACEMENT_SLOTS|1:1,2:2,3:1,4:0,5:2,6:0,7:3,8:1
+
+HOW TO READ
+DELTA_B_MINUS_A: positive means B won more often in otherwise identical deck contexts.
+PAIRED_95CI: Student-t interval from context-by-context A/B differences after side swapping.
+If the entire interval is above/below zero, the edge is much more convincing than a raw mixed win rate.
+NEAR-EVEN means the measured delta is under 3 percentage points and the interval crosses zero.
+LEAN means an observed edge whose interval still crosses zero; collect more contexts before balancing.
+CLEAR means the paired interval excludes zero. CLEAR ++ also has at least an 8pp measured edge.
+Diagnostic comparisons (Golem/Enderman etc.) compare impact, not identical tactical roles.
+evo/match and evo_share show how often the compared card actually reached its Evolution.
+
+Recommended:
+  compare 30 all        -- broad first pass
+  compare 100 A B       -- confirm one suspicious pair
+
+Saved report: comparison_results.txt
+
+View it with: type comparison_results.txt
+GitHub auto-sync not configured. Run once: report_sync setup
+OBSERVED_CLI|matches=240|ticks=666378|max_entities=23|max_projectiles=5
+OBSERVED_PLAYS|arrows|286
+OBSERVED_PLAYS|baby_ender_dragon|538
+OBSERVED_PLAYS|bat_swarm|1294
+OBSERVED_PLAYS|blaze|780
+OBSERVED_PLAYS|cannon|536
+OBSERVED_PLAYS|creeper|668
+OBSERVED_PLAYS|enderman|404
+OBSERVED_PLAYS|endermite|1298
+OBSERVED_PLAYS|evoker|348
+OBSERVED_PLAYS|falling_anvil|1156
+OBSERVED_PLAYS|iron_golem|548
+OBSERVED_PLAYS|king_frog|1076
+OBSERVED_PLAYS|magma_cube|1138
+OBSERVED_PLAYS|minoshroom|128
+OBSERVED_PLAYS|nether_portal|786
+OBSERVED_PLAYS|nether_worm|1194
+OBSERVED_PLAYS|pillager_outpost|846
+OBSERVED_PLAYS|ravager_rider|644
+OBSERVED_PLAYS|skeleton|1396
+OBSERVED_PLAYS|slime|1182
+OBSERVED_PLAYS|snow_golem|1134
+OBSERVED_PLAYS|spider|1418
+OBSERVED_PLAYS|villager|64
+OBSERVED_PLAYS|witch|610
+OBSERVED_PLAYS|wither_skeleton|968
+OBSERVED_PLAYS|wolf|1296
+OBSERVED_PLAYS|zombie|1288

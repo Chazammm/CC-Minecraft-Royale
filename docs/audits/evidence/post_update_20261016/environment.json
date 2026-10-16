@@ -1,0 +1,8 @@
+{
+  "python": "3.12.14",
+  "pillow": "12.3.0",
+  "platform": "Linux x86_64",
+  "note": "Host stubs; no physical CC:Tweaked or Love2D runtime",
+  "lua5.2": "Lua 5.2.4  Copyright (C) 1994-2015 Lua.org, PUC-Rio",
+  "lua5.4": "Lua 5.4.8  Copyright (C) 1994-2025 Lua.org, PUC-Rio"
+}

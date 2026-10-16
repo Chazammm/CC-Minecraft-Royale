@@ -1,0 +1,7 @@
+/workspace/scratch/bin/lua5.4: ./src/diagnostics.lua:71: valid deferred flight cancellation: web projectile missing its reservation
+stack traceback:
+	[C]: in function 'assert'
+	./src/diagnostics.lua:71: in local 'check'
+	./src/diagnostics.lua:146: in function 'src.diagnostics.assertState'
+	tests/test_web_observer_boundary.lua:27: in main chunk
+	[C]: in ?

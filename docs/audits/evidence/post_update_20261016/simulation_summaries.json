@@ -1,0 +1,38 @@
+[
+  {
+    "log": "final_baseline_1_audit_matches_100_20261016.log",
+    "summary": [
+      "AUDIT_RESULT|matches=100|p1=51|p2=49|draws=0|ticks=277234|fingerprint=1650800932|clock_s=51.8506|gc_min_kib=457.34|gc_max_kib=457.56"
+    ]
+  },
+  {
+    "log": "final_cli_2_simulate_500_mixed_20261016.log",
+    "summary": [
+      "OBSERVED_CLI|matches=500|ticks=1353732|max_entities=27|max_projectiles=5"
+    ]
+  },
+  {
+    "log": "final_cli_1_simulate_100_mixed_20261016.log",
+    "summary": [
+      "OBSERVED_CLI|matches=100|ticks=268940|max_entities=25|max_projectiles=5"
+    ]
+  },
+  {
+    "log": "final_invariants_2_audit_matches_500_20261017.log",
+    "summary": [
+      "AUDIT_RESULT|matches=500|p1=250|p2=250|draws=0|ticks=1390432|fingerprint=2064265957|clock_s=168.2466|gc_min_kib=482.50|gc_max_kib=482.88"
+    ]
+  },
+  {
+    "log": "final_cli52_1_simulate_100_mixed_20261016.log",
+    "summary": [
+      "OBSERVED_CLI|matches=100|ticks=268940|max_entities=25|max_projectiles=5"
+    ]
+  },
+  {
+    "log": "final_invariants_1_audit_matches_100_20261016.log",
+    "summary": [
+      "AUDIT_RESULT|matches=100|p1=50|p2=50|draws=0|ticks=268988|fingerprint=1999327400|clock_s=49.9916|gc_min_kib=482.72|gc_max_kib=482.74"
+    ]
+  }
+]

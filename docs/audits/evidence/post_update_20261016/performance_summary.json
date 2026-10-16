@@ -1,0 +1,236 @@
+{
+  "5.2": {
+    "headless_3_matches": {
+      "main": {
+        "samples": [
+          0.955747,
+          1.157699,
+          0.955294
+        ],
+        "median": 0.955747,
+        "min": 0.955294,
+        "max": 1.157699
+      },
+      "candidate": {
+        "samples": [
+          1.362182,
+          1.288062,
+          1.386899
+        ],
+        "median": 1.362182,
+        "min": 1.288062,
+        "max": 1.386899
+      },
+      "medianChangePercent": 42.52537543931605
+    },
+    "headless_game_update": {
+      "main": {
+        "samples": [
+          0.748311,
+          0.949852,
+          0.745307
+        ],
+        "median": 0.748311,
+        "min": 0.745307,
+        "max": 0.949852
+      },
+      "candidate": {
+        "samples": [
+          1.097461,
+          1.030806,
+          1.149713
+        ],
+        "median": 1.097461,
+        "min": 1.030806,
+        "max": 1.149713
+      },
+      "medianChangePercent": 46.65840806830317
+    },
+    "headless_bot_update": {
+      "main": {
+        "samples": [
+          0.16251,
+          0.176594,
+          0.182245
+        ],
+        "median": 0.176594,
+        "min": 0.16251,
+        "max": 0.182245
+      },
+      "candidate": {
+        "samples": [
+          0.214961,
+          0.225353,
+          0.203106
+        ],
+        "median": 0.214961,
+        "min": 0.203106,
+        "max": 0.225353
+      },
+      "medianChangePercent": 21.726106209724016
+    },
+    "static_arena_0_units_2_monitors": {
+      "main": {
+        "samples": [
+          0.032019,
+          0.032248,
+          0.017319
+        ],
+        "median": 0.032019,
+        "min": 0.017319,
+        "max": 0.032248
+      },
+      "candidate": {
+        "samples": [
+          0.033977,
+          0.051628,
+          0.09143
+        ],
+        "median": 0.051628,
+        "min": 0.033977,
+        "max": 0.09143
+      },
+      "medianChangePercent": 61.241762703394876
+    },
+    "static_arena_30_units_2_monitors": {
+      "main": {
+        "samples": [
+          0.056921,
+          0.056193,
+          0.06616
+        ],
+        "median": 0.056921,
+        "min": 0.056193,
+        "max": 0.06616
+      },
+      "candidate": {
+        "samples": [
+          0.056985,
+          0.061116,
+          0.079682
+        ],
+        "median": 0.061116,
+        "min": 0.056985,
+        "max": 0.079682
+      },
+      "medianChangePercent": 7.369863495019402
+    }
+  },
+  "5.4": {
+    "headless_3_matches": {
+      "main": {
+        "samples": [
+          0.672414,
+          0.70474,
+          0.484569
+        ],
+        "median": 0.672414,
+        "min": 0.484569,
+        "max": 0.70474
+      },
+      "candidate": {
+        "samples": [
+          0.902842,
+          0.508041,
+          0.652043
+        ],
+        "median": 0.652043,
+        "min": 0.508041,
+        "max": 0.902842
+      },
+      "medianChangePercent": -3.02953240116951
+    },
+    "headless_game_update": {
+      "main": {
+        "samples": [
+          0.539634,
+          0.566216,
+          0.394808
+        ],
+        "median": 0.539634,
+        "min": 0.394808,
+        "max": 0.566216
+      },
+      "candidate": {
+        "samples": [
+          0.738755,
+          0.415292,
+          0.523313
+        ],
+        "median": 0.523313,
+        "min": 0.415292,
+        "max": 0.738755
+      },
+      "medianChangePercent": -3.0244573173669465
+    },
+    "headless_bot_update": {
+      "main": {
+        "samples": [
+          0.107619,
+          0.111089,
+          0.065551
+        ],
+        "median": 0.107619,
+        "min": 0.065551,
+        "max": 0.111089
+      },
+      "candidate": {
+        "samples": [
+          0.133456,
+          0.076294,
+          0.100404
+        ],
+        "median": 0.100404,
+        "min": 0.076294,
+        "max": 0.133456
+      },
+      "medianChangePercent": -6.704206506286081
+    },
+    "static_arena_0_units_2_monitors": {
+      "main": {
+        "samples": [
+          0.020884,
+          0.020002,
+          0.011827
+        ],
+        "median": 0.020002,
+        "min": 0.011827,
+        "max": 0.020884
+      },
+      "candidate": {
+        "samples": [
+          0.021144,
+          0.019236,
+          0.023154
+        ],
+        "median": 0.021144,
+        "min": 0.019236,
+        "max": 0.023154
+      },
+      "medianChangePercent": 5.709429057094284
+    },
+    "static_arena_30_units_2_monitors": {
+      "main": {
+        "samples": [
+          0.043,
+          0.042736,
+          0.022803
+        ],
+        "median": 0.042736,
+        "min": 0.022803,
+        "max": 0.043
+      },
+      "candidate": {
+        "samples": [
+          0.04324,
+          0.040929,
+          0.042075
+        ],
+        "median": 0.042075,
+        "min": 0.040929,
+        "max": 0.04324
+      },
+      "medianChangePercent": -1.546705353800082
+    }
+  }
+}
