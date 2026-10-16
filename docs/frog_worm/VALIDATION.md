@@ -5,7 +5,7 @@ Baseline: `6e85dc77553bd17422deeb9cb51258cefda06fe5`. Host runtimes Lua5.2.4 /5.
 | Evidence | Result |
 |---|---|
 | Complete Lua suite | **50 suites ×2 runtimes =100 passed**,0 failed; [per-run results](regressions.json) |
-| New mechanics | **41 actual-engine cases per runtime**, with both owners and multiple supported `dt` values inside timing/pull/cadence cases |
+| New mechanics | **43 actual-engine cases per runtime**, with both owners and multiple supported `dt` values inside timing/pull/cadence cases |
 | New live rendering | **25,267 assertions per runtime**;54 pose/view/size cases plus a real gameplay state |
 | Full new-card match parity | **262 checks per runtime**; two owner-side live drivers, equivalent headless runs and deterministic replays |
 | Syntax | All114 Lua files parsed under both runtimes, including the future LÖVE metadata |
@@ -15,7 +15,7 @@ Baseline: `6e85dc77553bd17422deeb9cb51258cefda06fe5`. Host runtimes Lua5.2.4 /5.
 
 ## Functional coverage
 
-Frog: zero-damage hook → melee, exact destination/range, all heavy unit sizes, stationary Bank lifetime/income preserved, buildings/air/water/allies excluded, walkability sweep, immediate spatial indexing without a rebuild oracle, dead/out-of-range cancellation, independent attack progress and same-tick multi-Frog victim guard.
+Frog: zero-damage hook → melee, exact destination/range, all heavy unit sizes, stationary Bank lifetime/income preserved, buildings/air/water/allies excluded, walkability sweep, immediate spatial indexing without a rebuild oracle, dead/out-of-range cancellation, independent attack progress, ready follow-up against an already-running locked target, and same-tick multi-Frog victim guard.
 
 Worm:3E transaction and invalid-cast rejection; both arena halves and behind-tower positions; bridge versus river/border/finite coordinates; nonentity warning; no bite before2s; targetable and killable emergence; all relevant unit/building/tower classes and actual damage telemetry; once-only / expired opener; full Bank assassination through delayed deployment and removal of its income source; economy target priority and retained locks; bounded visible correction, last-instant cancellation, refund cap / accounting / hand-cycle preservation; staggered pending-list compaction and no duplicate spawn; result/rematch/lobby/dev-clear cleanup.
 

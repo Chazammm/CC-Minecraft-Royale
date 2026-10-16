@@ -21,7 +21,7 @@ Both are grounded, cannot attack flying/water-only targets, and have no new evol
 - All ground-unit sizes qualify, including Golem and Minoshroom. Current Villager / Emerald Bank are stationary **unit** entities and can be pulled too; their remaining lifetime and emerald source registration stay intact.
 - Pull up to **9.5** units, stopping at **2.5** units from the Frog. Sample the straight path every≤0.5 units and stop at the last walkable point. No perpendicular sliding or river teleport. Reindex the victim immediately in the spatial grid.
 - A victim can be pulled only once per combat tick, preventing same-tick multi-Frog chains. Resolution follows the existing deterministic, alternating combat traversal.
-- The hook deals **zero damage** and does not reset either unit's ordinary attack clock. The Frog keeps its lock and can perform a normal40-damage melee hit on a later update once in range and ready. A partial terrain-blocked pull does not grant ranged damage.
+- The hook deals **zero damage** and does not reset either unit's ordinary attack clock. The Frog keeps its lock and performs a normal40-damage melee hit as soon as it is in range and ready, including at hook completion. An unready attack waits for its remaining cooldown. A partial terrain-blocked pull does not grant ranged damage.
 - No aura, gameplay jump, permanent stun or pulling the Frog toward towers. Windup uses authoritative simulation time; tongue lines and the pose are cosmetic projections. Existing attack-rate modifiers also affect the hook cooldown through the shared modifier clock.
 
 ### Nether Worm: delayed arena-wide ambush
@@ -67,7 +67,7 @@ Finish/result, lobby/reset/rematch, tiebreaker and dev clear discard pending dep
 - `src/pixel_arena.lua`: real warning/owner cue beneath units, target-linked windup tongue and short release line. Existing final-canvas cache catches changes without per-unit image loads.
 - `src/render.lua`: both special mechanics appear in Unit Info. Collection/deck/save systems use the existing card registry; no save format change.
 - `install.lua`: all four additional installed Lua modules, including the shared mechanics suite. PNGs/host tools are not CC runtime inputs.
-- `mechanics_test.lua`:41 new actual-engine cases registered alongside the existing audit suites.
+- `mechanics_test.lua`:43 new actual-engine cases registered alongside the existing audit suites.
 
 ## Native art and future LÖVE
 

@@ -55,9 +55,11 @@ for _,ownerValue in ipairs({1,2}) do
     for _,dt in ipairs({.05,.1,.25}) do
         local s=sandbox();local f=own(s,'king_frog',25,110)
         local target=foe(s,'zombie',35,110,true);local hp=target.hp
+        f.attackCooldownLeft=2 -- isolate the zero-damage hook from its ordinary follow-up
         awaitHook(s,f,dt)
         near(target.hp,hp,'Hook damage');near(util.distance(f.x,f.y,target.x,target.y),2.5,'Hook reach')
         assert(f.lockedTargetId==target.id and f.tongueCooldownLeft>0)
+        f.attackCooldownLeft=0
         Game.update(s,dt);near(target.hp,hp-40,'Follow-up melee')
         Game.update(s,dt);near(target.hp,hp-40,'Extra free attack')
         assert(arena.isWalkable(target,target.x,target.y))
@@ -72,11 +74,22 @@ for _,ownerValue in ipairs({1,2}) do
         local s=sandbox();local f=own(s,'king_frog',25,110)
         local t=foe(s,id,35,110,id~='villager' and id~='evo:villager')
         local hp,boost,lifetime=t.hp,s.emeraldBoost[enemy],t.remainingLifetime
+        f.attackCooldownLeft=2
         awaitHook(s,f,.1);near(t.hp,hp)
         near(util.distance(f.x,f.y,t.x,t.y),2.5)
         near(s.emeraldBoost[enemy],boost,'Hook changed income')
         if lifetime then assert(t.remainingLifetime<lifetime and t.remainingLifetime>lifetime-1,'Hook renewed lifetime') end
     end
+ end)
+ add('moving_hook_melee'..suffix,'Ready melee hits a pulled running target before it can leave again',function()
+    local s=sandbox();local wolf=foe(s,'wolf',31,110)
+    local objective=own(s,'zombie',60,110,true)
+    local f=own(s,'king_frog',25,110);f.moveSpeed=0
+    wolf.targetId=objective.id;wolf.lockedTargetId=objective.id
+    awaitHook(s,f,.1)
+    near(wolf.hp,wolf.maxHp-40,'Ready post-hook melee missed moving victim')
+    assert(f.attackCooldownLeft>1,'Normal melee clock was not armed')
+    Game.update(s,.1);near(wolf.hp,wolf.maxHp-40,'Extra post-hook hit')
  end)
  add('hook_filters'..suffix,'Tongue excludes buildings, air, water and allies',function()
     for _,id in ipairs({'cannon','blaze','zombie'}) do

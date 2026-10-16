@@ -1713,8 +1713,14 @@ local function updateTongue(state,entity,target,distance,dt)
                     x2=oldX,y2=oldY,owner=entity.owner,ttl=.2,duration=.2}
             end
             emitSound(state,"minecraft:entity.frog.tongue",.5,1)
+            -- The zero-damage pull is complete. A ready ordinary melee hit
+            -- must not lose its opportunity to the victim's traversal order.
+            if (entity.attackCooldownLeft or 0)<=1e-9
+                and util.distanceSquared(entity.x,entity.y,victim.x,victim.y)<=entity.attackRange^2+1e-9 then
+                performAttack(state,entity,victim)
+            end
         end
-        -- Contact is resolved by the ordinary melee stage on a later update.
+        -- An unready/terrain-blocked melee waits for ordinary subsequent updates.
         return true
     end
     if target and distance>entity.attackRange+1e-9 and distance<=spec.range+1e-9
