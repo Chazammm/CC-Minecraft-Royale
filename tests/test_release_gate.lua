@@ -12,6 +12,19 @@ local policy = read("QUALITY_GATE.md")
 local workflow = read(".github/workflows/lua-ci.yml")
 local template = read(".github/pull_request_template.md")
 
+local function luaInCI(testPath, runtime)
+    if workflow:find(runtime .. " " .. testPath, 1, true) then return true end
+    if not testPath:match('^tests/test_[%w_]+%.lua$') then return false end
+    local body = workflow:match('\n%s*for test in tests/test_%*%.lua; do\n(.-)\n%s*done')
+    return body and body:find(runtime .. ' "$test"', 1, true) ~= nil
+end
+
+local function pythonInCI(testPath)
+    local name = testPath:match('^tests/(test_[%w_]+%.py)$')
+    return name and (workflow:find('python3 -m unittest discover -s tests -p ' .. name, 1, true)
+        or workflow:find("python3 -m unittest discover -s tests -p 'test_*.py'", 1, true))
+end
+
 local seen = {}
 local fixed, open = 0, 0
 for line in registry:gmatch("[^\r\n]+") do
@@ -28,11 +41,8 @@ for line in registry:gmatch("[^\r\n]+") do
             for testPath in line:gmatch("tests/[%w_]+%.[%w]+") do
                 local content = read(testPath)
                 assert(#content > 0, "Empty regression test: " .. testPath)
-                local pythonName = testPath:match("tests/(test_[%w_]+%.py)$")
-                assert(workflow:find("lua5.4 " .. testPath, 1, true)
-                    or workflow:find("lua5.2 " .. testPath, 1, true)
-                    or (pythonName and workflow:find(
-                        "python3 -m unittest discover -s tests -p " .. pythonName, 1, true)),
+                assert(luaInCI(testPath, 'lua5.4')
+                    or luaInCI(testPath, 'lua5.2') or pythonInCI(testPath),
                     id .. " regression not executed by CI: " .. testPath)
                 testCount = testCount + 1
             end
@@ -61,14 +71,13 @@ for _, testPath in ipairs({
     "tests/test_token_corrupt_active_fallback.lua",
     "tests/test_preset_recovery_matrix.lua",
 }) do
-    assert(workflow:find("lua5.2 " .. testPath, 1, true)
-        and workflow:find("lua5.4 " .. testPath, 1, true),
+    assert(luaInCI(testPath, 'lua5.2') and luaInCI(testPath, 'lua5.4'),
         "Deep-core diagnostic must run in BOTH Lua versions: " .. testPath)
 end
 
-assert(workflow:find("tests/test_audit_fixes_20261010.lua", 1, true),
+assert(luaInCI('tests/test_audit_fixes_20261010.lua', 'lua5.4'),
     "Third-audit tests must be in CI")
-assert(workflow:find("tests/test_release_gate.lua", 1, true),
+assert(luaInCI('tests/test_release_gate.lua', 'lua5.4'),
     "Release gate must be self-enforcing in CI")
 assert(policy:lower():find("hardware", 1, true)
     and policy:lower():find("reproducib", 1, true),

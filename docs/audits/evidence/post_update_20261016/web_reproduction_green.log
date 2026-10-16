@@ -1,0 +1,4 @@
+DECK_A|enderman,snow_golem,cannon,nether_portal,spider,iron_golem,king_frog,witch
+DECK_B|zombie,skeleton,slime,blaze,wolf,bat_swarm,evoker,endermite
+AFTER_GAME|true
+FINAL|result|winner=2|observer_failures=0

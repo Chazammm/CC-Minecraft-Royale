@@ -57,6 +57,7 @@ local entrypoints = {
     "compare.lua",
     "evo_compare.lua",
     "mechanics_test.lua",
+    "audit_matches.lua",
     "report_sync.lua",
 }
 
@@ -74,15 +75,14 @@ local function scan(path)
     for quote, moduleName in body:gmatch([=[require%s*%(%s*(["'])(.-)%1%s*%)]=]) do
         local requiredPath = modulePath(moduleName)
         local handle = io.open(requiredPath, "r")
-        if handle then
-            handle:close()
-            assert(
-                managed[requiredPath],
-                path .. " requires " .. requiredPath
-                    .. " but install.lua does not ship it"
-            )
-            scan(requiredPath)
-        end
+        assert(handle, path .. " requires missing module " .. requiredPath)
+        handle:close()
+        assert(
+            managed[requiredPath],
+            path .. " requires " .. requiredPath
+                .. " but install.lua does not ship it"
+        )
+        scan(requiredPath)
     end
 end
 

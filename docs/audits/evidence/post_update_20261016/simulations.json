@@ -1,0 +1,38 @@
+[
+  {
+    "scope": "candidate",
+    "revision": "5b6b89264e1a7591b2bc5a9a9e639baf28f25706",
+    "lua": "5.4",
+    "command": [
+      "/workspace/scratch/bin/lua5.4",
+      "scripts/audit_cli_host.lua",
+      "audit_matches.lua",
+      "/workspace/CC-Royale-audit/docs/audits/evidence/post_update_20261016/01_candidate_5.4_audit_matches_100_20261016.txt",
+      "5b6b89264e1a7591b2bc5a9a9e639baf28f25706",
+      "100",
+      "20261016"
+    ],
+    "seconds": 30.437,
+    "exit": 0,
+    "log": "01_candidate_5.4_audit_matches_100_20261016.log",
+    "report": null
+  },
+  {
+    "scope": "candidate",
+    "revision": "5b6b89264e1a7591b2bc5a9a9e639baf28f25706",
+    "lua": "5.4",
+    "command": [
+      "/workspace/scratch/bin/lua5.4",
+      "scripts/audit_cli_host.lua",
+      "audit_matches.lua",
+      "/workspace/CC-Royale-audit/docs/audits/evidence/post_update_20261016/02_candidate_5.4_audit_matches_500_20261016.txt",
+      "5b6b89264e1a7591b2bc5a9a9e639baf28f25706",
+      "500",
+      "20261016"
+    ],
+    "seconds": 132.507,
+    "exit": 1,
+    "log": "02_candidate_5.4_audit_matches_500_20261016.log",
+    "report": null
+  }
+]

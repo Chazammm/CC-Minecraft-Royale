@@ -1,0 +1,4 @@
+SIDE_PAIR_DIFFERENCE|pair=281|mode=normal|first_winner=2|swapped_winner=2|first_s=303.2000|swapped_s=300.6000
+SIDE_DECK_A|zombie,nether_portal,ravager_rider,snow_golem,bat_swarm,falling_anvil,pillager_outpost,wolf
+SIDE_DECK_B|endermite,skeleton,wither_skeleton,arrows,enderman,king_frog,spider,blaze
+SIDE_PAIRS|seed=20261016|pairs=500|outcome_mismatches=1

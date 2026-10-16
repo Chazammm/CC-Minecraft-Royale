@@ -1,0 +1,22 @@
+[
+  {
+    "path": "reports/latest/balance_results.txt",
+    "bytes": 3238,
+    "revision": "7ec97e417279ea7ae6d9b497eddd174004cb2264"
+  },
+  {
+    "path": "reports/latest/comparison_results.txt",
+    "bytes": 2500,
+    "revision": "7ec97e417279ea7ae6d9b497eddd174004cb2264"
+  },
+  {
+    "path": "reports/latest/evolution_results.txt",
+    "bytes": 2583,
+    "revision": "7ec97e417279ea7ae6d9b497eddd174004cb2264"
+  },
+  {
+    "path": "reports/latest/mechanics_report.txt",
+    "bytes": 16606,
+    "revision": "8ee474a700718adcca4bdad219f0e39e927be8cf"
+  }
+]

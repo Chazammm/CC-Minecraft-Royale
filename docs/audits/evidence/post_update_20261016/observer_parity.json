@@ -1,0 +1,38 @@
+[
+  {
+    "lua": "5.2",
+    "command": [
+      "/workspace/scratch/bin/lua5.2",
+      "scripts/audit_cli_host.lua",
+      "simulate.lua",
+      "/workspace/CC-Royale-audit/docs/audits/evidence/post_update_20261016/unobserved100_5.2.txt",
+      "259da467f26025bf816307d5ab1539257b6236b2",
+      "100",
+      "mixed",
+      "20261016"
+    ],
+    "exit": 0,
+    "seconds": 51.33,
+    "report": "unobserved100_5.2.txt",
+    "log": "unobserved100_5.2.log",
+    "identicalToObservedReport": true
+  },
+  {
+    "lua": "5.4",
+    "command": [
+      "/workspace/scratch/bin/lua5.4",
+      "scripts/audit_cli_host.lua",
+      "simulate.lua",
+      "/workspace/CC-Royale-audit/docs/audits/evidence/post_update_20261016/unobserved100_5.4.txt",
+      "259da467f26025bf816307d5ab1539257b6236b2",
+      "100",
+      "mixed",
+      "20261016"
+    ],
+    "exit": 0,
+    "seconds": 38.002,
+    "report": "unobserved100_5.4.txt",
+    "log": "unobserved100_5.4.log",
+    "identicalToObservedReport": true
+  }
+]

@@ -1,0 +1,1993 @@
+{
+  "mainRevision": "6e85dc77553bd17422deeb9cb51258cefda06fe5",
+  "candidateRevision": "5b6b89264e1a7591b2bc5a9a9e639baf28f25706",
+  "comparisonRevision": "4490cbd",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 153,
+      "sha256": "b02418a0b61ba27809a20d3eed88eb36a4fff0cc2375fc047a01fa39b74f816c"
+    },
+    {
+      "path": ".github/pull_request_template.md",
+      "bytes": 881,
+      "sha256": "a3c2c6fea92f1d0075091f464c26b06b415e7c0db7520385745339eba0e9aa6d"
+    },
+    {
+      "path": ".github/workflows/frog-worm.yml",
+      "bytes": 1245,
+      "sha256": "2b5a1843e4f23258bd15d834df126e066e7665b56f0015bd8b484efd47052d1f"
+    },
+    {
+      "path": ".github/workflows/lua-ci.yml",
+      "bytes": 8699,
+      "sha256": "f4c6837ab22cc6d8f9d963f18af3002dee5787b9fc6f07844f68e70968334002"
+    },
+    {
+      "path": ".github/workflows/phase1-assets.yml",
+      "bytes": 1451,
+      "sha256": "9a22b5b0a2cc10b8ddcaa36e6ac9967261af59a7ef74300b23f5a8ea9b378c3f"
+    },
+    {
+      "path": ".github/workflows/report-retention.yml",
+      "bytes": 2291,
+      "sha256": "2f899f961a2c0648dedaeb0292a998ad28cec2bb7abcc93915b55288e792c1d1"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 521,
+      "sha256": "b15e4f1dcc14952fce37efd87d8d15ed971e883707b503cfc255d99f3da2ead8"
+    },
+    {
+      "path": "PROJECT_STRUCTURE.md",
+      "bytes": 7477,
+      "sha256": "db80242d8b8531b95d8d7047ed0cbb735611c75a5a60e7ed077b40b5d081af8c"
+    },
+    {
+      "path": "QUALITY_GATE.md",
+      "bytes": 4345,
+      "sha256": "dc2f4ef7cf83f0517a3094b61621ef1d02b10f3c46b2bd7037cb14b621e66f91"
+    },
+    {
+      "path": "README.md",
+      "bytes": 27507,
+      "sha256": "4d222dc8675fbe7662a1e0ca34b6150121de8f9874f10cf8c84587d86ed662ab"
+    },
+    {
+      "path": "TEST_PLAN.md",
+      "bytes": 8584,
+      "sha256": "a6635faf7f8aac29c0ec2f8bb7d8c04597ff0a67c177479e970d38d840ef1b05"
+    },
+    {
+      "path": "admin.lua",
+      "bytes": 7279,
+      "sha256": "d40aad16f5f13775b951f92b894c8948371837d787124b6c4a554db97b05b712"
+    },
+    {
+      "path": "assets/README.txt",
+      "bytes": 960,
+      "sha256": "b853dc1d7ddc778285d9ce40a0633cfb18704aca3e87e22cbc2557d2f2c68ce9"
+    },
+    {
+      "path": "assets/arena/after.png",
+      "bytes": 11610,
+      "sha256": "75fd83bce786ff2d4290feddc297b469bf7e46e3ae9ea9a01c29a61729a56522"
+    },
+    {
+      "path": "assets/arena/before-after.png",
+      "bytes": 15654,
+      "sha256": "6a9ea1a26a1a54671c044f0460f9b90e92f345faec8dda7f9df2e02766a378b3"
+    },
+    {
+      "path": "assets/arena/before.png",
+      "bytes": 11204,
+      "sha256": "c62c45b42e17a23a4f60fa7d740e5bb5e401a214f53d7fe35044a0e36e2eb790"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/.gitignore",
+      "bytes": 23,
+      "sha256": "6feaded4e28ea86e001a6751b4e3d960e8b7c31b9616ff9936b79297086e809b"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/BALANCE.md",
+      "bytes": 5798,
+      "sha256": "ffc84e010f3f66890ee3667859de0e73dd4b9527b23647921f07790c6ee310d1"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/BALANCE_PROPOSALS.json",
+      "bytes": 1646,
+      "sha256": "bc6627f2f43115be065203fe06983fe454860e2c6afc7d1c805e16a38cda8304"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/FILE_LIST.md",
+      "bytes": 1957,
+      "sha256": "b43abc398f99bcd4223d926835520553bd844fef14b4a65fbe0e439c06ee3784"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/MANIFEST.json",
+      "bytes": 7890,
+      "sha256": "becdaef371ddee2ac4b695c0f3b88693d09d4fedfd5da26ab9e4a4a709063f9c"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/PHASE2_PLAN.md",
+      "bytes": 9735,
+      "sha256": "12b2d4a8d06303120bb1471ee8956423d044468a8bff45149183a40b37c97f1b"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/README.md",
+      "bytes": 5730,
+      "sha256": "0397d515caf89b50aea99370e89daede9138ed442653ef7c3b41aaa602d99309"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/VALIDATION.md",
+      "bytes": 3963,
+      "sha256": "10a54fb15343f42b164603557ded2055ae3afe3b34eaf3dbe535ffcc31076c0b"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/effects/baby_ender_dragon.lua",
+      "bytes": 1806,
+      "sha256": "4097025b6c7cab2cde3fbcee09b793dcb763444b882ce3c86dabe8b11008b071"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/effects/hero_spider.lua",
+      "bytes": 2016,
+      "sha256": "7aa3d1307b993e78725fd845ce6118464eaec3bb2c4995db493af3a7efc0fb60"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/effects/minoshroom.lua",
+      "bytes": 1155,
+      "sha256": "0781bfac8d5cd89393d7f4db817aed040893948de1f74c95414033ec862add4c"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/effects/ravager_rider.lua",
+      "bytes": 1582,
+      "sha256": "8f591e32788e1fb3e3fe275d4fa92f93b67bbd0480fe315cacbe5116d50b8c71"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/evidence/assets_lua52.json",
+      "bytes": 236,
+      "sha256": "5a4f048a9d6ec7aaa2bed8e68793f918033b649c111373095eb5f9ebaf58c162"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/evidence/assets_lua54.json",
+      "bytes": 236,
+      "sha256": "5a4f048a9d6ec7aaa2bed8e68793f918033b649c111373095eb5f9ebaf58c162"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/evidence/baseline_guard.json",
+      "bytes": 14429,
+      "sha256": "88fd195b03f418046c4ad835e2ede45801a1751a47006bf53c1013f69ab4adce"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/evidence/baseline_regressions.json",
+      "bytes": 30615,
+      "sha256": "d7e36aff20afce723881d406883c7a8d76e3da32540a65e8b5264f5f55c8e7bf"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/evidence/captures.json",
+      "bytes": 50249,
+      "sha256": "6c2c966c17766a392807b257a08d608f282382b6dba168a09f48537efad430fb"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/evidence/existing_regressions.json",
+      "bytes": 30617,
+      "sha256": "068ce26b89ecde4cdc87ec841194edae56705c10c3eeae9fc8cbae09db1135ae"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/evidence/preview_validation.json",
+      "bytes": 211,
+      "sha256": "f831a4bc0eb384011c4e91ffc5321fbffe4c23dd50e81d7ace67ae6321496c82"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/atlas_layout.json",
+      "bytes": 4095,
+      "sha256": "9e00683c7cbcc48c63b5391884328a6e8dd57a6c46fbd7e499fd43985d0ba07d"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/baby_ender_dragon_atlas.png",
+      "bytes": 962,
+      "sha256": "28acf3d2d102d030a9fd875871d937ac30a8240b5e403f4aec9983c58d428883"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/baby_ender_dragon_attack.gif",
+      "bytes": 31436,
+      "sha256": "a17fda8c7080258dbdcc76a574b7c0c5eecbdad5466da6e45d248548121a9a88"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/baby_ender_dragon_fly.gif",
+      "bytes": 30481,
+      "sha256": "2812477e3d318d8a389a10cd30bebb33890cb4a90d9d5afe27d5f469a6eec7a4"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/baby_ender_dragon_set.png",
+      "bytes": 30738,
+      "sha256": "1dd023a7b10ab022898b03948800378bc264698371037c19e717bc9af066a12e"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/hero_spider_atlas.png",
+      "bytes": 741,
+      "sha256": "b5ef402c324a79508a4035584f83ea27b71cc05bdc39c0a33e6c6bbfe2a1b468"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/hero_spider_melee.gif",
+      "bytes": 20393,
+      "sha256": "887a83a8979c89d17b0d339dd00a6edbfa33bf652f36b1c05f388276477e6913"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/hero_spider_set.png",
+      "bytes": 29546,
+      "sha256": "0e00522ba5f2350df0eddf5df6e69660540cfaf415e51d3f3e09b34c47a8248a"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/hero_spider_walk.gif",
+      "bytes": 27179,
+      "sha256": "50ab664d4c0d882daefd33ffd93cef704917af87d3cf5f2ebb93f6c670f2b54a"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/hero_spider_web.gif",
+      "bytes": 27246,
+      "sha256": "e272a337663bd454a5a5797b41df7cf23cba878483fbdf1f202d7422e3d0775b"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/minoshroom_atlas.png",
+      "bytes": 771,
+      "sha256": "45f8716f08e52aef445f7429f45578d77b51f38b7cba0f0acad58e224645d566"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/minoshroom_attack.gif",
+      "bytes": 39904,
+      "sha256": "c67b9b32f1be799cf6610aeca716f0f1df11ff25a26f1f2f354bc9b6121d3920"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/minoshroom_set.png",
+      "bytes": 28424,
+      "sha256": "239a68b489f29672ad576e708bb80cee1cdf95df2b77ea35250938eb79836c6d"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/minoshroom_walk.gif",
+      "bytes": 32039,
+      "sha256": "e57e037069342b3a45ce222fe0a3c5f1bc579256a9d386244931619aef7fc44b"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/monitor_roster.png",
+      "bytes": 29105,
+      "sha256": "1f7cf3d3b8080cb9c2944896dad3e585a904168ce9dd7557b6f6557a009e0d1a"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/native_roster.png",
+      "bytes": 29902,
+      "sha256": "a687d4202e19ed3b304e9a0d9ab145431e54f846cb4dfbe9d488361a56c762b4"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_atlas.png",
+      "bytes": 829,
+      "sha256": "a96ca1f01e72525e9b460837a57cce0bc5e68b9063467b72a4add39a8e852bbc"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_building_attack.gif",
+      "bytes": 33109,
+      "sha256": "dc7362ee6b4e17a3948f83e17c5f482042ff602c695eeb4c2f271593b70ed9c8"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_combined.gif",
+      "bytes": 32290,
+      "sha256": "41f893333ae6ba6dae0dbea5c8232ad6e3e63ed561ef77f2974e692df5847960"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_rider_shot.gif",
+      "bytes": 32163,
+      "sha256": "45d2d85b4580c5773b67a8619b54b69dc94d57971ec0c8c3c6dada0e9fed6a31"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_set.png",
+      "bytes": 29841,
+      "sha256": "c27d3887cc46e2f5109333b6d4bb55fe981b3da573ad97a6d602be0ce5eb93b2"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/previews/ravager_rider_walk.gif",
+      "bytes": 31200,
+      "sha256": "e8f21cd344c9bcaa7533647b3633f82341eedd017c16afebaf405aa9642f542a"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/sprites/baby_ender_dragon.lua",
+      "bytes": 4979,
+      "sha256": "54660eca76b71439d3a6250f5c01041feabb62b79442ba9ee57f3ce562af4590"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/sprites/hero_spider.lua",
+      "bytes": 9012,
+      "sha256": "8aff08fdcb81050b38860d4d25ea9ca78be70064469d56812d5827904f2e3dea"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/sprites/minoshroom.lua",
+      "bytes": 6198,
+      "sha256": "bd19048dad7a6445dab2e1e5cb3d45e98df19baa27deb1c2b676db8438f4d315"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/sprites/ravager_rider.lua",
+      "bytes": 8608,
+      "sha256": "7f33e8c7917cf13edb35ebb9bc0897a82f85ab938b70c967206d68a940d0f6b0"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/tools/balance.py",
+      "bytes": 2018,
+      "sha256": "88c7cd31a3adb7e646861fa91c7a1fabc51bdd00b784d867a7e1d4a8276c3b23"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/tools/build_assets.py",
+      "bytes": 12077,
+      "sha256": "2d777a0c67eeec59120ad75a07c11f6670cb43da0f9179c8a4b81030247d518b"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/tools/capture.lua",
+      "bytes": 1953,
+      "sha256": "16154cfb87aa5da001aafb66dad62365dc04dce4badaa9d7bd81c3fec2249029"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/tools/compare_captures.py",
+      "bytes": 1069,
+      "sha256": "6b6aa66a4269a8a7045a83472e35d5abe88f527db0adf1499f77c0b86f32b218"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/tools/harness.lua",
+      "bytes": 7058,
+      "sha256": "b8b791f9492f0fee25097ff0997b43bdc939fd987fa96ec43e753c06907f1d5a"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/tools/preview.py",
+      "bytes": 6884,
+      "sha256": "a2153883eb3d7bb42355020b25c559c56a196bb954e471cf2a6fb38a87a41b47"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/tools/test_assets.lua",
+      "bytes": 7824,
+      "sha256": "6d68e28069605e88d8c480131776fd771100644939741f7b08caa46946097806"
+    },
+    {
+      "path": "assets/proposed/four_mobs_phase1/tools/validate_previews.py",
+      "bytes": 4442,
+      "sha256": "d55ab3bf72e20a7fe78fe39d9c463786c9fcff1c38f9e6834d0b29dcef799029"
+    },
+    {
+      "path": "assets/sprites/approved-model-revamp-1.webp",
+      "bytes": 609000,
+      "sha256": "886dd1ebe29a5109ebc02cfc33036c120ff28c351d06053a26ec2842358f3184"
+    },
+    {
+      "path": "assets/sprites/approved-model-revamp-2.webp",
+      "bytes": 452154,
+      "sha256": "655960ff08b33352abce7d0b45f70d83334b9de48a8ffcafd0a9e3d9df3ccc11"
+    },
+    {
+      "path": "assets/sprites/frog_worm/MANIFEST.json",
+      "bytes": 707,
+      "sha256": "188b04e1c1e3816c152168ce2e0a710f395ab3cdf0cebd08da30bba99029854f"
+    },
+    {
+      "path": "assets/sprites/frog_worm/README.md",
+      "bytes": 2469,
+      "sha256": "508e3d09016bb669d05a80dd5d4593afba549b690259d6c8d7cb5c09159267de"
+    },
+    {
+      "path": "assets/sprites/frog_worm/evidence/capture52.json",
+      "bytes": 22267,
+      "sha256": "5697df5f7a1852109eb681d5f7b56870af13fe500ea169e9c7a40f5b8d1cd313"
+    },
+    {
+      "path": "assets/sprites/frog_worm/evidence/capture54.json",
+      "bytes": 22267,
+      "sha256": "5697df5f7a1852109eb681d5f7b56870af13fe500ea169e9c7a40f5b8d1cd313"
+    },
+    {
+      "path": "assets/sprites/frog_worm/love2d/index.lua",
+      "bytes": 296,
+      "sha256": "504b7e9f73792f3a2c9c634575b0e3a56cb9b7e15419d7e6acb55b8edfe825e0"
+    },
+    {
+      "path": "assets/sprites/frog_worm/love2d/king_frog.png",
+      "bytes": 15281,
+      "sha256": "4b21072bd91b808ebe2f8ac42074f7ed59195d128d41f74ae4c69dfb8d81abf9"
+    },
+    {
+      "path": "assets/sprites/frog_worm/love2d/nether_worm.png",
+      "bytes": 32709,
+      "sha256": "41d01475833de12222a86a75d205c0ac1381f47969cd8ec9d616d335e5130b0f"
+    },
+    {
+      "path": "assets/sprites/frog_worm/previews/comparison.png",
+      "bytes": 76153,
+      "sha256": "f4aeb31196365c9a4fb8acb35774a0040cd96dd6670072f41fb78f8d966f551d"
+    },
+    {
+      "path": "assets/sprites/frog_worm/previews/gameplay_1x.png",
+      "bytes": 1008,
+      "sha256": "91cd65bc9d88f6d9bca0d7ae25f958eeca6abe83648764e68ecfc4923381b450"
+    },
+    {
+      "path": "assets/sprites/frog_worm/previews/gameplay_6x.png",
+      "bytes": 3439,
+      "sha256": "17bb98af8eb161ec7e0fb86f0216c77971f404463e38e10a5680ada6c7f150c9"
+    },
+    {
+      "path": "assets/sprites/frog_worm/previews/king_frog_native.png",
+      "bytes": 271,
+      "sha256": "8aed8e0c5141ef3f8c1256136992a53c2df43adac21c8b153aaff2c19ad83400"
+    },
+    {
+      "path": "assets/sprites/frog_worm/previews/king_frog_pixelbox.png",
+      "bytes": 275,
+      "sha256": "934571db446b2b4e17c5c721542f9d6c22afda7ccc4fd51f751642ba34119634"
+    },
+    {
+      "path": "assets/sprites/frog_worm/previews/nether_worm_native.png",
+      "bytes": 275,
+      "sha256": "a454b6545bc70c6d194e71e2265feaf0bd773e3d163603d4db3762b218325d68"
+    },
+    {
+      "path": "assets/sprites/frog_worm/previews/nether_worm_pixelbox.png",
+      "bytes": 300,
+      "sha256": "df5406b4a7237c28c5cec0a739f328f63aacd92594c99469fa8ec961c06744c8"
+    },
+    {
+      "path": "assets/sprites/frog_worm/previews/runtime_poses.png",
+      "bytes": 23209,
+      "sha256": "febaf4530a097c45e5fff3436c6ffe894c3727abc89fa64b7d1f7d4e85fcde6a"
+    },
+    {
+      "path": "assets/sprites/frog_worm/tools/previews.py",
+      "bytes": 5186,
+      "sha256": "64f8d0143e8cbf9629ee03d10ce15e6727afe8917336e73352bb2314dddace35"
+    },
+    {
+      "path": "assets/sprites/native-sprite-roster.png",
+      "bytes": 90071,
+      "sha256": "71e8ef7fbb122625d3fe612b4d086e3e3f3fb9ba7b077fc1c4f760756fcfd76f"
+    },
+    {
+      "path": "assets/sprites/pixelbox-sprite-roster.png",
+      "bytes": 79062,
+      "sha256": "7ee84ddb71df2b762bbaa5cd521301dd0acf109dfdb3c42f49bf0cb0d0f47f0f"
+    },
+    {
+      "path": "audit_matches.lua",
+      "bytes": 4158,
+      "sha256": "d61ecdafe20e38bc2f40baafabc3b1e00d364ec2c76c59b64a1519c3661fec26"
+    },
+    {
+      "path": "compare.lua",
+      "bytes": 17970,
+      "sha256": "4d481f7286bee5a69b90218e28c0456f6bb20520ee4467b91a5be9cb908e2de4"
+    },
+    {
+      "path": "config.lua",
+      "bytes": 9521,
+      "sha256": "b50779754c79a1c775ba92e3a0fb06059630901a6c6cc3bfe3c70241d31c032a"
+    },
+    {
+      "path": "diagnose.lua",
+      "bytes": 2770,
+      "sha256": "ab10fcf20f0563ba9f22fa1df0d28fcc077f3b27a92af7cf08e04f61cf8f3aa2"
+    },
+    {
+      "path": "docs/ARENA_SKIN.md",
+      "bytes": 2662,
+      "sha256": "4f9c07083fbb293baa10d5e0b5e8c0aca5dafa6427857996c3c0d94d2cd2b4f9"
+    },
+    {
+      "path": "docs/AUDIT_REGISTER.md",
+      "bytes": 40921,
+      "sha256": "74d9cd61ca2765b9631913dbaa9053b50d19fb5763dcfd522d7e06d885fd4870"
+    },
+    {
+      "path": "docs/DEEP_CORE_AUDIT_20261010.md",
+      "bytes": 7288,
+      "sha256": "d1a4ba37d06a62d728abfc02baaffb0541fcd8352b2363a6bea47f1b82c172ad"
+    },
+    {
+      "path": "docs/FOUR_MOBS_PHASE2_20261014.md",
+      "bytes": 7889,
+      "sha256": "c5f114519580fd29aca16faa696ec4cb3b69bf416a0e0dc1814f68ed5287a4de"
+    },
+    {
+      "path": "docs/ITERATIVE_AUDIT_20261010.md",
+      "bytes": 4189,
+      "sha256": "bf8c9450a96d3492ac0aebbe0faed7995987c4cc2ca31971b2a6226a400f048b"
+    },
+    {
+      "path": "docs/PERFORMANCE_BASELINE_20261010.md",
+      "bytes": 4257,
+      "sha256": "6cebc3c83fa49963edddab88cd178afa328a61c73c568c85e129708ad60cde80"
+    },
+    {
+      "path": "docs/PERFORMANCE_OPTIMIZATION_20261010.md",
+      "bytes": 5491,
+      "sha256": "ecf87ce1ab28872c1de7ce90d735ef1baf6caf8d07c2f293c1faebbf6ab86d00"
+    },
+    {
+      "path": "docs/POST_AUDIT_VERIFICATION_20261010.md",
+      "bytes": 4414,
+      "sha256": "af26ecd749acb539431099996a717a151539321beb7ef2b19227466ce6d275dc"
+    },
+    {
+      "path": "docs/POST_RELEASE_RECHECK_20261010.md",
+      "bytes": 3569,
+      "sha256": "57f979fd029b3b274c5d3fe918bafc9e32c12f7f4d2b136d364042d07776246c"
+    },
+    {
+      "path": "docs/SPRITE_REVAMP.md",
+      "bytes": 2415,
+      "sha256": "0ac730a2b2aff71d8fdf4b7df53131981e256c3f9c8b0364f8a9f7e07ebcf7b1"
+    },
+    {
+      "path": "docs/SYSTEM_AUDIT_20261014.md",
+      "bytes": 19253,
+      "sha256": "ac3aebb37dfc8cffc12c7b4fe6b591859b274b0162c98deac83bcc7a25f1fbeb"
+    },
+    {
+      "path": "docs/SYSTEM_AUDIT_FILE_COVERAGE_20261014.json",
+      "bytes": 55063,
+      "sha256": "a868b8d458e3d69ac4782d32d8e44c44735869867ca62a57d6205983a2af20bd"
+    },
+    {
+      "path": "docs/TRANSACTION_INTEGRITY_AUDIT_20261010.md",
+      "bytes": 4330,
+      "sha256": "b9c2ad0142238542948f7e01e1332a642227db8fdc696ca6d80bd9c11623ea33"
+    },
+    {
+      "path": "docs/audit_20261014/baseline_simulate100.txt",
+      "bytes": 2595,
+      "sha256": "db027c099cd119c1ddea1d65a66b707cd9125ede5865874ffb0c997dee921ba5"
+    },
+    {
+      "path": "docs/audit_20261014/baseline_suites.json",
+      "bytes": 25712,
+      "sha256": "ca553edb8ad65b3d95667ea14a5a6ddc6f97f1ab1aa9116e61d5ae3800cf59c0"
+    },
+    {
+      "path": "docs/audit_20261014/clean_pass_suites.json",
+      "bytes": 30624,
+      "sha256": "f8373e67822690da4ce3f3d593ef6f744f2bc53f0fa19d23bf738f542e73c8a3"
+    },
+    {
+      "path": "docs/audit_20261014/compare10all.txt",
+      "bytes": 5234,
+      "sha256": "b849421b1499e26c63bb68c59e491cf25fbe8e9ea3dff7ecf75afc5171a54596"
+    },
+    {
+      "path": "docs/audit_20261014/evo10all.txt",
+      "bytes": 4892,
+      "sha256": "15b66187763c90fd2daf61c85088084020a21f8439562703ccb42d24ebb09870"
+    },
+    {
+      "path": "docs/audit_20261014/final_suites.json",
+      "bytes": 30621,
+      "sha256": "381a5642ee431cbb939ecd6e2b8b624bf6fc3d4fd4095eba3ae119cc5e3d249a"
+    },
+    {
+      "path": "docs/audit_20261014/invariants1000.txt",
+      "bytes": 2331,
+      "sha256": "413495d5f156c745a4f8937dc64a727d50ce9d2465041d26d14e116d45107f45"
+    },
+    {
+      "path": "docs/audit_20261014/invariants100_lua52.txt",
+      "bytes": 1316,
+      "sha256": "b13479a4de99f2d6dfca12cc6fed4906c2c23d5810cffd9f7901677b09a124ec"
+    },
+    {
+      "path": "docs/audit_20261014/invariants100_lua54.txt",
+      "bytes": 1316,
+      "sha256": "828c76fb50ba66ff4e2a6b9ae4bfdfec0931f64c11a1493a5c26e6639c1b9d90"
+    },
+    {
+      "path": "docs/audit_20261014/manifest.json",
+      "bytes": 5852,
+      "sha256": "ca730ce7a72fa1467103b2e4ed9c8917a5d502480406bbbf732dbd69b78cf727"
+    },
+    {
+      "path": "docs/audit_20261014/mechanics.txt",
+      "bytes": 17897,
+      "sha256": "845ebfcc169a224bff916fe25d2edc2e0d308debfaa60240ef3c3977d65a5c76"
+    },
+    {
+      "path": "docs/audit_20261014/red_before_fix.txt",
+      "bytes": 20010,
+      "sha256": "af8a8d62a2363cb6de6fb6d205c1be78bf7ece1aa6c84af48e495035adedb81c"
+    },
+    {
+      "path": "docs/audit_20261014/simulate100.txt",
+      "bytes": 2573,
+      "sha256": "3f3013e0f7a7a7916dcdb8bd99e1949a8a9871b698bbc2e0d091aa5aef6590a5"
+    },
+    {
+      "path": "docs/four_mobs_phase2_20261014/audit100.log",
+      "bytes": 1480,
+      "sha256": "56435d85e8cf38bb1946292f66faca5c0c93c77980c32e84ca34bb3c0e5cbf56"
+    },
+    {
+      "path": "docs/four_mobs_phase2_20261014/audit1000.log",
+      "bytes": 2497,
+      "sha256": "c6772421859162d519ac6ff53aca85ef952aee9e6ec2c9478cd0d16aaa712b80"
+    },
+    {
+      "path": "docs/four_mobs_phase2_20261014/audit100_lua54.log",
+      "bytes": 1480,
+      "sha256": "fc249e0b33b0f82a4cd694b7631c5f98d4ed792345c174b60cf7db227d43ee93"
+    },
+    {
+      "path": "docs/four_mobs_phase2_20261014/clean_suites.json",
+      "bytes": 34893,
+      "sha256": "7be75200657eac5a241c4370bc9a63211d8390dc1194c8e6eb1b298f16919798"
+    },
+    {
+      "path": "docs/four_mobs_phase2_20261014/dragon25.txt",
+      "bytes": 2216,
+      "sha256": "ace056401364e8676b40d9aaf9e073919ef93eb7fdc2a72f15cb2e615cf5b186"
+    },
+    {
+      "path": "docs/four_mobs_phase2_20261014/hero25.txt",
+      "bytes": 2379,
+      "sha256": "5f1048ec0570722169b4623dcd40d2fc89b6e38ca586973cc6cb12848dcbd923"
+    },
+    {
+      "path": "docs/four_mobs_phase2_20261014/live_arena.png",
+      "bytes": 20754,
+      "sha256": "53de9b6293aaede5a38a51e73f323f7f361add2077cc96a6d6054556ee92ea78"
+    },
+    {
+      "path": "docs/four_mobs_phase2_20261014/live_arena_captures.json",
+      "bytes": 23647,
+      "sha256": "2f22cdf1e96c3df13c0de4535dfd4bc35c411ce9dc08f8b5d51c13f0ebab9a9e"
+    },
+    {
+      "path": "docs/four_mobs_phase2_20261014/manifest.json",
+      "bytes": 12925,
+      "sha256": "10a7a9ccd519533ae19649bdf75fafeed8aa7e70d4825b7ea249b2af54aab7aa"
+    },
+    {
+      "path": "docs/four_mobs_phase2_20261014/mino25.txt",
+      "bytes": 2211,
+      "sha256": "9472541b36649c1b5294bc4a0c52207b506d49ae3db19451cc3e1af974befd15"
+    },
+    {
+      "path": "docs/four_mobs_phase2_20261014/mixed100.txt",
+      "bytes": 2835,
+      "sha256": "309a31762cc5b263208550c0c89dc3c792691a5b2659a6c94101d9dbc1c4f4cf"
+    },
+    {
+      "path": "docs/four_mobs_phase2_20261014/rider25.txt",
+      "bytes": 2218,
+      "sha256": "2d01353fc1b96f0642e9714fdf1ec02b9971dcd13bb7d5059070d5748faf58b2"
+    },
+    {
+      "path": "docs/four_mobs_phase2_20261014/runs.json",
+      "bytes": 884,
+      "sha256": "9b611a732f0b8ada07a7a77d1b5b5cec340c0b09f915c66852fface3144f8d19"
+    },
+    {
+      "path": "docs/frog_worm/IMPLEMENTATION.md",
+      "bytes": 10027,
+      "sha256": "54fcadf519bb396fed76ab255be6561fd926b007c68d05893702f95b9631521b"
+    },
+    {
+      "path": "docs/frog_worm/VALIDATION.md",
+      "bytes": 6054,
+      "sha256": "5b4dd7926706a9f813c92fe1b50fee722d1a770cd65b50cc369a998fd3695ddc"
+    },
+    {
+      "path": "docs/frog_worm/performance.json",
+      "bytes": 6502,
+      "sha256": "637b5d273357bb4ccb400b913b7e30456dfa7ccc9d70312462c39726bea02804"
+    },
+    {
+      "path": "docs/frog_worm/regressions.json",
+      "bytes": 31213,
+      "sha256": "1d565eb590a1a486fb416c967c307d85343202aeb9ed584d5801461dd12cd886"
+    },
+    {
+      "path": "evo_compare.lua",
+      "bytes": 17651,
+      "sha256": "026492214a39aae6e16844a604f16aee16f59ba35dc844c0d4be6553315c2589"
+    },
+    {
+      "path": "install.lua",
+      "bytes": 18409,
+      "sha256": "8027f8ea02d0f93da7486776006030fb3193453dcf0077e9d4c5f9d86a83de44"
+    },
+    {
+      "path": "lib/pixelbox_lite.lua",
+      "bytes": 13829,
+      "sha256": "e9923dc24ed6d968de668f42a3c324d0957778a709d93bc9190617c32889de99"
+    },
+    {
+      "path": "main.lua",
+      "bytes": 8654,
+      "sha256": "14a71e33cf9977fc151af54cdd5595b61b40fe38b610af4667f590ec2ff5092f"
+    },
+    {
+      "path": "mechanics_test.lua",
+      "bytes": 88677,
+      "sha256": "1da7ad1c1bda3be31ead1d23c291ad224ffcca902eec6fc128954d2b4768107d"
+    },
+    {
+      "path": "report_sync.lua",
+      "bytes": 2705,
+      "sha256": "bdec822cc0df78c8ef8dbedfa08605bf55a780f45e603e0fc8e8944c62dc7d70"
+    },
+    {
+      "path": "reports/README.md",
+      "bytes": 2134,
+      "sha256": "63dda122f0c491fab552efe87e88934a76b0eaec79df0c42ac6f5af0e9ebc29c"
+    },
+    {
+      "path": "reports/history/balance/1791543985878_balance_results.txt",
+      "bytes": 2991,
+      "sha256": "ca85b0c847e3149784976bdbb8b50688989578af7522b04a69c2574804b38f99"
+    },
+    {
+      "path": "reports/history/balance/1791551182365_balance_results.txt",
+      "bytes": 3041,
+      "sha256": "bfa2f05dc664aa52fe646aa1a4bc8105899c1202e3a9b073d1408b8a6dffae83"
+    },
+    {
+      "path": "reports/history/balance/1791552899072_balance_results.txt",
+      "bytes": 3041,
+      "sha256": "15a1e5e926cfaddef26931b9156e8ae13828c4d68f573b71366758e7a2a7219e"
+    },
+    {
+      "path": "reports/history/balance/1791556345911_balance_results.txt",
+      "bytes": 3041,
+      "sha256": "e093b32980a66acc41154dd6aeb2ef1a745275db6b842ae77e5d6feb7d54f35b"
+    },
+    {
+      "path": "reports/history/balance/1791557304789_balance_results.txt",
+      "bytes": 3041,
+      "sha256": "ff3dbca79421ba4a54471ef73a514f78bf1058b641f4fbf08d4b34208ca14970"
+    },
+    {
+      "path": "reports/history/balance/1791561796886_balance_results.txt",
+      "bytes": 3041,
+      "sha256": "b7fefbafd5728229489c211b764399c2d8da75bd2750f03612bbd2e504e0c5a3"
+    },
+    {
+      "path": "reports/history/balance/1791565770520_balance_results.txt",
+      "bytes": 3041,
+      "sha256": "9e41745c53fd8e482a45c75706b353502070b1b59e4bd6face78f2cd96cb62bd"
+    },
+    {
+      "path": "reports/history/balance/1791567185493_balance_results.txt",
+      "bytes": 3041,
+      "sha256": "4bce54e9ec1d141a9fec16182c29da83bb32bb2f1c98099a2feffbce954ac41d"
+    },
+    {
+      "path": "reports/history/balance/1791569041508_balance_results.txt",
+      "bytes": 3041,
+      "sha256": "4c72e29d3830fff73c036d6f47a0bbcf5b1ec6f0324f4e39b058d4ddd25c4fef"
+    },
+    {
+      "path": "reports/history/balance/1791649407928_balance_results.txt",
+      "bytes": 3238,
+      "sha256": "9ff06641755c275782b8f105743bed7c277c1284d1f4fb09556fb706944855e8"
+    },
+    {
+      "path": "reports/history/comparison/1791456064527_comparison_results.txt",
+      "bytes": 5037,
+      "sha256": "27c1a884ea8783e56b603e9d07fd03fb0ce3d015ec9691974802c835fa0af16a"
+    },
+    {
+      "path": "reports/history/comparison/1791477024239_comparison_results.txt",
+      "bytes": 2315,
+      "sha256": "e26811f5fded81f8ac5d4e13e5043d8faec40df7913b69fbce8f01368e39df8b"
+    },
+    {
+      "path": "reports/history/comparison/1791566665656_comparison_results.txt",
+      "bytes": 7561,
+      "sha256": "2b8390cc3de286f5d52b8a1566c50b5f4f21c9e5af6212de2153c8387f65f127"
+    },
+    {
+      "path": "reports/history/comparison/1791568655507_comparison_results.txt",
+      "bytes": 2331,
+      "sha256": "666f3a03b9edd2ffdf6b971dbafd0c7c7c72dc000eac02b3326bf1e76f63c353"
+    },
+    {
+      "path": "reports/history/comparison/1791649859380_comparison_results.txt",
+      "bytes": 2512,
+      "sha256": "0f9a03a64f7b0e3998b0052f86a891674de1f2d7301ea3d036ae4f78ebb5d48e"
+    },
+    {
+      "path": "reports/history/comparison/1791650871746_comparison_results.txt",
+      "bytes": 2500,
+      "sha256": "556d923a4a796d93ff9fc21f03e80650a7f5ff3b3bb92671f2fc07fab09c05ff"
+    },
+    {
+      "path": "reports/history/evolution/1791462347645_evolution_results.txt",
+      "bytes": 3682,
+      "sha256": "e0a3ec846b76d18b913c575bc8cbb2905eb8acbdf3ff1130c17e6f9216a8c02f"
+    },
+    {
+      "path": "reports/history/evolution/1791465208444_evolution_results.txt",
+      "bytes": 5208,
+      "sha256": "7cac3ce239861c86fa4fa7482b674b5fdb89787d5ba00d9c9808710e6dc802c5"
+    },
+    {
+      "path": "reports/history/evolution/1791470549203_evolution_results.txt",
+      "bytes": 6466,
+      "sha256": "0a4f73d01b1e351f28c8c3e0c60a3957d2ca95fff95e5139f8c9481e991f91b4"
+    },
+    {
+      "path": "reports/history/evolution/1791475486644_evolution_results.txt",
+      "bytes": 6476,
+      "sha256": "5cd1461227041485017065f8a5cbbd1d8cf63e61088dc9367c2630ff77ffaa57"
+    },
+    {
+      "path": "reports/history/evolution/1791566990007_evolution_results.txt",
+      "bytes": 6886,
+      "sha256": "1cd01d41d836009e54e0cf51d65d63b99e246793ebe4aab493661bfce8255319"
+    },
+    {
+      "path": "reports/history/evolution/1791568729440_evolution_results.txt",
+      "bytes": 2494,
+      "sha256": "57bcfcc8e1f90b7c5b010f970556e61e6ac91a584cc067b418c1b3609e4f97f8"
+    },
+    {
+      "path": "reports/history/evolution/1791651421418_evolution_results.txt",
+      "bytes": 2583,
+      "sha256": "e2b7da1e4229725ac3aefc035faeaa2a49d1cf39c976fe7583b8ce004a1ded3a"
+    },
+    {
+      "path": "reports/history/mechanics/1791540246600_mechanics_report.txt",
+      "bytes": 15248,
+      "sha256": "c818b941b3b4f820874f73d818f3ce6a6305e27c7b3fc93dd6a5b79e8a266b71"
+    },
+    {
+      "path": "reports/history/mechanics/1791542522406_mechanics_report.txt",
+      "bytes": 16500,
+      "sha256": "1e2a59df2fc430dbceed3a6fd54128684dec1269e3b9a08557fafeb991834940"
+    },
+    {
+      "path": "reports/history/mechanics/1791560708850_mechanics_report.txt",
+      "bytes": 16500,
+      "sha256": "2fbffba696783eeccf5370af6748c27046505f754dea2d3374fdf41c1b0e0ea3"
+    },
+    {
+      "path": "reports/history/mechanics/1791561046633_mechanics_report.txt",
+      "bytes": 16556,
+      "sha256": "651349758290332c139fab8c4525f4fa62064b828c206c8c2b93ca598d28dfe3"
+    },
+    {
+      "path": "reports/history/mechanics/1791571553014_mechanics_report.txt",
+      "bytes": 16556,
+      "sha256": "cb62495817e21c40399ebe9b42c7709891629dc15641128cf75851e03c51664d"
+    },
+    {
+      "path": "reports/history/mechanics/1791643852032_mechanics_report.txt",
+      "bytes": 16610,
+      "sha256": "61a4561cfe4f17284b8435106f40f26b62b9d54dc07197f82939c97c1d83bf75"
+    },
+    {
+      "path": "reports/history/mechanics/1791644344949_mechanics_report.txt",
+      "bytes": 16611,
+      "sha256": "d171e69613c81d3fa547ff54311591bc84af6679619af2fdc58a302307d16e4d"
+    },
+    {
+      "path": "reports/history/mechanics/1791649214688_mechanics_report.txt",
+      "bytes": 16611,
+      "sha256": "19b27a9e83291e757baad4a634a64825f86399dc3bb237110b7b2d79f764d095"
+    },
+    {
+      "path": "reports/history/mechanics/1791654329913_mechanics_report.txt",
+      "bytes": 16611,
+      "sha256": "6be3700c567514e3e8703fdda805c5caf46034498dec5bb48044832f37b5f098"
+    },
+    {
+      "path": "reports/history/mechanics/1791734428147_mechanics_report.txt",
+      "bytes": 16606,
+      "sha256": "bb0883a04f02a6ff73d7df0fe405d5fb092bf23928171d64c5306cdd8ee50cc4"
+    },
+    {
+      "path": "reports/history_index.json",
+      "bytes": 10748,
+      "sha256": "ad2ff141edcf0d4cac9dbc18b3cee1eb27db783e5e4ba9bd70f544571492d711"
+    },
+    {
+      "path": "reports/latest/balance_results.txt",
+      "bytes": 3238,
+      "sha256": "9ff06641755c275782b8f105743bed7c277c1284d1f4fb09556fb706944855e8"
+    },
+    {
+      "path": "reports/latest/comparison_results.txt",
+      "bytes": 2500,
+      "sha256": "556d923a4a796d93ff9fc21f03e80650a7f5ff3b3bb92671f2fc07fab09c05ff"
+    },
+    {
+      "path": "reports/latest/evolution_results.txt",
+      "bytes": 2583,
+      "sha256": "e2b7da1e4229725ac3aefc035faeaa2a49d1cf39c976fe7583b8ce004a1ded3a"
+    },
+    {
+      "path": "reports/latest/mechanics_report.txt",
+      "bytes": 16606,
+      "sha256": "bb0883a04f02a6ff73d7df0fe405d5fb092bf23928171d64c5306cdd8ee50cc4"
+    },
+    {
+      "path": "reports/retention_pins.txt",
+      "bytes": 238,
+      "sha256": "fef409ac8f960610af78494688bdf75295a54174cba47dd251e480859edea54f"
+    },
+    {
+      "path": "scripts/audit_cli_host.lua",
+      "bytes": 1670,
+      "sha256": "2491a12b7b6e297178c67f6816890aea3889fda7899956bd0ca43e3ae0a37514"
+    },
+    {
+      "path": "scripts/prune_reports.py",
+      "bytes": 5042,
+      "sha256": "a04983ec1e1f31b5b5ade82e2be41814b950fb9931942c5c6d201d13d70c65c4"
+    },
+    {
+      "path": "simulate.lua",
+      "bytes": 14311,
+      "sha256": "31b8152b392341a8d74206867d09ddc584d0b19e47313add41e7f9fe3f25b0ec"
+    },
+    {
+      "path": "src/admin_render.lua",
+      "bytes": 7308,
+      "sha256": "401b936ee43f95b08f5c3f48c6075d2d168b77de86cbc8ba1685032e9218fc62"
+    },
+    {
+      "path": "src/arena.lua",
+      "bytes": 10917,
+      "sha256": "bbd913f8b7ba9e5d716e6b933cd42330664954fb4c93a0c801c0f70484e0e06a"
+    },
+    {
+      "path": "src/assets/custom_mobs/dispatch.lua",
+      "bytes": 1066,
+      "sha256": "5227c2dca7000cbde1a23833bc2814c036ce45bf57dd8e5bf68b8771b9740277"
+    },
+    {
+      "path": "src/assets/custom_mobs/frames.lua",
+      "bytes": 4462,
+      "sha256": "a3b4f380a66168d238e0cbd6493a3dd2a2681f4932846a6162af7981853da66a"
+    },
+    {
+      "path": "src/assets/four_mobs/effects/baby_ender_dragon.lua",
+      "bytes": 1750,
+      "sha256": "fa51bd7e467d6736e41606f253567680cbbb6a0d5e557ead6a53c4ed5dd6d0ee"
+    },
+    {
+      "path": "src/assets/four_mobs/effects/hero_spider.lua",
+      "bytes": 1960,
+      "sha256": "be597035d2cf49df3673703cdbc37c5f956a33656b50b1712632ab080b526b99"
+    },
+    {
+      "path": "src/assets/four_mobs/effects/minoshroom.lua",
+      "bytes": 1099,
+      "sha256": "ff316740d37d918fb1e067999b6a750c93ec948ca5b466c60850f69d9c8f4bda"
+    },
+    {
+      "path": "src/assets/four_mobs/effects/ravager_rider.lua",
+      "bytes": 1526,
+      "sha256": "51fffd40d3adba6cd8a228fb42003f72d3cdb7c6cf58d725574ac412fca1ca2d"
+    },
+    {
+      "path": "src/assets/four_mobs/sprites/baby_ender_dragon.lua",
+      "bytes": 4923,
+      "sha256": "13cc7bd1d2833dde36950b632663ebc1528c81159570dc46493dd74f0731806a"
+    },
+    {
+      "path": "src/assets/four_mobs/sprites/hero_spider.lua",
+      "bytes": 8956,
+      "sha256": "fddbb254659004a25e88bc9e849b27101d0378f8f1af86ba53bb18468ab58c93"
+    },
+    {
+      "path": "src/assets/four_mobs/sprites/minoshroom.lua",
+      "bytes": 6142,
+      "sha256": "671eb1d74c0a24645bf951fee17d7aab06ca3811073320a5c9a213d4cb75cd23"
+    },
+    {
+      "path": "src/assets/four_mobs/sprites/ravager_rider.lua",
+      "bytes": 8552,
+      "sha256": "eaa686d545a9213645b72ecf17ffe5aee47ecbb57f197cbcdadd395833f16225"
+    },
+    {
+      "path": "src/benchmark_utils.lua",
+      "bytes": 3315,
+      "sha256": "2ec55a5dd7d565d2dedf6cc56ed1554f67b482521935570b95af97f3fbd09e8b"
+    },
+    {
+      "path": "src/bot.lua",
+      "bytes": 60291,
+      "sha256": "6a60aacb53cfb25fadd6d89e96c09ccf1f4c5f73becfd5fefabc51196737fdad"
+    },
+    {
+      "path": "src/cards.lua",
+      "bytes": 65141,
+      "sha256": "5c1d1c8cfa662afcc8b1a6786411175951c4c56e0b4de5e844bb6adc6898a3f9"
+    },
+    {
+      "path": "src/combat_modifiers.lua",
+      "bytes": 1460,
+      "sha256": "4718dabf3d33fe33113b7dcfba5c085095eb282f7e16bfb45a2c7a86ad238dfb"
+    },
+    {
+      "path": "src/custom_mob_rules.lua",
+      "bytes": 1294,
+      "sha256": "d30b261865d8920f84f710f005b068eea23fb771676a03d2781ab9233dc9c263"
+    },
+    {
+      "path": "src/diagnostics.lua",
+      "bytes": 9068,
+      "sha256": "941a5cb865ee387a2dc5415877c4791e40158a49163f513205ba922e42b82b7b"
+    },
+    {
+      "path": "src/four_mob_mechanics.lua",
+      "bytes": 18769,
+      "sha256": "8c2f390eae6b15b996714e41dbc817589451449e16fc493f1ec5c523b4b1da63"
+    },
+    {
+      "path": "src/frog_worm_mechanics.lua",
+      "bytes": 19158,
+      "sha256": "4b04ea72b5efb25523dda481699b37c43ed8be90772266d3916d2abb92a4b03d"
+    },
+    {
+      "path": "src/game.lua",
+      "bytes": 146658,
+      "sha256": "2835c714ec407326057b6b9568285c2140bb436cb150fc8322916668f52f0e61"
+    },
+    {
+      "path": "src/hardware.lua",
+      "bytes": 5327,
+      "sha256": "fddb3da885489c13b960c9f5d521cd253959e699e901057d1dda56b7e5fcd7c0"
+    },
+    {
+      "path": "src/headless_match.lua",
+      "bytes": 5289,
+      "sha256": "af86e47794338a6e0931dadcb75d7735d8865784bc6dae20129b48252725c1ef"
+    },
+    {
+      "path": "src/mechanics_audit.lua",
+      "bytes": 11119,
+      "sha256": "136b1d31be301a0bedf67f01fd4724920cd99aa2b671cf0fc1098d40c4eccb94"
+    },
+    {
+      "path": "src/mob_assets.lua",
+      "bytes": 4420,
+      "sha256": "64380777fdb5b9102a77897e044c3e77c3bbfeb2644ec1eeafafa987b6830f79"
+    },
+    {
+      "path": "src/music.lua",
+      "bytes": 20802,
+      "sha256": "843b87beb325b38f56bf755cab26c029bd2a57870ccc6a3de9a4fb8760f0fb48"
+    },
+    {
+      "path": "src/music_manifest.lua",
+      "bytes": 3043,
+      "sha256": "2a393d236c3d9b4510027010994fa94cd5dbf0a4eb4c969c691c01927982975a"
+    },
+    {
+      "path": "src/pixel_arena.lua",
+      "bytes": 48704,
+      "sha256": "4979491380e3bb9271289858ea25f0fcb21bd56d359cdad3995f369304f13f11"
+    },
+    {
+      "path": "src/presets.lua",
+      "bytes": 8724,
+      "sha256": "5344e7da0a4d211f95098f9eb654a3712a5cb5ee4cd50ca0849a0863ed953c38"
+    },
+    {
+      "path": "src/render.lua",
+      "bytes": 51027,
+      "sha256": "0779f214e0df7255cd14d65aa159138ee74a820f28ed630451f5b14a34380cd1"
+    },
+    {
+      "path": "src/report_output.lua",
+      "bytes": 6208,
+      "sha256": "98a3d7271dbc35d9720b35324c83a91e077a77097aa892fe6cc0531070560f76"
+    },
+    {
+      "path": "src/report_sync.lua",
+      "bytes": 22752,
+      "sha256": "6914ca86d1dd3665fc42a27ace32555113f24dfbc2f12786c95f6d731c85d08d"
+    },
+    {
+      "path": "src/spatial.lua",
+      "bytes": 4611,
+      "sha256": "7f1e4184b0085b64c846349c5d190af8ecb0b5100b366407cab6f834ae900956"
+    },
+    {
+      "path": "src/ui_buffer.lua",
+      "bytes": 4600,
+      "sha256": "c74256003250f01c0d9869465b721703a1d4a80afe3ce067a49ca44e62a81328"
+    },
+    {
+      "path": "src/util.lua",
+      "bytes": 1451,
+      "sha256": "55a3d2b274fc2d792fcfd7622025fd7cd361078ee4733f800f7d1ee2b00f6138"
+    },
+    {
+      "path": "src/version.lua",
+      "bytes": 924,
+      "sha256": "4f4efac60fef6595e30e1cd9556039a007d2774b086c8dd1b6a085f503734402"
+    },
+    {
+      "path": "startup.lua",
+      "bytes": 619,
+      "sha256": "4cae32e1ad7e78671c4d8f0fb71022faf55a4755320cc63375f5870666c8d596"
+    },
+    {
+      "path": "tests/fixtures/four_mob_approved_pixels.lua",
+      "bytes": 10523,
+      "sha256": "d819ca447de927eb4e232b5595f8383cd797293625f1960d56c818fbdc42721d"
+    },
+    {
+      "path": "tests/performance_profile.lua",
+      "bytes": 9431,
+      "sha256": "746335d541b3d1579b6b3eccc8d6f26bcc3af831600429783a8aa2d9cf984d4c"
+    },
+    {
+      "path": "tests/test_anvil_grid_parity.lua",
+      "bytes": 2938,
+      "sha256": "7a11221d52df583220f4a86a04c24fe1d465a547d4cc37eeed7c4578cf775635"
+    },
+    {
+      "path": "tests/test_arena_skin_parity.lua",
+      "bytes": 9864,
+      "sha256": "eb8a42ace1e4befdde985111819ae9c8183ffeb3acfba355c80452c1bc90450a"
+    },
+    {
+      "path": "tests/test_atomic_token_reconfig.lua",
+      "bytes": 3786,
+      "sha256": "52ae078adbeef774b7aa79020388336d6b2f6f6618a9b9cd5c5c8e86ed4e8f82"
+    },
+    {
+      "path": "tests/test_audit_fixes_20261010.lua",
+      "bytes": 11275,
+      "sha256": "2f252d911531c816a7cc5e6fe74d72d287f603d07d8d4afceaf0e62f78f79972"
+    },
+    {
+      "path": "tests/test_audit_followups.lua",
+      "bytes": 33929,
+      "sha256": "a31775bb20a266aa7ff5189655571e2d03432fccfa3d8a04255e940ce096881f"
+    },
+    {
+      "path": "tests/test_audit_hardening_20261010.lua",
+      "bytes": 11323,
+      "sha256": "afe72ce06f32c3a6c8a4ddefb3074b17512216d8fcbd2a2b73d820453393ff8d"
+    },
+    {
+      "path": "tests/test_audit_io_boundaries.lua",
+      "bytes": 3194,
+      "sha256": "b1a90e5471d4e3009e9f66902e65e7db4ef1d440f55f57d37b27c756e4ed291b"
+    },
+    {
+      "path": "tests/test_audit_monitor_boundaries.lua",
+      "bytes": 2661,
+      "sha256": "5d3dec2565646e5da25cfb28342dc0955784ceda9d27eb89aee014df4f717739"
+    },
+    {
+      "path": "tests/test_audit_regressions.lua",
+      "bytes": 18688,
+      "sha256": "52f42481bebcfb73910a44b2db8926aa4e7e9f6a4f339ad579f222c48a1bcfde"
+    },
+    {
+      "path": "tests/test_audit_runtime_gc.lua",
+      "bytes": 1388,
+      "sha256": "c9a8c5651a1f1dbbf1a975e3bda3db30c47ab1feb4a1ec769533f1af50d7da90"
+    },
+    {
+      "path": "tests/test_cli_manifest.lua",
+      "bytes": 2923,
+      "sha256": "2a48e11b9f2431b9f05674015c6d44f9e58daefa33bf5c6a94f695b06195581f"
+    },
+    {
+      "path": "tests/test_core_invariant_stress.lua",
+      "bytes": 5331,
+      "sha256": "44569befc0de8ee9ca72e289425f66ddbf18430cd62bd3aadd489d069d2dd645"
+    },
+    {
+      "path": "tests/test_diagnostic_contracts.lua",
+      "bytes": 2864,
+      "sha256": "faa5839d0635a83398c9ff5a50eafa4bffb27e0fa8897ab86821bc51224d9c35"
+    },
+    {
+      "path": "tests/test_finite_river_bounds.lua",
+      "bytes": 1057,
+      "sha256": "e58f50d67f3342e8af264562d7d468d97582133de8b4ee368d447187d6f4cf38"
+    },
+    {
+      "path": "tests/test_four_mob_rendering.lua",
+      "bytes": 7638,
+      "sha256": "ba965cf9be271c249e33e471df44102dc2f8aa8e055f321a7251eb698e20f91a"
+    },
+    {
+      "path": "tests/test_four_mob_simulations.lua",
+      "bytes": 5004,
+      "sha256": "eeb4ab6dec84fc499149a23194079bf445c51c2db554afb51061bdc8b957eeb1"
+    },
+    {
+      "path": "tests/test_four_mobs.lua",
+      "bytes": 732,
+      "sha256": "1876c87c4af064247e29ad03a1c9df17944e2013a7f189b43352fed75b017c10"
+    },
+    {
+      "path": "tests/test_frog_worm.lua",
+      "bytes": 524,
+      "sha256": "a6a433e2d16244af38fb5f0e69840db27a18803ec1675ab0fce7f94370758b27"
+    },
+    {
+      "path": "tests/test_frog_worm_rendering.lua",
+      "bytes": 8193,
+      "sha256": "f4bfeab3c2cc2ea78a8adb0f03e6bbfbef3619fc47b274769291f3e1f5b9002f"
+    },
+    {
+      "path": "tests/test_frog_worm_simulations.lua",
+      "bytes": 3380,
+      "sha256": "df98b77d7b61378579d0aceb71c0f650cf1b721e5dc46857dd98b932bd473c70"
+    },
+    {
+      "path": "tests/test_headless_runner.lua",
+      "bytes": 4999,
+      "sha256": "140b0a0a2d68aeff7d02f2c1981321c9ea213e36e3226b6e63d69636593bd5fb"
+    },
+    {
+      "path": "tests/test_install_manifest.lua",
+      "bytes": 3469,
+      "sha256": "17ddf14e8305ce7c3ef24386f2b75c975cd98f5a261b7711f24a12afe390154e"
+    },
+    {
+      "path": "tests/test_installer_false_returns.lua",
+      "bytes": 3393,
+      "sha256": "09f75f37e42a441e59662b7fa668b5518dc8c7829f7698377d2e419de8058d6a"
+    },
+    {
+      "path": "tests/test_lobby_state_mutators.lua",
+      "bytes": 4171,
+      "sha256": "11c715f5cdae578bf2fb4e80fc18feb9a50fdd2363c72c95e54f15bf3b3334bb"
+    },
+    {
+      "path": "tests/test_mechanics_full_ci.lua",
+      "bytes": 3077,
+      "sha256": "19c1a44e7460deaf329e6f6bb1a252d398347d64098be9624ffa8b7a5e05d8a6"
+    },
+    {
+      "path": "tests/test_mechanics_isolation.lua",
+      "bytes": 2324,
+      "sha256": "e6aa2d2c79a03277916905d9f288c335987eff5a183b42939d550dcb1cdd4574"
+    },
+    {
+      "path": "tests/test_music_fault_boundaries.lua",
+      "bytes": 2459,
+      "sha256": "01ba9b9ea09ca6b6d69751a410847d4e78086c36074c225f3a4aa8d12714b4af"
+    },
+    {
+      "path": "tests/test_music_seek_failures.lua",
+      "bytes": 2611,
+      "sha256": "49111b421d823cd98414feee43e16c663960ec88ff50b3efb4b95c8a4901b166"
+    },
+    {
+      "path": "tests/test_pixel_failure_recovery.lua",
+      "bytes": 2657,
+      "sha256": "cab93eccdc2a1bb0f3c6890aeb371afc7b46ed39217eea446a0efbdcd4a19581"
+    },
+    {
+      "path": "tests/test_pixel_frame_diff.lua",
+      "bytes": 5100,
+      "sha256": "5d6ec65c4c858a6d2bb6dfb1be5f3bd445e97ace22cdd351115bfd5f3ec76ddc"
+    },
+    {
+      "path": "tests/test_platform_stubs.lua",
+      "bytes": 22664,
+      "sha256": "ee81893f73f9e67ce159b63d495ab4f426a3514d2c86509df6737f96bf51e7d4"
+    },
+    {
+      "path": "tests/test_preset_false_returns.lua",
+      "bytes": 9348,
+      "sha256": "9ac9d40ce02545df6a7ea8975525321366c637352ca1bbf774dd942cf0433459"
+    },
+    {
+      "path": "tests/test_preset_recovery_matrix.lua",
+      "bytes": 3678,
+      "sha256": "277e88acdff60ac97c884b2af3fed15836e6e59d0dd8db45595410e852246ccc"
+    },
+    {
+      "path": "tests/test_preset_transaction_integrity.lua",
+      "bytes": 2918,
+      "sha256": "66fa3dd1e8bb90ae6ab4ce27fb096e1111b15266dcefd805145cb7e64eb08bbc"
+    },
+    {
+      "path": "tests/test_projectile_speed_schema.lua",
+      "bytes": 1394,
+      "sha256": "a30a660d243250a73702c746e81094be457c7f33f83e86e2adfe63a2579f189e"
+    },
+    {
+      "path": "tests/test_recovery_hardening.lua",
+      "bytes": 10460,
+      "sha256": "6103f74f85ae3761c96626b341a1488142f776f252b5ac3591d376bf8dec7be9"
+    },
+    {
+      "path": "tests/test_refactor_parity.lua",
+      "bytes": 7288,
+      "sha256": "04332f40d7347afdfb7d52cafb41abf08bc50ef555cea14a362b7368ded5b3c4"
+    },
+    {
+      "path": "tests/test_release_gate.lua",
+      "bytes": 3559,
+      "sha256": "4bd1a8caa0b3b855cf1b05705b60970fe0a3cbeb79af5a27092516fe9b807e96"
+    },
+    {
+      "path": "tests/test_report_logout_false.lua",
+      "bytes": 1746,
+      "sha256": "7caffb2f78c57a38aa1ff5252c93c90bc23c7ef067a4218e36f2c503b356b4fc"
+    },
+    {
+      "path": "tests/test_report_retention.py",
+      "bytes": 7858,
+      "sha256": "5ae58164b359688d59910833786992a74614c4cd7fb9b770e42a8228d1167bbb"
+    },
+    {
+      "path": "tests/test_report_token_write_failures.lua",
+      "bytes": 2955,
+      "sha256": "f127b8c6379a55bfba0f5e202b5cd285dc6345bea5b8950e77418d685f089fb3"
+    },
+    {
+      "path": "tests/test_report_transaction_integrity.lua",
+      "bytes": 4450,
+      "sha256": "79902734988c2ee32b80824cd6466feed86fbf3be5ef15e84be11fa9dcf0c00d"
+    },
+    {
+      "path": "tests/test_side_symmetry.lua",
+      "bytes": 5777,
+      "sha256": "a5460be681b8b9cf45902ab1ab435814bc1a5d36de02862328b44110469bbd91"
+    },
+    {
+      "path": "tests/test_simulation_contracts.lua",
+      "bytes": 3453,
+      "sha256": "618896423496512af70c87178e23ca6764c4e69bbab88b40657bddbfa74d1ec1"
+    },
+    {
+      "path": "tests/test_sprite_roster.lua",
+      "bytes": 7127,
+      "sha256": "c5930c18fd5792aa1fcbc0974ba7e902105db03869bfc13d6e171241c272cef2"
+    },
+    {
+      "path": "tests/test_system_audit_20261014.lua",
+      "bytes": 11834,
+      "sha256": "7b92db5cf6073e0a48c364cbcdfa58dd624be69b3a980b653429a5c29bc233ea"
+    },
+    {
+      "path": "tests/test_timer_precision.lua",
+      "bytes": 3701,
+      "sha256": "f6d57114b8e94ae9484b133630e6a8dac15777ed62d8df75ecbe294b6d51d636"
+    },
+    {
+      "path": "tests/test_token_backup_recovery.lua",
+      "bytes": 956,
+      "sha256": "4492746b074741f4f8c06fda91241418a8322cf7ed46a8a86d9f792d45ce4557"
+    },
+    {
+      "path": "tests/test_token_corrupt_active_fallback.lua",
+      "bytes": 1263,
+      "sha256": "7d87aec4615aba617073c51f7c0a8d6a02015fb074d2786025ea1b4f93dc3bc3"
+    },
+    {
+      "path": "tests/test_touch_disconnect.lua",
+      "bytes": 2816,
+      "sha256": "6cd223544a22bd2e4e3a9aa47f25735c5ca5005af108257432fbff4250b106f6"
+    },
+    {
+      "path": "tests/test_v1.lua",
+      "bytes": 111893,
+      "sha256": "c424adb79ee0dfab492c14c7c6cf0b209380bba8682ec029d1cf555d65ce268b"
+    }
+  ],
+  "luaFiles": 114,
+  "moduleGraph": {
+    "admin.lua": [
+      "config.lua",
+      "src/hardware.lua",
+      "src/game.lua",
+      "src/arena.lua",
+      "src/cards.lua",
+      "src/admin_render.lua",
+      "src/bot.lua"
+    ],
+    "assets/proposed/four_mobs_phase1/effects/baby_ender_dragon.lua": [],
+    "assets/proposed/four_mobs_phase1/effects/hero_spider.lua": [],
+    "assets/proposed/four_mobs_phase1/effects/minoshroom.lua": [],
+    "assets/proposed/four_mobs_phase1/effects/ravager_rider.lua": [],
+    "assets/proposed/four_mobs_phase1/sprites/baby_ender_dragon.lua": [],
+    "assets/proposed/four_mobs_phase1/sprites/hero_spider.lua": [],
+    "assets/proposed/four_mobs_phase1/sprites/minoshroom.lua": [],
+    "assets/proposed/four_mobs_phase1/sprites/ravager_rider.lua": [],
+    "assets/proposed/four_mobs_phase1/tools/capture.lua": [
+      "assets/proposed/four_mobs_phase1/tools/harness.lua",
+      "src/cards.lua",
+      "config.lua",
+      "src/game.lua"
+    ],
+    "assets/proposed/four_mobs_phase1/tools/harness.lua": [
+      "src/pixel_arena.lua"
+    ],
+    "assets/proposed/four_mobs_phase1/tools/test_assets.lua": [
+      "assets/proposed/four_mobs_phase1/tools/harness.lua",
+      "src/cards.lua",
+      "src/render.lua",
+      "src/util.lua"
+    ],
+    "assets/sprites/frog_worm/love2d/index.lua": [],
+    "audit_matches.lua": [
+      "src/cards.lua",
+      "src/benchmark_utils.lua",
+      "src/headless_match.lua",
+      "src/bot.lua",
+      "src/diagnostics.lua",
+      "src/version.lua",
+      "src/util.lua"
+    ],
+    "compare.lua": [
+      "src/cards.lua",
+      "config.lua",
+      "src/benchmark_utils.lua",
+      "src/headless_match.lua",
+      "src/version.lua",
+      "src/report_output.lua"
+    ],
+    "config.lua": [],
+    "diagnose.lua": [
+      "config.lua",
+      "src/hardware.lua",
+      "src/version.lua"
+    ],
+    "evo_compare.lua": [
+      "src/cards.lua",
+      "config.lua",
+      "src/benchmark_utils.lua",
+      "src/headless_match.lua",
+      "src/version.lua",
+      "src/report_output.lua"
+    ],
+    "install.lua": [],
+    "lib/pixelbox_lite.lua": [],
+    "main.lua": [
+      "config.lua",
+      "src/hardware.lua",
+      "src/game.lua",
+      "src/render.lua",
+      "src/bot.lua",
+      "src/music.lua"
+    ],
+    "mechanics_test.lua": [
+      "config.lua",
+      "src/game.lua",
+      "src/cards.lua",
+      "src/bot.lua",
+      "src/util.lua",
+      "src/arena.lua",
+      "src/version.lua",
+      "src/diagnostics.lua",
+      "src/mechanics_audit.lua",
+      "src/four_mob_mechanics.lua",
+      "src/frog_worm_mechanics.lua"
+    ],
+    "report_sync.lua": [
+      "src/report_sync.lua"
+    ],
+    "scripts/audit_cli_host.lua": [],
+    "simulate.lua": [
+      "src/bot.lua",
+      "src/cards.lua",
+      "config.lua",
+      "src/benchmark_utils.lua",
+      "src/headless_match.lua",
+      "src/version.lua",
+      "src/report_output.lua"
+    ],
+    "src/admin_render.lua": [
+      "config.lua",
+      "src/util.lua",
+      "src/cards.lua",
+      "src/pixel_arena.lua",
+      "src/ui_buffer.lua"
+    ],
+    "src/arena.lua": [
+      "config.lua",
+      "src/util.lua"
+    ],
+    "src/assets/custom_mobs/dispatch.lua": [
+      "src/assets/custom_mobs/frames.lua"
+    ],
+    "src/assets/custom_mobs/frames.lua": [],
+    "src/assets/four_mobs/effects/baby_ender_dragon.lua": [],
+    "src/assets/four_mobs/effects/hero_spider.lua": [],
+    "src/assets/four_mobs/effects/minoshroom.lua": [],
+    "src/assets/four_mobs/effects/ravager_rider.lua": [],
+    "src/assets/four_mobs/sprites/baby_ender_dragon.lua": [],
+    "src/assets/four_mobs/sprites/hero_spider.lua": [],
+    "src/assets/four_mobs/sprites/minoshroom.lua": [],
+    "src/assets/four_mobs/sprites/ravager_rider.lua": [],
+    "src/benchmark_utils.lua": [
+      "src/util.lua"
+    ],
+    "src/bot.lua": [
+      "config.lua",
+      "src/cards.lua",
+      "src/arena.lua",
+      "src/game.lua",
+      "src/combat_modifiers.lua",
+      "src/spatial.lua",
+      "src/util.lua"
+    ],
+    "src/cards.lua": [
+      "src/util.lua"
+    ],
+    "src/combat_modifiers.lua": [
+      "src/util.lua"
+    ],
+    "src/custom_mob_rules.lua": [
+      "src/arena.lua"
+    ],
+    "src/diagnostics.lua": [
+      "src/util.lua",
+      "src/arena.lua",
+      "config.lua"
+    ],
+    "src/four_mob_mechanics.lua": [
+      "src/game.lua",
+      "src/cards.lua",
+      "src/arena.lua",
+      "src/combat_modifiers.lua"
+    ],
+    "src/frog_worm_mechanics.lua": [
+      "src/game.lua",
+      "src/cards.lua",
+      "src/arena.lua",
+      "src/util.lua",
+      "src/bot.lua",
+      "src/spatial.lua",
+      "src/diagnostics.lua"
+    ],
+    "src/game.lua": [
+      "config.lua",
+      "src/util.lua",
+      "src/cards.lua",
+      "src/arena.lua",
+      "src/spatial.lua",
+      "src/presets.lua",
+      "src/combat_modifiers.lua",
+      "src/custom_mob_rules.lua"
+    ],
+    "src/hardware.lua": [
+      "config.lua"
+    ],
+    "src/headless_match.lua": [
+      "config.lua",
+      "src/game.lua",
+      "src/bot.lua",
+      "src/util.lua",
+      "src/benchmark_utils.lua",
+      "src/cards.lua"
+    ],
+    "src/mechanics_audit.lua": [
+      "src/game.lua",
+      "src/arena.lua",
+      "src/cards.lua",
+      "src/diagnostics.lua",
+      "src/bot.lua"
+    ],
+    "src/mob_assets.lua": [
+      "src/assets/custom_mobs/dispatch.lua",
+      "src/assets/four_mobs/sprites/ravager_rider.lua",
+      "src/assets/four_mobs/sprites/baby_ender_dragon.lua",
+      "src/assets/four_mobs/sprites/minoshroom.lua",
+      "src/assets/four_mobs/sprites/hero_spider.lua",
+      "src/assets/four_mobs/effects/ravager_rider.lua",
+      "src/assets/four_mobs/effects/baby_ender_dragon.lua",
+      "src/assets/four_mobs/effects/minoshroom.lua",
+      "src/assets/four_mobs/effects/hero_spider.lua"
+    ],
+    "src/music.lua": [
+      "config.lua",
+      "src/music_manifest.lua"
+    ],
+    "src/music_manifest.lua": [],
+    "src/pixel_arena.lua": [
+      "config.lua",
+      "lib/pixelbox_lite.lua",
+      "src/mob_assets.lua"
+    ],
+    "src/presets.lua": [
+      "src/util.lua",
+      "src/cards.lua"
+    ],
+    "src/render.lua": [
+      "config.lua",
+      "src/util.lua",
+      "src/cards.lua",
+      "src/pixel_arena.lua",
+      "src/ui_buffer.lua"
+    ],
+    "src/report_output.lua": [],
+    "src/report_sync.lua": [],
+    "src/spatial.lua": [],
+    "src/ui_buffer.lua": [
+      "src/util.lua"
+    ],
+    "src/util.lua": [],
+    "src/version.lua": [],
+    "startup.lua": [],
+    "tests/fixtures/four_mob_approved_pixels.lua": [],
+    "tests/performance_profile.lua": [
+      "src/game.lua",
+      "src/bot.lua",
+      "src/headless_match.lua",
+      "config.lua",
+      "src/pixel_arena.lua"
+    ],
+    "tests/test_anvil_grid_parity.lua": [
+      "src/game.lua",
+      "src/bot.lua"
+    ],
+    "tests/test_arena_skin_parity.lua": [
+      "config.lua",
+      "src/arena.lua",
+      "src/render.lua",
+      "src/game.lua",
+      "src/pixel_arena.lua"
+    ],
+    "tests/test_atomic_token_reconfig.lua": [
+      "src/report_sync.lua"
+    ],
+    "tests/test_audit_fixes_20261010.lua": [
+      "src/report_output.lua",
+      "src/arena.lua",
+      "src/music.lua",
+      "src/game.lua",
+      "src/bot.lua",
+      "src/arena.lua"
+    ],
+    "tests/test_audit_followups.lua": [
+      "config.lua",
+      "src/util.lua",
+      "src/cards.lua",
+      "src/arena.lua",
+      "src/game.lua",
+      "src/bot.lua",
+      "src/benchmark_utils.lua",
+      "src/render.lua",
+      "src/hardware.lua",
+      "src/game.lua",
+      "src/report_sync.lua",
+      "src/report_sync.lua",
+      "src/report_sync.lua"
+    ],
+    "tests/test_audit_hardening_20261010.lua": [
+      "src/game.lua",
+      "src/cards.lua",
+      "config.lua",
+      "config.lua",
+      "src/bot.lua",
+      "src/pixel_arena.lua"
+    ],
+    "tests/test_audit_io_boundaries.lua": [
+      "src/report_sync.lua"
+    ],
+    "tests/test_audit_monitor_boundaries.lua": [
+      "src/game.lua",
+      "src/cards.lua",
+      "src/render.lua",
+      "src/admin_render.lua",
+      "src/diagnostics.lua"
+    ],
+    "tests/test_audit_regressions.lua": [
+      "config.lua",
+      "src/cards.lua",
+      "src/arena.lua",
+      "src/game.lua",
+      "src/bot.lua",
+      "src/util.lua",
+      "src/headless_match.lua"
+    ],
+    "tests/test_audit_runtime_gc.lua": [],
+    "tests/test_cli_manifest.lua": [
+      "src/music_manifest.lua"
+    ],
+    "tests/test_core_invariant_stress.lua": [
+      "config.lua",
+      "src/game.lua",
+      "src/bot.lua",
+      "src/headless_match.lua"
+    ],
+    "tests/test_diagnostic_contracts.lua": [
+      "src/game.lua",
+      "src/bot.lua",
+      "src/headless_match.lua",
+      "src/cards.lua",
+      "src/diagnostics.lua",
+      "config.lua"
+    ],
+    "tests/test_finite_river_bounds.lua": [
+      "config.lua"
+    ],
+    "tests/test_four_mob_rendering.lua": [
+      "src/pixel_arena.lua",
+      "src/mob_assets.lua",
+      "tests/fixtures/four_mob_approved_pixels.lua",
+      "src/game.lua",
+      "src/render.lua"
+    ],
+    "tests/test_four_mob_simulations.lua": [
+      "src/game.lua",
+      "src/bot.lua",
+      "src/headless_match.lua",
+      "src/cards.lua",
+      "src/diagnostics.lua",
+      "src/combat_modifiers.lua"
+    ],
+    "tests/test_four_mobs.lua": [
+      "src/cards.lua",
+      "src/four_mob_mechanics.lua"
+    ],
+    "tests/test_frog_worm.lua": [
+      "src/frog_worm_mechanics.lua"
+    ],
+    "tests/test_frog_worm_rendering.lua": [
+      "src/game.lua",
+      "src/pixel_arena.lua",
+      "src/assets/custom_mobs/dispatch.lua",
+      "src/assets/custom_mobs/frames.lua",
+      "src/diagnostics.lua"
+    ],
+    "tests/test_frog_worm_simulations.lua": [
+      "src/game.lua",
+      "src/bot.lua",
+      "src/headless_match.lua",
+      "src/diagnostics.lua"
+    ],
+    "tests/test_headless_runner.lua": [
+      "config.lua",
+      "src/game.lua",
+      "src/bot.lua",
+      "src/headless_match.lua"
+    ],
+    "tests/test_install_manifest.lua": [],
+    "tests/test_installer_false_returns.lua": [],
+    "tests/test_lobby_state_mutators.lua": [
+      "src/game.lua",
+      "src/cards.lua",
+      "src/presets.lua"
+    ],
+    "tests/test_mechanics_full_ci.lua": [],
+    "tests/test_mechanics_isolation.lua": [
+      "config.lua",
+      "src/cards.lua"
+    ],
+    "tests/test_music_fault_boundaries.lua": [
+      "src/music.lua"
+    ],
+    "tests/test_music_seek_failures.lua": [
+      "src/music.lua"
+    ],
+    "tests/test_pixel_failure_recovery.lua": [
+      "src/game.lua",
+      "src/pixel_arena.lua",
+      "src/render.lua"
+    ],
+    "tests/test_pixel_frame_diff.lua": [
+      "src/game.lua",
+      "src/pixel_arena.lua"
+    ],
+    "tests/test_platform_stubs.lua": [
+      "src/hardware.lua",
+      "src/music.lua",
+      "src/report_sync.lua",
+      "src/report_sync.lua",
+      "src/benchmark_utils.lua",
+      "src/music.lua",
+      "src/music.lua",
+      "src/report_sync.lua",
+      "src/music.lua",
+      "src/report_sync.lua"
+    ],
+    "tests/test_preset_false_returns.lua": [
+      "src/cards.lua",
+      "src/presets.lua"
+    ],
+    "tests/test_preset_recovery_matrix.lua": [
+      "src/cards.lua",
+      "src/presets.lua"
+    ],
+    "tests/test_preset_transaction_integrity.lua": [
+      "src/cards.lua",
+      "src/presets.lua"
+    ],
+    "tests/test_projectile_speed_schema.lua": [
+      "src/cards.lua"
+    ],
+    "tests/test_recovery_hardening.lua": [
+      "src/cards.lua",
+      "src/game.lua",
+      "src/presets.lua"
+    ],
+    "tests/test_refactor_parity.lua": [
+      "src/game.lua",
+      "src/spatial.lua",
+      "src/ui_buffer.lua",
+      "src/admin_render.lua",
+      "src/pixel_arena.lua",
+      "src/cards.lua"
+    ],
+    "tests/test_release_gate.lua": [],
+    "tests/test_report_logout_false.lua": [
+      "src/report_sync.lua"
+    ],
+    "tests/test_report_token_write_failures.lua": [
+      "src/report_sync.lua"
+    ],
+    "tests/test_report_transaction_integrity.lua": [
+      "src/report_output.lua"
+    ],
+    "tests/test_side_symmetry.lua": [
+      "config.lua",
+      "src/arena.lua",
+      "src/game.lua",
+      "src/bot.lua",
+      "src/headless_match.lua"
+    ],
+    "tests/test_simulation_contracts.lua": [
+      "src/headless_match.lua",
+      "src/game.lua",
+      "src/cards.lua",
+      "src/benchmark_utils.lua"
+    ],
+    "tests/test_sprite_roster.lua": [
+      "src/pixel_arena.lua",
+      "config.lua"
+    ],
+    "tests/test_system_audit_20261014.lua": [
+      "src/game.lua",
+      "src/cards.lua",
+      "src/arena.lua",
+      "config.lua",
+      "src/headless_match.lua",
+      "src/bot.lua",
+      "src/bot.lua"
+    ],
+    "tests/test_timer_precision.lua": [
+      "src/game.lua",
+      "src/cards.lua",
+      "src/diagnostics.lua",
+      "config.lua",
+      "src/bot.lua"
+    ],
+    "tests/test_token_backup_recovery.lua": [
+      "src/report_sync.lua"
+    ],
+    "tests/test_token_corrupt_active_fallback.lua": [
+      "src/report_sync.lua"
+    ],
+    "tests/test_touch_disconnect.lua": [
+      "src/game.lua",
+      "src/render.lua",
+      "src/admin_render.lua"
+    ],
+    "tests/test_v1.lua": [
+      "config.lua",
+      "src/cards.lua",
+      "src/arena.lua",
+      "src/game.lua",
+      "src/pixel_arena.lua",
+      "src/bot.lua",
+      "src/render.lua",
+      "src/admin_render.lua",
+      "src/music_manifest.lua",
+      "src/util.lua",
+      "src/util.lua"
+    ]
+  },
+  "unresolvedLiteralRequires": [],
+  "cycles": [],
+  "luaTests": [
+    "tests/test_anvil_grid_parity.lua",
+    "tests/test_arena_skin_parity.lua",
+    "tests/test_atomic_token_reconfig.lua",
+    "tests/test_audit_fixes_20261010.lua",
+    "tests/test_audit_followups.lua",
+    "tests/test_audit_hardening_20261010.lua",
+    "tests/test_audit_io_boundaries.lua",
+    "tests/test_audit_monitor_boundaries.lua",
+    "tests/test_audit_regressions.lua",
+    "tests/test_audit_runtime_gc.lua",
+    "tests/test_cli_manifest.lua",
+    "tests/test_core_invariant_stress.lua",
+    "tests/test_diagnostic_contracts.lua",
+    "tests/test_finite_river_bounds.lua",
+    "tests/test_four_mob_rendering.lua",
+    "tests/test_four_mob_simulations.lua",
+    "tests/test_four_mobs.lua",
+    "tests/test_frog_worm.lua",
+    "tests/test_frog_worm_rendering.lua",
+    "tests/test_frog_worm_simulations.lua",
+    "tests/test_headless_runner.lua",
+    "tests/test_install_manifest.lua",
+    "tests/test_installer_false_returns.lua",
+    "tests/test_lobby_state_mutators.lua",
+    "tests/test_mechanics_full_ci.lua",
+    "tests/test_mechanics_isolation.lua",
+    "tests/test_music_fault_boundaries.lua",
+    "tests/test_music_seek_failures.lua",
+    "tests/test_pixel_failure_recovery.lua",
+    "tests/test_pixel_frame_diff.lua",
+    "tests/test_platform_stubs.lua",
+    "tests/test_preset_false_returns.lua",
+    "tests/test_preset_recovery_matrix.lua",
+    "tests/test_preset_transaction_integrity.lua",
+    "tests/test_projectile_speed_schema.lua",
+    "tests/test_recovery_hardening.lua",
+    "tests/test_refactor_parity.lua",
+    "tests/test_release_gate.lua",
+    "tests/test_report_logout_false.lua",
+    "tests/test_report_token_write_failures.lua",
+    "tests/test_report_transaction_integrity.lua",
+    "tests/test_side_symmetry.lua",
+    "tests/test_simulation_contracts.lua",
+    "tests/test_sprite_roster.lua",
+    "tests/test_system_audit_20261014.lua",
+    "tests/test_timer_precision.lua",
+    "tests/test_token_backup_recovery.lua",
+    "tests/test_token_corrupt_active_fallback.lua",
+    "tests/test_touch_disconnect.lua",
+    "tests/test_v1.lua"
+  ],
+  "mainCIUnregisteredLuaTests": [
+    "tests/test_frog_worm.lua",
+    "tests/test_frog_worm_rendering.lua",
+    "tests/test_frog_worm_simulations.lua"
+  ],
+  "mainCI52Unregistered": [
+    "tests/test_frog_worm.lua",
+    "tests/test_frog_worm_rendering.lua",
+    "tests/test_frog_worm_simulations.lua"
+  ],
+  "candidateDiffFromMain": [
+    "38\t0\t.github/workflows/frog-worm.yml",
+    "8\t2\tREADME.md",
+    "25\t0\tassets/sprites/frog_worm/MANIFEST.json",
+    "23\t0\tassets/sprites/frog_worm/README.md",
+    "1\t0\tassets/sprites/frog_worm/evidence/capture52.json",
+    "1\t0\tassets/sprites/frog_worm/evidence/capture54.json",
+    "5\t0\tassets/sprites/frog_worm/love2d/index.lua",
+    "-\t-\tassets/sprites/frog_worm/love2d/king_frog.png",
+    "-\t-\tassets/sprites/frog_worm/love2d/nether_worm.png",
+    "-\t-\tassets/sprites/frog_worm/previews/comparison.png",
+    "-\t-\tassets/sprites/frog_worm/previews/gameplay_1x.png",
+    "-\t-\tassets/sprites/frog_worm/previews/gameplay_6x.png",
+    "-\t-\tassets/sprites/frog_worm/previews/king_frog_native.png",
+    "-\t-\tassets/sprites/frog_worm/previews/king_frog_pixelbox.png",
+    "-\t-\tassets/sprites/frog_worm/previews/nether_worm_native.png",
+    "-\t-\tassets/sprites/frog_worm/previews/nether_worm_pixelbox.png",
+    "-\t-\tassets/sprites/frog_worm/previews/runtime_poses.png",
+    "82\t0\tassets/sprites/frog_worm/tools/previews.py",
+    "84\t0\tdocs/frog_worm/IMPLEMENTATION.md",
+    "53\t0\tdocs/frog_worm/VALIDATION.md",
+    "30\t0\tdocs/frog_worm/performance.json",
+    "707\t0\tdocs/frog_worm/regressions.json",
+    "4\t0\tinstall.lua",
+    "1\t0\tmechanics_test.lua",
+    "25\t0\tsrc/arena.lua",
+    "24\t0\tsrc/assets/custom_mobs/dispatch.lua",
+    "158\t0\tsrc/assets/custom_mobs/frames.lua",
+    "65\t4\tsrc/bot.lua",
+    "69\t1\tsrc/cards.lua",
+    "32\t0\tsrc/custom_mob_rules.lua",
+    "14\t2\tsrc/diagnostics.lua",
+    "314\t0\tsrc/frog_worm_mechanics.lua",
+    "191\t2\tsrc/game.lua",
+    "5\t0\tsrc/mob_assets.lua",
+    "24\t0\tsrc/pixel_arena.lua",
+    "11\t0\tsrc/render.lua",
+    "10\t0\ttests/test_frog_worm.lua",
+    "140\t0\ttests/test_frog_worm_rendering.lua",
+    "55\t0\ttests/test_frog_worm_simulations.lua",
+    "2\t2\ttests/test_v1.lua"
+  ],
+  "sinceLastAudit": " .github/workflows/frog-worm.yml                    |  38 ++\n .github/workflows/lua-ci.yml                       |   8 +\n .github/workflows/phase1-assets.yml                |  30 +\n .gitignore                                         |   4 +\n README.md                                          |  24 +-\n assets/proposed/four_mobs_phase1/.gitignore        |   2 +\n assets/proposed/four_mobs_phase1/BALANCE.md        | 102 +++\n .../four_mobs_phase1/BALANCE_PROPOSALS.json        |  69 ++\n assets/proposed/four_mobs_phase1/FILE_LIST.md      |  60 ++\n assets/proposed/four_mobs_phase1/MANIFEST.json     | 219 +++++++\n assets/proposed/four_mobs_phase1/PHASE2_PLAN.md    | 159 +++++\n assets/proposed/four_mobs_phase1/README.md         | 106 +++\n assets/proposed/four_mobs_phase1/VALIDATION.md     |  52 ++\n .../four_mobs_phase1/effects/baby_ender_dragon.lua |  65 ++\n .../four_mobs_phase1/effects/hero_spider.lua       |  74 +++\n .../four_mobs_phase1/effects/minoshroom.lua        |  39 ++\n .../four_mobs_phase1/effects/ravager_rider.lua     |  57 ++\n .../four_mobs_phase1/evidence/assets_lua52.json    |   1 +\n .../four_mobs_phase1/evidence/assets_lua54.json    |   1 +\n .../four_mobs_phase1/evidence/baseline_guard.json  | 176 +++++\n .../evidence/baseline_regressions.json             | 462 ++++++++++++++\n .../four_mobs_phase1/evidence/captures.json        |   1 +\n .../evidence/existing_regressions.json             | 462 ++++++++++++++\n .../evidence/preview_validation.json               |  10 +\n .../four_mobs_phase1/previews/atlas_layout.json    | 250 ++++++++\n .../previews/baby_ender_dragon_atlas.png           | Bin 0 -> 962 bytes\n .../previews/baby_ender_dragon_attack.gif          | Bin 0 -> 31436 bytes\n .../previews/baby_ender_dragon_fly.gif             | Bin 0 -> 30481 bytes\n .../previews/baby_ender_dragon_set.png             | Bin 0 -> 30738 bytes\n .../previews/hero_spider_atlas.png                 | Bin 0 -> 741 bytes\n .../previews/hero_spider_melee.gif                 | Bin 0 -> 20393 bytes\n .../four_mobs_phase1/previews/hero_spider_set.png  | Bin 0 -> 29546 bytes\n .../four_mobs_phase1/previews/hero_spider_walk.gif | Bin 0 -> 27179 bytes\n .../four_mobs_phase1/previews/hero_spider_web.gif  | Bin 0 -> 27246 bytes\n .../four_mobs_phase1/previews/minoshroom_atlas.png | Bin 0 -> 771 bytes\n .../previews/minoshroom_attack.gif                 | Bin 0 -> 39904 bytes\n .../four_mobs_phase1/previews/minoshroom_set.png   | Bin 0 -> 28424 bytes\n .../four_mobs_phase1/previews/minoshroom_walk.gif  | Bin 0 -> 32039 bytes\n .../four_mobs_phase1/previews/monitor_roster.png   | Bin 0 -> 29105 bytes\n .../four_mobs_phase1/previews/native_roster.png    | Bin 0 -> 29902 bytes\n .../previews/ravager_rider_atlas.png               | Bin 0 -> 829 bytes\n .../previews/ravager_rider_building_attack.gif     | Bin 0 -> 33109 bytes\n .../previews/ravager_rider_combined.gif            | Bin 0 -> 32290 bytes\n .../previews/ravager_rider_rider_shot.gif          | Bin 0 -> 32163 bytes\n .../previews/ravager_rider_set.png                 | Bin 0 -> 29841 bytes\n .../previews/ravager_rider_walk.gif                | Bin 0 -> 31200 bytes\n .../four_mobs_phase1/sprites/baby_ender_dragon.lua | 160 +++++\n .../four_mobs_phase1/sprites/hero_spider.lua       | 364 +++++++++++\n .../four_mobs_phase1/sprites/minoshroom.lua        | 198 ++++++\n .../four_mobs_phase1/sprites/ravager_rider.lua     | 278 ++++++++\n assets/proposed/four_mobs_phase1/tools/balance.py  |  27 +\n .../four_mobs_phase1/tools/build_assets.py         | 194 ++++++\n assets/proposed/four_mobs_phase1/tools/capture.lua |  35 +\n .../four_mobs_phase1/tools/compare_captures.py     |  20 +\n assets/proposed/four_mobs_phase1/tools/harness.lua | 148 +++++\n assets/proposed/four_mobs_phase1/tools/preview.py  | 111 ++++\n .../four_mobs_phase1/tools/test_assets.lua         | 134 ++++\n .../four_mobs_phase1/tools/validate_previews.py    |  67 ++\n assets/sprites/frog_worm/MANIFEST.json             |  25 +\n assets/sprites/frog_worm/README.md                 |  23 +\n assets/sprites/frog_worm/evidence/capture52.json   |   1 +\n assets/sprites/frog_worm/evidence/capture54.json   |   1 +\n assets/sprites/frog_worm/love2d/index.lua          |   5 +\n assets/sprites/frog_worm/love2d/king_frog.png      | Bin 0 -> 15281 bytes\n assets/sprites/frog_worm/love2d/nether_worm.png    | Bin 0 -> 32709 bytes\n assets/sprites/frog_worm/previews/comparison.png   | Bin 0 -> 76153 bytes\n assets/sprites/frog_worm/previews/gameplay_1x.png  | Bin 0 -> 1008 bytes\n assets/sprites/frog_worm/previews/gameplay_6x.png  | Bin 0 -> 3439 bytes\n .../frog_worm/previews/king_frog_native.png        | Bin 0 -> 271 bytes\n .../frog_worm/previews/king_frog_pixelbox.png      | Bin 0 -> 275 bytes\n .../frog_worm/previews/nether_worm_native.png      | Bin 0 -> 275 bytes\n .../frog_worm/previews/nether_worm_pixelbox.png    | Bin 0 -> 300 bytes\n .../sprites/frog_worm/previews/runtime_poses.png   | Bin 0 -> 23209 bytes\n assets/sprites/frog_worm/tools/previews.py         |  82 +++\n docs/AUDIT_REGISTER.md                             |  20 +\n docs/FOUR_MOBS_PHASE2_20261014.md                  |  76 +++\n docs/four_mobs_phase2_20261014/audit100.log        |  32 +\n docs/four_mobs_phase2_20261014/audit1000.log       |  50 ++\n docs/four_mobs_phase2_20261014/audit100_lua54.log  |  32 +\n docs/four_mobs_phase2_20261014/clean_suites.json   | 492 ++++++++++++++\n docs/four_mobs_phase2_20261014/dragon25.txt        |  39 ++\n docs/four_mobs_phase2_20261014/hero25.txt          |  40 ++\n docs/four_mobs_phase2_20261014/live_arena.png      | Bin 0 -> 20754 bytes\n .../live_arena_captures.json                       |   1 +\n docs/four_mobs_phase2_20261014/manifest.json       | 135 ++++\n docs/four_mobs_phase2_20261014/mino25.txt          |  39 ++\n docs/four_mobs_phase2_20261014/mixed100.txt        |  74 +++\n docs/four_mobs_phase2_20261014/rider25.txt         |  39 ++\n docs/four_mobs_phase2_20261014/runs.json           |  37 ++\n docs/frog_worm/IMPLEMENTATION.md                   |  84 +++\n docs/frog_worm/VALIDATION.md                       |  53 ++\n docs/frog_worm/performance.json                    |  30 +\n docs/frog_worm/regressions.json                    | 707 +++++++++++++++++++++\n install.lua                                        |  16 +\n mechanics_test.lua                                 |   8 +-\n src/arena.lua                                      |  25 +\n src/assets/custom_mobs/dispatch.lua                |  24 +\n src/assets/custom_mobs/frames.lua                  | 158 +++++\n src/assets/four_mobs/effects/baby_ender_dragon.lua |  65 ++\n src/assets/four_mobs/effects/hero_spider.lua       |  74 +++\n src/assets/four_mobs/effects/minoshroom.lua        |  39 ++\n src/assets/four_mobs/effects/ravager_rider.lua     |  57 ++\n src/assets/four_mobs/sprites/baby_ender_dragon.lua | 160 +++++\n src/assets/four_mobs/sprites/hero_spider.lua       | 364 +++++++++++\n src/assets/four_mobs/sprites/minoshroom.lua        | 198 ++++++\n src/assets/four_mobs/sprites/ravager_rider.lua     | 278 ++++++++\n src/bot.lua                                        |  99 ++-\n src/cards.lua                                      | 189 +++++-\n src/combat_modifiers.lua                           |  40 ++\n src/custom_mob_rules.lua                           |  32 +\n src/diagnostics.lua                                |  58 +-\n src/four_mob_mechanics.lua                         | 334 ++++++++++\n src/frog_worm_mechanics.lua                        | 314 +++++++++\n src/game.lua                                       | 478 +++++++++++++-\n src/mob_assets.lua                                 |  76 +++\n src/pixel_arena.lua                                |  66 +-\n src/render.lua                                     |  23 +\n tests/fixtures/four_mob_approved_pixels.lua        |  64 ++\n tests/test_four_mob_rendering.lua                  | 133 ++++\n tests/test_four_mob_simulations.lua                |  81 +++\n tests/test_four_mobs.lua                           |  17 +\n tests/test_frog_worm.lua                           |  10 +\n tests/test_frog_worm_rendering.lua                 | 140 ++++\n tests/test_frog_worm_simulations.lua               |  55 ++\n tests/test_v1.lua                                  |   8 +-\n 125 files changed, 9951 insertions(+), 56 deletions(-)\n"
+}

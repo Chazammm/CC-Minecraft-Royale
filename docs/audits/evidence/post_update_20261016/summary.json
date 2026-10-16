@@ -1,0 +1,180 @@
+{
+  "scope": {
+    "main": "6e85dc77553bd17422deeb9cb51258cefda06fe5",
+    "candidate": "5b6b89264e1a7591b2bc5a9a9e639baf28f25706",
+    "simulationCode": "259da467f26025bf816307d5ab1539257b6236b2",
+    "auditSource": "fa97817f7d7224fc62e9296ad819c66d2639ad61"
+  },
+  "luaSuites": 52,
+  "luaFinalExecutions": 104,
+  "luaFinalFailures": 0,
+  "pythonCases": 8,
+  "mechanicsCases": 118,
+  "findingsFixed": 5,
+  "open": {
+    "critical": 0,
+    "high": 0,
+    "medium": 2,
+    "low": 2
+  },
+  "simulations": [
+    {
+      "mode": "Kandidat / audit_matches",
+      "matches": 100,
+      "seed": "20261016",
+      "lua": "5.4",
+      "seconds": 85.747,
+      "errors": 0,
+      "status": "PASS",
+      "log": "final_invariants_1_audit_matches_100_20261016.log"
+    },
+    {
+      "mode": "Kandidat / audit_matches",
+      "matches": 500,
+      "seed": "20261017",
+      "lua": "5.4",
+      "seconds": 274.45,
+      "errors": 0,
+      "status": "PASS",
+      "log": "final_invariants_2_audit_matches_500_20261017.log"
+    },
+    {
+      "mode": "Kandidat / audit_matches",
+      "matches": 1000,
+      "seed": "20261016",
+      "lua": "5.4",
+      "seconds": 816.352,
+      "errors": 0,
+      "status": "PASS",
+      "log": "final_invariants_3_audit_matches_1000_20261016.log"
+    },
+    {
+      "mode": "Kandidat / audit_matches",
+      "matches": 1000,
+      "seed": "20261016",
+      "lua": "5.2",
+      "seconds": 1020.242,
+      "errors": 0,
+      "status": "PASS",
+      "log": "final_cross52_1_audit_matches_1000_20261016.log"
+    },
+    {
+      "mode": "Kandidat / simulate mixed",
+      "matches": 100,
+      "seed": "20261016",
+      "lua": "5.4",
+      "seconds": 46.607,
+      "errors": 0,
+      "status": "PASS",
+      "log": "final_cli_1_simulate_100_mixed_20261016.log"
+    },
+    {
+      "mode": "Kandidat / simulate mixed",
+      "matches": 500,
+      "seed": "20261016",
+      "lua": "5.4",
+      "seconds": 592.498,
+      "errors": 0,
+      "status": "PASS",
+      "log": "final_cli_2_simulate_500_mixed_20261016.log"
+    },
+    {
+      "mode": "Kandidat / simulate mixed",
+      "matches": 1000,
+      "seed": "20261016",
+      "lua": "5.4",
+      "seconds": 644.649,
+      "errors": 0,
+      "status": "PASS",
+      "log": "final_cli_3_simulate_1000_mixed_20261016.log"
+    },
+    {
+      "mode": "Kandidat / simulate fixed",
+      "matches": 100,
+      "seed": "20261016",
+      "lua": "5.4",
+      "seconds": 45.45,
+      "errors": 0,
+      "status": "PASS",
+      "log": "final_cli_4_simulate_100_fixed_20261016.log"
+    },
+    {
+      "mode": "Kandidat / compare all",
+      "matches": 240,
+      "seed": "20261016",
+      "lua": "5.4",
+      "seconds": 88.314,
+      "errors": 0,
+      "status": "PASS",
+      "log": "final_cli_5_compare_10_all_20261016.log"
+    },
+    {
+      "mode": "Kandidat / compare king_frog nether_worm",
+      "matches": 40,
+      "seed": "20261016",
+      "lua": "5.4",
+      "seconds": 12.958,
+      "errors": 0,
+      "status": "PASS",
+      "log": "final_cli_6_compare_10_king_frog_nether_worm_20261016.log"
+    },
+    {
+      "mode": "Kandidat / evo_compare all",
+      "matches": 240,
+      "seed": "20261016",
+      "lua": "5.4",
+      "seconds": 84.296,
+      "errors": 0,
+      "status": "PASS",
+      "log": "final_cli_7_evo_compare_10_all_20261016.log"
+    },
+    {
+      "mode": "Kandidat / mechanics_test (118 F\u00e4lle)",
+      "matches": "\u2014",
+      "seed": "\u2014",
+      "lua": "5.4",
+      "seconds": 0.315,
+      "errors": 0,
+      "status": "PASS",
+      "log": "final_cli_8_mechanics_test_.log"
+    },
+    {
+      "mode": "Kandidat / simulate mixed",
+      "matches": 100,
+      "seed": "20261016",
+      "lua": "5.2",
+      "seconds": 215.898,
+      "errors": 0,
+      "status": "PASS",
+      "log": "final_cli52_1_simulate_100_mixed_20261016.log"
+    },
+    {
+      "mode": "main / audit_matches",
+      "matches": 100,
+      "seed": "20261016",
+      "lua": "5.4",
+      "seconds": 95.738,
+      "errors": 0,
+      "status": "PASS",
+      "log": "final_baseline_1_audit_matches_100_20261016.log"
+    },
+    {
+      "mode": "main / simulate mixed",
+      "matches": 100,
+      "seed": "20261016",
+      "lua": "5.4",
+      "seconds": 48.299,
+      "errors": 0,
+      "status": "PASS",
+      "log": "final_baseline_2_simulate_100_mixed_20261016.log"
+    }
+  ],
+  "hardware": "UNVERIFIED HARDWARE",
+  "pullRequest": "https://github.com/Chazammm/CC-Minecraft-Royale/pull/23",
+  "evolutionComparisonCoverage": {
+    "selectedEvolutions": 6,
+    "villagerEvolutionPlays": 0,
+    "villagerReachedPercent": 0,
+    "villagerImpactStatus": "NOT EXERCISED in this sample; targeted engine mechanics PASS"
+  }
+}

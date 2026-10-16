@@ -269,3 +269,24 @@ remain blocked on explicit user authorization, not on a technical assumption.
 | --- | --- | --- | --- | --- |
 | MOB-001 | CONFIRMED feature | HIGH | FIXED_AUTOMATED | Three new cards, Hero Spider Evolution; independent weapons, permanent web and actual sprite dispatch. Tests: `tests/test_four_mobs.lua`, `tests/test_four_mob_rendering.lua`, `tests/test_four_mob_simulations.lua`; both Lua versions required. Phase 2 explicitly authorized by user; no other balance changes. |
 | MOB-002 | CONFIRMED bug | HIGH | FIXED_AUTOMATED | Integration follow-up: final unit removal retained permanent Web on the discarded object, and match end retained pending Web reservations. Explicit status cleanup and cancellation now cover reset, admin purge, result and tiebreaker. Reproduced before fix; regressions `tests/test_four_mobs.lua` (`mob_web_purged_entity`, `mob_result_web_cancel`). |
+
+
+## Post-update integrity audit (2026-10-16)
+
+Evidence, exact revisions, red/green controls and remaining limitations:
+`docs/audits/POST_UPDATE_INTEGRITY_AUDIT.md`. These findings concern safeguards;
+no combat, movement, balance, renderer or card definition changes were made.
+
+| ID | Classification / priority | Root cause / reproduction | Minimal fix | Validation / status |
+| --- | --- | --- | --- | --- |
+| AF-062 | CONFIRMED P2, CI discovery gap | Main workflow enumerated old suites; the new workflow only pushed on its original feature branch. Three candidate suites absent from the general CI list. | Discover all Lua/Python tests, execute Lua in isolated 5.2/5.4 processes, retain CLI/profile/retention gates; asset gate follows Lua changes on all branches. Update the release gate to recognize executed glob loops. | `tests/test_audit_quality.py`, `tests/test_release_gate.lua` — FIXED_CI (host and remote evidence in audit; hardware untested) |
+| AF-063 | CONFIRMED P2, installer-test false positive | Adding an unresolved runtime require still passed because the checker only traversed existing files. | Reject unresolved literal imports and include the installed audit CLI as a graph root. | `tests/test_install_manifest.lua`, `tests/test_audit_quality.py` — FIXED_CI (isolated missing-import negative control) |
+| AF-064 | CONFIRMED P2, incomplete state observer | Ordinary projectile NaN coordinates/damage and nonpositive speed were accepted; only Hero Web had special checks. | Validate ordinary live projectile fields, owner, target ID and optional last coordinates without requiring live source/target references. | `tests/test_post_update_diagnostics.lua` — FIXED_CI (12 corruption fixtures, legitimate orphaned AoE flight retained) |
+| AF-065 | CONFIRMED P2, omitted mechanics registration | Removing all 43 Frog/Worm registrations still yielded a green 75-case report under the historical minimum-total gate. | Require actual PASS records for every case exported by each of the three registered extension suites. | `tests/test_mechanics_full_ci.lua`, `tests/test_audit_quality.py` — FIXED_CI (real CLI plus isolated missing-registration negative control) |
+| AF-066 | CONFIRMED P2, invariant false positive | Seed 20261016, match 443, tick 1986: a later projectile kills a victim after its web flight was processed. The observer rejected the valid deferred-cancellation boundary. | Permit an absent/dead target at that boundary, retain live target/source reservation checks; no engine or refund timing change. | `tests/test_web_observer_boundary.lua` — FIXED_CI (both owners, actual projectile ordering, next-update cancellation/refund, live corruption rejection) |
+
+
+| ID | Classification / priority | Root cause / reproduction | Follow-up |
+| --- | --- | --- | --- |
+| OP-006 | OPTIMIZATION P2, Worm bot search | Each of up to 16 candidate points per enemy calls the authoritative burrow validator, which scans the full entity list for six-unit structure clearance. Dense synthetic host scenes show superlinear CPU growth; see repeated scaling evidence in the post-update audit. | Consider a per-decision list of live structure blockers or a bounded spatial query, then prove exact target/score parity. No scoring, legal placement or balance changes made in this audit. |
+| OP-007 | RISK P2, side-paired outcome divergence | The fresh 1000-match schedule has exactly one non-mirroring result among 500 pairs: seed 20261016, pair 281, normal difficulty; P2 wins both orientations (303.2 / 300.6 simulated seconds). Targeted replays reproduce both outcomes. | Root cause not established; outcome divergence alone is not a confirmed balance/engine bug. Preserve both decks in `side_pairs.log`; investigate entity-order/tie/forecast effects before any gameplay change. No rules or stats altered. |

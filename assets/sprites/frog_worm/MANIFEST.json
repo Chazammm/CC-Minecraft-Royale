@@ -2,7 +2,7 @@
   "sourceReview": "https://github.com/Chazammm/CC-Minecraft-Royale/pull/21",
   "sourceRevision": "a0da310becfbdb028780ab698fa3d80a047e46a5",
   "loveSha256": {
-    "king_frog": "4b21072bd91b808ebe2f8ac42074f7ed59195d128d41f74ae4c69dfb8d81abf9",
+    "king_frog": "dd41348e63f1b500b1125f951fbda33093add82e6fa451c9414332ac69790cc8",
     "nether_worm": "41d01475833de12222a86a75d205c0ac1381f47969cd8ec9d616d335e5130b0f"
   },
   "nativeModule": "src/assets/custom_mobs/frames.lua",
@@ -21,5 +21,44 @@
     "king_frog",
     "nether_worm"
   ],
-  "nativeSha256": "a3b4f380a66168d238e0cbd6493a3dd2a2681f4932846a6162af7981853da66a"
+  "nativeSha256": "3da9f5416f2b2d08c9398ef832a70f9d92d46d02340b5ccccd9a61eee6aaf03b",
+  "kingFrogRevision": {
+    "date": "2026-10-16",
+    "changes": [
+      "solid orange brows over both eyes in all four native poses",
+      "normal orange frog body and tan belly",
+      "one small crown and one plain purple cape; no breastplate, collar, harness or chest ornament"
+    ],
+    "source": "source/king_frog_revision.png",
+    "sourceSha256": "9dd97a707163fecde05dd082871dbce36eebb8dd6be7f42e5a4bcf8110ee9877",
+    "nativeFrames": [
+      "king_frog",
+      "king_frog_walk",
+      "king_frog_tongue",
+      "king_frog_melee"
+    ],
+    "baseRevision": "f9f23c26aeda5e5694ec360b11d847d14454a787",
+    "beforeRevision": "5b6b89264e1a7591b2bc5a9a9e639baf28f25706",
+    "beforeSha256": {
+      "source/king_frog_before.png": "4b21072bd91b808ebe2f8ac42074f7ed59195d128d41f74ae4c69dfb8d81abf9",
+      "source/king_frog_before_capture.json": "923c5d314517adb52586a3344f3c6403ee39db710f4a946d53635212f3f27d31"
+    }
+  },
+  "kingFrogNativePolish": {
+    "date": "2026-10-16",
+    "beforeRevision": "f7193ff220125006f7986e83e0f4be323a19b818",
+    "beforeCapture": "source/king_frog_cc_before.json",
+    "beforeCaptureSha256": "265601ab04b89145c23ca30371b3b2f3a91f02d90041e7846779d2512799352e",
+    "changes": [
+      "three separated crown points in one 3-row PixelBox band, fixed across all four poses",
+      "rounded pale belly directly bordered by orange skin; brown shading confined to rear legs",
+      "walk gait moves the belly and feet without shifting the crown into a different texel band"
+    ],
+    "nativeDimensions": [
+      16,
+      16
+    ],
+    "loveMasterChanged": false,
+    "preview": "previews/king_frog_cc_polish.png"
+  }
 }

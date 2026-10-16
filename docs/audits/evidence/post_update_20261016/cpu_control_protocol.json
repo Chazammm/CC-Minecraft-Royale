@@ -1,0 +1,12 @@
+{
+  "sourceFile": "tests/performance_profile.lua",
+  "extractPrefixBefore": "-- Stress decision scoring",
+  "prefixSha256": "9b0f5a37e753879684b57354bc07824a34a82f879b8250ba1fdbefe3fcb7429d",
+  "runtime": "Lua 5.2.4",
+  "repeats": 8,
+  "order": "odd: main,candidate; even: candidate,main",
+  "affinity": 2,
+  "method": "Each fresh child process pinned with os.sched_setaffinity to the same CPU from the allowed parent affinity set; stdout recorded. Host wall contention remains possible.",
+  "main": "6e85dc77553bd17422deeb9cb51258cefda06fe5",
+  "candidateRuntimeCode": "259da467f26025bf816307d5ab1539257b6236b2"
+}

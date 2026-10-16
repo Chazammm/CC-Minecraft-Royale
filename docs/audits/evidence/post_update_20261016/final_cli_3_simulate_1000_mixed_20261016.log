@@ -1,0 +1,153 @@
+CC-Minecraft Royale balance benchmark
+CODE_REVISION|259da467f26025bf816307d5ab1539257b6236b2
+Mode: MIXED   Matches: 1000   Seed: 20261016   Tick: 0.10s
+27-card pool: 16 are sampled into two disjoint 8-card decks each pair.
+The unused cards change every shuffle; pairs are replayed with sides swapped.
+
+Side-swapped pairs reuse one deterministic gameplay seed; current combat has no random branches, while deck sampling RNG stays independent.
+  20 / 1000
+  40 / 1000
+  60 / 1000
+  80 / 1000
+  100 / 1000
+  120 / 1000
+  140 / 1000
+  160 / 1000
+  180 / 1000
+  200 / 1000
+  220 / 1000
+  240 / 1000
+  260 / 1000
+  280 / 1000
+  300 / 1000
+  320 / 1000
+  340 / 1000
+  360 / 1000
+  380 / 1000
+  400 / 1000
+  420 / 1000
+  440 / 1000
+  460 / 1000
+  480 / 1000
+  500 / 1000
+  520 / 1000
+  540 / 1000
+  560 / 1000
+  580 / 1000
+  600 / 1000
+  620 / 1000
+  640 / 1000
+  660 / 1000
+  680 / 1000
+  700 / 1000
+  720 / 1000
+  740 / 1000
+  760 / 1000
+  780 / 1000
+  800 / 1000
+  820 / 1000
+  840 / 1000
+  860 / 1000
+  880 / 1000
+  900 / 1000
+  920 / 1000
+  940 / 1000
+  960 / 1000
+  980 / 1000
+  1000 / 1000
+
+GLOBAL
+P1 wins: 500 (50.0%)
+P2 wins: 500 (50.0%)
+Draws:   0 (0.0%)
+Avg match: 271.2s
+
+CARD BALANCE
+Card             Score  P/M   U/E   T/E   Flag
+Enderman          67.1  2.7  48.4  42.0 WATCH+
+Zombie            61.7  7.8  81.0   7.5 WATCH+
+Bat Swarm         59.6  9.7 105.7   3.4 WATCH+
+Wolf              58.1  7.6  88.1   6.2 WATCH+
+Wither Skeleton   57.9  7.4  78.3   6.6 WATCH+
+Nether Portal     57.7  5.4  85.1   3.0 WATCH+
+Magma Cube        57.7  7.6  62.7   3.2 WATCH+
+Minoshroom        53.9  0.9  25.9  11.3 OK    
+Spider            53.9  9.6  92.8   4.0 OK    
+Slime             51.1  8.0  62.1   3.5 OK    
+Ravager Rider     50.8  4.5  25.3   9.7 OK    
+Evoker            49.8  2.7  76.3   4.5 OK    
+Baby Ender Dragon  49.3  3.8  51.3   8.7 OK    
+Arrow Volley      49.2  2.6  82.1   0.3 OK    
+Blaze             49.2  5.3  65.0   6.3 OK    
+Endermite         49.2 10.0  35.4   2.6 OK    
+Villager          48.9  0.6   0.0   0.0 OK    
+Iron Golem        47.5  4.2   9.7   7.0 OK    
+Cannon            47.2  4.5 124.9   0.0 OK    
+Pillager Outpost  47.0  4.9 101.5   0.0 OK    
+Creeper           45.7  3.8  72.0   0.9 OK    
+Falling Anvil     43.3  8.0 105.8   2.9 WATCH-
+Nether Worm       41.7  7.8  71.5   3.0 WATCH-
+Witch             40.4  4.5  44.5   4.2 WATCH-
+Snow Golem        39.5  8.6  49.6   1.8 WATCH-
+King Frog         37.2  7.3  34.3   0.7 WATCH-
+Skeleton          35.0  8.0  50.6   1.8 WATCH-
+
+UTILITY
+Card             BonusE  Slow/s  Hits/Play
+Nether Portal      0.00    0.17      0.00
+Spider             0.00    1.88      0.00
+Evoker             0.00    0.00      2.16
+Arrow Volley       0.00    0.00      3.40
+Villager           4.15    0.00      0.00
+Falling Anvil      0.00    0.00      1.32
+Snow Golem         0.00    5.23      0.00
+
+EVOLUTIONS
+Card             Slot% Evo/SM  Evo% Cycles EvoCost
+Nether Portal     20.3   1.34  26.2      2     3.0
+Spider            73.7   2.83  29.8      2     2.0
+Endermite         24.1   1.54  16.2      4     1.0
+Villager          39.1   0.00   0.0      3     7.0
+Iron Golem        48.9   1.15  25.3      2     5.0
+Creeper          100.0   0.97  25.4      2     4.0
+
+HOW TO READ
+Score = deck win rate with draws worth half a win.
+P/M   = times played per match while the card is in deck.
+U/E   = unit damage per Emerald spent.
+T/E   = tower damage per Emerald spent.
+WATCH+/- means investigate, not automatic nerf/buff.
+
+Recommended benchmark: simulate 500 mixed
+
+Saved full report to: balance_results.txt
+View it with: type balance_results.txt
+GitHub auto-sync not configured. Run once: report_sync setup
+OBSERVED_CLI|matches=1000|ticks=2713368|max_entities=27|max_projectiles=6
+OBSERVED_PLAYS|arrows|1598
+OBSERVED_PLAYS|baby_ender_dragon|2116
+OBSERVED_PLAYS|bat_swarm|6176
+OBSERVED_PLAYS|blaze|3260
+OBSERVED_PLAYS|cannon|2750
+OBSERVED_PLAYS|creeper|2332
+OBSERVED_PLAYS|enderman|1700
+OBSERVED_PLAYS|endermite|5980
+OBSERVED_PLAYS|evoker|1626
+OBSERVED_PLAYS|falling_anvil|4604
+OBSERVED_PLAYS|iron_golem|2332
+OBSERVED_PLAYS|king_frog|4232
+OBSERVED_PLAYS|magma_cube|4190
+OBSERVED_PLAYS|minoshroom|526
+OBSERVED_PLAYS|nether_portal|3288
+OBSERVED_PLAYS|nether_worm|4470
+OBSERVED_PLAYS|pillager_outpost|2806
+OBSERVED_PLAYS|ravager_rider|2800
+OBSERVED_PLAYS|skeleton|4956
+OBSERVED_PLAYS|slime|4392
+OBSERVED_PLAYS|snow_golem|5292
+OBSERVED_PLAYS|spider|5646
+OBSERVED_PLAYS|villager|356
+OBSERVED_PLAYS|witch|2544
+OBSERVED_PLAYS|wither_skeleton|4366
+OBSERVED_PLAYS|wolf|4446
+OBSERVED_PLAYS|zombie|4344

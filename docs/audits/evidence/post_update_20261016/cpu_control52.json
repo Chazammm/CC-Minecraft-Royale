@@ -1,0 +1,130 @@
+[
+  {
+    "scope": "main",
+    "lua": "5.2",
+    "repeat": 1,
+    "cpuAffinity": 2,
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.901791|mean_ms=300.5970|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.675214|mean_ms=0.0743\nPROFILE|headless_bot_update|count=18174|cpu_s=0.192062|mean_ms=0.0106\nPROFILE|headless_other|count=3|cpu_s=0.034515|mean_ms=11.5050\n"
+  },
+  {
+    "scope": "candidate",
+    "lua": "5.2",
+    "repeat": 1,
+    "cpuAffinity": 2,
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.829831|mean_ms=276.6103|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.684591|mean_ms=0.0754\nPROFILE|headless_bot_update|count=18174|cpu_s=0.124952|mean_ms=0.0069\nPROFILE|headless_other|count=3|cpu_s=0.020288|mean_ms=6.7627\n"
+  },
+  {
+    "scope": "candidate",
+    "lua": "5.2",
+    "repeat": 2,
+    "cpuAffinity": 2,
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.790187|mean_ms=263.3957|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.619050|mean_ms=0.0681\nPROFILE|headless_bot_update|count=18174|cpu_s=0.138260|mean_ms=0.0076\nPROFILE|headless_other|count=3|cpu_s=0.032877|mean_ms=10.9590\n"
+  },
+  {
+    "scope": "main",
+    "lua": "5.2",
+    "repeat": 2,
+    "cpuAffinity": 2,
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.787896|mean_ms=262.6320|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.640235|mean_ms=0.0705\nPROFILE|headless_bot_update|count=18174|cpu_s=0.131468|mean_ms=0.0072\nPROFILE|headless_other|count=3|cpu_s=0.016193|mean_ms=5.3977\n"
+  },
+  {
+    "scope": "main",
+    "lua": "5.2",
+    "repeat": 3,
+    "cpuAffinity": 2,
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.586960|mean_ms=195.6533|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.473654|mean_ms=0.0521\nPROFILE|headless_bot_update|count=18174|cpu_s=0.096223|mean_ms=0.0053\nPROFILE|headless_other|count=3|cpu_s=0.017083|mean_ms=5.6943\n"
+  },
+  {
+    "scope": "candidate",
+    "lua": "5.2",
+    "repeat": 3,
+    "cpuAffinity": 2,
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.570776|mean_ms=190.2587|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.456285|mean_ms=0.0502\nPROFILE|headless_bot_update|count=18174|cpu_s=0.093031|mean_ms=0.0051\nPROFILE|headless_other|count=3|cpu_s=0.021460|mean_ms=7.1533\n"
+  },
+  {
+    "scope": "candidate",
+    "lua": "5.2",
+    "repeat": 4,
+    "cpuAffinity": 2,
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.612350|mean_ms=204.1167|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.503608|mean_ms=0.0554\nPROFILE|headless_bot_update|count=18174|cpu_s=0.092743|mean_ms=0.0051\nPROFILE|headless_other|count=3|cpu_s=0.015999|mean_ms=5.3330\n"
+  },
+  {
+    "scope": "main",
+    "lua": "5.2",
+    "repeat": 4,
+    "cpuAffinity": 2,
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.516160|mean_ms=172.0533|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.416789|mean_ms=0.0459\nPROFILE|headless_bot_update|count=18174|cpu_s=0.081449|mean_ms=0.0045\nPROFILE|headless_other|count=3|cpu_s=0.017922|mean_ms=5.9740\n"
+  },
+  {
+    "scope": "main",
+    "lua": "5.2",
+    "repeat": 5,
+    "cpuAffinity": 2,
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.852507|mean_ms=284.1690|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.685600|mean_ms=0.0755\nPROFILE|headless_bot_update|count=18174|cpu_s=0.143139|mean_ms=0.0079\nPROFILE|headless_other|count=3|cpu_s=0.023768|mean_ms=7.9227\n"
+  },
+  {
+    "scope": "candidate",
+    "lua": "5.2",
+    "repeat": 5,
+    "cpuAffinity": 2,
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.459781|mean_ms=153.2603|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.371705|mean_ms=0.0409\nPROFILE|headless_bot_update|count=18174|cpu_s=0.074872|mean_ms=0.0041\nPROFILE|headless_other|count=3|cpu_s=0.013204|mean_ms=4.4013\n"
+  },
+  {
+    "scope": "candidate",
+    "lua": "5.2",
+    "repeat": 6,
+    "cpuAffinity": 2,
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.897184|mean_ms=299.0613|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.743991|mean_ms=0.0819\nPROFILE|headless_bot_update|count=18174|cpu_s=0.128203|mean_ms=0.0071\nPROFILE|headless_other|count=3|cpu_s=0.024990|mean_ms=8.3300\n"
+  },
+  {
+    "scope": "main",
+    "lua": "5.2",
+    "repeat": 6,
+    "cpuAffinity": 2,
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.630197|mean_ms=210.0657|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.529654|mean_ms=0.0583\nPROFILE|headless_bot_update|count=18174|cpu_s=0.087018|mean_ms=0.0048\nPROFILE|headless_other|count=3|cpu_s=0.013525|mean_ms=4.5083\n"
+  },
+  {
+    "scope": "main",
+    "lua": "5.2",
+    "repeat": 7,
+    "cpuAffinity": 2,
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.625230|mean_ms=208.4100|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.514348|mean_ms=0.0566\nPROFILE|headless_bot_update|count=18174|cpu_s=0.091094|mean_ms=0.0050\nPROFILE|headless_other|count=3|cpu_s=0.019788|mean_ms=6.5960\n"
+  },
+  {
+    "scope": "candidate",
+    "lua": "5.2",
+    "repeat": 7,
+    "cpuAffinity": 2,
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.459107|mean_ms=153.0357|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.371067|mean_ms=0.0408\nPROFILE|headless_bot_update|count=18174|cpu_s=0.074848|mean_ms=0.0041\nPROFILE|headless_other|count=3|cpu_s=0.013192|mean_ms=4.3973\n"
+  },
+  {
+    "scope": "candidate",
+    "lua": "5.2",
+    "repeat": 8,
+    "cpuAffinity": 2,
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.546691|mean_ms=182.2303|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.451883|mean_ms=0.0497\nPROFILE|headless_bot_update|count=18174|cpu_s=0.081648|mean_ms=0.0045\nPROFILE|headless_other|count=3|cpu_s=0.013160|mean_ms=4.3867\n"
+  },
+  {
+    "scope": "main",
+    "lua": "5.2",
+    "repeat": 8,
+    "cpuAffinity": 2,
+    "exit": 0,
+    "output": "PROFILE|headless_control|ticks=9174|bot_actions=336\nPROFILE|headless_3_matches|count=3|cpu_s=0.554720|mean_ms=184.9067|ticks=9174|bot_actions=336\nPROFILE|headless_game_update|count=9084|cpu_s=0.446049|mean_ms=0.0491\nPROFILE|headless_bot_update|count=18174|cpu_s=0.091407|mean_ms=0.0050\nPROFILE|headless_other|count=3|cpu_s=0.017264|mean_ms=5.7547\n"
+  }
+]
