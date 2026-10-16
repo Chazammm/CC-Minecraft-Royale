@@ -21,7 +21,7 @@
     "king_frog",
     "nether_worm"
   ],
-  "nativeSha256": "e4613f5684d0444a5fc203d807fff7c6bc34118da0147db05674035daa0af49f",
+  "nativeSha256": "3da9f5416f2b2d08c9398ef832a70f9d92d46d02340b5ccccd9a61eee6aaf03b",
   "kingFrogRevision": {
     "date": "2026-10-16",
     "changes": [
@@ -43,5 +43,22 @@
       "source/king_frog_before.png": "4b21072bd91b808ebe2f8ac42074f7ed59195d128d41f74ae4c69dfb8d81abf9",
       "source/king_frog_before_capture.json": "923c5d314517adb52586a3344f3c6403ee39db710f4a946d53635212f3f27d31"
     }
+  },
+  "kingFrogNativePolish": {
+    "date": "2026-10-16",
+    "beforeRevision": "f7193ff220125006f7986e83e0f4be323a19b818",
+    "beforeCapture": "source/king_frog_cc_before.json",
+    "beforeCaptureSha256": "265601ab04b89145c23ca30371b3b2f3a91f02d90041e7846779d2512799352e",
+    "changes": [
+      "three separated crown points in one 3-row PixelBox band, fixed across all four poses",
+      "rounded pale belly directly bordered by orange skin; brown shading confined to rear legs",
+      "walk gait moves the belly and feet without shifting the crown into a different texel band"
+    ],
+    "nativeDimensions": [
+      16,
+      16
+    ],
+    "loveMasterChanged": false,
+    "preview": "previews/king_frog_cc_polish.png"
   }
 }

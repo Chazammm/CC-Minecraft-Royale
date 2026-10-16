@@ -71,6 +71,21 @@ def compositions(data):
   draw.text((offset+145,603),'Native CC / 6x',font=font(15),anchor='mm',fill='#9CB4B4')
   draw.text((offset+345,603),'Echte PixelBox / 6x',font=font(15),anchor='mm',fill='#9CB4B4')
  result['previews/king_frog_revision.png']=review
+ # Follow-up review uses the exact four prior native captures from f7193ff.
+ previous=json.loads((ROOT/'source/king_frog_cc_before.json').read_text())
+ polish=Image.new('RGB',(1040,980),BG)
+ header(polish,'KING FROG / CC CROWN + BELLY POLISH','Actual native rows and decoded production PixelBox captures / 6x nearest / LÖVE master unchanged')
+ draw=ImageDraw.Draw(polish)
+ for x,label in ((180,'Vorher / native'),(380,'Vorher / PixelBox'),(660,'Nachher / native'),(860,'Nachher / PixelBox')):
+  draw.text((x,115),label,font=font(17),anchor='mm',fill='#F2EEE1')
+ for i,key in enumerate(('king_frog','king_frog_walk','king_frog_melee','king_frog_tongue')):
+  top=145+i*205
+  for raw_x,pb_x,frame in ((180,380,previous[key]),(660,860,frames[key])):
+   raw=native(frame);pic=decoded(frame)
+   paste(polish,raw,raw_x-raw.width*3,top+35,6)
+   paste(polish,pic,pb_x-pic.width*3,top,6)
+  draw.text((520,top+178),key.replace('_',' '),font=font(16),anchor='mm',fill='#9CB4B4')
+ result['previews/king_frog_cc_polish.png']=polish
  return result
 
 def validate(data,other):
@@ -82,6 +97,8 @@ def validate(data,other):
  assert hashlib.sha256((ROOT/revision['source']).read_bytes()).hexdigest()==revision['sourceSha256']
  for path,digest in revision['beforeSha256'].items():
   assert hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==digest,'Previous review source changed'
+ polish=manifest['kingFrogNativePolish']
+ assert hashlib.sha256((ROOT/polish['beforeCapture']).read_bytes()).hexdigest()==polish['beforeCaptureSha256'],'Previous native capture changed'
  for key in NAMES:
   im=Image.open(ROOT/'love2d'/(key+'.png'));assert im.mode=='RGBA' and im.size==(256,256)
   pixels=list(im.get_flattened_data());assert {p[3] for p in pixels}=={0,255}
