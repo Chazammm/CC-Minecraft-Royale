@@ -1,0 +1,46 @@
+name: Custom mob concepts and assets
+on:
+  push:
+    branches: [concepts/custom-mob-cards-20261016]
+  pull_request:
+    paths:
+      - assets/proposed/custom_mobs/**
+      - .github/workflows/custom-mob-concepts.yml
+permissions:
+  contents: read
+jobs:
+  isolated-concept-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Host dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.2 lua5.4 fonts-dejavu-core
+          python -m pip install Pillow==12.3.0
+      - name: Isolated Lua syntax
+        run: |
+          find assets/proposed/custom_mobs -name '*.lua' -print0 | xargs -0 -n1 luac5.2 -p
+          find assets/proposed/custom_mobs -name '*.lua' -print0 | xargs -0 -n1 luac5.4 -p
+      - name: Real renderer, both Lua versions
+        run: |
+          lua5.2 assets/proposed/custom_mobs/tools/test_assets.lua /tmp/custom52.json /tmp/monitor52.json
+          lua5.4 assets/proposed/custom_mobs/tools/test_assets.lua /tmp/custom54.json /tmp/monitor54.json
+          lua5.2 assets/proposed/custom_mobs/tools/snapshot_cards.lua /tmp/current-cards.json
+      - name: Exact exports, previews, cues and additive scope
+        run: >-
+          python assets/proposed/custom_mobs/tools/validate_assets.py
+          --capture52 /tmp/custom52.json --capture54 /tmp/custom54.json
+          --monitor52 /tmp/monitor52.json --monitor54 /tmp/monitor54.json
+          --snapshot /tmp/current-cards.json
+      - name: All existing regression suites, both Lua versions
+        run: |
+          for test in tests/test_*.lua; do
+            lua5.2 "$test"
+            lua5.4 "$test"
+          done
