@@ -34,8 +34,8 @@ MUTATIONS = [
      '-- omitted by negative control', 'tests/test_mechanics_full_ci.lua'),
     ('missing_lua52_gate', '.github/workflows/lua-ci.yml', '            lua5.2 "$test"',
      '            true', 'tests/test_release_gate.lua'),
-    ('bad_sprite_token', 'src/assets/custom_mobs/frames.lua', '"..YY..YY..YY...."',
-     '"?.YY..YY..YY...."', 'tests/test_frog_worm_rendering.lua'),
+    ('bad_sprite_token', 'src/assets/custom_mobs/frames.lua', '"........RRRR...."',
+     '"?.......RRRR...."', 'tests/test_frog_worm_rendering.lua'),
 ]
 
 

@@ -53,6 +53,24 @@ def compositions(data):
  result['previews/runtime_poses.png']=poses
  scene=decoded(data['liveScene']);result['previews/gameplay_1x.png']=scene
  result['previews/gameplay_6x.png']=scene.resize((scene.width*6,scene.height*6),Image.Resampling.NEAREST)
+ # The previous file/capture are preserved verbatim from the recorded Git
+ # revision, so this review image compares actual assets and renderer output.
+ review=Image.new('RGB',(1000,660),BG)
+ header(review,'KING FROG / BODY + BROW REVISION','Actual 256px masters / native rows / real PixelBox captures; no concept mockups')
+ old=json.loads((ROOT/'source/king_frog_before_capture.json').read_text())
+ for offset,label,master,frame in (
+     (0,'Vorher',ROOT/'source/king_frog_before.png',old),
+     (500,'Überarbeitet',ROOT/'love2d/king_frog.png',frames['king_frog'])):
+  draw=ImageDraw.Draw(review)
+  draw.text((offset+250,120),label,font=font(22),anchor='mm',fill='#F2EEE1')
+  paste(review,Image.open(master),offset+122,136)
+  draw.text((offset+250,402),'LÖVE / 256 × 256',font=font(15),anchor='mm',fill='#9CB4B4')
+  raw=native(frame);pic=decoded(frame)
+  paste(review,raw,offset+145-raw.width*3,447,6)
+  paste(review,pic,offset+345-pic.width*3,427,6)
+  draw.text((offset+145,603),'Native CC / 6x',font=font(15),anchor='mm',fill='#9CB4B4')
+  draw.text((offset+345,603),'Echte PixelBox / 6x',font=font(15),anchor='mm',fill='#9CB4B4')
+ result['previews/king_frog_revision.png']=review
  return result
 
 def validate(data,other):
@@ -60,6 +78,10 @@ def validate(data,other):
  assert data==json.loads((ROOT/'evidence/capture52.json').read_text()),'Committed capture stale'
  names=set(data['captures']);assert len(names)==9 and not any('crab' in k or 'centipede' in k for k in names)
  manifest=json.loads((ROOT/'MANIFEST.json').read_text())
+ revision=manifest['kingFrogRevision']
+ assert hashlib.sha256((ROOT/revision['source']).read_bytes()).hexdigest()==revision['sourceSha256']
+ for path,digest in revision['beforeSha256'].items():
+  assert hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==digest,'Previous review source changed'
  for key in NAMES:
   im=Image.open(ROOT/'love2d'/(key+'.png'));assert im.mode=='RGBA' and im.size==(256,256)
   pixels=list(im.get_flattened_data());assert {p[3] for p in pixels}=={0,255}
