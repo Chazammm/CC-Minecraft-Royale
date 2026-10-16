@@ -2384,6 +2384,7 @@ end)
 
 require("src.mechanics_audit").register(runTest)
 require("src.four_mob_mechanics").register(runTest)
+require("src.frog_worm_mechanics").register(runTest)
 
 local passCount = 0
 local failCount = 0

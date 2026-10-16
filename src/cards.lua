@@ -652,6 +652,28 @@ cards.list = {
             canAttackAir = false, targetMode = "any", visualVariant = "minoshroom",
         },
     },
+    {
+        id = "king_frog", name = "King Frog", icon = "F",
+        cost = 3, kind = "unit", color = colors.orange,
+        unit = {
+            maxHp = 550, damage = 40, moveSpeed = 5,
+            attackRange = 2.5, attackCooldown = 1.4, aggroRange = 27,
+            canAttackAir = false, targetMode = "any", visualVariant = "king_frog",
+            preciseAttackTiming = true,
+            tongueHook = { range=12, stopRange=2.5, maxPullDistance=9.5, windup=.25, cooldown=4.2 },
+        },
+    },
+    {
+        id = "nether_worm", name = "Nether Worm", icon = "U",
+        cost = 3, kind = "unit", color = colors.red, placement = "burrow",
+        unit = {
+            maxHp = 350, damage = 95, moveSpeed = 9,
+            attackRange = 2.5, attackCooldown = 1.2, aggroRange = 14,
+            canAttackAir = false, targetMode = "any", visualVariant = "nether_worm",
+            preciseAttackTiming = true,
+            burrow = { warning=1.4, emergence=.6, openerBonus=85, openerWindow=2, towerMultiplier=.5 },
+        },
+    },
 }
 
 -- Relative weapon values have one source of truth, including future approved
@@ -952,6 +974,18 @@ cards.info = {
         description = "Slow ground tank with 300 damage per axe hit. Two hits defeat a normal Zombie; cannot hit air.",
         goodAgainst = "ground tanks, heavy melee units",
         badAgainst = "air, swarms, ranged kiting",
+    },
+    king_frog = {
+        role = "Hook and melee control",
+        description = "Hooks ground troops into melee, then hits for 40. Range 12; no air or building pulls.",
+        goodAgainst = "ranged ground support, separated tanks",
+        badAgainst = "air, swarms, dangerous melee pulled too close",
+    },
+    nether_worm = {
+        role = "Anywhere ambush assassin",
+        description = "Ground ambush anywhere: 1.4s warning, 0.6s exposed rise. Bites 95; crown towers take half.",
+        goodAgainst = "Villager / Bank, exposed support, buildings",
+        badAgainst = "ground defenders at the warning, air, tower focus",
     },
 }
 function cards.getInfo(id)
@@ -1317,6 +1351,14 @@ function cards.validate()
         riderCooldownLeft = true,
         initialBuildingImpactUsed = true,
         visualAnimation = true,
+        tongueCooldownLeft = true,
+        tongueWindup = true,
+        lastFrogPullTick = true,
+        emergenceRemaining = true,
+        birthRemainder = true,
+        wormOpenerRemaining = true,
+        wormOpenerUsed = true,
+        burrowState = true,
 
         summonerId = true,
         summonerAliveTracked = true,
@@ -1334,6 +1376,7 @@ function cards.validate()
     local validPlacements = {
         anywhere = true,
         water = true,
+        burrow = true,
     }
 
     local function finite(name, value)
@@ -1470,6 +1513,28 @@ function cards.validate()
             then
                 error("Invalid card data: " .. label .. ".beam.maxDps must be >= baseDps", 0)
             end
+        end
+
+        local hook = mechanicTable(label, payload, "tongueHook")
+        if hook then
+            for _,field in ipairs({"range","stopRange","maxPullDistance","windup","cooldown"}) do
+                finite(label..".tongueHook."..field,hook[field])
+                positiveField(label..".tongueHook",hook,field)
+            end
+            if hook.stopRange > hook.range or hook.stopRange > (payload.attackRange or 0)
+                or hook.maxPullDistance > hook.range-hook.stopRange+1e-9 then
+                error("Invalid card data: "..label.." hook must terminate in melee range",0)
+            end
+        end
+        local burrow = mechanicTable(label, payload, "burrow")
+        if burrow then
+            for _,field in ipairs({"warning","emergence","openerWindow","towerMultiplier"}) do
+                finite(label..".burrow."..field,burrow[field])
+                positiveField(label..".burrow",burrow,field)
+            end
+            finite(label..".burrow.openerBonus",burrow.openerBonus)
+            nonNegativeField(label..".burrow",burrow,"openerBonus")
+            if burrow.towerMultiplier>1 then error("Invalid card data: tower multiplier exceeds 1",0) end
         end
 
         local teleport = mechanicTable(label, payload, "teleport")
@@ -1663,13 +1728,16 @@ function cards.validate()
         if card.placement ~= nil and not validPlacements[card.placement] then
             error(
                 "Invalid card data: " .. card.id
-                    .. ".placement must be anywhere, water or nil",
+                    .. ".placement must be anywhere, water, burrow or nil",
                 0
             )
         end
 
         local payload = activePayload(card)
         validatePayload(card.id, payload, card.kind)
+        if card.placement=="burrow" and (card.kind~="unit" or not payload.burrow or payload.flying) then
+            error("Invalid card data: burrow placement requires a grounded burrow unit",0)
+        end
 
         if card.evolution then
             local rawCycles = card.evolution.cycles

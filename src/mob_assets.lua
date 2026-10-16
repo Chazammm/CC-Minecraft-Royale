@@ -1,4 +1,5 @@
 -- Load only native Lua rasters once. PNG/GIF previews are never runtime inputs.
+local custom = require('src.assets.custom_mobs.dispatch')
 local assets = {
     ravager_rider = require('src.assets.four_mobs.sprites.ravager_rider'),
     baby_ender_dragon = require('src.assets.four_mobs.sprites.baby_ender_dragon'),
@@ -26,6 +27,8 @@ local function flightFrame(clock)
     return flightCycle[1].frame
 end
 function module.sprite(entity, clock)
+    local frame,pose=custom.sprite(entity,clock)
+    if frame then return frame,pose end
     local key=assets[entity.visualVariant] and entity.visualVariant or names[entity.name]
     local set=key and assets[key]
     if not set then return nil end
@@ -57,6 +60,8 @@ function module.sprite(entity, clock)
     return assert(set.frames[pose]),pose
 end
 function module.effect(kind, clock, progress)
+    local frame=custom.effect(kind)
+    if frame then return frame end
     local second=(progress and progress>=.5) or (not progress and math.floor((clock or 0)*8)%2==1)
     if kind=='rider_bolt' then return effects.ravager_rider.frames.crossbow_bolt
     elseif kind=='rider_muzzle' then return effects.ravager_rider.frames.muzzle

@@ -1221,6 +1221,10 @@ local function drawEffect(box, playerId, effect)
     if frame then
         local px,py=worldToPixel(box,playerId,effect.x,effect.y)
         drawNativeFrame(box,frame,px,py)
+    elseif effect.kind == "frog_tongue" then
+        local x1,y1=worldToPixel(box,playerId,effect.x,effect.y)
+        local x2,y2=worldToPixel(box,playerId,effect.x2,effect.y2)
+        drawLine(box,x1,y1,x2,y2,colors.pink)
     elseif effect.kind == "arrows" then
         drawArrowVolley(box, playerId, effect)
     elseif effect.kind == "hit" then
@@ -1423,6 +1427,13 @@ function pixelArena.draw(monitor, state, playerId, rect, forceFullEncode)
     local frameClock = (os.clock and os.clock() or 0)
     local drawEntities = orderedEntities(state)
 
+    for _,pending in ipairs(state.pendingDeployments or {}) do
+        local px,py=worldToPixel(box,playerId,pending.x,pending.y)
+        drawNativeFrame(box,mobAssets.effect("nether_worm_warning"),px,py)
+        local team=pending.owner==playerId and colors.lightBlue or colors.red
+        fillRect(box,alignTexelX(px)-10,alignTexelY(py),alignTexelX(px)-9,alignTexelY(py)+2,team)
+    end
+
     if playerId == 1 then
         for _, entity in ipairs(drawEntities) do
             if entity.alive then
@@ -1445,6 +1456,19 @@ function pixelArena.draw(monitor, state, playerId, rect, forceFullEncode)
                 end
             end
             i = first - 1
+        end
+    end
+
+    -- Tongue windup is authoritative; its line is only a visual projection.
+    for _,entity in ipairs(drawEntities) do
+        if entity.alive and entity.tongueWindup then
+            local target=getEntityById(state,entity.tongueWindup.targetId)
+            if target then
+                local x1,y1=worldToPixel(box,playerId,entity.x,entity.y)
+                local x2,y2=worldToPixel(box,playerId,target.x,target.y)
+                local progress=1-entity.tongueWindup.remaining/entity.tongueHook.windup
+                drawLine(box,x1,y1,x1+(x2-x1)*progress,y1+(y2-y1)*progress,colors.pink)
+            end
         end
     end
 

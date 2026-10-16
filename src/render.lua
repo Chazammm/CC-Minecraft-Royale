@@ -746,6 +746,17 @@ local function infoStatLines(card)
 
         table.insert(lines, movement .. " UNIT  |  TARGETS " .. targets)
 
+        if u.tongueHook then
+            table.insert(lines,string.format("TONGUE %s range -> melee; every %ss",
+                numberText(u.tongueHook.range,1),numberText(u.tongueHook.cooldown,1)))
+            table.insert(lines,"Pulls ground troops; tongue deals no damage")
+        end
+        if u.burrow then
+            table.insert(lines,"DEPLOY on ground anywhere, both arena halves")
+            table.insert(lines,"1.4s warning + 0.6s exposed emergence")
+            table.insert(lines,"BITE 95 / crown towers 47.5 / troop opener +85")
+        end
+
         if u.beam then
             table.insert(lines, string.format(
                 "HP %s  |  RANGE %s  |  WATER ONLY",

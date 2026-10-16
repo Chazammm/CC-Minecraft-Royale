@@ -253,6 +253,16 @@ function arena.placementAllowed(playerId, x, y, placement, state)
         return false
     end
 
+    if placement == "burrow" then
+        if playerId~=1 and playerId~=2 then return false end
+        if not arena.isWalkable({},x,y) then return false end
+        for _,entity in ipairs(state and state.entities or {}) do
+            if entity.alive and (entity.kind=="tower" or entity.kind=="building")
+                and util.distanceSquared(x,y,entity.x,entity.y)<=36 then return false end
+        end
+        return true
+    end
+
     if placement == "anywhere" then
         return true
     end
@@ -275,6 +285,21 @@ function arena.placementAllowed(playerId, x, y, placement, state)
     -- Destroying an enemy Princess Tower unlocks only that lane's pocket.
     -- The opposite lane and the centre around the King Tower remain locked.
     return insideUnlockedPocket(state, playerId, x, y)
+end
+
+-- Local, owner-relative correction only; never clamp a backfield drop to own half.
+function arena.findBurrowPosition(playerId,x,y,state)
+    if (playerId~=1 and playerId~=2) or not util.isFiniteNumber(x) or not util.isFiniteNumber(y) then return end
+    if arena.placementAllowed(playerId,x,y,"burrow",state) then return x,y end
+    local direction=playerId==2 and -1 or 1
+    for _,radius in ipairs({2,4}) do
+        for i=0,7 do
+            local angle=i*math.pi/4
+            local nx=x+direction*radius*math.cos(angle)
+            local ny=y+direction*radius*math.sin(angle)
+            if arena.placementAllowed(playerId,nx,ny,"burrow",state) then return nx,ny end
+        end
+    end
 end
 
 function arena.worldToScreen(playerId, x, y, rect)
