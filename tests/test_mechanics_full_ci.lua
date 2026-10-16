@@ -58,6 +58,17 @@ assert(total >= 32, "Mechanics suite unexpectedly lost test cases")
 assert(pass == total and fail == 0 and errors == 0,
     ("In-game mechanics check: %d PASS / %d FAIL / %d ERROR of %d")
         :format(pass, fail, errors, total))
+-- A minimum total cannot detect a forgotten feature-suite registration.
+-- Require an actual PASS record for every exported feature case, rather than
+-- accepting a green summary produced by the remaining historical tests.
+for _, moduleName in ipairs({'src.four_mob_mechanics', 'src.frog_worm_mechanics'}) do
+    local suite = require(moduleName)
+    assert(#suite.cases > 0, moduleName .. ' exported no mechanics cases')
+    for _, case in ipairs(suite.cases) do
+        assert(reportBody:find('RESULT|' .. case.id .. '|PASS|', 1, true),
+            'Mechanics report omitted successful case ' .. case.id)
+    end
+end
 assert(reportBody:find("RESULT|evo_charged_creeper|PASS|", 1, true),
     "Charged Creeper test must pass after high-HP dummy fixture")
 assert(reportBody:find("DATA|evo_charged_creeper|near_target_damage=580.0000", 1, true),

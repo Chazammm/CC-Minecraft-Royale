@@ -74,6 +74,18 @@ function diagnostics.assertState(state,context)
     local webShots={}
     finite(state.nextWebShotId or 1,'next web shot ID')
     for _,projectile in ipairs(state.projectiles or {}) do
+        if projectile.alive then
+            for _,field in ipairs({'x','y','damage','speed','targetId'}) do
+                finite(projectile[field],'projectile '..field)
+            end
+            check(projectile.owner==1 or projectile.owner==2,'invalid projectile owner')
+            check(projectile.damage>=0 and projectile.speed>0,'invalid projectile damage/speed')
+            check(projectile.targetId>0 and projectile.targetId==math.floor(projectile.targetId),
+                'invalid projectile target ID')
+            for _,field in ipairs({'lastTargetX','lastTargetY'}) do
+                if projectile[field]~=nil then finite(projectile[field],'projectile '..field) end
+            end
+        end
         if projectile.alive and projectile.heroWebSpec then
             local id=projectile.webShotId
             finite(id,'web shot ID')
@@ -143,8 +155,17 @@ function diagnostics.assertState(state,context)
     for _,shot in pairs(webShots) do
         local target=live[shot.targetId]
         local reservation=target and target.heroWebReservation
-        check(reservation and reservation.shotId==shot.webShotId
-            and reservation.sourceEntityId==shot.sourceEntityId,'web projectile missing its reservation')
+        -- Later projectiles can kill a victim after this web was processed.
+        -- Its flight/source reservation is cancelled on the next update;
+        -- an absent victim at this boundary is not a broken live transaction.
+        if target then
+            check(reservation and reservation.shotId==shot.webShotId
+                and reservation.sourceEntityId==shot.sourceEntityId,'web projectile missing its reservation')
+        end
+        local source=live[shot.sourceEntityId]
+        if source then
+            check(source.pendingWebShotId==shot.webShotId,'web projectile missing its source reservation')
+        end
     end
     for id,entity in pairs(state.entityById) do
         check(seen[id]==entity,'orphan ID lookup')

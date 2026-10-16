@@ -26,136 +26,20 @@ jobs:
         run: find . -name '*.lua' -print0 | xargs -0 -n1 luac5.4 -p
       - name: Lua 5.2 compatibility syntax
         run: find . -name '*.lua' -print0 | xargs -0 -n1 luac5.2 -p
-      - name: Lua 5.2 compatibility smoke
+      - name: All discovered regression suites on both Lua versions
         run: |
-          lua5.2 tests/test_v1.lua
-          lua5.2 tests/test_audit_regressions.lua
-          lua5.2 tests/test_headless_runner.lua
-          lua5.2 tests/test_side_symmetry.lua
-          lua5.2 tests/test_refactor_parity.lua
-          lua5.2 tests/test_audit_hardening_20261010.lua
-          lua5.2 tests/test_audit_fixes_20261010.lua
-          lua5.2 tests/test_release_gate.lua
-          lua5.2 tests/test_mechanics_full_ci.lua
-      - name: V1 smoke tests
-        run: lua5.4 tests/test_v1.lua
-      - name: Platform stub tests
-        run: lua5.4 tests/test_platform_stubs.lua
-      - name: Audit regression tests
-        run: lua5.4 tests/test_audit_regressions.lua
-      - name: CLI and manifest tests
-        run: lua5.4 tests/test_cli_manifest.lua
-      - name: Installer manifest tests
-        run: lua5.4 tests/test_install_manifest.lua
-      - name: Headless runner parity tests
-        run: lua5.4 tests/test_headless_runner.lua
-      - name: Side symmetry tests
-        run: lua5.4 tests/test_side_symmetry.lua
-      - name: Audit follow-up tests
-        run: lua5.4 tests/test_audit_followups.lua
-      - name: Recovery hardening tests
-        run: lua5.4 tests/test_recovery_hardening.lua
-      - name: Refactor parity tests
-        run: lua5.4 tests/test_refactor_parity.lua
-      - name: Installer and combat hardening regressions
-        run: lua5.4 tests/test_audit_hardening_20261010.lua
-      - name: Third-audit regression tests
-        run: lua5.4 tests/test_audit_fixes_20261010.lua
-      - name: Four mobs, Hero Spider mechanics, rendering and simulation parity
-        run: |
-          lua5.2 tests/test_four_mobs.lua
-          lua5.4 tests/test_four_mobs.lua
-          lua5.2 tests/test_four_mob_rendering.lua
-          lua5.4 tests/test_four_mob_rendering.lua
-          lua5.2 tests/test_four_mob_simulations.lua
-          lua5.4 tests/test_four_mob_simulations.lua
-      - name: Audit register and release quality gate
-        run: lua5.4 tests/test_release_gate.lua
-      - name: Deep-audit preset filesystem false-return tests
-        run: |
-          lua5.2 tests/test_preset_false_returns.lua
-          lua5.4 tests/test_preset_false_returns.lua
-      - name: Installer and GitHub credential filesystem fault injection
-        run: |
-          lua5.2 tests/test_installer_false_returns.lua
-          lua5.4 tests/test_installer_false_returns.lua
-          lua5.2 tests/test_report_logout_false.lua
-          lua5.4 tests/test_report_logout_false.lua
-      - name: GitHub token setup write, close and readback fault injection
-        run: |
-          lua5.2 tests/test_report_token_write_failures.lua
-          lua5.4 tests/test_report_token_write_failures.lua
-      - name: Atomic persistence fault injection - silent writes and renames
-        run: |
-          lua5.2 tests/test_preset_transaction_integrity.lua
-          lua5.4 tests/test_preset_transaction_integrity.lua
-          lua5.2 tests/test_atomic_token_reconfig.lua
-          lua5.4 tests/test_atomic_token_reconfig.lua
-      - name: Credential backup recovery across interrupted updates
-        run: |
-          lua5.2 tests/test_token_backup_recovery.lua
-          lua5.4 tests/test_token_backup_recovery.lua
-      - name: Benchmark report publish byte-integrity oracle
-        run: |
-          lua5.2 tests/test_report_transaction_integrity.lua
-          lua5.4 tests/test_report_transaction_integrity.lua
-      - name: Token degraded-active crash recovery oracle
-        run: |
-          lua5.2 tests/test_token_corrupt_active_fallback.lua
-          lua5.4 tests/test_token_corrupt_active_fallback.lua
-      - name: Exhaustive 125-case deck recovery matrix
-        run: |
-          lua5.2 tests/test_preset_recovery_matrix.lua
-          lua5.4 tests/test_preset_recovery_matrix.lua
-      - name: Music seek failure and no-progress fault injection
-        run: |
-          lua5.2 tests/test_music_seek_failures.lua
-          lua5.4 tests/test_music_seek_failures.lua
-      - name: Deterministic live-core state invariant stress
-        run: |
-          lua5.2 tests/test_core_invariant_stress.lua
-          lua5.4 tests/test_core_invariant_stress.lua
-      - name: Full in-game mechanics suite
-        run: lua5.4 tests/test_mechanics_full_ci.lua
-      - name: Anvil candidate grid / exhaustive parity
-        run: |
-          lua5.2 tests/test_anvil_grid_parity.lua
-          lua5.4 tests/test_anvil_grid_parity.lua
-      - name: PixelBox frame identity and phase redraw regressions
-        run: |
-          lua5.2 tests/test_pixel_frame_diff.lua
-          lua5.4 tests/test_pixel_frame_diff.lua
-      - name: Complete native sprite roster and monitor encoding
-        run: |
-          lua5.2 tests/test_sprite_roster.lua
-          lua5.4 tests/test_sprite_roster.lua
-      - name: Cosmetic arena geometry, touch and simulation parity
-        run: |
-          lua5.2 tests/test_arena_skin_parity.lua
-          lua5.4 tests/test_arena_skin_parity.lua
+          for test in tests/test_*.lua; do
+            lua5.2 "$test"
+            lua5.4 "$test"
+          done
       - name: Read-only performance profile (diagnostic, not timed pass/fail)
         run: |
           lua5.2 tests/performance_profile.lua
           lua5.4 tests/performance_profile.lua
 
-      - name: Lobby-only deck mutation and malformed preset slot regressions
+      - name: Python safety and test-quality regressions
         run: |
-          lua5.2 tests/test_lobby_state_mutators.lua
-          lua5.4 tests/test_lobby_state_mutators.lua
-
-      - name: Positive projectile speed data invariant
-        run: |
-          lua5.2 tests/test_projectile_speed_schema.lua
-          lua5.4 tests/test_projectile_speed_schema.lua
-
-      - name: Finite river collision geometry configuration
-        run: |
-          lua5.2 tests/test_finite_river_bounds.lua
-          lua5.4 tests/test_finite_river_bounds.lua
-
-      - name: Python report retention safety and archive index regressions
-        run: |
-          python3 -m unittest discover -s tests -p test_report_retention.py -v
+          python3 -m unittest discover -s tests -p 'test_*.py' -v
           python3 scripts/prune_reports.py
 
       - name: Revision-stamped production CLI and deterministic replay
@@ -165,35 +49,3 @@ jobs:
           cmp /tmp/cc-balance-52.txt /tmp/cc-balance-54.txt
           lua5.4 scripts/audit_cli_host.lua mechanics_test.lua /tmp/cc-mechanics.txt "$GITHUB_SHA"
           lua5.4 scripts/audit_cli_host.lua audit_matches.lua /tmp/cc-audit.txt "$GITHUB_SHA" 100 20261014
-
-
-
-      - name: Complete-system audit and remaining dual-Lua regressions
-        run: |
-          lua5.2 tests/test_audit_runtime_gc.lua
-          lua5.4 tests/test_audit_runtime_gc.lua
-          lua5.2 tests/test_audit_followups.lua
-          lua5.2 tests/test_audit_io_boundaries.lua
-          lua5.4 tests/test_audit_io_boundaries.lua
-          lua5.2 tests/test_audit_monitor_boundaries.lua
-          lua5.4 tests/test_audit_monitor_boundaries.lua
-          lua5.2 tests/test_cli_manifest.lua
-          lua5.2 tests/test_diagnostic_contracts.lua
-          lua5.4 tests/test_diagnostic_contracts.lua
-          lua5.2 tests/test_install_manifest.lua
-          lua5.2 tests/test_mechanics_isolation.lua
-          lua5.4 tests/test_mechanics_isolation.lua
-          lua5.2 tests/test_music_fault_boundaries.lua
-          lua5.4 tests/test_music_fault_boundaries.lua
-          lua5.2 tests/test_pixel_failure_recovery.lua
-          lua5.4 tests/test_pixel_failure_recovery.lua
-          lua5.2 tests/test_platform_stubs.lua
-          lua5.2 tests/test_recovery_hardening.lua
-          lua5.2 tests/test_simulation_contracts.lua
-          lua5.4 tests/test_simulation_contracts.lua
-          lua5.2 tests/test_system_audit_20261014.lua
-          lua5.4 tests/test_system_audit_20261014.lua
-          lua5.2 tests/test_timer_precision.lua
-          lua5.4 tests/test_timer_precision.lua
-          lua5.2 tests/test_touch_disconnect.lua
-          lua5.4 tests/test_touch_disconnect.lua
