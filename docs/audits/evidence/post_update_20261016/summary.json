@@ -170,5 +170,11 @@
     }
   ],
   "hardware": "UNVERIFIED HARDWARE",
-  "pullRequest": "https://github.com/Chazammm/CC-Minecraft-Royale/pull/23"
+  "pullRequest": "https://github.com/Chazammm/CC-Minecraft-Royale/pull/23",
+  "evolutionComparisonCoverage": {
+    "selectedEvolutions": 6,
+    "villagerEvolutionPlays": 0,
+    "villagerReachedPercent": 0,
+    "villagerImpactStatus": "NOT EXERCISED in this sample; targeted engine mechanics PASS"
+  }
 }

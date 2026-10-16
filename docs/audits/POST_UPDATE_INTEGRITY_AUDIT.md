@@ -110,6 +110,8 @@ Der 1.000er-Invariantenlauf liefert unter **beiden** Lua-Versionen 2.710.362 Pr�
 
 Die echte 1.000er-Balance-CLI beendet 1.000 Matches mit P1 500 / P2 500 / Draws 0, 2.713.368 beobachteten Ticks und durchschnittlich 271,2 s Matchdauer. Alle 27 auswählbaren Karten werden tatsächlich gespielt; Frog 4.232 Plays, Worm 4.470, Minoshroom 526, Villager 356. Keine Projektil-Lebensdauerüberschreitung oder Inkonsistenz bei Cycle/Statistiksummen. Der 500er-Lauf beendet ebenfalls alle 500 Matches. Maxima und alle Karten-Plays stehen in den Logs.
 
+Der Evolution-Vergleich wurde für alle sechs Karten ausgeführt, aber nicht jede EVO-Variante wurde von den Bots erreicht: **Villager → Emerald Bank hat in dieser Stichprobe 0% `reached` und 0 Evo-Plays**. Dieser Report belegt daher keinen Bank-Evolutionseffekt. Die Bank-Mechanik, Zyklen, HP/Lifetime und Income-/Death-Interaktionen bestehen die gezielten Engine-Tests; die statistische Bot-Evo-Wirkung bleibt in dieser Vergleichsstichprobe **NOT EXERCISED**. Dies wird nicht durch Behaupten einer erfolgreich ausgespielten Bank-Evolution verdeckt.
+
 `WATCH-` im Mixed-Report ist kein technischer Fehler: Frog erreicht dort 37,2%, Worm 41,7% deckbezogene Score-Rate. Der kontrollierte Frog/Worm-Vergleich (10 Kontexte) hat eine breite 95%-Spanne von −10,16 bis +50,16 Prozentpunkten für B−A. Diese kleinen/abhängigen Stichproben sind kein Beweis für eine konkrete Balancekorrektur; Bot, Synergien und Deckkontext bleiben relevant. Keine Werte wurden geändert.
 
 
@@ -206,7 +208,7 @@ LOW OPEN: 2 (historische Gates, veraltete veröffentlichte Latest-Reports)
 FIXES IMPLEMENTED: 5 (AF-062–066)
 REGRESSIONS ADDED: 2 Lua-Suiten, 1 Python-Datei mit 3 Fällen; bestehende Gates verstärkt
 HARDWARE VERIFICATION: UNVERIFIED HARDWARE
-UNVERIFIED AREAS: reale CraftOS-Installation/HTTP/Audio/Monitor/JVM; LÖVE-Laufzeit; OP-007-Ursache
+UNVERIFIED AREAS: reale CraftOS-Installation/HTTP/Audio/Monitor/JVM; LÖVE-Laufzeit; OP-007-Ursache; Bank-Evo-Impact im Bot-Vergleich
 FINAL ASSESSMENT: Host-Prüfungen bestanden; keine uneingeschränkte Release-/Hardwarefreigabe
 PULL REQUEST: https://github.com/Chazammm/CC-Minecraft-Royale/pull/23 (gestapelt auf #22, kein Merge)
 ```
