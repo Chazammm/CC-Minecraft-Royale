@@ -3,6 +3,8 @@
 **CC-first Designprototypen – nicht registriert, nicht spielbar.**  
 Basis: `main` / `e80ad6919b7eb21a1d3464290d177ee3ab210eee`, 17.10.2026.
 
+**Nachträglicher Nutzerauftrag:** Die freigegebenen Designs liegen jetzt zusätzlich als [drei transparente LÖVE-Einzel-Sprites](love2d/README.md) mit Ankerpunkten und [echter Exportvorschau](love2d/previews/roster.png) vor. Das Adventure Sheep hält dort sein Eisenschwert seitwärts quer im Maul. Die CC-Prototypen bleiben unverändert; der folgende ursprüngliche Bericht beschreibt die CC-Phase.
+
 ![Native Sprites und echte PixelBox-Ausgabe](previews/roster.png)
 
 Drei eigenständige Kartenideen mit 37 nativen Unit-Posen, sieben Effekt-Rastern, drei 12×12-Icons und zwei vergleichbaren Schafansichten. Die Einheitensprites bleiben bei 16×18 und den vorhandenen 16 CC-Farben. Alle Bilder stammen aus echten Zeilen/Captures; keine hochauflösenden Konzeptbilder werden als CC-Ausgabe ausgegeben.
@@ -66,4 +68,4 @@ Optionaler Browser-Check mit Node 22+ und Chromium:
 node assets/proposed/wind_sheep_phantom/tools/check_viewer.mjs
 ```
 
-Keine produktive Spiellogik, Kartenregistrierung, bestehenden Stats, Live-Sprites oder Tests wurden geändert. Kein LÖVE-Port begonnen. Physische CC:Tweaked-Hardware ist ungeprüft. **Nach der Konzeptvorlage wird gestoppt; eine spätere Implementierung benötigt eine neue ausdrückliche Freigabe.**
+Keine produktive Spiellogik, Kartenregistrierung, bestehenden Stats, Live-Sprites oder Tests wurden geändert. Die zusätzlichen statischen LÖVE-Assets starten keine Engine-Portierung. Physische CC:Tweaked-Hardware ist ungeprüft. **Eine spätere spielbare Implementierung benötigt eine neue ausdrückliche Freigabe.**

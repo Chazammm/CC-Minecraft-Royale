@@ -2,6 +2,8 @@
 
 Stand 17.10.2026, Basis `e80ad6919b7eb21a1d3464290d177ee3ab210eee`. Alle PASS-Angaben beziehen sich auf tatsächlich ausgeführte Host-Prüfungen. Neu vorgeschlagene Karten wurden nicht produktiv registriert oder in Matches simuliert.
 
+**LÖVE-Nachtrag:** Drei statische PNG-Assets wurden auf späteren Nutzerauftrag ergänzt. Ihre separaten aktuellen Prüfergebnisse stehen in [`love2d/VALIDATION.md`](love2d/VALIDATION.md). Die vorherigen CC-Testzahlen unten sind Nachweise der ursprünglichen CC-Phase und werden nicht als neu ausgeführte Gameplay-Suite ausgegeben.
+
 | Bereich | Status | Tatsächlicher Umfang | Nachweis |
 |---|---|---|---|
 | Neue Lua-Daten und Capture-Werkzeug | PASS | Acht Lua-Dateien je unter Lua 5.2/5.4 syntaktisch geprüft | `evidence/syntax.json` |
@@ -24,7 +26,7 @@ Stand 17.10.2026, Basis `e80ad6919b7eb21a1d3464290d177ee3ab210eee`. Alle PASS-An
 | Neue-Karten-Engine-/Bot-Matches | NOT RUN | Ohne Implementierung/Registrierung nicht vorhanden; diese ist ausdrücklich nicht freigegeben | keine erfundenen Matchreports |
 | Neue Fähigkeiten | NOT IMPLEMENTED | Breeze-Knockback, Phantom-Priorität/Dive und Sheep-Gameplay stehen nur im Konzept | `GAMEPLAY.md` |
 | Physischer CC-Monitor/ATM | UNVERIFIED HARDWARE | Keine Minecraft-/Peripheral-Hardware vorhanden | keine Hardware-Benchmarkbehauptung |
-| LÖVE-Portierung | NOT APPLICABLE | In dieser CC-zentrierten Phase nicht begonnen | keine neuen LÖVE-Dateien |
+| LÖVE-Portierung | NOT IMPLEMENTED | Nur nachträglich beauftragte statische PNGs, keine Engine-Portierung | `love2d/README.md`, `love2d/VALIDATION.md` |
 
 ## Verifikationstiefe
 

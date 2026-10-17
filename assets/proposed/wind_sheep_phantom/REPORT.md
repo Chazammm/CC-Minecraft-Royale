@@ -1,5 +1,7 @@
 # CC Royale – Visual-first Card Concepts
 
+**Nachtrag nach visueller Freigabe:** Auf den anschließenden Auftrag „Jetzt für LÖVE projekt die sprites“ wurden [drei statische LÖVE-Sprites](love2d/README.md) ergänzt. Eigene High-Res-Quelle, transparentes RGBA, Anker-Metadaten und reale Exportvorschau; seitliches Maulschwert beim Sheep. Die Angaben zur nicht begonnenen High-Res-Arbeit weiter unten beschreiben den ursprünglichen CC-Auftrag. Spiellogik und die CC-Assets bleiben unverändert.
+
 **Breeze · Adventure Sheep · Phantom**  
 Basis: `main`, `e80ad6919b7eb21a1d3464290d177ee3ab210eee`, untersucht am 17.10.2026.  
 **Ergebnis: isoliertes Asset- und Konzeptpaket. Keine Karte registriert und keine Spiellogik implementiert.**
