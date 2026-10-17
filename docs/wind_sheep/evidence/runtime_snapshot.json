@@ -1,0 +1,27 @@
+{
+  "baseRevision": "e80ad6919b7eb21a1d3464290d177ee3ab210eee",
+  "status": "TESTED_WORKING_TREE",
+  "existingCardsAndEvolutionsUnchanged": 28,
+  "registeredNewCards": [
+    "breeze",
+    "adventure_sheep"
+  ],
+  "excluded": "phantom",
+  "sha256": {
+    "install.lua": "2a475f3c06fcad0ddfe4ee95bd94b04f1e2ba5ce21ca8bcee9e0acaf14673d96",
+    "mechanics_test.lua": "8197d3c001fc20b78de5f5d06a9e8321353e348c125d70171f203d2520fa52ea",
+    "src/assets/wind_sheep/adventure_sheep.lua": "f46f99feb60ea08a32034e0332a075309b7d7bf0783612980fbb458864011737",
+    "src/assets/wind_sheep/breeze.lua": "bc800d71c6e3ea7d3ee91fcc841e354ded9bdd22355790ef644a355bc6305725",
+    "src/assets/wind_sheep/breeze_effects.lua": "47873481e2e8583a8a0460420cf3d822e979a6b96b68d3952511cee03fdbdae4",
+    "src/assets/wind_sheep/dispatch.lua": "17910678ff396188ba1bd23bbf03cfac95de06980c2b77dead318d4f3bbc6481",
+    "src/assets/wind_sheep/sheep_effects.lua": "4a77e8ab5e121d7d0e21488a30ef3b27b35122f7bf280942f4a2aa787f46c18f",
+    "src/bot.lua": "a4eb89105e61f8fc76db35d46ca6040c254ccedcca280641f48296287bd399ea",
+    "src/breeze_sheep_mechanics.lua": "ff77f32e6a535cf1709ca1b30ecd5d7bc3a45cbaa9d80fe8c95cf6d55e07867e",
+    "src/cards.lua": "5537031dcd6c78f733b9b00334e69f435a4b4d383b5e9a53027475ef58f0c7b8",
+    "src/diagnostics.lua": "04b5dd7b64104eb09a24e2345c252cdc4c3ac82031ab3a24e24c35b86b2ab695",
+    "src/frog_worm_mechanics.lua": "7c9c42b5fc387c82115d4a51905d9e565c5bad1caf0667c1ef2e7d545aa81334",
+    "src/game.lua": "5c5222cca45b277fb7612db18f7666ed781e78772364735dbcfaaa4868cdb9d9",
+    "src/mob_assets.lua": "710dbfba783145bfe5fb2afba56db58c7a2a5b68d7fd4df4ae6f8bf2be076121",
+    "src/wind_rules.lua": "423243fcecd79cb0411d21f579ac6d504fb999f12ce6bbbf4b3c2af55fd0d0bd"
+  }
+}

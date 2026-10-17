@@ -61,7 +61,7 @@ assert(pass == total and fail == 0 and errors == 0,
 -- A minimum total cannot detect a forgotten feature-suite registration.
 -- Require an actual PASS record for every exported feature case, rather than
 -- accepting a green summary produced by the remaining historical tests.
-for _, moduleName in ipairs({'src.mechanics_audit', 'src.four_mob_mechanics', 'src.frog_worm_mechanics'}) do
+for _, moduleName in ipairs({'src.mechanics_audit', 'src.four_mob_mechanics', 'src.frog_worm_mechanics', 'src.breeze_sheep_mechanics'}) do
     local expected = {}
     require(moduleName).register(function(id) expected[#expected+1] = id end)
     assert(#expected > 0, moduleName .. ' exported no mechanics cases')

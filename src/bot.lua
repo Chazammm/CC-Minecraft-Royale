@@ -78,7 +78,7 @@ local POWER_PRIORITY = {
 
 local OFFENSE_SCORE = {
     ravager_rider = 6.5, baby_ender_dragon = 5.5, minoshroom = 6.5,
-    king_frog = 3.7,
+    king_frog = 3.7, breeze = 3.8, adventure_sheep = 4.8,
     iron_golem = 7,
     witch = 6,
     evoker = 6.2,
@@ -1009,6 +1009,7 @@ local function defensivePlacement(bot, card, threat)
         or card.id == "witch"
         or card.id == "evoker"
         or card.id == "baby_ender_dragon"
+        or card.id == "breeze"
     then
         return clampOwnPlacement(playerId, threat.x, threat.y + back * 13)
     end
@@ -1378,6 +1379,10 @@ local function scoreCard(
             score = score + 5
         elseif card.id == "king_frog" and not threat.flying then
             score=score+((threat.attackRange or 0)>=10 and 5 or 2)
+        elseif card.id == "breeze" and not threat.flying then
+            score=score+((threat.attackRange or 0)<10 and 4 or 1)
+        elseif card.id == "adventure_sheep" and not threat.flying then
+            score=score+((threat.attackRange or 0)<10 and 3.5 or 1.5)
         elseif card.id == "snow_golem" then
             score = score + (threat.flying and 5 or 4)
         elseif card.id == "skeleton" then

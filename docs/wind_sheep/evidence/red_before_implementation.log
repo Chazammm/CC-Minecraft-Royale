@@ -1,0 +1,25 @@
+FAIL breeze_sheep_registry: ./src/breeze_sheep_mechanics.lua:36: assertion failed!
+FAIL breeze_sheep_third_shot_p1: ./src/breeze_sheep_mechanics.lua:15: Missing breeze
+FAIL breeze_sheep_shared_immunity_p1: ./src/breeze_sheep_mechanics.lua:15: Missing breeze
+FAIL breeze_sheep_slow_budget_p1: ./src/breeze_sheep_mechanics.lua:15: Missing breeze
+FAIL breeze_sheep_terrain_p1: ./src/breeze_sheep_mechanics.lua:15: Missing breeze
+FAIL breeze_sheep_excluded_targets_p1: ./src/breeze_sheep_mechanics.lua:15: Missing breeze
+FAIL breeze_sheep_dead_source_p1: ./src/breeze_sheep_mechanics.lua:15: Missing breeze
+FAIL breeze_sheep_placement_costs_p1: ./src/breeze_sheep_mechanics.lua:125: attempt to index a nil value (local 'card')
+FAIL breeze_sheep_sheep_duels_p1: ./src/breeze_sheep_mechanics.lua:15: Missing adventure_sheep
+FAIL breeze_sheep_sheep_single_target_p1: ./src/breeze_sheep_mechanics.lua:15: Missing adventure_sheep
+FAIL breeze_sheep_third_shot_p2: ./src/breeze_sheep_mechanics.lua:15: Missing breeze
+FAIL breeze_sheep_shared_immunity_p2: ./src/breeze_sheep_mechanics.lua:15: Missing breeze
+FAIL breeze_sheep_slow_budget_p2: ./src/breeze_sheep_mechanics.lua:15: Missing breeze
+FAIL breeze_sheep_terrain_p2: ./src/breeze_sheep_mechanics.lua:15: Missing breeze
+FAIL breeze_sheep_excluded_targets_p2: ./src/breeze_sheep_mechanics.lua:15: Missing breeze
+FAIL breeze_sheep_dead_source_p2: ./src/breeze_sheep_mechanics.lua:15: Missing breeze
+FAIL breeze_sheep_placement_costs_p2: ./src/breeze_sheep_mechanics.lua:125: attempt to index a nil value (local 'card')
+FAIL breeze_sheep_sheep_duels_p2: ./src/breeze_sheep_mechanics.lua:15: Missing adventure_sheep
+FAIL breeze_sheep_sheep_single_target_p2: ./src/breeze_sheep_mechanics.lua:15: Missing adventure_sheep
+FAIL breeze_sheep_schema: ./src/breeze_sheep_mechanics.lua:155: attempt to index a nil value
+/workspace/scratch/bin/lua5.4: tests/test_breeze_sheep.lua:9: 20 Breeze/Sheep cases failed
+stack traceback:
+	[C]: in function 'assert'
+	tests/test_breeze_sheep.lua:9: in main chunk
+	[C]: in ?

@@ -147,9 +147,11 @@ function diagnostics.assertState(state,context)
             local shot=webShots[entity.pendingWebShotId]
             check(entity.alive and shot and shot.sourceEntityId==entity.id,'orphan source web reservation')
         end
-        for _,field in ipairs({'attackCooldownLeft','riderCooldownLeft','webCooldownLeft','tongueCooldownLeft','emergenceRemaining','wormOpenerRemaining'}) do
+        for _,field in ipairs({'attackCooldownLeft','riderCooldownLeft','webCooldownLeft','tongueCooldownLeft','emergenceRemaining','wormOpenerRemaining','windImmunityRemaining','windShotsFired'}) do
             if entity[field]~=nil then finite(entity[field],field) end
         end
+        if entity.windImmunityRemaining then check(entity.windImmunityRemaining>=0,'wind immunity bounds') end
+        if entity.windBurst then check(entity.windShotsFired>=0 and entity.windShotsFired==math.floor(entity.windShotsFired),'invalid wind shot count') end
         check(state.nextEntityId>entity.id,'nextEntityId reused')
     end
     for _,shot in pairs(webShots) do

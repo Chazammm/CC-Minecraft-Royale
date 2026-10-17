@@ -1,0 +1,18 @@
+test_general_ci_discovers_future_lua_tests (test_audit_quality.AuditQuality.test_general_ci_discovers_future_lua_tests) ... ok
+test_installer_test_rejects_unresolved_runtime_import (test_audit_quality.AuditQuality.test_installer_test_rejects_unresolved_runtime_import) ... ok
+test_mechanics_gate_rejects_missing_feature_registration (test_audit_quality.AuditQuality.test_mechanics_gate_rejects_missing_feature_registration) ... ok
+test_invalid_pins_fail_closed_without_any_deletion (test_report_retention.ReportRetentionTests.test_invalid_pins_fail_closed_without_any_deletion) ... ok
+test_pinned_old_mechanics_run_survives (test_report_retention.ReportRetentionTests.test_pinned_old_mechanics_run_survives) ... ok
+test_prunes_known_old_reports_and_indexes_survivors (test_report_retention.ReportRetentionTests.test_prunes_known_old_reports_and_indexes_survivors) ... ok
+test_push_race_recomputes_new_pins_and_index (test_report_retention.ReportRetentionTests.test_push_race_recomputes_new_pins_and_index) ... ok
+test_sorting_uses_timestamp_not_filename_order (test_report_retention.ReportRetentionTests.test_sorting_uses_timestamp_not_filename_order) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 1.263s
+
+OK
+Retention: keep 41 historical reports, prune 7; archive: archive/reports-pre-retention-20261013; mode: apply
+Retention: keep 40 historical reports, prune 8; archive: archive/reports-pre-retention-20261013; mode: dry-run
+Retention: keep 40 historical reports, prune 8; archive: archive/reports-pre-retention-20261013; mode: apply
+Retention: keep 40 historical reports, prune 0; archive: archive/reports-pre-retention-20261013; mode: apply
+Retention: keep 40 historical reports, prune 8; archive: archive/reports-pre-retention-20261013; mode: apply
