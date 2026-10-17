@@ -1,0 +1,62 @@
+-- Native visual effects only; no damage or gameplay behavior.
+return {
+    ["frames"] = {
+        wind_shot = { width=6, height=6, rows={
+            ".SSS..", "SW..S.", "S.W.S.", ".SWS..", "..SS..", "......",
+        } },
+        ["wind_charge"] = {
+            ["width"] = 16,
+            ["height"] = 12,
+            ["rows"] = {
+                "................",
+                "....A......A....",
+                ".....SSSSSS.....",
+                "....SS....SS....",
+                "...SS..WW..SS...",
+                "...SS.WWWW.SS...",
+                "....SS.WW.SS....",
+                ".....SSSSSS.....",
+                "....A......A....",
+                "................",
+                "................",
+                "................",
+            },
+        },
+        ["wind_gust_a"] = {
+            ["width"] = 16,
+            ["height"] = 12,
+            ["rows"] = {
+                "................",
+                "..SSSS..........",
+                ".SS..SS..SS.....",
+                "SS....SS..SS....",
+                ".SS..SS....SS...",
+                "..SSSSSSSSSSSS..",
+                ".............SS.",
+                "..SSSSSSSSSSSS..",
+                ".SS..SS....SS...",
+                "SS....SS..SS....",
+                ".SS..SS..SS.....",
+                "..SSSS..........",
+            },
+        },
+        ["wind_gust_b"] = {
+            ["width"] = 16,
+            ["height"] = 12,
+            ["rows"] = {
+                "................",
+                ".....SSSS.......",
+                "....SS..SS..SS..",
+                "...SS....SS..SS.",
+                "....SS..SS....SS",
+                ".....SSSSSSSSSS.",
+                "...............S",
+                ".....SSSSSSSSSS.",
+                "....SS..SS....SS",
+                "...SS....SS..SS.",
+                "....SS..SS..SS..",
+                ".....SSSS.......",
+            },
+        },
+    },
+}

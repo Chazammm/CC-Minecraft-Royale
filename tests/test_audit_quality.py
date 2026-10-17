@@ -27,14 +27,16 @@ class AuditQuality(unittest.TestCase):
             self.assertEqual(baseline.returncode, 0, baseline.stdout + baseline.stderr)
             entry = sandbox / 'mechanics_test.lua'
             body = entry.read_text()
-            registration = 'require("src.frog_worm_mechanics").register(runTest)'
-            self.assertEqual(body.count(registration), 1)
-            entry.write_text(body.replace(registration, '-- deliberately omitted'))
-            mutated = subprocess.run([runtime, test], cwd=sandbox,
-                                     capture_output=True, text=True)
-            self.assertNotEqual(mutated.returncode, 0,
-                                'Mechanics gate accepted an omitted feature suite')
-            self.assertIn('frog_worm_', mutated.stderr)
+            for module, prefix in [('src.frog_worm_mechanics', 'frog_worm_'),
+                                   ('src.breeze_sheep_mechanics', 'breeze_sheep_')]:
+                registration = f'require("{module}").register(runTest)'
+                self.assertEqual(body.count(registration), 1)
+                entry.write_text(body.replace(registration, '-- deliberately omitted'))
+                mutated = subprocess.run([runtime, test], cwd=sandbox,
+                                         capture_output=True, text=True)
+                self.assertNotEqual(mutated.returncode, 0,
+                                    'Mechanics gate accepted an omitted feature suite')
+                self.assertIn(prefix, mutated.stderr)
 
     def test_general_ci_discovers_future_lua_tests(self):
         workflow = (ROOT / '.github/workflows/lua-ci.yml').read_text()

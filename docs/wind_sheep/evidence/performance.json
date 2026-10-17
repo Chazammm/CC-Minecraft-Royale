@@ -1,0 +1,78 @@
+{
+  "runtime": "Lua 5.4 host",
+  "repeats": 5,
+  "order": "baseline/current interleaved, after regression processes completed",
+  "baselineProductionRevision": "e80ad6919b7eb21a1d3464290d177ee3ab210eee",
+  "measurements": {
+    "headless_3_matches": {
+      "baselineMedianMs": 152.8997,
+      "currentMedianMs": 153.3853,
+      "deltaPercent": 0.32
+    },
+    "headless_game_update": {
+      "baselineMedianMs": 0.0409,
+      "currentMedianMs": 0.0412,
+      "deltaPercent": 0.73
+    },
+    "headless_bot_update": {
+      "baselineMedianMs": 0.004,
+      "currentMedianMs": 0.004,
+      "deltaPercent": 0.0
+    },
+    "headless_other": {
+      "baselineMedianMs": 4.739,
+      "currentMedianMs": 4.645,
+      "deltaPercent": -1.98
+    },
+    "crowded_bot_regular_decisions": {
+      "baselineMedianMs": 0.1531,
+      "currentMedianMs": 0.1517,
+      "deltaPercent": -0.91
+    },
+    "crowded_bot_anvil_decisions": {
+      "baselineMedianMs": 0.2364,
+      "currentMedianMs": 0.2217,
+      "deltaPercent": -6.22
+    },
+    "static_arena_0_units_2_monitors": {
+      "baselineMedianMs": 1.1098,
+      "currentMedianMs": 1.0993,
+      "deltaPercent": -0.95
+    },
+    "static_arena_30_units_2_monitors": {
+      "baselineMedianMs": 2.3474,
+      "currentMedianMs": 2.3128,
+      "deltaPercent": -1.47
+    },
+    "pixelbox_cached_static_0": {
+      "baselineMedianMs": 0.5368,
+      "currentMedianMs": 0.5121,
+      "deltaPercent": -4.6
+    },
+    "pixelbox_exhaustive_static_0": {
+      "baselineMedianMs": 0.6831,
+      "currentMedianMs": 0.6587,
+      "deltaPercent": -3.57
+    },
+    "pixelbox_cached_static_30": {
+      "baselineMedianMs": 1.1114,
+      "currentMedianMs": 1.0823,
+      "deltaPercent": -2.62
+    },
+    "pixelbox_exhaustive_static_30": {
+      "baselineMedianMs": 1.3703,
+      "currentMedianMs": 1.3909,
+      "deltaPercent": 1.5
+    },
+    "pixelbox_cached_moving_30": {
+      "baselineMedianMs": 1.4055,
+      "currentMedianMs": 1.3919,
+      "deltaPercent": -0.97
+    },
+    "pixelbox_exhaustive_moving_30": {
+      "baselineMedianMs": 1.3702,
+      "currentMedianMs": 1.4184,
+      "deltaPercent": 3.52
+    }
+  }
+}

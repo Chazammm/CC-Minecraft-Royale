@@ -38,7 +38,7 @@ local function awaitHook(s,frog,dt)
 end
 add('definitions','Only two new selectable cards with owner-approved stats',function()
     local f,w=cards.get('king_frog'),cards.get('nether_worm')
-    assert(#cards.list==27 and f.cost==3 and w.cost==3)
+    assert(#cards.list==29 and f.cost==3 and w.cost==3)
     near(f.unit.maxHp,550);near(w.unit.maxHp,350)
     near(f.unit.damage,40);near(f.unit.attackCooldown,1.4);near(f.unit.moveSpeed,5)
     near(w.unit.damage,95);near(w.unit.attackCooldown,1.2);near(w.unit.moveSpeed,9)

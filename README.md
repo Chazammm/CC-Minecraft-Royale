@@ -50,7 +50,7 @@ Each monitor shows its own side at the bottom through a mirrored 180-degree view
 
 ## Current selectable cards
 
-There are currently **27 selectable cards**:
+There are currently **29 selectable cards**:
 
 1. Zombie
 2. Skeleton
@@ -79,12 +79,18 @@ There are currently **27 selectable cards**:
 25. Minoshroom
 26. King Frog
 27. Nether Worm
+28. Breeze
+29. Adventure Sheep
 
 **Guardian is currently benched as a DEV-ONLY card.** Guardian and Elder Guardian remain implemented and directly spawnable in the admin sandbox, but neither appears in normal card selection, random decks, bot/simulation card pools or the normal Evolution Slot.
 
 Nether Portal summons the internal-only Piglin unit; Piglin is not directly selectable. Magma Cube splits into the internal-only Mini Magma Cube. Evoker summons the internal-only Vex unit.
 
 ## Important special mechanics
+
+- **Breeze (3E)**: 320 HP, 32 damage every 1.4s at range 15. Every third wind shot pushes one ground troop by up to four world units, capped by one second of its current movement speed. Shared 3s victim immunity; no air/water attacks, building/tower displacement or bonus damage.
+- **Adventure Sheep (4E)**: 620 HP, 82 single-target melee damage every 1.1s, range 2.5 and movement 7.4. Diamond helmet, sideways mouth-held iron sword; no passive, splash, healing or anti-air. [Implementation, native/PixelBox previews and tests](docs/wind_sheep/IMPLEMENTATION.md).
+
 
 - **King Frog (3E)**: 550 HP, tongue hook at range 12, then normal 40-damage melee every 1.4s at range 2.5. Pulls enemy ground units of any size; no air/building pulls or hook damage.
 - **Nether Worm (3E)**: 350 HP, arena-wide ground ambush with 1.4s warning and 0.6s targetable emergence. Normal bites deal 95 every 1.2s to units/buildings, 47.5 to Princess/King towers. A single +85 unit-only opener expires after 2s; no repeat burrow. Prefers nearby economy/support units, then local targets. [Implementation, previews and tests](docs/frog_worm/IMPLEMENTATION.md).
@@ -212,7 +218,7 @@ The bot uses the normal card API and Emerald economy rather than special spawn c
 
 The lobby includes:
 
-- 27-card paginated collection
+- 29-card paginated collection
 - 8-card deck builder
 - 1 extra **Evolution Slot** below the normal deck
 - Random 8-card deck button

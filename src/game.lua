@@ -6,6 +6,7 @@ local spatial = require("src.spatial")
 local presets = require("src.presets")
 local modifiers = require("src.combat_modifiers")
 local customRules = require("src.custom_mob_rules")
+local windRules = require("src.wind_rules")
 
 local Game = {}
 
@@ -347,6 +348,8 @@ local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color, 
     entity.riderCooldownLeft = entity.secondaryAttack and 0 or nil
     entity.riderTargetId = nil
     entity.tongueCooldownLeft = entity.tongueHook and 0 or nil
+    entity.windShotsFired = entity.windBurst and 0 or nil
+    entity.windImmunityRemaining = nil
     if entity.burrow then
         entity.emergenceRemaining = entity.burrow.emergence
         entity.burrowState = "EMERGING"
@@ -357,6 +360,7 @@ local function spawnUnitFromStats(state, owner, stats, x, y, name, icon, color, 
         entity.visualVariant == "ravager_rider" or entity.visualVariant == "baby_ender_dragon"
         or entity.visualVariant == "minoshroom" or entity.visualVariant == "hero_spider"
         or entity.visualVariant == "king_frog" or entity.visualVariant == "nether_worm"
+        or entity.visualVariant == "breeze" or entity.visualVariant == "adventure_sheep"
     ) then
         entity.visualAnimation = { walkTime = 0 }
     end
@@ -519,7 +523,7 @@ end
 local function targetAllowed(attacker, candidate)
     if not candidate.alive or candidate.owner == attacker.owner then return false end
     if candidate.flying and not attacker.canAttackAir then return false end
-    if (attacker.tongueHook or attacker.burrow) and candidate.waterOnly then return false end
+    if (attacker.tongueHook or attacker.burrow or attacker.windBurst) and candidate.waterOnly then return false end
     -- Ground-erupting Fang attacks cannot interact with water-only targets.
     -- Reject them during acquisition so the Evoker never locks a Guardian it
     -- can never damage.
@@ -1320,7 +1324,9 @@ killEntity = function(state, entity, sourceOwner, sourceCardId)
             end
         end
     elseif entity.kind == "unit" then
-        addEffect(state, "death", entity.x, entity.y, 3.5, 0.28, entity.owner)
+        local deathKind=entity.visualVariant=="breeze" and "breeze_death"
+            or entity.visualVariant=="adventure_sheep" and "sheep_death" or "death"
+        addEffect(state, deathKind, entity.x, entity.y, 3.5, deathKind=="death" and .28 or .45, entity.owner)
         handleDeathAbilities(state, entity)
     elseif entity.kind == "building" then
         addEffect(state, "death", entity.x, entity.y, 4.5, 0.35, entity.owner)
@@ -1625,6 +1631,8 @@ local function performAttack(state, entity, target)
     if entity.initialBuildingImpact and not entity.initialBuildingImpactUsed then
         entity.initialBuildingImpactUsed = true
         addEffect(state, "ravager_impact", target.x, target.y, 4, 0.35, entity.owner)
+    elseif entity.visualVariant == "adventure_sheep" then
+        addEffect(state,"sheep_sword",target.x,target.y,2,.2,entity.owner)
     elseif entity.visualVariant == "minoshroom" then
         addEffect(state, "minoshroom_impact", target.x, target.y, 3, 0.3, entity.owner)
     end
@@ -1672,7 +1680,15 @@ local function performAttack(state, entity, target)
     end
 
     if entity.projectileSpeed then
-        spawnProjectile(state, entity, target)
+        local projectile=spawnProjectile(state, entity, target)
+        if entity.windBurst then
+            entity.windShotsFired=entity.windShotsFired+1
+            if entity.windShotsFired%entity.windBurst.every==0 then
+                projectile.windBurst=entity.windBurst
+                projectile.windOriginX,projectile.windOriginY=entity.x,entity.y
+                projectile.visual="breeze_gust"
+            end
+        end
     else
         damageEntity(
             state,
@@ -1736,6 +1752,9 @@ local ANIMATION_TIMERS = { "primaryLeft", "riderLeft", "webLeft", "tongueLeft" }
 local function updateCombatEntity(state, entity, dt)
     if not entity.alive then return end
     if entity.birthRemainder~=nil then dt=entity.birthRemainder;entity.birthRemainder=nil end
+    if entity.windImmunityRemaining then
+        entity.windImmunityRemaining=math.max(0,util.tickRemaining(entity.windImmunityRemaining,dt))
+    end
     if entity.emergenceRemaining then
         if entity.damageFlash then entity.damageFlash=math.max(0,util.tickRemaining(entity.damageFlash,dt)) end
         updateMovementSlows(entity,dt)
@@ -2298,6 +2317,18 @@ local function updateProjectiles(state, dt)
 
                         if battleAtStart and state.phase ~= "battle" then
                             break
+                        end
+
+                        if projectile.windBurst then
+                            local pushed=windRules.apply(state,projectile,victim)
+                            if pushed>0 then
+                                addEffect(state,"breeze_gust",victim.x,victim.y,3,.3,projectile.owner)
+                                if state.phase=="battle" and state.stats then
+                                    local stats=getCardStats(state,projectile.owner,projectile.sourceCardId)
+                                    stats.windPushes=(stats.windPushes or 0)+1
+                                    stats.windDistance=(stats.windDistance or 0)+pushed
+                                end
+                            end
                         end
 
                         local shouldSlow = victim.alive

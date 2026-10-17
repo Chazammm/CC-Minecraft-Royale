@@ -1,0 +1,32 @@
+name: Breeze and Adventure Sheep
+on:
+  push:
+    paths:
+      - '**.lua'
+      - assets/sprites/wind_sheep/**
+      - .github/workflows/wind-sheep.yml
+  pull_request:
+    paths:
+      - '**.lua'
+      - assets/sprites/wind_sheep/**
+      - .github/workflows/wind-sheep.yml
+permissions:
+  contents: read
+jobs:
+  live-rendering-parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Host dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.2 lua5.4 fonts-dejavu-core
+          python -m pip install Pillow==12.3.0
+      - name: Actual runtime sprites, cache, overlays and exact previews
+        run: |
+          lua5.2 tests/test_breeze_sheep_rendering.lua /tmp/wind-sheep52.json
+          lua5.4 tests/test_breeze_sheep_rendering.lua /tmp/wind-sheep54.json
+          python assets/sprites/wind_sheep/tools/previews.py --check --capture52 /tmp/wind-sheep52.json --capture54 /tmp/wind-sheep54.json

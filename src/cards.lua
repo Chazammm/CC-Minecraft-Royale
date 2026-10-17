@@ -674,6 +674,27 @@ cards.list = {
             burrow = { warning=1.4, emergence=.6, openerBonus=85, openerWindow=2, towerMultiplier=.5 },
         },
     },
+    {
+        id = "breeze", name = "Breeze", icon = "B",
+        cost = 3, kind = "unit", color = colors.lightBlue,
+        unit = {
+            maxHp = 320, damage = 32, moveSpeed = 6.6,
+            attackRange = 15, attackCooldown = 1.4, aggroRange = 30,
+            canAttackAir = false, targetMode = "any", visualVariant = "breeze",
+            projectileSpeed = 50, projectileVisual = "breeze_shot", preciseAttackTiming = true,
+            windBurst = { every=3, maxDistance=4, moveSeconds=1, immunity=3, step=.25 },
+        },
+    },
+    {
+        id = "adventure_sheep", name = "Adventure Sheep", icon = "A",
+        cost = 4, kind = "unit", color = colors.cyan,
+        unit = {
+            maxHp = 620, damage = 82, moveSpeed = 7.4,
+            attackRange = 2.5, attackCooldown = 1.1, aggroRange = 27,
+            canAttackAir = false, targetMode = "any", visualVariant = "adventure_sheep",
+            preciseAttackTiming = true,
+        },
+    },
 }
 
 -- Relative weapon values have one source of truth, including future approved
@@ -973,6 +994,18 @@ cards.info = {
         role = "Heavy single-target melee",
         description = "Slow ground tank with 300 damage per axe hit. Two hits defeat a normal Zombie; cannot hit air.",
         goodAgainst = "ground tanks, heavy melee units",
+        badAgainst = "air, swarms, ranged kiting",
+    },
+    breeze = {
+        role = "Ground wind controller",
+        description = "Every third shot pushes a ground troop. Shared 3s immunity. No air or water targets.",
+        goodAgainst = "isolated ground attackers, defensive support",
+        badAgainst = "air, swarms, ranged focus",
+    },
+    adventure_sheep = {
+        role = "Medium melee duelist",
+        description = "Diamond-helmet sheep with sideways mouth sword. 82 melee damage to one ground target; no passive.",
+        goodAgainst = "ordinary ground melee duels, supporting tanks",
         badAgainst = "air, swarms, ranged kiting",
     },
     king_frog = {
@@ -1354,6 +1387,8 @@ function cards.validate()
         tongueCooldownLeft = true,
         tongueWindup = true,
         lastFrogPullTick = true,
+        windShotsFired = true,
+        windImmunityRemaining = true,
         emergenceRemaining = true,
         birthRemainder = true,
         wormOpenerRemaining = true,
@@ -1515,6 +1550,18 @@ function cards.validate()
             end
         end
 
+        local wind = mechanicTable(label, payload, "windBurst")
+        if wind then
+            for _,field in ipairs({"every","maxDistance","moveSeconds","immunity","step"}) do
+                finite(label..".windBurst."..field,wind[field])
+                positiveField(label..".windBurst",wind,field)
+            end
+            if wind.every~=math.floor(wind.every) or wind.every<3 or wind.step~=.25
+                or wind.maxDistance>4 or wind.moveSeconds>1 or wind.immunity<3
+                or not payload.projectileSpeed or payload.flying or payload.waterOnly then
+                error("Invalid card data: wind requires bounded ground projectile control",0)
+            end
+        end
         local hook = mechanicTable(label, payload, "tongueHook")
         if hook then
             for _,field in ipairs({"range","stopRange","maxPullDistance","windup","cooldown"}) do
@@ -1627,6 +1674,9 @@ function cards.validate()
             end
         end
 
+        if payload.windBurst and kind~="unit" then
+            error("Invalid card data: wind requires a unit",0)
+        end
         if (payload.secondaryAttack or payload.heroWebAbility) and kind ~= "unit" then
             error("Invalid card data: " .. label .. " auxiliary weapons require a unit", 0)
         end
