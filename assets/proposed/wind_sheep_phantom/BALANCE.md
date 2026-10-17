@@ -48,7 +48,7 @@ The optional helmet block is not recommended: it adds a timer/state and would co
 ## Matchup interpretation
 
 - Groups: single-target attacks cannot clear Bat Swarm or cheap ground swarms efficiently; no sword-arc area damage.
-- Ranged: normal movement and no dash allow Skeleton/Snow Golem kiting and focused fire. Use an ally or terrain to close distance.
+- Ranged: normal movement and no dash allow Skeleton kiting, Snow Golem slow and focused fire. Use an ally or terrain to close distance.
 - Flying: Sheep cannot hit air; Blaze and Baby Ender Dragon are direct threats. An air ally is still required.
 - Buildings/towers: normal damage without a bonus, normal half-side deployment rules, and lower DPS than Wither Skeleton. Golems remain much harder to remove.
 - Enderman: also 620 HP but 95 damage/1.10s and teleport at 5E. Sheep pays less by giving up teleport and DPS.

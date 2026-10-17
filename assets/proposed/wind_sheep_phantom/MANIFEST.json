@@ -26,7 +26,7 @@
   "hardware": "UNVERIFIED",
   "filesSha256": {
     "ARCHITECTURE.md": "1ea68cc01b31d9c4d5609c0c23d16ffcdfeceddeccd4888b2569ec20d0ca01e4",
-    "BALANCE.md": "35018158e73bfaef741e7fdd3d136bb8934bd62abf3b42b5c3b7a53fc36f5882",
+    "BALANCE.md": "ce1fffeb264cbfeca7b95896d82e49b0027dd652769833807579312ec22f95f3",
     "BALANCE_PROPOSALS.json": "0746799eef6e8fbe2e1a41941f75f2fa7eccabb52e8b00b86f22911feaaff268",
     "GAMEPLAY.md": "3e40e8a585f220460df5e5218a2fe9db28964dbb26762b6df35baf53e5ed6f5c",
     "README.md": "651073519f191f3ae2d958cf2efbcbbfb15bc27cf76ee9dc3dfc6361bae37f1c",
@@ -185,7 +185,7 @@
     "sprites/breeze.lua": "0ac8c442b32d5524c0f43aa2334bca3713833b3d102d8fd5736deec2e07de1ca",
     "sprites/phantom.lua": "55370df4104f52b9f12d2536d5ad93c91a877b16228f044766881c399768191f",
     "sprites/sheep_variants.lua": "8617462837c170215d3eb9e8b984473679eeeb48fcf594f77ba53c33a6a9e91d",
-    "tools/balance.py": "c6cb4eed60ec62a7820a7899b1d27b5089fccd344ad472751f8b3395a774df98",
+    "tools/balance.py": "82f70a4e874b73046875176ad79e94feeb22f379b227f31ae9be6c66ffcc4d15",
     "tools/build_sprites.py": "4f8e359751ef60cb2cf90349af868745360eaee2e1825e2a54ab68551c19a347",
     "tools/capture.lua": "26e44a683582b860f836dd73048fb69fdcb2ecbae016337ce903da720d8a5730",
     "tools/check_viewer.mjs": "7b08666662bf9968a56f9d36705c9f3c2f2fcb016f4b2b58e947c5eaf07d8acc",
