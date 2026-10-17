@@ -1,0 +1,1385 @@
+{
+  "status": "STANDALONE_ARITHMETIC_MODEL_NOT_HEADLESS_MATCH_RESULTS",
+  "baseRevision": "e80ad6919b7eb21a1d3464290d177ee3ab210eee",
+  "assumptions": [
+    "Already in mutual melee range at time zero; no approach or spawn delay.",
+    "Constant direct single-target attacks; exact rational event times.",
+    "No movement, kiting, AI, spells, shields, towers, evolutions or healing.",
+    "Simultaneous damage is the nominal tie rule; sequential rules are sensitivity cases.",
+    "Proposed animation timings are previews, not an implemented combat schedule."
+  ],
+  "proposals": {
+    "breeze": {
+      "name": "Breeze",
+      "cost": 3,
+      "maxHp": 320,
+      "damage": 32,
+      "attackCooldown": 1.4,
+      "moveSpeed": 6.6,
+      "attackRange": 15,
+      "aggroRange": 30,
+      "flying": false,
+      "canAttackAir": false,
+      "targetTypes": [
+        "ground_units",
+        "buildings",
+        "towers"
+      ],
+      "projectileSpeed": 46,
+      "control": {
+        "empoweredEveryShots": 3,
+        "nominalEmpoweredInterval": 4.2,
+        "maxKnockback": 4,
+        "sharedVictimImmunity": 3.0,
+        "terrainSampleStep": 0.25,
+        "primaryOnly": true,
+        "affectsBuildings": false,
+        "affectsAir": false,
+        "affectsWaterOnly": false
+      }
+    },
+    "adventure_sheep": {
+      "name": "Adventure Sheep",
+      "cost": 4,
+      "maxHp": 620,
+      "damage": 82,
+      "attackCooldown": 1.1,
+      "moveSpeed": 7.4,
+      "attackRange": 2.5,
+      "aggroRange": 27,
+      "flying": false,
+      "canAttackAir": false,
+      "targetTypes": [
+        "ground_units",
+        "buildings",
+        "towers"
+      ],
+      "passive": "none",
+      "damageType": "single_target_melee",
+      "attackWindupVisualMs": 300
+    },
+    "phantom": {
+      "name": "Phantom",
+      "cost": 4,
+      "maxHp": 280,
+      "damage": 76,
+      "attackCooldown": 1.3,
+      "moveSpeed": 10,
+      "attackRange": 2.2,
+      "aggroRange": 28,
+      "flying": true,
+      "canAttackAir": true,
+      "targetTypes": [
+        "units",
+        "buildings",
+        "towers"
+      ],
+      "buildingMultiplier": 0.5,
+      "towerMultiplier": 0.5,
+      "priority": {
+        "acquisitionOnly": true,
+        "localPreferenceRadius": 14,
+        "preserveValidTargetLock": true,
+        "excludeWaterOnlyFromPreference": true
+      },
+      "dive": {
+        "windup": 0.3,
+        "maxTravel": 4,
+        "maxSpeed": 16,
+        "durationCap": 0.3,
+        "cooldown": 5,
+        "bonusDamage": 0,
+        "invulnerable": false,
+        "returnTeleport": false
+      }
+    }
+  },
+  "comparison": {
+    "zombie": {
+      "cost": 3,
+      "hp": 523,
+      "damage": 80,
+      "cooldown": 1,
+      "dps": 80.0,
+      "moveSpeed": 7.4,
+      "attackRange": 2.5,
+      "targetMode": "any"
+    },
+    "wither_skeleton": {
+      "cost": 3,
+      "hp": 470,
+      "damage": 88,
+      "cooldown": 1,
+      "dps": 88.0,
+      "moveSpeed": 7.4,
+      "attackRange": 2.5,
+      "targetMode": "any"
+    },
+    "wolf": {
+      "cost": 3,
+      "hp": 330,
+      "damage": 62,
+      "cooldown": 0.72,
+      "dps": 86.11111111111111,
+      "moveSpeed": 10.2,
+      "attackRange": 2,
+      "targetMode": "any"
+    },
+    "spider": {
+      "cost": 2,
+      "hp": 250,
+      "damage": 38,
+      "cooldown": 0.8,
+      "dps": 47.5,
+      "moveSpeed": 10.5,
+      "attackRange": 2.2,
+      "targetMode": "any"
+    },
+    "enderman": {
+      "cost": 5,
+      "hp": 620,
+      "damage": 95,
+      "cooldown": 1.1,
+      "dps": 86.36363636363636,
+      "moveSpeed": 7,
+      "attackRange": 2.8,
+      "targetMode": "any"
+    },
+    "iron_golem": {
+      "cost": 5,
+      "hp": 1514.7,
+      "damage": 110,
+      "cooldown": 1.5,
+      "dps": 73.33333333333333,
+      "moveSpeed": 4.2,
+      "attackRange": 3,
+      "targetMode": "buildings"
+    },
+    "diamond_golem": {
+      "cost": 5,
+      "hp": 1658.5965,
+      "damage": 110,
+      "cooldown": 1.5,
+      "dps": 73.33333333333333,
+      "moveSpeed": 4.2,
+      "attackRange": 3,
+      "targetMode": "buildings",
+      "caveat": "Building-targeting evolution; moving-only pulse is excluded from scalar DPS. Not a standard duel opponent."
+    }
+  },
+  "duels": {
+    "zombie": {
+      "nominal": {
+        "winner": "sheep",
+        "seconds": 6.6,
+        "sheepHp": 60.0,
+        "opponentHp": 0.0,
+        "sheepHits": 7,
+        "opponentHits": 7,
+        "trace": [
+          {
+            "t": 0.0,
+            "aHp": 540.0,
+            "bHp": 441.0
+          },
+          {
+            "t": 1.0,
+            "aHp": 460.0,
+            "bHp": 441.0
+          },
+          {
+            "t": 1.1,
+            "aHp": 460.0,
+            "bHp": 359.0
+          },
+          {
+            "t": 2.0,
+            "aHp": 380.0,
+            "bHp": 359.0
+          },
+          {
+            "t": 2.2,
+            "aHp": 380.0,
+            "bHp": 277.0
+          },
+          {
+            "t": 3.0,
+            "aHp": 300.0,
+            "bHp": 277.0
+          },
+          {
+            "t": 3.3,
+            "aHp": 300.0,
+            "bHp": 195.0
+          },
+          {
+            "t": 4.0,
+            "aHp": 220.0,
+            "bHp": 195.0
+          },
+          {
+            "t": 4.4,
+            "aHp": 220.0,
+            "bHp": 113.0
+          },
+          {
+            "t": 5.0,
+            "aHp": 140.0,
+            "bHp": 113.0
+          },
+          {
+            "t": 5.5,
+            "aHp": 140.0,
+            "bHp": 31.0
+          },
+          {
+            "t": 6.0,
+            "aHp": 60.0,
+            "bHp": 31.0
+          },
+          {
+            "t": 6.6,
+            "aHp": 60.0,
+            "bHp": 0.0
+          }
+        ]
+      },
+      "phaseCases": [
+        {
+          "sheepStart": 0,
+          "opponentStart": 0,
+          "tieRule": "simultaneous",
+          "winner": "sheep",
+          "seconds": 6.6,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        },
+        {
+          "sheepStart": 0,
+          "opponentStart": 0,
+          "tieRule": "sheep_first",
+          "winner": "sheep",
+          "seconds": 6.6,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        },
+        {
+          "sheepStart": 0,
+          "opponentStart": 0,
+          "tieRule": "opponent_first",
+          "winner": "sheep",
+          "seconds": 6.6,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        },
+        {
+          "sheepStart": 0,
+          "opponentStart": 0.1,
+          "tieRule": "simultaneous",
+          "winner": "sheep",
+          "seconds": 6.6,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        },
+        {
+          "sheepStart": 0,
+          "opponentStart": 0.1,
+          "tieRule": "sheep_first",
+          "winner": "sheep",
+          "seconds": 6.6,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        },
+        {
+          "sheepStart": 0,
+          "opponentStart": 0.1,
+          "tieRule": "opponent_first",
+          "winner": "sheep",
+          "seconds": 6.6,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        },
+        {
+          "sheepStart": 0.1,
+          "opponentStart": 0,
+          "tieRule": "simultaneous",
+          "winner": "sheep",
+          "seconds": 6.7,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        },
+        {
+          "sheepStart": 0.1,
+          "opponentStart": 0,
+          "tieRule": "sheep_first",
+          "winner": "sheep",
+          "seconds": 6.7,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        },
+        {
+          "sheepStart": 0.1,
+          "opponentStart": 0,
+          "tieRule": "opponent_first",
+          "winner": "sheep",
+          "seconds": 6.7,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        },
+        {
+          "sheepStart": 0.1,
+          "opponentStart": 0.1,
+          "tieRule": "simultaneous",
+          "winner": "sheep",
+          "seconds": 6.7,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        },
+        {
+          "sheepStart": 0.1,
+          "opponentStart": 0.1,
+          "tieRule": "sheep_first",
+          "winner": "sheep",
+          "seconds": 6.7,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        },
+        {
+          "sheepStart": 0.1,
+          "opponentStart": 0.1,
+          "tieRule": "opponent_first",
+          "winner": "sheep",
+          "seconds": 6.7,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        },
+        {
+          "sheepStart": 0.3,
+          "opponentStart": 0,
+          "tieRule": "simultaneous",
+          "winner": "sheep",
+          "seconds": 6.9,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        },
+        {
+          "sheepStart": 0.3,
+          "opponentStart": 0,
+          "tieRule": "sheep_first",
+          "winner": "sheep",
+          "seconds": 6.9,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        },
+        {
+          "sheepStart": 0.3,
+          "opponentStart": 0,
+          "tieRule": "opponent_first",
+          "winner": "sheep",
+          "seconds": 6.9,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        },
+        {
+          "sheepStart": 0.3,
+          "opponentStart": 0.1,
+          "tieRule": "simultaneous",
+          "winner": "sheep",
+          "seconds": 6.9,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        },
+        {
+          "sheepStart": 0.3,
+          "opponentStart": 0.1,
+          "tieRule": "sheep_first",
+          "winner": "sheep",
+          "seconds": 6.9,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        },
+        {
+          "sheepStart": 0.3,
+          "opponentStart": 0.1,
+          "tieRule": "opponent_first",
+          "winner": "sheep",
+          "seconds": 6.9,
+          "sheepHp": 60.0,
+          "opponentHp": 0.0,
+          "sheepHits": 7,
+          "opponentHits": 7
+        }
+      ],
+      "sheepWins": 18,
+      "cases": 18
+    },
+    "wither_skeleton": {
+      "nominal": {
+        "winner": "sheep",
+        "seconds": 5.5,
+        "sheepHp": 92.0,
+        "opponentHp": 0.0,
+        "sheepHits": 6,
+        "opponentHits": 6,
+        "trace": [
+          {
+            "t": 0.0,
+            "aHp": 532.0,
+            "bHp": 388.0
+          },
+          {
+            "t": 1.0,
+            "aHp": 444.0,
+            "bHp": 388.0
+          },
+          {
+            "t": 1.1,
+            "aHp": 444.0,
+            "bHp": 306.0
+          },
+          {
+            "t": 2.0,
+            "aHp": 356.0,
+            "bHp": 306.0
+          },
+          {
+            "t": 2.2,
+            "aHp": 356.0,
+            "bHp": 224.0
+          },
+          {
+            "t": 3.0,
+            "aHp": 268.0,
+            "bHp": 224.0
+          },
+          {
+            "t": 3.3,
+            "aHp": 268.0,
+            "bHp": 142.0
+          },
+          {
+            "t": 4.0,
+            "aHp": 180.0,
+            "bHp": 142.0
+          },
+          {
+            "t": 4.4,
+            "aHp": 180.0,
+            "bHp": 60.0
+          },
+          {
+            "t": 5.0,
+            "aHp": 92.0,
+            "bHp": 60.0
+          },
+          {
+            "t": 5.5,
+            "aHp": 92.0,
+            "bHp": 0.0
+          }
+        ]
+      },
+      "phaseCases": [
+        {
+          "sheepStart": 0,
+          "opponentStart": 0,
+          "tieRule": "simultaneous",
+          "winner": "sheep",
+          "seconds": 5.5,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        },
+        {
+          "sheepStart": 0,
+          "opponentStart": 0,
+          "tieRule": "sheep_first",
+          "winner": "sheep",
+          "seconds": 5.5,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        },
+        {
+          "sheepStart": 0,
+          "opponentStart": 0,
+          "tieRule": "opponent_first",
+          "winner": "sheep",
+          "seconds": 5.5,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        },
+        {
+          "sheepStart": 0,
+          "opponentStart": 0.1,
+          "tieRule": "simultaneous",
+          "winner": "sheep",
+          "seconds": 5.5,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        },
+        {
+          "sheepStart": 0,
+          "opponentStart": 0.1,
+          "tieRule": "sheep_first",
+          "winner": "sheep",
+          "seconds": 5.5,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        },
+        {
+          "sheepStart": 0,
+          "opponentStart": 0.1,
+          "tieRule": "opponent_first",
+          "winner": "sheep",
+          "seconds": 5.5,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        },
+        {
+          "sheepStart": 0.1,
+          "opponentStart": 0,
+          "tieRule": "simultaneous",
+          "winner": "sheep",
+          "seconds": 5.6,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        },
+        {
+          "sheepStart": 0.1,
+          "opponentStart": 0,
+          "tieRule": "sheep_first",
+          "winner": "sheep",
+          "seconds": 5.6,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        },
+        {
+          "sheepStart": 0.1,
+          "opponentStart": 0,
+          "tieRule": "opponent_first",
+          "winner": "sheep",
+          "seconds": 5.6,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        },
+        {
+          "sheepStart": 0.1,
+          "opponentStart": 0.1,
+          "tieRule": "simultaneous",
+          "winner": "sheep",
+          "seconds": 5.6,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        },
+        {
+          "sheepStart": 0.1,
+          "opponentStart": 0.1,
+          "tieRule": "sheep_first",
+          "winner": "sheep",
+          "seconds": 5.6,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        },
+        {
+          "sheepStart": 0.1,
+          "opponentStart": 0.1,
+          "tieRule": "opponent_first",
+          "winner": "sheep",
+          "seconds": 5.6,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        },
+        {
+          "sheepStart": 0.3,
+          "opponentStart": 0,
+          "tieRule": "simultaneous",
+          "winner": "sheep",
+          "seconds": 5.8,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        },
+        {
+          "sheepStart": 0.3,
+          "opponentStart": 0,
+          "tieRule": "sheep_first",
+          "winner": "sheep",
+          "seconds": 5.8,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        },
+        {
+          "sheepStart": 0.3,
+          "opponentStart": 0,
+          "tieRule": "opponent_first",
+          "winner": "sheep",
+          "seconds": 5.8,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        },
+        {
+          "sheepStart": 0.3,
+          "opponentStart": 0.1,
+          "tieRule": "simultaneous",
+          "winner": "sheep",
+          "seconds": 5.8,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        },
+        {
+          "sheepStart": 0.3,
+          "opponentStart": 0.1,
+          "tieRule": "sheep_first",
+          "winner": "sheep",
+          "seconds": 5.8,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        },
+        {
+          "sheepStart": 0.3,
+          "opponentStart": 0.1,
+          "tieRule": "opponent_first",
+          "winner": "sheep",
+          "seconds": 5.8,
+          "sheepHp": 92.0,
+          "opponentHp": 0.0,
+          "sheepHits": 6,
+          "opponentHits": 6
+        }
+      ],
+      "sheepWins": 18,
+      "cases": 18
+    }
+  },
+  "sensitivity": [
+    {
+      "opponent": "zombie",
+      "hp": 600,
+      "damage": 78,
+      "cooldown": 1.0,
+      "winner": "sheep",
+      "seconds": 6.3,
+      "sheepHp": 40.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 600,
+      "damage": 78,
+      "cooldown": 1.1,
+      "winner": "sheep",
+      "seconds": 6.9,
+      "sheepHp": 40.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 600,
+      "damage": 78,
+      "cooldown": 1.2,
+      "winner": "opponent",
+      "seconds": 7.0,
+      "sheepHp": 0.0,
+      "opponentHp": 55.0,
+      "sheepHits": 6,
+      "opponentHits": 8
+    },
+    {
+      "opponent": "zombie",
+      "hp": 600,
+      "damage": 82,
+      "cooldown": 1.0,
+      "winner": "sheep",
+      "seconds": 6.3,
+      "sheepHp": 40.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 600,
+      "damage": 82,
+      "cooldown": 1.1,
+      "winner": "sheep",
+      "seconds": 6.9,
+      "sheepHp": 40.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 600,
+      "damage": 82,
+      "cooldown": 1.2,
+      "winner": "opponent",
+      "seconds": 7.0,
+      "sheepHp": 0.0,
+      "opponentHp": 31.0,
+      "sheepHits": 6,
+      "opponentHits": 8
+    },
+    {
+      "opponent": "zombie",
+      "hp": 600,
+      "damage": 86,
+      "cooldown": 1.0,
+      "winner": "sheep",
+      "seconds": 6.3,
+      "sheepHp": 40.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 600,
+      "damage": 86,
+      "cooldown": 1.1,
+      "winner": "sheep",
+      "seconds": 6.9,
+      "sheepHp": 40.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 600,
+      "damage": 86,
+      "cooldown": 1.2,
+      "winner": "opponent",
+      "seconds": 7.0,
+      "sheepHp": 0.0,
+      "opponentHp": 7.0,
+      "sheepHits": 6,
+      "opponentHits": 8
+    },
+    {
+      "opponent": "zombie",
+      "hp": 620,
+      "damage": 78,
+      "cooldown": 1.0,
+      "winner": "sheep",
+      "seconds": 6.3,
+      "sheepHp": 60.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 620,
+      "damage": 78,
+      "cooldown": 1.1,
+      "winner": "sheep",
+      "seconds": 6.9,
+      "sheepHp": 60.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 620,
+      "damage": 78,
+      "cooldown": 1.2,
+      "winner": "opponent",
+      "seconds": 7.0,
+      "sheepHp": 0.0,
+      "opponentHp": 55.0,
+      "sheepHits": 6,
+      "opponentHits": 8
+    },
+    {
+      "opponent": "zombie",
+      "hp": 620,
+      "damage": 82,
+      "cooldown": 1.0,
+      "winner": "sheep",
+      "seconds": 6.3,
+      "sheepHp": 60.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 620,
+      "damage": 82,
+      "cooldown": 1.1,
+      "winner": "sheep",
+      "seconds": 6.9,
+      "sheepHp": 60.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 620,
+      "damage": 82,
+      "cooldown": 1.2,
+      "winner": "opponent",
+      "seconds": 7.0,
+      "sheepHp": 0.0,
+      "opponentHp": 31.0,
+      "sheepHits": 6,
+      "opponentHits": 8
+    },
+    {
+      "opponent": "zombie",
+      "hp": 620,
+      "damage": 86,
+      "cooldown": 1.0,
+      "winner": "sheep",
+      "seconds": 6.3,
+      "sheepHp": 60.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 620,
+      "damage": 86,
+      "cooldown": 1.1,
+      "winner": "sheep",
+      "seconds": 6.9,
+      "sheepHp": 60.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 620,
+      "damage": 86,
+      "cooldown": 1.2,
+      "winner": "opponent",
+      "seconds": 7.0,
+      "sheepHp": 0.0,
+      "opponentHp": 7.0,
+      "sheepHits": 6,
+      "opponentHits": 8
+    },
+    {
+      "opponent": "zombie",
+      "hp": 640,
+      "damage": 78,
+      "cooldown": 1.0,
+      "winner": "sheep",
+      "seconds": 6.3,
+      "sheepHp": 80.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 640,
+      "damage": 78,
+      "cooldown": 1.1,
+      "winner": "sheep",
+      "seconds": 6.9,
+      "sheepHp": 80.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 640,
+      "damage": 78,
+      "cooldown": 1.2,
+      "winner": "opponent",
+      "seconds": 7.0,
+      "sheepHp": 0.0,
+      "opponentHp": 55.0,
+      "sheepHits": 6,
+      "opponentHits": 8
+    },
+    {
+      "opponent": "zombie",
+      "hp": 640,
+      "damage": 82,
+      "cooldown": 1.0,
+      "winner": "sheep",
+      "seconds": 6.3,
+      "sheepHp": 80.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 640,
+      "damage": 82,
+      "cooldown": 1.1,
+      "winner": "sheep",
+      "seconds": 6.9,
+      "sheepHp": 80.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 640,
+      "damage": 82,
+      "cooldown": 1.2,
+      "winner": "opponent",
+      "seconds": 7.0,
+      "sheepHp": 0.0,
+      "opponentHp": 31.0,
+      "sheepHits": 6,
+      "opponentHits": 8
+    },
+    {
+      "opponent": "zombie",
+      "hp": 640,
+      "damage": 86,
+      "cooldown": 1.0,
+      "winner": "sheep",
+      "seconds": 6.3,
+      "sheepHp": 80.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 640,
+      "damage": 86,
+      "cooldown": 1.1,
+      "winner": "sheep",
+      "seconds": 6.9,
+      "sheepHp": 80.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "zombie",
+      "hp": 640,
+      "damage": 86,
+      "cooldown": 1.2,
+      "winner": "opponent",
+      "seconds": 7.0,
+      "sheepHp": 0.0,
+      "opponentHp": 7.0,
+      "sheepHits": 6,
+      "opponentHits": 8
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 600,
+      "damage": 78,
+      "cooldown": 1.0,
+      "winner": "opponent",
+      "seconds": 6.0,
+      "sheepHp": 0.0,
+      "opponentHp": 2.0,
+      "sheepHits": 6,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 600,
+      "damage": 78,
+      "cooldown": 1.1,
+      "winner": "opponent",
+      "seconds": 6.0,
+      "sheepHp": 0.0,
+      "opponentHp": 2.0,
+      "sheepHits": 6,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 600,
+      "damage": 78,
+      "cooldown": 1.2,
+      "winner": "opponent",
+      "seconds": 6.0,
+      "sheepHp": 0.0,
+      "opponentHp": 80.0,
+      "sheepHits": 5,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 600,
+      "damage": 82,
+      "cooldown": 1.0,
+      "winner": "sheep",
+      "seconds": 5.3,
+      "sheepHp": 72.0,
+      "opponentHp": 0.0,
+      "sheepHits": 6,
+      "opponentHits": 6
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 600,
+      "damage": 82,
+      "cooldown": 1.1,
+      "winner": "sheep",
+      "seconds": 5.8,
+      "sheepHp": 72.0,
+      "opponentHp": 0.0,
+      "sheepHits": 6,
+      "opponentHits": 6
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 600,
+      "damage": 82,
+      "cooldown": 1.2,
+      "winner": "opponent",
+      "seconds": 6.0,
+      "sheepHp": 0.0,
+      "opponentHp": 60.0,
+      "sheepHits": 5,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 600,
+      "damage": 86,
+      "cooldown": 1.0,
+      "winner": "sheep",
+      "seconds": 5.3,
+      "sheepHp": 72.0,
+      "opponentHp": 0.0,
+      "sheepHits": 6,
+      "opponentHits": 6
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 600,
+      "damage": 86,
+      "cooldown": 1.1,
+      "winner": "sheep",
+      "seconds": 5.8,
+      "sheepHp": 72.0,
+      "opponentHp": 0.0,
+      "sheepHits": 6,
+      "opponentHits": 6
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 600,
+      "damage": 86,
+      "cooldown": 1.2,
+      "winner": "opponent",
+      "seconds": 6.0,
+      "sheepHp": 0.0,
+      "opponentHp": 40.0,
+      "sheepHits": 5,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 620,
+      "damage": 78,
+      "cooldown": 1.0,
+      "winner": "sheep",
+      "seconds": 6.3,
+      "sheepHp": 4.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 620,
+      "damage": 78,
+      "cooldown": 1.1,
+      "winner": "sheep",
+      "seconds": 6.9,
+      "sheepHp": 4.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 620,
+      "damage": 78,
+      "cooldown": 1.2,
+      "winner": "opponent",
+      "seconds": 7.0,
+      "sheepHp": 0.0,
+      "opponentHp": 2.0,
+      "sheepHits": 6,
+      "opponentHits": 8
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 620,
+      "damage": 82,
+      "cooldown": 1.0,
+      "winner": "sheep",
+      "seconds": 5.3,
+      "sheepHp": 92.0,
+      "opponentHp": 0.0,
+      "sheepHits": 6,
+      "opponentHits": 6
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 620,
+      "damage": 82,
+      "cooldown": 1.1,
+      "winner": "sheep",
+      "seconds": 5.8,
+      "sheepHp": 92.0,
+      "opponentHp": 0.0,
+      "sheepHits": 6,
+      "opponentHits": 6
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 620,
+      "damage": 82,
+      "cooldown": 1.2,
+      "winner": "sheep",
+      "seconds": 6.3,
+      "sheepHp": 4.0,
+      "opponentHp": 0.0,
+      "sheepHits": 6,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 620,
+      "damage": 86,
+      "cooldown": 1.0,
+      "winner": "sheep",
+      "seconds": 5.3,
+      "sheepHp": 92.0,
+      "opponentHp": 0.0,
+      "sheepHits": 6,
+      "opponentHits": 6
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 620,
+      "damage": 86,
+      "cooldown": 1.1,
+      "winner": "sheep",
+      "seconds": 5.8,
+      "sheepHp": 92.0,
+      "opponentHp": 0.0,
+      "sheepHits": 6,
+      "opponentHits": 6
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 620,
+      "damage": 86,
+      "cooldown": 1.2,
+      "winner": "sheep",
+      "seconds": 6.3,
+      "sheepHp": 4.0,
+      "opponentHp": 0.0,
+      "sheepHits": 6,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 640,
+      "damage": 78,
+      "cooldown": 1.0,
+      "winner": "sheep",
+      "seconds": 6.3,
+      "sheepHp": 24.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 640,
+      "damage": 78,
+      "cooldown": 1.1,
+      "winner": "sheep",
+      "seconds": 6.9,
+      "sheepHp": 24.0,
+      "opponentHp": 0.0,
+      "sheepHits": 7,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 640,
+      "damage": 78,
+      "cooldown": 1.2,
+      "winner": "opponent",
+      "seconds": 7.0,
+      "sheepHp": 0.0,
+      "opponentHp": 2.0,
+      "sheepHits": 6,
+      "opponentHits": 8
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 640,
+      "damage": 82,
+      "cooldown": 1.0,
+      "winner": "sheep",
+      "seconds": 5.3,
+      "sheepHp": 112.0,
+      "opponentHp": 0.0,
+      "sheepHits": 6,
+      "opponentHits": 6
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 640,
+      "damage": 82,
+      "cooldown": 1.1,
+      "winner": "sheep",
+      "seconds": 5.8,
+      "sheepHp": 112.0,
+      "opponentHp": 0.0,
+      "sheepHits": 6,
+      "opponentHits": 6
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 640,
+      "damage": 82,
+      "cooldown": 1.2,
+      "winner": "sheep",
+      "seconds": 6.3,
+      "sheepHp": 24.0,
+      "opponentHp": 0.0,
+      "sheepHits": 6,
+      "opponentHits": 7
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 640,
+      "damage": 86,
+      "cooldown": 1.0,
+      "winner": "sheep",
+      "seconds": 5.3,
+      "sheepHp": 112.0,
+      "opponentHp": 0.0,
+      "sheepHits": 6,
+      "opponentHits": 6
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 640,
+      "damage": 86,
+      "cooldown": 1.1,
+      "winner": "sheep",
+      "seconds": 5.8,
+      "sheepHp": 112.0,
+      "opponentHp": 0.0,
+      "sheepHits": 6,
+      "opponentHits": 6
+    },
+    {
+      "opponent": "wither_skeleton",
+      "hp": 640,
+      "damage": 86,
+      "cooldown": 1.2,
+      "winner": "sheep",
+      "seconds": 6.3,
+      "sheepHp": 24.0,
+      "opponentHp": 0.0,
+      "sheepHits": 6,
+      "opponentHits": 7
+    }
+  ],
+  "burstBreakpoints": {
+    "fallingAnvilDamage": 549,
+    "sheepAfterAnvil": 71,
+    "minoshroomDamage": 300,
+    "sheepSurvivesTwoMinoshroomHits": true
+  },
+  "checks": {
+    "damage82NeedsSevenHitsAgainstZombie": true,
+    "damage82NeedsSixHitsAgainstWither": true,
+    "costExceedsBothThreeEmeraldPeers": true,
+    "sheepDpsBelowBothPeers": true,
+    "nominalSheepNotTankHp": true
+  },
+  "cardCount": 27,
+  "evolutionCount": 6
+}

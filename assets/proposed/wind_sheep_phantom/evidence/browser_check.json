@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "browser": "Chromium headless",
+  "loadMode": "Exact standalone HTML via Page.setDocumentContent",
+  "checks": [
+    "three cards",
+    "six selectable actions per card",
+    "automatic animation advance",
+    "pause",
+    "frame scrub",
+    "image decoding",
+    "integer 6x scaling",
+    "restart",
+    "death removal",
+    "speed"
+  ],
+  "cards": [
+    {
+      "name": "Breeze",
+      "actions": 6,
+      "frame": "show_3 · 200 ms",
+      "nativeWidth": 40,
+      "scale": 6
+    },
+    {
+      "name": "Adventure Sheep",
+      "actions": 6,
+      "frame": "show_3 · 100 ms",
+      "nativeWidth": 40,
+      "scale": 6
+    },
+    {
+      "name": "Phantom",
+      "actions": 6,
+      "frame": "show_3 · 200 ms",
+      "nativeWidth": 24,
+      "scale": 6
+    }
+  ]
+}
