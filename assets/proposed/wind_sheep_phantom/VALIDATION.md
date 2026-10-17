@@ -20,6 +20,7 @@ Stand 17.10.2026, Basis `e80ad6919b7eb21a1d3464290d177ee3ab210eee`. Alle PASS-An
 | Bestehende Dateien/Imports | PASS | Ausschließlich neue Dateien unter diesem Konzeptpfad; keine Änderung an Live-Registry, Gameplay, Tests, Installer oder Live-Sprites | `evidence/scope_guard.json`, PR-Diff |
 | Reproduzierbare Exporte | PASS | Native Lua-Dateien sowie PNG/GIF/HTML/Icons nach erneutem Build bytegleich | `evidence/reproducibility.json` |
 | Sheep-1v1 | MODELED | Zwei nominale In-Range-Rechnungen, je 18 deterministische Timingfälle und insgesamt 54 Stat-Sensitivitätsfälle | `evidence/balance_model.json` |
+| Wind-/Slow-Budget | MODELED | Alle aktuellen normalen Boden-Kartenstatlinien mit normaler und Hero-Web-Bewegung: höchstens eine Sekunde skalare Rücklaufzeit; kein Pathfinding-Test | `windScalarSafety` im Rechenmodell |
 | Neue-Karten-Engine-/Bot-Matches | NOT RUN | Ohne Implementierung/Registrierung nicht vorhanden; diese ist ausdrücklich nicht freigegeben | keine erfundenen Matchreports |
 | Neue Fähigkeiten | NOT IMPLEMENTED | Breeze-Knockback, Phantom-Priorität/Dive und Sheep-Gameplay stehen nur im Konzept | `GAMEPLAY.md` |
 | Physischer CC-Monitor/ATM | UNVERIFIED HARDWARE | Keine Minecraft-/Peripheral-Hardware vorhanden | keine Hardware-Benchmarkbehauptung |

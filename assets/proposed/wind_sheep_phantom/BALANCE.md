@@ -55,6 +55,10 @@ The optional helmet block is not recommended: it adds a timer/state and would co
 - King Frog: 3E/550 HP/40 per 1.4s plus positional pull. Sheep is a 4E direct fighter, not a replacement controller.
 - Nether Worm: 3E/350 HP with ambush placement and conditional opener. Sheep has neither deployment surprise nor burst.
 
+## Wind and existing slow interaction
+
+The push cap is min(4 world units, one second of the victim's current modified move speed). A stopped/immobile victim is not displaced. For every current ordinary ground-card stat line, the JSON checks the normal speed and Hero Spider's 0.25 movement factor. The scalar straight-line return budget is at most one second, leaving at least two seconds of the shared three-second immunity. This is not a navigation or multi-Breeze simulation. The proposed bridge-choice guard still needs real engine tests.
+
 ## Later validation required
 
 After explicit implementation approval: real engine duels with approach distances, both owners/entity orders, projectile travel, towers, movement modifiers and the final first-hit windup; mixed decks, bot classification and full matches. No proposed-card headless or bot simulation is possible without adding the cards, which this package intentionally does not do.

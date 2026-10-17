@@ -51,7 +51,7 @@ Angriffsposen und Effekte lösen keine Treffer aus. Die GIFs enthalten Vor-/Nach
 
 ## 5. Taktische Rollen
 
-**Breeze:** Defensive Positionskontrolle auf einem primären Bodenziel. Jeder dritte Schuss kann einmal zurückstoßen; gemeinsame Opfer-Immunität, begrenzter Weg und durchgehende Terrainprüfung verhindern Push-Schleifen und River-Sprünge. Keine Gebäudeverschiebung und kein Anti-Air. Abgrenzung zu Snow Golem (Slow/Anti-Air), King Frog (Pull) und Hero Spider (starker Debuff).
+**Breeze:** Defensive Positionskontrolle auf einem primären Bodenziel. Jeder dritte Schuss kann einmal zurückstoßen; gemeinsame Opfer-Immunität, ein Weg von höchstens vier Einheiten und einer Sekunde modifizierter Laufstrecke sowie Terrain-/Brückenauswahlprüfungen sollen Push-Schleifen und River-Sprünge verhindern. Die Sicherheitsregeln sind noch keine getestete Engine-Implementierung. Keine Gebäudeverschiebung und kein Anti-Air. Abgrenzung zu Snow Golem (Slow/Anti-Air), King Frog (Pull) und Hero Spider (starker Debuff).
 
 **Adventure Sheep:** Einfacher, verlässlicher Nahkampfduellant. Mehr HP zum höheren Preis, geringere DPS als die beiden 3E-Vergleichskarten. Keine passive Fähigkeit empfohlen. Die Rolle überschneidet sich mit vorhandenem Melee; die optische Identität und der konkrete 4E-Stat-Tradeoff müssen einen zusätzlichen Deckplatz rechtfertigen.
 
@@ -65,7 +65,7 @@ Angriffsposen und Effekte lösen keine Treffer aus. Die GIFs enthalten Vor-/Nach
 | Adventure Sheep | 4 | 620 | 82 | 1,1 s | 7,4 | 2,5 |
 | Phantom | 4 | 280 | 76 | 1,3 s | 10 | 2,2 |
 
-Breeze: vier Einheiten maximaler Rückstoß; verstärkter Schuss nominell alle 4,2 s; dreisekündige geteilte Opfer-Immunität. Phantom: 38 Schaden gegen Gebäude/Türme; Dive-Windup 0,3 s, Wegbudget vier Einheiten, Speed-Cap 16, höchstens 0,3 s und fünf Sekunden Startabstand. Keine dieser Zahlen ist live.
+Breeze: maximal `min(4, effektive Bewegung × 1 s)` Rückstoß; verstärkter Schuss nominell alle 4,2 s; dreisekündige geteilte Opfer-Immunität. Phantom: 38 Schaden gegen Gebäude/Türme; Dive-Windup 0,3 s, Wegbudget vier Einheiten, Speed-Cap 16, höchstens 0,3 s und fünf Sekunden Startabstand. Keine dieser Zahlen ist live.
 
 Vollständige Eigenschaften und Zustände: [GAMEPLAY.md](GAMEPLAY.md). Vergleichswerte und nachvollziehbare Rechenannahmen: [BALANCE.md](BALANCE.md), maschinenlesbar in `BALANCE_PROPOSALS.json`.
 

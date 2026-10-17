@@ -13,7 +13,8 @@ PROPOSALS={
                attackRange=15,aggroRange=30,flying=False,canAttackAir=False,
                targetTypes=['ground_units','buildings','towers'],projectileSpeed=46,
                control=dict(empoweredEveryShots=3,nominalEmpoweredInterval=4.2,
-                            maxKnockback=4,sharedVictimImmunity=3.0,terrainSampleStep=.25,
+                            maxKnockback=4,maxModifiedWalkSeconds=1.0,sharedVictimImmunity=3.0,terrainSampleStep=.25,
+                            preserveCurrentBridgeChoice=True,displaceImmobile=False,
                             primaryOnly=True,affectsBuildings=False,affectsAir=False,affectsWaterOnly=False)),
  'adventure_sheep':dict(name='Adventure Sheep',cost=4,maxHp=620,damage=82,attackCooldown=1.1,
                         moveSpeed=7.4,attackRange=2.5,aggroRange=27,flying=False,canAttackAir=False,
@@ -80,6 +81,18 @@ def analyze(reference):
             r=duel(candidate,opponent,.3,0,'opponent_first')
             sensitivity.append(dict(opponent=key,hp=hp,damage=damage,cooldown=cd,
                                     **{k:v for k,v in r.items() if k!='trace'}))
+    windSafety=[]
+    for key,card in reference['cards'].items():
+        unit=card.get('unit')
+        if not unit or unit.get('flying') or unit.get('waterOnly'):continue
+        for factor,label in ((1.0,'normal'),(.25,'Hero Spider 75 percent slow')):
+            speed=unit.get('moveSpeed',0)*factor
+            distance=min(4,speed*1.0) if speed>0 else 0
+            returnSeconds=distance/speed if speed>0 else 0
+            assert distance==0 or returnSeconds<=1.0+1e-9
+            windSafety.append(dict(card=key,modifier=label,effectiveSpeed=speed,
+              pushCap=distance,straightReturnSeconds=returnSeconds,
+              remainingImmunitySeconds=3.0-returnSeconds))
     modelChecks={
       'damage82NeedsSevenHitsAgainstZombie':math.ceil(reference['cards']['zombie']['unit']['maxHp']/sheep['damage'])==7,
       'damage82NeedsSixHitsAgainstWither':math.ceil(reference['cards']['wither_skeleton']['unit']['maxHp']/sheep['damage'])==6,
@@ -101,6 +114,7 @@ def analyze(reference):
                   'sheepAfterAnvil':sheep['maxHp']-reference['cards']['falling_anvil']['spell']['damage'],
                   'minoshroomDamage':reference['cards']['minoshroom']['unit']['damage'],
                   'sheepSurvivesTwoMinoshroomHits':sheep['maxHp']>2*reference['cards']['minoshroom']['unit']['damage']},
+                windScalarSafety=windSafety,
                 checks=modelChecks,cardCount=len(reference['cards']),evolutionCount=len(reference['evolutions']))
 
 
@@ -142,6 +156,8 @@ def report(d):
       '- King Frog: 3E/550 HP/40 per 1.4s plus positional pull. Sheep is a 4E direct fighter, not a replacement controller.',
       '- Nether Worm: 3E/350 HP with ambush placement and conditional opener. Sheep has neither deployment surprise nor burst.',
       '',
+      '## Wind and existing slow interaction','',
+      'The push cap is min(4 world units, one second of the victim\'s current modified move speed). A stopped/immobile victim is not displaced. For every current ordinary ground-card stat line, the JSON checks the normal speed and Hero Spider\'s 0.25 movement factor. The scalar straight-line return budget is at most one second, leaving at least two seconds of the shared three-second immunity. This is not a navigation or multi-Breeze simulation. The proposed bridge-choice guard still needs real engine tests.','',
       '## Later validation required','',
       'After explicit implementation approval: real engine duels with approach distances, both owners/entity orders, projectile travel, towers, movement modifiers and the final first-hit windup; '+
       'mixed decks, bot classification and full matches. No proposed-card headless or bot simulation is possible without adding the cards, which this package intentionally does not do.','']

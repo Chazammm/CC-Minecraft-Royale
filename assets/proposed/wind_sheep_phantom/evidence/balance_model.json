@@ -30,8 +30,11 @@
         "empoweredEveryShots": 3,
         "nominalEmpoweredInterval": 4.2,
         "maxKnockback": 4,
+        "maxModifiedWalkSeconds": 1.0,
         "sharedVictimImmunity": 3.0,
         "terrainSampleStep": 0.25,
+        "preserveCurrentBridgeChoice": true,
+        "displaceImmobile": false,
         "primaryOnly": true,
         "affectsBuildings": false,
         "affectsAir": false,
@@ -1373,6 +1376,312 @@
     "minoshroomDamage": 300,
     "sheepSurvivesTwoMinoshroomHits": true
   },
+  "windScalarSafety": [
+    {
+      "card": "creeper",
+      "modifier": "normal",
+      "effectiveSpeed": 8.0,
+      "pushCap": 4,
+      "straightReturnSeconds": 0.5,
+      "remainingImmunitySeconds": 2.5
+    },
+    {
+      "card": "creeper",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 2.0,
+      "pushCap": 2.0,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "enderman",
+      "modifier": "normal",
+      "effectiveSpeed": 7.0,
+      "pushCap": 4,
+      "straightReturnSeconds": 0.5714285714285714,
+      "remainingImmunitySeconds": 2.428571428571429
+    },
+    {
+      "card": "enderman",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 1.75,
+      "pushCap": 1.75,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "endermite",
+      "modifier": "normal",
+      "effectiveSpeed": 9.2,
+      "pushCap": 4,
+      "straightReturnSeconds": 0.4347826086956522,
+      "remainingImmunitySeconds": 2.5652173913043477
+    },
+    {
+      "card": "endermite",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 2.3,
+      "pushCap": 2.3,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "evoker",
+      "modifier": "normal",
+      "effectiveSpeed": 5.3,
+      "pushCap": 4,
+      "straightReturnSeconds": 0.7547169811320755,
+      "remainingImmunitySeconds": 2.2452830188679247
+    },
+    {
+      "card": "evoker",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 1.325,
+      "pushCap": 1.325,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "iron_golem",
+      "modifier": "normal",
+      "effectiveSpeed": 4.2,
+      "pushCap": 4,
+      "straightReturnSeconds": 0.9523809523809523,
+      "remainingImmunitySeconds": 2.0476190476190474
+    },
+    {
+      "card": "iron_golem",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 1.05,
+      "pushCap": 1.05,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "king_frog",
+      "modifier": "normal",
+      "effectiveSpeed": 5.0,
+      "pushCap": 4,
+      "straightReturnSeconds": 0.8,
+      "remainingImmunitySeconds": 2.2
+    },
+    {
+      "card": "king_frog",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 1.25,
+      "pushCap": 1.25,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "magma_cube",
+      "modifier": "normal",
+      "effectiveSpeed": 6.4,
+      "pushCap": 4,
+      "straightReturnSeconds": 0.625,
+      "remainingImmunitySeconds": 2.375
+    },
+    {
+      "card": "magma_cube",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 1.6,
+      "pushCap": 1.6,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "minoshroom",
+      "modifier": "normal",
+      "effectiveSpeed": 3.6,
+      "pushCap": 3.6,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "minoshroom",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 0.9,
+      "pushCap": 0.9,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "nether_worm",
+      "modifier": "normal",
+      "effectiveSpeed": 9.0,
+      "pushCap": 4,
+      "straightReturnSeconds": 0.4444444444444444,
+      "remainingImmunitySeconds": 2.5555555555555554
+    },
+    {
+      "card": "nether_worm",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 2.25,
+      "pushCap": 2.25,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "ravager_rider",
+      "modifier": "normal",
+      "effectiveSpeed": 4.4,
+      "pushCap": 4,
+      "straightReturnSeconds": 0.9090909090909091,
+      "remainingImmunitySeconds": 2.090909090909091
+    },
+    {
+      "card": "ravager_rider",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 1.1,
+      "pushCap": 1.1,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "skeleton",
+      "modifier": "normal",
+      "effectiveSpeed": 7.5,
+      "pushCap": 4,
+      "straightReturnSeconds": 0.5333333333333333,
+      "remainingImmunitySeconds": 2.466666666666667
+    },
+    {
+      "card": "skeleton",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 1.875,
+      "pushCap": 1.875,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "slime",
+      "modifier": "normal",
+      "effectiveSpeed": 6.4,
+      "pushCap": 4,
+      "straightReturnSeconds": 0.625,
+      "remainingImmunitySeconds": 2.375
+    },
+    {
+      "card": "slime",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 1.6,
+      "pushCap": 1.6,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "snow_golem",
+      "modifier": "normal",
+      "effectiveSpeed": 5.8,
+      "pushCap": 4,
+      "straightReturnSeconds": 0.6896551724137931,
+      "remainingImmunitySeconds": 2.310344827586207
+    },
+    {
+      "card": "snow_golem",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 1.45,
+      "pushCap": 1.45,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "spider",
+      "modifier": "normal",
+      "effectiveSpeed": 10.5,
+      "pushCap": 4,
+      "straightReturnSeconds": 0.38095238095238093,
+      "remainingImmunitySeconds": 2.619047619047619
+    },
+    {
+      "card": "spider",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 2.625,
+      "pushCap": 2.625,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "villager",
+      "modifier": "normal",
+      "effectiveSpeed": 0.0,
+      "pushCap": 0,
+      "straightReturnSeconds": 0,
+      "remainingImmunitySeconds": 3.0
+    },
+    {
+      "card": "villager",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 0.0,
+      "pushCap": 0,
+      "straightReturnSeconds": 0,
+      "remainingImmunitySeconds": 3.0
+    },
+    {
+      "card": "witch",
+      "modifier": "normal",
+      "effectiveSpeed": 5.8,
+      "pushCap": 4,
+      "straightReturnSeconds": 0.6896551724137931,
+      "remainingImmunitySeconds": 2.310344827586207
+    },
+    {
+      "card": "witch",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 1.45,
+      "pushCap": 1.45,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "wither_skeleton",
+      "modifier": "normal",
+      "effectiveSpeed": 7.4,
+      "pushCap": 4,
+      "straightReturnSeconds": 0.5405405405405405,
+      "remainingImmunitySeconds": 2.4594594594594597
+    },
+    {
+      "card": "wither_skeleton",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 1.85,
+      "pushCap": 1.85,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "wolf",
+      "modifier": "normal",
+      "effectiveSpeed": 10.2,
+      "pushCap": 4,
+      "straightReturnSeconds": 0.3921568627450981,
+      "remainingImmunitySeconds": 2.607843137254902
+    },
+    {
+      "card": "wolf",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 2.55,
+      "pushCap": 2.55,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    },
+    {
+      "card": "zombie",
+      "modifier": "normal",
+      "effectiveSpeed": 7.4,
+      "pushCap": 4,
+      "straightReturnSeconds": 0.5405405405405405,
+      "remainingImmunitySeconds": 2.4594594594594597
+    },
+    {
+      "card": "zombie",
+      "modifier": "Hero Spider 75 percent slow",
+      "effectiveSpeed": 1.85,
+      "pushCap": 1.85,
+      "straightReturnSeconds": 1.0,
+      "remainingImmunitySeconds": 2.0
+    }
+  ],
   "checks": {
     "damage82NeedsSevenHitsAgainstZombie": true,
     "damage82NeedsSixHitsAgainstWither": true,

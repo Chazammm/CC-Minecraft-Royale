@@ -8,17 +8,20 @@ Alle Zahlen sind Startvorschläge. Verbindlich für dieses Paket sind nur die is
 
 Die ersten beiden Schüsse sind normale kleine Windtreffer. Jeder dritte abgefeuerte Schuss ist ein lesbar aufgeladener Windstoß. Das ergibt bei normalem Angriffstempo 4,2 s zwischen verstärkten Schüssen; der erste kommt frühestens 2,8 s nach dem ersten normalen Schuss. Der Zähler zählt bestätigte Schussfreigaben, nicht Animationen oder mehrfach aufgelöste Treffer. Ein verlorenes Projektil spart keine Ladung für einen Gratis-Doppelschuss.
 
-Der Windstoß verschiebt **nur das primäre getroffene gegnerische Bodentruppenziel** um höchstens vier Welteinheiten vom Breeze weg. Kein Schadensbonus, kein Flächenschaden, kein Stun, kein Angriffstimer-Reset und kein Umsetzen des Target-Locks. Der breite Effekt ist visuelle Winddarstellung, keine größere Kollisionsfläche.
+Der Windstoß verschiebt **nur das primäre getroffene gegnerische Bodentruppenziel** um höchstens vier Welteinheiten vom Breeze weg. Der konkrete Weg ist zusätzlich auf eine Sekunde seiner **aktuell modifizierten** Bewegungsgeschwindigkeit begrenzt: `min(4, effectiveMoveSpeed × 1s)`. Bei Geschwindigkeit null gibt es keinen Positionsimpuls. Die Geschwindigkeit wird beim Einschlag nach aktiven Slows gelesen, nicht beim Abschuss gespeichert. Kein Schadensbonus, kein Flächenschaden, kein Stun, kein Angriffstimer-Reset und kein Umsetzen des Target-Locks. Der breite Effekt ist visuelle Winddarstellung, keine größere Kollisionsfläche.
 
 ### Sichere Verschiebung
 
 1. Beim Einschlag erneut prüfen: Ziel lebt, gegnerische Unit, weder fliegend noch `waterOnly`.
 2. Getroffene Unit hat eine gemeinsame dreisekündige Wind-Immunität gegen alle Breezes. Immunität wird nach einer erfolgreichen Verschiebung gesetzt; reiner Schaden bleibt möglich. Zwei Breezes dürfen nicht abwechselnd denselben Trupp im Dauerzustand halten.
 3. Den gesamten Weg in höchstens 0,25-Welteinheiten-Schritten prüfen. `arena.isWalkable` und die normalen Arena-Grenzen gelten in jedem Schritt. Am ersten ungültigen Punkt stoppen, niemals auf die nächste gegenüberliegende Uferposition springen.
-4. Maximal vier Einheiten; an einer Wand/Brückenkante darf das Ergebnis kleiner oder null sein. Keine seitliche Ersatz-Teleportation und kein anschließender Gratis-Nav-Snap.
-5. Die bestehende Unit-ID erhalten, den Spatial-Index nach echter Positionsänderung aktualisieren. Reihenfolge bei gleichzeitigen Treffern deterministisch festlegen. Keine Entity-Kopie und keine neue Spawnposition.
+4. Muss das gelockte Opferziel auf der anderen Flussseite erreicht werden, den vorhandenen Navigations-Brückenausgang vor/nach jedem Kandidatenschritt vergleichen. Einen Schritt ablehnen, der allein durch Rückstoß die gewählte Brücke wechseln würde. So sollen zwei Windquellen keinen langen Links-/Rechts-Brückenpendelweg erzwingen. Es wird kein globaler Navigations-Lock hinzugefügt.
+5. Maximal vier Einheiten und höchstens die Ein-Sekunden-Laufstrecke; an einer Wand/Brückenkante darf das Ergebnis kleiner oder null sein. Keine seitliche Ersatz-Teleportation und kein anschließender Gratis-Nav-Snap.
+6. Die bestehende Unit-ID erhalten, den Spatial-Index nach echter Positionsänderung aktualisieren. Reihenfolge bei gleichzeitigen Treffern deterministisch festlegen. Keine Entity-Kopie und keine neue Spawnposition.
 
 Die bestehende Frog-Pull-Regel tastet bereits einen Weg in 0,5-Schritten ab. Das ist eine hilfreiche vorhandene Sicherheitsidee, aber keine universell fertige Knockback-Funktion. Eine spätere gemeinsame Displacement-Abstraktion darf nicht ungeprüft Pull-Reichweite, Bridges oder Frog-Targeting verändern.
+
+Die geschwindigkeitsabhängige Begrenzung ist wichtig für bereits vorhandene Slows: Ein Hero-Web-Minoshroom läuft mit 0,9 Welteinheiten/s und würde daher höchstens 0,9 zurückgeschoben, ein entsprechend verlangsamter Iron Golem höchstens 1,05. Ein fester Viererimpuls könnte zusammen mit mehreren Breezes dagegen zur praktischen Dauersperre werden. Der Ein-Sekunden-Cap lässt im skalaren Geradeausmodell mindestens zwei Sekunden der dreisekündigen Immunität als Vorwärtsfenster. Das ist kein Beweis einer fertigen Pathfinding- oder Mehrfach-Breeze-Integration.
 
 ### Gegenwehr und Meta
 
