@@ -1,0 +1,23 @@
+{
+  "status": "REFERENCE_IMAGES_INSPECTED_NOT_PACKAGED",
+  "sources": [
+    {
+      "name": "Breeze",
+      "page": "https://minecraft.wiki/w/Breeze",
+      "image": "https://minecraft.wiki/images/Breeze_BE1_JE2.webp?87e5c",
+      "accessed": "2026-10-17"
+    },
+    {
+      "name": "Phantom",
+      "page": "https://minecraft.wiki/w/Phantom",
+      "image": "https://minecraft.wiki/images/Phantom_JE2.gif?ed906",
+      "accessed": "2026-10-17"
+    },
+    {
+      "name": "Sheep",
+      "page": "https://minecraft.wiki/w/Sheep",
+      "image": "https://minecraft.wiki/images/White_Sheep_JE5.png?a5000",
+      "accessed": "2026-10-17"
+    }
+  ]
+}
