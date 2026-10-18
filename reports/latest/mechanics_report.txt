@@ -1,14 +1,14 @@
 CC-MINECRAFT-ROYALE MECHANICS REPORT
-FORMAT_VERSION|22
-CODE_REVISION|8ee474a700718adcca4bdad219f0e39e927be8cf
-GENERATED_EPOCH_MS|1791734428145
+FORMAT_VERSION|25
+CODE_REVISION|37a970a9ca72d058f796a7d55761bcd24bd6e848
+GENERATED_EPOCH_MS|1792360372417
 OS_VERSION|CraftOS 1.9
-CARD_COUNT|22
+CARD_COUNT|29
 HARNESS|condition_waits=true|dt=0.050|safe_x=50.0|safe_y=110.0
 CONFIG|tick=0.100|normal=150|overtime=150|emerald_rate=0.357143|building_decay=1.150
 BALANCE_SNAPSHOT|skeleton_range=15.00|skeleton_retreat=0.85|bat_damage=17.00
 EVOLUTION_SNAPSHOT|creeper_cycles=2|portal_cycles=2|mite_cycles=4|guardian_cycles=2|villager_cycles=3|golem_cycles=2|ghast_damage=130.0|ghast_range=24.0
-SUMMARY|pass=24|fail=0|error=0|total=24|runtime_cpu_s=0.0500
+SUMMARY|pass=143|fail=0|error=0|total=143|runtime_cpu_s=0.3000
 
 RESULT|boot_deck|PASS|Lobby boots with empty human decks|Human players should build/load/randomize an 8-card deck before READY.
 DATA|boot_deck|p1_deck_cards=0.0000
@@ -42,8 +42,8 @@ DATA|evolution_ruleset|progress_after_play=2.0000
 DATA|evolution_ruleset|telemetry_evolution_plays=0.0000
 
 RESULT|admin_evolution_spawn|PASS|Admin directly spawns Evolution forms|Admin card pages must include every Evolution as a direct sandbox spawn, bypassing cycles and Emerald cost.
-DATA|admin_evolution_spawn|admin_catalog_entries=29.0000
-DATA|admin_evolution_spawn|admin_evolution_entries=6.0000
+DATA|admin_evolution_spawn|admin_catalog_entries=37.0000
+DATA|admin_evolution_spawn|admin_evolution_entries=7.0000
 DATA|admin_evolution_spawn|charged_creeper_spawned=true
 DATA|admin_evolution_spawn|ghast_portal_spawned=true
 DATA|admin_evolution_spawn|mega_mite_spawned=true
@@ -64,8 +64,8 @@ DATA|evo_diamond_golem|ground_damage_after_first_walk_pulse=25.0000
 DATA|evo_diamond_golem|flying_damage_after_first_pulse=0.0000
 DATA|evo_diamond_golem|quake_effect_visible=true
 DATA|evo_diamond_golem|stationary_damage_over_2_3s=0.0000
-DATA|evo_diamond_golem|stationary_timer_before=1.9500
-DATA|evo_diamond_golem|stationary_timer_after=1.9500
+DATA|evo_diamond_golem|stationary_timer_before=1.9000
+DATA|evo_diamond_golem|stationary_timer_after=1.9000
 
 RESULT|guardian_targeting|PASS|Unreachable ground troops ignore Guardian and Elder Guardian|Guardian and Elder Guardian must share the same water-only targeting contract: unreachable ground melee ignores them, while ranged ground units that can physically reach them may target them.
 DATA|guardian_targeting|guardian_admin_land_rejected=true
@@ -77,7 +77,7 @@ DATA|guardian_targeting|elder_bridge_rejected=true
 DATA|guardian_targeting|guardian_water_only_flag=true
 DATA|guardian_targeting|elder_water_only_flag=true
 DATA|guardian_targeting|evolved_card_water_only_flag=true
-DATA|guardian_targeting|distance_to_ground_reach=6.0000
+DATA|guardian_targeting|distance_to_ground_reach=6.0100
 DATA|guardian_targeting|zombie_attack_range=2.5000
 DATA|guardian_targeting|guardian_ignored_by_zombie=true
 DATA|guardian_targeting|elder_ignored_by_zombie=true
@@ -93,8 +93,8 @@ DATA|guardian_beam|guardian_hp=90.0000
 DATA|guardian_beam|skeleton_arrow_damage=30.0000
 DATA|guardian_beam|beam_base_dps=35.0000
 DATA|guardian_beam|beam_max_dps=350.0000
-DATA|guardian_beam|damage_first_second=68.4688
-DATA|guardian_beam|damage_second_second=147.2188
+DATA|guardian_beam|damage_first_second=93.9531
+DATA|guardian_beam|damage_second_second=162.9688
 DATA|guardian_beam|charge_before_skeleton_spawn=0.5000
 DATA|guardian_beam|disruption_detected=true
 DATA|guardian_beam|disruption_time_s=0.2000
@@ -109,8 +109,8 @@ RESULT|evo_elder_guardian|PASS|Benched Elder Guardian remains fully functional i
 DATA|evo_elder_guardian|guardian_dev_only=true
 DATA|evo_elder_guardian|guardian_normal_deck_add_rejected=true
 DATA|evo_elder_guardian|guardian_normal_evo_selection_rejected=true
-DATA|evo_elder_guardian|public_evolution_count=5.0000
-DATA|evo_elder_guardian|dev_evolution_count=6.0000
+DATA|evo_elder_guardian|public_evolution_count=6.0000
+DATA|evo_elder_guardian|dev_evolution_count=7.0000
 DATA|evo_elder_guardian|elder_admin_spawned=true
 DATA|evo_elder_guardian|elder_is_evolution=true
 DATA|evo_elder_guardian|elder_range=18.0000
@@ -118,7 +118,7 @@ DATA|evo_elder_guardian|elder_hp=180.0000
 DATA|evo_elder_guardian|global_slow=0.0500
 DATA|evo_elder_guardian|enemy_move_factor_with_elder=0.9500
 DATA|evo_elder_guardian|elder_acquired_target_at_17=true
-DATA|evo_elder_guardian|beam_damage_at_17=24.3906
+DATA|evo_elder_guardian|beam_damage_at_17=23.4063
 DATA|evo_elder_guardian|elder_debug_kill_succeeded=true
 DATA|evo_elder_guardian|enemy_move_factor_after_elder_death=1.0000
 
@@ -139,7 +139,7 @@ DATA|evo_charged_creeper|charged_radius=12.0000
 DATA|evo_charged_creeper|charged_visual_radius=16.0000
 DATA|evo_charged_creeper|visual_variant=charged_creeper
 DATA|evo_charged_creeper|exploded=true
-DATA|evo_charged_creeper|explosion_time_s=0.7500
+DATA|evo_charged_creeper|explosion_time_s=0.7000
 DATA|evo_charged_creeper|near_target_damage=580.0000
 DATA|evo_charged_creeper|far_target_distance=10.0000
 DATA|evo_charged_creeper|far_target_damage=580.0000
@@ -148,7 +148,7 @@ DATA|evo_charged_creeper|charged_effect_visible=true
 RESULT|evo_ghast_portal|PASS|Ghast Portal spawns exactly two artillery Ghasts|Ghast Portal must emit exactly two fragile long-range Ghasts; their 130-damage splash fireballs two-hit Blaze and slow only the primary target.
 DATA|evo_ghast_portal|configured_cycles=2.0000
 DATA|evo_ghast_portal|portal_visual_variant=ghast_portal
-DATA|evo_ghast_portal|first_ghast_spawn_s=2.5500
+DATA|evo_ghast_portal|first_ghast_spawn_s=2.5000
 DATA|evo_ghast_portal|portal_spawn_total=2.0000
 DATA|evo_ghast_portal|unique_ghasts_seen=2.0000
 DATA|evo_ghast_portal|ghast_hp=220.0000
@@ -238,8 +238,8 @@ DATA|nether_portal|portal_alive_after_window=false
 DATA|nether_portal|expected_piglins=3.0000
 DATA|nether_portal|observed_piglins=3.0000
 DATA|nether_portal|piglin_1_spawn_s=2.0000
-DATA|nether_portal|piglin_2_spawn_s=9.0500
-DATA|nether_portal|piglin_3_spawn_s=16.1000
+DATA|nether_portal|piglin_2_spawn_s=9.0000
+DATA|nether_portal|piglin_3_spawn_s=16.0000
 
 RESULT|magma_split|PASS|Magma Cube splits into exactly two minis|A lethal real combat hit on Magma Cube should create exactly two Mini Magma Cubes.
 DATA|magma_split|parent_died=true
@@ -253,7 +253,7 @@ DATA|anvil_aoe|configured_delay_s=2.7000
 DATA|anvil_aoe|targets_initial=4.0000
 DATA|anvil_aoe|targets_alive_before_impact=4.0000
 DATA|anvil_aoe|targets_alive_after_impact=0.0000
-DATA|anvil_aoe|measured_impact_time_s=2.7500
+DATA|anvil_aoe|measured_impact_time_s=2.7000
 
 RESULT|creeper_fuse|PASS|Creeper fuse delay, lock and explosion|Creeper should arm and lock, survive until the fuse window ends, then explode for configured damage.
 DATA|creeper_fuse|fuse_started=true
@@ -261,7 +261,7 @@ DATA|creeper_fuse|arm_time_s=0.0500
 DATA|creeper_fuse|locked_target_on_fuse=true
 DATA|creeper_fuse|alive_before_fuse_finished=true
 DATA|creeper_fuse|exploded=true
-DATA|creeper_fuse|explosion_wait_after_safe_window_s=0.1500
+DATA|creeper_fuse|explosion_wait_after_safe_window_s=0.1000
 DATA|creeper_fuse|zombie_damage_taken=290.0000
 DATA|creeper_fuse|expected_explosion_damage=290.0000
 
@@ -299,5 +299,250 @@ DATA|bot_smoke|bot_actions=3.0000
 DATA|bot_smoke|bot_last_action=Snow Golem
 DATA|bot_smoke|recorded_cards_played=3.0000
 DATA|bot_smoke|bot_emeralds=1.3571
+
+RESULT|terminal_delayed_spell|PASS|Winning delayed spells freeze later combat stages|No aura/combat stage after the winning spell.
+
+RESULT|exact_timer_cadence|PASS|Repeated attacks respect configured cooldown boundaries|Repeated engine attacks and bot intervals measured.
+DATA|exact_timer_cadence|intervals=70
+
+RESULT|tower_lock_retarget|PASS|Both tower types retain targets and retarget legitimately|Princess/King locks validated on both owners.
+DATA|tower_lock_retarget|probes=4
+
+RESULT|terminal_projectiles|PASS|Winning impact freezes the remaining projectile batch|No post-win impact damage.
+DATA|terminal_projectiles|post_win_damage=0
+
+RESULT|spawn_side_mirror|PASS|Deployment, summon and split bodies mirror player views|Both axes and counts preserved.
+DATA|spawn_side_mirror|bodies=17
+
+RESULT|bridge_flying_paths|PASS|Ground uses bridges; flying crosses open water on both owners|No ground shortcuts or stuck river crossings.
+DATA|bridge_flying_paths|probes=4
+
+RESULT|consecutive_match_reset|PASS|Twenty matches clear match-local state and retain lobby choices|Resets preserve intended deck/Evo choices and preset data.
+DATA|consecutive_match_reset|matches=20
+
+RESULT|ui_state_independence|PASS|UI visibility does not change combat|Identical combat with differing UI flags.
+DATA|ui_state_independence|ticks=120
+
+RESULT|mob_stats|PASS|Definitions, two-cycle Evo and exact Spider bonuses|Definitions, two-cycle Evo and exact Spider bonuses
+
+RESULT|mob_rider_dual_p1|PASS|Rider locks, ground/air attacks and independent building hits|Rider locks, ground/air attacks and independent building hits
+
+RESULT|mob_rider_arrival_p1|PASS|Initial Impact on arrival once per lifetime, not per building|Initial Impact on arrival once per lifetime, not per building
+
+RESULT|mob_rider_moving_p1|PASS|Reiter fires while Ravager marches toward a building|Reiter fires while Ravager marches toward a building
+
+RESULT|mob_mino_two_hits_p1|PASS|Normal Zombie dies on exactly two successful Minoshroom hits|Normal Zombie dies on exactly two successful Minoshroom hits
+
+RESULT|mob_mino_single_p1|PASS|Heavy melee does not splash adjacent units|Heavy melee does not splash adjacent units
+
+RESULT|mob_dragon_splash_p1|PASS|Dragon splash hits ground and air once at the exact radius|Dragon splash hits ground and air once at the exact radius
+
+RESULT|mob_dragon_dead_primary_p1|PASS|Fireball splashes surviving enemies after its primary target dies|Fireball splashes surviving enemies after its primary target dies
+
+RESULT|mob_river_ravager_rider_p1|PASS|Real bridge / flying navigation for ravager_rider|Real bridge / flying navigation for ravager_rider
+
+RESULT|mob_river_minoshroom_p1|PASS|Real bridge / flying navigation for minoshroom|Real bridge / flying navigation for minoshroom
+
+RESULT|mob_river_evo_spider_p1|PASS|Real bridge / flying navigation for evo:spider|Real bridge / flying navigation for evo:spider
+
+RESULT|mob_river_baby_ender_dragon_p1|PASS|Real bridge / flying navigation for baby_ender_dragon|Real bridge / flying navigation for baby_ender_dragon
+
+RESULT|mob_web_lifetime_p1|PASS|Permanent web survives source death, composes slows, clears on target death|Permanent web survives source death, composes slows, clears on target death
+
+RESULT|mob_web_filters_p1|PASS|Web excludes allies, air, water, buildings, affected and reserved units|Web excludes allies, air, water, buildings, affected and reserved units
+
+RESULT|mob_web_reservation_p1|PASS|Two Hero Spiders reserve one target exactly once; failure refunds only its source|Two Hero Spiders reserve one target exactly once; failure refunds only its source
+
+RESULT|mob_web_source_inflight_p1|PASS|Valid in-flight web survives its source death|Valid in-flight web survives its source death
+
+RESULT|mob_web_clock_p1|PASS|Ten-second web clock preserves configured delay and exact subsequent spacing|Ten-second web clock preserves configured delay and exact subsequent spacing
+
+RESULT|mob_rider_dual_p2|PASS|Rider locks, ground/air attacks and independent building hits|Rider locks, ground/air attacks and independent building hits
+
+RESULT|mob_rider_arrival_p2|PASS|Initial Impact on arrival once per lifetime, not per building|Initial Impact on arrival once per lifetime, not per building
+
+RESULT|mob_rider_moving_p2|PASS|Reiter fires while Ravager marches toward a building|Reiter fires while Ravager marches toward a building
+
+RESULT|mob_mino_two_hits_p2|PASS|Normal Zombie dies on exactly two successful Minoshroom hits|Normal Zombie dies on exactly two successful Minoshroom hits
+
+RESULT|mob_mino_single_p2|PASS|Heavy melee does not splash adjacent units|Heavy melee does not splash adjacent units
+
+RESULT|mob_dragon_splash_p2|PASS|Dragon splash hits ground and air once at the exact radius|Dragon splash hits ground and air once at the exact radius
+
+RESULT|mob_dragon_dead_primary_p2|PASS|Fireball splashes surviving enemies after its primary target dies|Fireball splashes surviving enemies after its primary target dies
+
+RESULT|mob_river_ravager_rider_p2|PASS|Real bridge / flying navigation for ravager_rider|Real bridge / flying navigation for ravager_rider
+
+RESULT|mob_river_minoshroom_p2|PASS|Real bridge / flying navigation for minoshroom|Real bridge / flying navigation for minoshroom
+
+RESULT|mob_river_evo_spider_p2|PASS|Real bridge / flying navigation for evo:spider|Real bridge / flying navigation for evo:spider
+
+RESULT|mob_river_baby_ender_dragon_p2|PASS|Real bridge / flying navigation for baby_ender_dragon|Real bridge / flying navigation for baby_ender_dragon
+
+RESULT|mob_web_lifetime_p2|PASS|Permanent web survives source death, composes slows, clears on target death|Permanent web survives source death, composes slows, clears on target death
+
+RESULT|mob_web_filters_p2|PASS|Web excludes allies, air, water, buildings, affected and reserved units|Web excludes allies, air, water, buildings, affected and reserved units
+
+RESULT|mob_web_reservation_p2|PASS|Two Hero Spiders reserve one target exactly once; failure refunds only its source|Two Hero Spiders reserve one target exactly once; failure refunds only its source
+
+RESULT|mob_web_source_inflight_p2|PASS|Valid in-flight web survives its source death|Valid in-flight web survives its source death
+
+RESULT|mob_web_clock_p2|PASS|Ten-second web clock preserves configured delay and exact subsequent spacing|Ten-second web clock preserves configured delay and exact subsequent spacing
+
+RESULT|mob_hero_frequency|PASS|Actual long-run attacks preserve the +2% frequency despite tick quantization|Actual long-run attacks preserve the +2% frequency despite tick quantization
+
+RESULT|mob_web_attack_clock|PASS|Web quarters attack frequency without rewriting interval or losing partial progress|Web quarters attack frequency without rewriting interval or losing partial progress
+
+RESULT|mob_evo_api|PASS|Two successful normal plays then Hero, rejected plays and rematch reset|Two successful normal plays then Hero, rejected plays and rematch reset
+
+RESULT|mob_evo_disabled|PASS|Ruleset-disabled Evo remains normal and Dev spawn remains available|Ruleset-disabled Evo remains normal and Dev spawn remains available
+
+RESULT|mob_initial_web_ready|PASS|Hero Web starts ready without consuming a shot in an empty arena|Hero Web starts ready without consuming a shot in an empty arena
+
+RESULT|mob_web_purged_entity|PASS|Final removal clears permanent status even on an externally retained entity reference|Final removal clears permanent status even on an externally retained entity reference
+
+RESULT|mob_result_web_cancel|PASS|Match end cancels pending nets and releases both reservation endpoints|Match end cancels pending nets and releases both reservation endpoints
+
+RESULT|mob_rider_web_rates|PASS|Permanent web quarters both Ravager weapon frequencies independently|Permanent web quarters both Ravager weapon frequencies independently
+
+RESULT|mob_heavy_matchups|PASS|Minoshroom uses shared damage for real Iron/Diamond Golem and Wither HP|Minoshroom uses shared damage for real Iron/Diamond Golem and Wither HP
+
+RESULT|mob_winning_primary_freeze|PASS|Ravager winning King hit freezes the rider and all later combat|Ravager winning King hit freezes the rider and all later combat
+
+RESULT|frog_worm_definitions|PASS|Only two new selectable cards with owner-approved stats|Only two new selectable cards with owner-approved stats
+
+RESULT|frog_worm_hook_melee_p1|PASS|Hook deals zero, reaches melee, then ordinary 40-damage attacks|Hook deals zero, reaches melee, then ordinary 40-damage attacks
+
+RESULT|frog_worm_hook_heavy_bank_p1|PASS|Heavy ground troops and stationary economic units can be pulled|Heavy ground troops and stationary economic units can be pulled
+
+RESULT|frog_worm_moving_hook_melee_p1|PASS|Ready melee hits a pulled running target before it can leave again|Ready melee hits a pulled running target before it can leave again
+
+RESULT|frog_worm_hook_filters_p1|PASS|Tongue excludes buildings, air, water and allies|Tongue excludes buildings, air, water and allies
+
+RESULT|frog_worm_hook_terrain_p1|PASS|Pull sweeps cannot cross open water or bypass melee range|Pull sweeps cannot cross open water or bypass melee range
+
+RESULT|frog_worm_hook_cancel_clock_p1|PASS|Dead targets cancel hooks; pulling never resets melee cooldown|Dead targets cancel hooks; pulling never resets melee cooldown
+
+RESULT|frog_worm_multi_hook_p1|PASS|Two frogs cannot drag one victim twice in the same tick|Two frogs cannot drag one victim twice in the same tick
+
+RESULT|frog_worm_placement_p1|PASS|Worm alone deploys behind either enemy tower and on bridges|Worm alone deploys behind either enemy tower and on bridges
+
+RESULT|frog_worm_deploy_timing_p1|PASS|Full warning then exposed emergence; no early bite at any supported dt|Full warning then exposed emergence; no early bite at any supported dt
+
+RESULT|frog_worm_exposed_p1|PASS|Emerging Worm can be hit by troops and spells before it attacks|Emerging Worm can be hit by troops and spells before it attacks
+
+RESULT|frog_worm_damage_matrix_p1|PASS|Full unit/building damage, half damage to both tower types|Full unit/building damage, half damage to both tower types
+
+RESULT|frog_worm_opener_p1|PASS|Ambush bonus is once-only, unit-only and expires|Ambush bonus is once-only, unit-only and expires
+
+RESULT|frog_worm_bank_assassination_p1|PASS|Real delayed deployment kills Bank in two hits and stops its income|Real delayed deployment kills Bank in two hits and stops its income
+
+RESULT|frog_worm_economy_lock_p1|PASS|Worm acquires bank over closer troops without stealing valid locks|Worm acquires bank over closer troops without stealing valid locks
+
+RESULT|frog_worm_refund_p1|PASS|Blocked warning refunds once, preserves cycle and records cancellation|Blocked warning refunds once, preserves cycle and records cancellation
+
+RESULT|frog_worm_correction_p1|PASS|Local correction is visible before spawn and never relocates at the last instant|Local correction is visible before spawn and never relocates at the last instant
+
+RESULT|frog_worm_bot_air_defense_p1|PASS|Bot does not answer an urgent flying threat with a ground-only ambush|Bot does not answer an urgent flying threat with a ground-only ambush
+
+RESULT|frog_worm_bot_p1|PASS|Bot chooses legal enemy-half economic ambush positions and really plays the card|Bot chooses legal enemy-half economic ambush positions and really plays the card
+
+RESULT|frog_worm_hook_melee_p2|PASS|Hook deals zero, reaches melee, then ordinary 40-damage attacks|Hook deals zero, reaches melee, then ordinary 40-damage attacks
+
+RESULT|frog_worm_hook_heavy_bank_p2|PASS|Heavy ground troops and stationary economic units can be pulled|Heavy ground troops and stationary economic units can be pulled
+
+RESULT|frog_worm_moving_hook_melee_p2|PASS|Ready melee hits a pulled running target before it can leave again|Ready melee hits a pulled running target before it can leave again
+
+RESULT|frog_worm_hook_filters_p2|PASS|Tongue excludes buildings, air, water and allies|Tongue excludes buildings, air, water and allies
+
+RESULT|frog_worm_hook_terrain_p2|PASS|Pull sweeps cannot cross open water or bypass melee range|Pull sweeps cannot cross open water or bypass melee range
+
+RESULT|frog_worm_hook_cancel_clock_p2|PASS|Dead targets cancel hooks; pulling never resets melee cooldown|Dead targets cancel hooks; pulling never resets melee cooldown
+
+RESULT|frog_worm_multi_hook_p2|PASS|Two frogs cannot drag one victim twice in the same tick|Two frogs cannot drag one victim twice in the same tick
+
+RESULT|frog_worm_placement_p2|PASS|Worm alone deploys behind either enemy tower and on bridges|Worm alone deploys behind either enemy tower and on bridges
+
+RESULT|frog_worm_deploy_timing_p2|PASS|Full warning then exposed emergence; no early bite at any supported dt|Full warning then exposed emergence; no early bite at any supported dt
+
+RESULT|frog_worm_exposed_p2|PASS|Emerging Worm can be hit by troops and spells before it attacks|Emerging Worm can be hit by troops and spells before it attacks
+
+RESULT|frog_worm_damage_matrix_p2|PASS|Full unit/building damage, half damage to both tower types|Full unit/building damage, half damage to both tower types
+
+RESULT|frog_worm_opener_p2|PASS|Ambush bonus is once-only, unit-only and expires|Ambush bonus is once-only, unit-only and expires
+
+RESULT|frog_worm_bank_assassination_p2|PASS|Real delayed deployment kills Bank in two hits and stops its income|Real delayed deployment kills Bank in two hits and stops its income
+
+RESULT|frog_worm_economy_lock_p2|PASS|Worm acquires bank over closer troops without stealing valid locks|Worm acquires bank over closer troops without stealing valid locks
+
+RESULT|frog_worm_refund_p2|PASS|Blocked warning refunds once, preserves cycle and records cancellation|Blocked warning refunds once, preserves cycle and records cancellation
+
+RESULT|frog_worm_correction_p2|PASS|Local correction is visible before spawn and never relocates at the last instant|Local correction is visible before spawn and never relocates at the last instant
+
+RESULT|frog_worm_bot_air_defense_p2|PASS|Bot does not answer an urgent flying threat with a ground-only ambush|Bot does not answer an urgent flying threat with a ground-only ambush
+
+RESULT|frog_worm_bot_p2|PASS|Bot chooses legal enemy-half economic ambush positions and really plays the card|Bot chooses legal enemy-half economic ambush positions and really plays the card
+
+RESULT|frog_worm_attack_cadence|PASS|New melee cadences preserve fractional progress at all supported dt|New melee cadences preserve fractional progress at all supported dt
+
+RESULT|frog_worm_cleanup|PASS|Finish, rematch, clear and lobby cancel every delayed deployment and hook|Finish, rematch, clear and lobby cancel every delayed deployment and hook
+
+RESULT|frog_worm_staggered_deployments|PASS|Compaction retains a later warning when an earlier one is cancelled|Compaction retains a later warning when an earlier one is cancelled
+
+RESULT|frog_worm_refund_cap|PASS|Refunds credit only actual room in the Emerald cap|Refunds credit only actual room in the Emerald cap
+
+RESULT|frog_worm_mirrored_ambush|PASS|Bot backfield choices mirror exactly with full tower coverage|Bot backfield choices mirror exactly with full tower coverage
+
+RESULT|frog_worm_schemas|PASS|New mechanic validation rejects malformed data and injected transients|New mechanic validation rejects malformed data and injected transients
+
+RESULT|breeze_sheep_registry|PASS|Exactly the two approved new cards; Phantom stays unavailable|Exactly the two approved new cards; Phantom stays unavailable
+
+RESULT|breeze_sheep_third_shot_p1|PASS|Only each third released projectile displaces, without bonus damage|Only each third released projectile displaces, without bonus damage
+
+RESULT|breeze_sheep_shared_immunity_p1|PASS|Two Breezes share victim immunity; locks and attack progress survive|Two Breezes share victim immunity; locks and attack progress survive
+
+RESULT|breeze_sheep_slow_budget_p1|PASS|Impact-time modifiers cap travel to one second; immobile targets stay put|Impact-time modifiers cap travel to one second; immobile targets stay put
+
+RESULT|breeze_sheep_terrain_p1|PASS|River banks and bounds stop a swept push; bridges remain walkable|River banks and bounds stop a swept push; bridges remain walkable
+
+RESULT|breeze_sheep_excluded_targets_p1|PASS|Air and water excluded; buildings take normal damage without movement|Air and water excluded; buildings take normal damage without movement
+
+RESULT|breeze_sheep_dead_source_p1|PASS|Released wind survives source death; dead targets receive no displacement|Released wind survives source death; dead targets receive no displacement
+
+RESULT|breeze_sheep_bridge_choice_p1|PASS|Displacement cannot force a committed attacker to switch bridges|Displacement cannot force a committed attacker to switch bridges
+
+RESULT|breeze_sheep_tower_damage_p1|PASS|Wind deals ordinary 32 damage to both crown tower types without displacement|Wind deals ordinary 32 damage to both crown tower types without displacement
+
+RESULT|breeze_sheep_placement_costs_p1|PASS|Both ordinary cards honor own-half placement and emerald costs|Both ordinary cards honor own-half placement and emerald costs
+
+RESULT|breeze_sheep_sheep_duels_p1|PASS|Ordinary melee sheep competes with Zombie and Wither Skeleton in the real engine|Ordinary melee sheep competes with Zombie and Wither Skeleton in the real engine
+
+RESULT|breeze_sheep_sheep_single_target_p1|PASS|Sword animation gives exactly one melee hit and cannot hit air or at range|Sword animation gives exactly one melee hit and cannot hit air or at range
+
+RESULT|breeze_sheep_third_shot_p2|PASS|Only each third released projectile displaces, without bonus damage|Only each third released projectile displaces, without bonus damage
+
+RESULT|breeze_sheep_shared_immunity_p2|PASS|Two Breezes share victim immunity; locks and attack progress survive|Two Breezes share victim immunity; locks and attack progress survive
+
+RESULT|breeze_sheep_slow_budget_p2|PASS|Impact-time modifiers cap travel to one second; immobile targets stay put|Impact-time modifiers cap travel to one second; immobile targets stay put
+
+RESULT|breeze_sheep_terrain_p2|PASS|River banks and bounds stop a swept push; bridges remain walkable|River banks and bounds stop a swept push; bridges remain walkable
+
+RESULT|breeze_sheep_excluded_targets_p2|PASS|Air and water excluded; buildings take normal damage without movement|Air and water excluded; buildings take normal damage without movement
+
+RESULT|breeze_sheep_dead_source_p2|PASS|Released wind survives source death; dead targets receive no displacement|Released wind survives source death; dead targets receive no displacement
+
+RESULT|breeze_sheep_bridge_choice_p2|PASS|Displacement cannot force a committed attacker to switch bridges|Displacement cannot force a committed attacker to switch bridges
+
+RESULT|breeze_sheep_tower_damage_p2|PASS|Wind deals ordinary 32 damage to both crown tower types without displacement|Wind deals ordinary 32 damage to both crown tower types without displacement
+
+RESULT|breeze_sheep_placement_costs_p2|PASS|Both ordinary cards honor own-half placement and emerald costs|Both ordinary cards honor own-half placement and emerald costs
+
+RESULT|breeze_sheep_sheep_duels_p2|PASS|Ordinary melee sheep competes with Zombie and Wither Skeleton in the real engine|Ordinary melee sheep competes with Zombie and Wither Skeleton in the real engine
+
+RESULT|breeze_sheep_sheep_single_target_p2|PASS|Sword animation gives exactly one melee hit and cannot hit air or at range|Sword animation gives exactly one melee hit and cannot hit air or at range
+
+RESULT|breeze_sheep_schema|PASS|Wind validation rejects invalid budgets, cadence and injected runtime counters|Wind validation rejects invalid budgets, cadence and injected runtime counters
+
+RESULT|breeze_sheep_negative_control|PASS|A broken push implementation is detected by the real third-shot regression|A broken push implementation is detected by the real third-shot regression
 
 END_OF_REPORT
