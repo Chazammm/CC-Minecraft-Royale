@@ -1,0 +1,44 @@
+name: Dual-platform mob assets
+on:
+  pull_request:
+    paths:
+      - 'assets/sprites/new_mobs/**'
+      - '.github/workflows/new-mob-assets.yml'
+  push:
+    branches: ['assets/dual-platform-mobs-*']
+permissions:
+  contents: read
+jobs:
+  isolated-art:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Host-only art dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.2 lua5.4 fonts-dejavu-core
+          python -m pip install Pillow==12.3.0
+      - name: Native source and LÖVE metadata syntax
+        run: |
+          find assets/sprites/new_mobs -name '*.lua' -exec luac5.2 -p {} \;
+          find assets/sprites/new_mobs -name '*.lua' -exec luac5.4 -p {} \;
+      - name: Real arena, overlays, cache and state isolation
+        run: |
+          lua5.2 assets/sprites/new_mobs/tools/test_assets.lua /tmp/new-mobs-52.json
+          lua5.4 assets/sprites/new_mobs/tools/test_assets.lua /tmp/new-mobs-54.json
+      - name: PNGs, alpha, palettes, source exports, authentic previews and cross-Lua pixels
+        run: |
+          python -W ignore::DeprecationWarning assets/sprites/new_mobs/tools/validate_assets.py --capture52 /tmp/new-mobs-52.json --capture54 /tmp/new-mobs-54.json
+      - name: Preserve existing sprite roster and frame cache
+        run: |
+          lua5.2 tests/test_sprite_roster.lua
+          lua5.4 tests/test_sprite_roster.lua
+          lua5.2 tests/test_pixel_frame_diff.lua
+          lua5.4 tests/test_pixel_frame_diff.lua
+          lua5.2 tests/test_four_mob_rendering.lua
+          lua5.4 tests/test_four_mob_rendering.lua
