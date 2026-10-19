@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "status": "STATIC_SPRITES_NOT_GAMEPLAY_INTEGRATED",
+  "filter": [
+    "nearest",
+    "nearest"
+  ],
+  "alpha": "binary 0/255; RGB zero when transparent",
+  "lighting": "upper left",
+  "sourceType": "independently drawn high-resolution master; not CC upscale",
+  "sourceSha256": "d9166327f1fd84998fa1c028c886c880da5bd817248d9fd1d3d7d18ecc83fa2e",
+  "approvedConceptSha256": "85203edb3da98f62cc1247c5fa00b40f42463d7c6d34294b6b79cc2b62317e01",
+  "sprites": {
+    "breeze": {
+      "name": "Breeze",
+      "file": "breeze.png",
+      "width": 256,
+      "height": 256,
+      "anchor": [
+        128,
+        240
+      ],
+      "anchorMeaning": "bottom-center envelope; floating poses use same projected base",
+      "pose": "idle",
+      "frames": 1,
+      "visibleBoundsExclusive": [
+        49,
+        17,
+        206,
+        240
+      ],
+      "visiblePixels": 18091,
+      "visibleColors": 48,
+      "sha256": "6c2ca764102ad7f8a7efb60070a70ff8eef7488c02379115e0ceea9cba0e440e",
+      "sourceCrop": [
+        0,
+        0,
+        570,
+        724
+      ]
+    },
+    "adventure_sheep": {
+      "name": "Adventure Sheep",
+      "file": "adventure_sheep.png",
+      "width": 256,
+      "height": 256,
+      "anchor": [
+        128,
+        240
+      ],
+      "anchorMeaning": "bottom-center envelope; floating poses use same projected base",
+      "pose": "idle",
+      "frames": 1,
+      "visibleBoundsExclusive": [
+        16,
+        27,
+        239,
+        240
+      ],
+      "visiblePixels": 30818,
+      "visibleColors": 48,
+      "sha256": "f88d6c58dc451f57fd2f4f62da31b52b49cc0cfbdd40227a2ddf23bd2c272210",
+      "sourceCrop": [
+        570,
+        0,
+        1250,
+        724
+      ]
+    },
+    "phantom": {
+      "name": "Phantom",
+      "file": "phantom.png",
+      "width": 320,
+      "height": 256,
+      "anchor": [
+        160,
+        240
+      ],
+      "anchorMeaning": "bottom-center envelope; floating poses use same projected base",
+      "pose": "idle",
+      "frames": 1,
+      "visibleBoundsExclusive": [
+        16,
+        37,
+        304,
+        239
+      ],
+      "visiblePixels": 20587,
+      "visibleColors": 48,
+      "sha256": "aecf89b7524a59bb7f98189f44bdd4239cf3d202ffa85be77c617e832abbcd02",
+      "sourceCrop": [
+        1250,
+        0,
+        2172,
+        724
+      ]
+    }
+  }
+}

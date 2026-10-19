@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "reproduciblePngExports": {
+    "adventure_sheep.png": "f88d6c58dc451f57fd2f4f62da31b52b49cc0cfbdd40227a2ddf23bd2c272210",
+    "breeze.png": "6c2ca764102ad7f8a7efb60070a70ff8eef7488c02379115e0ceea9cba0e440e",
+    "phantom.png": "aecf89b7524a59bb7f98189f44bdd4239cf3d202ffa85be77c617e832abbcd02"
+  },
+  "metadataRuntimeChecks": [
+    {
+      "lua": "5.2",
+      "status": "PASS",
+      "output": "Lua 5.2: PASS three portable sprite definitions"
+    },
+    {
+      "lua": "5.4",
+      "status": "PASS",
+      "output": "Lua 5.4: PASS three portable sprite definitions"
+    }
+  ],
+  "loveRuntime": "NOT RUN: love executable and separate application unavailable",
+  "gameplaySuite": "NOT RERUN: only isolated art and metadata changed",
+  "ccPreviewCheck": "PASS: existing exact native PNG/GIF/HTML checker run unchanged"
+}
